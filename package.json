@@ -1,0 +1,19 @@
+{
+  "name": "bitcoin-spv",
+  "version": "0.0.0",
+  "description": "bitcoin SPV proofs in Solidity for Integral",
+  "scripts": {
+    "compile": "node compile.js",
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "NONE",
+  "dependencies": {
+    "bignumber.js": "^7.2.1",
+    "create-hash": "^1.2.0",
+    "ganache-cli": "^6.1.8",
+    "mocha": "^5.2.0",
+    "solc": "^0.4.24",
+    "web3": "^1.0.0-beta.36"
+  }
+}
