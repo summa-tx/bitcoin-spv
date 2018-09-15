@@ -270,12 +270,19 @@ describe('BlockHeader', () => {
 
     beforeEach(async() => {
         accounts = await web3.eth.getAccounts();
+
+        bytesContract = await new web3.eth.Contract(JSON.parse(compiledBytes.interface))
+            .deploy({ data: compiledBytes.bytecode})
+            .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
+
         btcUtilsContract = await new web3.eth.Contract(JSON.parse(compiledBTCUtils.interface))
             .deploy({ data: compiledBTCUtils.bytecode})
             .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
         // Link
         bc = await linker.linkBytecode(compiledHeader.bytecode,
-                    {'SPV.sol:BTCUtils': btcUtilsContract.options.address});
+                    {'SPV.sol:BTCUtils': btcUtilsContract.options.address,
+                     'BytesLib.sol:BytesLib': bytesContract.options.address});
+
         headerContract = await new web3.eth.Contract(JSON.parse(compiledHeader.interface))
             .deploy({ data: bc})
             .send({ from: accounts[0], gas: 2000000, gasPrice: 100000000000});
@@ -331,7 +338,7 @@ describe('BlockHeader', () => {
     });
 });
 
-describe.only('SPVStore', async () => {
+describe('SPVStore', async () => {
     let storeContract;
     beforeEach(async () => {
         // This was a pain to write
