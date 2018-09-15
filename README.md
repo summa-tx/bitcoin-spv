@@ -39,38 +39,38 @@ They need to be in LE for hashing
 They are in LE in the block
 
 ### 1-in 1-out P2WPKH map (inclusive)
-0-3: Version
-4-5: Segwit Flag (0001)
-6-6: len(tx_ins) (01)
-7-42: Outpoint
-43-43: empty scriptsig (00)
-44-47: nSequence
-48-48: len(tx_outs) (01)
-49-56: value
-57-59: pk_script prefix (160014)
-60-79: hash160(pubkey)
--4- : locktime
+* 0-3: Version
+* 4-5: Segwit Flag (0001)
+* 6-6: len(tx_ins) (01)
+* 7-42: Outpoint
+* 43-43: empty scriptsig (00)
+* 44-47: nSequence
+* 48-48: len(tx_outs) (01)
+* 49-56: value
+* 57-59: pk_script prefix (160014)
+* 60-79: hash160(pubkey)
+* -4- : locktime
 
 ### 1-in 1-out P2WSH map (inclusive)
-0-3: Version
-4-5: Segwit Flag (0001)
-6-6: len(tx_ins) (01)
-7-42: Outpoint
-43-43: empty scriptsig (00)
-44-47: nSequence
-48-48: len(tx_outs) (01)
-49-56: value
-57-59: pk_script prefix (220020)
-60-91: sha256(script)
--4- : locktime
+* 0-3: Version
+* 4-5: Segwit Flag (0001)
+* 6-6: len(tx_ins) (01)
+* 7-42: Outpoint
+* 43-43: empty scriptsig (00)
+* 44-47: nSequence
+* 48-48: len(tx_outs) (01)
+* 49-56: value
+* 57-59: pk_script prefix (220020)
+* 60-91: sha256(script)
+* -4- : locktime
 
 ### Header Map
-0-3 version
-4-35 prevblock
-36-67 merkle root
-68-71 timestamp
-72-75 difficulty bits
-76-79 nonce
+* 0-3: version
+* 4-35: prevblock
+* 36-67: merkle root
+* 68-71: timestamp
+* 72-75: difficulty bits
+* 76-79: nonce
 
 ### Output structure
 
