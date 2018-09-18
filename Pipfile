@@ -5,6 +5,7 @@ verify_ssl = true
 
 [packages]
 riemann-tx = "*"
+requests = "*"
 
 [requires]
 python_version = "3.5"

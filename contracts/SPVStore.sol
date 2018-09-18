@@ -170,7 +170,7 @@ contract SPVStore {
         bytes32 _versionHash = keccak256(_tx.slice(0, 1));
         return (
             (_versionHash == keccak256(hex'01') || _versionHash == keccak256(hex'02'))  // version 1 or 2
-                && keccak256(_tx.slice(1, 5) )== keccak256(hex'0000000001'));  // has segwit flag
+                && keccak256(_tx.slice(1, 5)) == keccak256(hex'0000000001'));  // has segwit flag
     }
 
     // @notice      Parses a TxIn struct from raw input bytes
