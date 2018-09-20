@@ -73,6 +73,7 @@ library BTCUtils {
         return abi.encodePacked(sha256(sha256(_b)));
     }
 
+    /* Witness Input */
     // @notice      Extracts the LE sequence bytes from an input
     // @dev         Sequence is used for relative time locks
     // @param _b    The input
@@ -104,25 +105,8 @@ library BTCUtils {
     ) pure public returns (bytes) {
         return _b.slice(0, 36);
     }
-}
 
-
-library WitnessOutput {
-
-    // NB: A WitnessOutput is always 31 or 43 bytes:
-    // ( 0 -  7)      8 byte LE value
-    // ( 8 - 10)      3 byte prefix 0x160014 or 0x220020
-    // (11 - 30/42)  20 or 32 byte hash
-
-    // NB: An OP_RETURN output is variable length
-    // ( 0 -  7)      8 byte LE value
-    // ( 8 - 10)      3 byte prefix (XX6AXX)
-    // (11 - ??)      X byte hash
-
-    using BytesLib for bytes;
-    using BTCUtils for bytes;
-    using SafeMath for uint256;
-
+    /* Witness Output */
     // @notice      Extracts the output script length
     // @dev         Indexes the length prefix on the pk_script
     // @param _b    The output
@@ -150,9 +134,9 @@ library WitnessOutput {
     function extractValue(
         bytes _b
     ) pure public returns (uint64) {
-        return
-            uint64(
-                    extractValueLE(_b).reverseEndianness().bytesToUint());
+        bytes memory valueLE = extractValueLE(_b);
+        bytes memory valueBE = reverseEndianness(valueLE);
+        return uint64(bytesToUint(valueBE));
     }
 
     // @notice      Extracts the value from the output in a tx
@@ -163,8 +147,8 @@ library WitnessOutput {
         bytes _b
     ) pure public returns (bytes) {
         require(_b.slice(9, 1).equal(hex'6a'), 'Not an OP_RETURN output');
-        uint256 _dataLen = _b.slice(10, 1).bytesToUint();
-        return _b.slice(11, _dataLen);
+        bytes memory _dataLen = _b.slice(10, 1);
+        return _b.slice(11, bytesToUint(_dataLen));
     }
 
     // @notice      Extracts the hash from the output script
@@ -179,6 +163,7 @@ library WitnessOutput {
         return _b.slice(11, _len);
     }
 }
+
 
 library TX {
 
@@ -299,7 +284,6 @@ library TX {
     }
 
     // @notice          Extracts the output at a given index in the TxIns vector
-    // @dev             Use the WitnessOutput library to parse the result
     // @params _b       The tx to evaluate
     // @params index    The 0-indexed location of the output to extract
     // @returns         The specified output

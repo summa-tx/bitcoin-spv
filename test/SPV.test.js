@@ -3,7 +3,6 @@ const ganache = require('ganache-cli');
 const Web3 = require('web3');
 const web3 = new Web3(ganache.provider());
 const compiledBTCUtils = require('../build/BTCUtils.json');
-const compiledWitnessOutput = require('../build/WitnessOutput.json');
 const compiledTx = require('../build/TX.json');
 const compiledHeader = require('../build/BlockHeader.json');
 const compiledBytes = require('../build/BytesLib.json');
@@ -85,6 +84,7 @@ describe('BTCUtils', () => {
         assert.equal(res, '0x4f8b42c22dd3729b519ba6f68d2da7cc5b2d606d05daed5ad5128cc03e6c6358');
     });
 
+    /* Witness Input */
     it('extracts a sequence from an input as LE and int', async () => {
         const input = '0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff';
         let res;
@@ -99,62 +99,51 @@ describe('BTCUtils', () => {
         let res = await btcUtilsContract.methods.extractOutpoint(input).call();
         assert.equal(res, '0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000')
     });
-})
 
-describe('WitnessOutput', () => {
-    let outputContract;
-    const output = '0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18';
-    const opReturnOutput = '0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211';
-
-    beforeEach(async () => {
-        accounts = await web3.eth.getAccounts();
-        btcUtilsContract = await new web3.eth.Contract(JSON.parse(compiledBTCUtils.interface))
-            .deploy({ data: compiledBTCUtils.bytecode})
-            .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-        // Link
-        bc = await linker.linkBytecode(compiledWitnessOutput.bytecode,
-                    {'SPV.sol:BTCUtils': btcUtilsContract.options.address});
-        outputContract = await new web3.eth.Contract(JSON.parse(compiledWitnessOutput.interface))
-            .deploy({ data: bc })
-            .send({ from: accounts[0], gas: 2000000, gasPrice: 100000000000});
-        assert.ok(outputContract.options.address);
-    });
-
+    /* Witness Output */
     it('extracts the length of the output script', async () => {
         let res;
-        res = await outputContract.methods.extractOutputScriptLen(output).call();
+        const output = '0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18';
+        const opReturnOutput = '0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211';
+        res = await btcUtilsContract.methods.extractOutputScriptLen(output).call();
         assert.equal(res, '0x22');
-        res = await outputContract.methods.extractOutputScriptLen(opReturnOutput).call();
+        res = await btcUtilsContract.methods.extractOutputScriptLen(opReturnOutput).call();
         assert.equal(res, '0x16')
     });
 
     it('extracts the hash from an output', async () => {
         let res;
-        res = await outputContract.methods.extractHash(output).call();
+        const output = '0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18';
+        const opReturnOutput = '0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211';
+        res = await btcUtilsContract.methods.extractHash(output).call();
         assert.equal(res, '0xa4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18');
 
-        utils.expectThrow(outputContract.methods.extractHash(opReturnOutput).call());
+        utils.expectThrow(btcUtilsContract.methods.extractHash(opReturnOutput).call());
     });
 
     it('extracts the value as LE and int', async () => {
         let res;
-        res = await outputContract.methods.extractValueLE(output).call();
+        const output = '0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18';
+        const opReturnOutput = '0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211';
+        res = await btcUtilsContract.methods.extractValueLE(output).call();
         assert.equal(res, '0x4897070000000000');
-        res = await outputContract.methods.extractValue(output).call();
+        res = await btcUtilsContract.methods.extractValue(output).call();
         assert.equal(res, 0x079748);
-        res = await outputContract.methods.extractValueLE(opReturnOutput).call();
+        res = await btcUtilsContract.methods.extractValueLE(opReturnOutput).call();
         assert.equal(res, '0x0000000000000000');
-        res = await outputContract.methods.extractValue(opReturnOutput).call();
+        res = await btcUtilsContract.methods.extractValue(opReturnOutput).call();
         assert.equal(res, 0x00);
     });
 
     it('extracts op_return data blobs', async () => {
-        let res = await outputContract.methods.extractOpReturnData(opReturnOutput).call();
+        const output = '0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18';
+        const opReturnOutput = '0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211';
+        let res = await btcUtilsContract.methods.extractOpReturnData(opReturnOutput).call();
         assert.equal(res, '0xedb1b5c2f39af0fec151732585b1049b07895211');
 
-        utils.expectThrow(outputContract.methods.extractOpReturnData(output).call())
+        utils.expectThrow(btcUtilsContract.methods.extractOpReturnData(output).call())
     });
-});
+})
 
 describe('TX', () => {
     let txContract;
@@ -351,17 +340,9 @@ describe('SPVStore', async () => {
             .deploy({ data: bc})
             .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
 
-        bc = await linker.linkBytecode(compiledWitnessOutput.bytecode,
-                    {'SPV.sol:BTCUtils': btcUtilsContract.options.address});
-
-        outputContract = await new web3.eth.Contract(JSON.parse(compiledWitnessOutput.interface))
-            .deploy({ data: bc })
-            .send({ from: accounts[0], gas: 2000000, gasPrice: 100000000000});
-
         bc = await linker.linkBytecode(compiledStore.bytecode,
             {'SPV.sol:TX': txContract.options.address,
              'SPV.sol:BTCUtils': btcUtilsContract.options.address,
-             'SPV.sol:WitnessOutput': outputContract.options.address,
              'SPV.sol:BlockHeader': headerContract.options.address,
              'BytesLib.sol:BytesLib': bytesContract.options.address});
 
