@@ -140,9 +140,9 @@ describe('WitnessOutput', () => {
 
     it('extracts the length of the output script', async () => {
         let res;
-        res = await outputContract.methods.outputScriptLen(output).call();
+        res = await outputContract.methods.extractOutputScriptLen(output).call();
         assert.equal(res, '0x22');
-        res = await outputContract.methods.outputScriptLen(opReturnOutput).call();
+        res = await outputContract.methods.extractOutputScriptLen(opReturnOutput).call();
         assert.equal(res, '0x16')
     });
 

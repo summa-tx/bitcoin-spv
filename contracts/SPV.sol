@@ -43,7 +43,7 @@ library BTCUtils {
 
     // @notice      Get the last _num bytes from a byte array
     // @param _b    The byte array to slice
-    // @param _num  The number of bytes to extrac from the end
+    // @param _num  The number of bytes to extract from the end
     // @return      The last _num bytes of _b
     function lastBytes(
         bytes _b,
@@ -138,7 +138,7 @@ library WitnessOutput {
     // @dev         Indexes the length prefix on the pk_script
     // @param _b    The output
     // @returns     The 1 byte length prefix
-    function outputScriptLen(
+    function extractOutputScriptLen(
         bytes _b
     ) pure public returns (bytes) {
         return _b.slice(8, 1);
@@ -186,7 +186,7 @@ library WitnessOutput {
         bytes _b
     ) pure public returns (bytes) {
         require(_b.slice(9, 1).equal(hex'00'), 'Not a witness output');
-        uint256 _len = (outputScriptLen(_b).equal(hex'22')) ? 32 : 20;
+        uint256 _len = (extractOutputScriptLen(_b).equal(hex'22')) ? 32 : 20;
         return _b.slice(11, _len);
     }
 }
