@@ -95,19 +95,6 @@ library BTCUtils {
         bytes memory sequenceBE = reverseEndianness(sequenceLE);
         return uint32(bytesToUint(sequenceBE));
     }
-}
-
-library WitnessInput {
-
-    // NB: A WitnessInput is always 41 bytes:
-    // ( 0 - 31)     32 byte LE txid
-    // (32 - 35)      4 byte LE index
-    // (36 - 36)      1 byte empty scriptsig
-    // (37 - 40)      4 byte LE sequence
-
-    using BytesLib for bytes;
-    using BTCUtils for bytes;
-    using SafeMath for uint256;
 
     // @notice      Extracts the outpoint from the input in a tx
     // @dev         36 byte tx id with 4 byte index
@@ -119,6 +106,7 @@ library WitnessInput {
         return _b.slice(0, 36);
     }
 }
+
 
 library WitnessOutput {
 

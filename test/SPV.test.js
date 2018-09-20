@@ -3,7 +3,6 @@ const ganache = require('ganache-cli');
 const Web3 = require('web3');
 const web3 = new Web3(ganache.provider());
 const compiledBTCUtils = require('../build/BTCUtils.json');
-const compiledWitnessInput = require('../build/WitnessInput.json');
 const compiledWitnessOutput = require('../build/WitnessOutput.json');
 const compiledTx = require('../build/TX.json');
 const compiledHeader = require('../build/BlockHeader.json');
@@ -88,7 +87,6 @@ describe('BTCUtils', () => {
 })
 
 describe('WitnessInput', () => {
-    let inputContract;
     const input = '0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff';
 
     beforeEach(async () => {
@@ -96,13 +94,6 @@ describe('WitnessInput', () => {
         btcUtilsContract = await new web3.eth.Contract(JSON.parse(compiledBTCUtils.interface))
             .deploy({ data: compiledBTCUtils.bytecode})
             .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-        // Link
-        bc = await linker.linkBytecode(compiledWitnessInput.bytecode,
-                    {'SPV.sol:BTCUtils': btcUtilsContract.options.address});
-        inputContract = await new web3.eth.Contract(JSON.parse(compiledWitnessInput.interface))
-            .deploy({ data: bc })
-            .send({ from: accounts[0], gas: 2000000, gasPrice: 100000000000});
-        assert.ok(inputContract.options.address);
     });
 
     it('extracts a sequence from an input as LE and int', async () => {
@@ -114,7 +105,7 @@ describe('WitnessInput', () => {
     });
 
     it('extracts an outpoint as bytes', async () => {
-        let res = await inputContract.methods.extractOutpoint(input).call();
+        let res = await btcUtilsContract.methods.extractOutpoint(input).call();
         assert.equal(res, '0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000')
     });
 });
@@ -369,13 +360,6 @@ describe('SPVStore', async () => {
             .deploy({ data: bc})
             .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
 
-        bc = await linker.linkBytecode(compiledWitnessInput.bytecode,
-                    {'SPV.sol:BTCUtils': btcUtilsContract.options.address});
-
-        inputContract = await new web3.eth.Contract(JSON.parse(compiledWitnessInput.interface))
-            .deploy({ data: bc })
-            .send({ from: accounts[0], gas: 2000000, gasPrice: 100000000000});
-
         bc = await linker.linkBytecode(compiledWitnessOutput.bytecode,
                     {'SPV.sol:BTCUtils': btcUtilsContract.options.address});
 
@@ -386,7 +370,6 @@ describe('SPVStore', async () => {
         bc = await linker.linkBytecode(compiledStore.bytecode,
             {'SPV.sol:TX': txContract.options.address,
              'SPV.sol:BTCUtils': btcUtilsContract.options.address,
-             'SPV.sol:WitnessInput': inputContract.options.address,
              'SPV.sol:WitnessOutput': outputContract.options.address,
              'SPV.sol:BlockHeader': headerContract.options.address,
              'BytesLib.sol:BytesLib': bytesContract.options.address});
