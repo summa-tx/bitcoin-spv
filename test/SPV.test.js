@@ -3,7 +3,6 @@ const ganache = require('ganache-cli');
 const Web3 = require('web3');
 const web3 = new Web3(ganache.provider());
 const compiledBTCUtils = require('../build/BTCUtils.json');
-const compiledTx = require('../build/TX.json');
 const compiledHeader = require('../build/BlockHeader.json');
 const compiledBytes = require('../build/BytesLib.json');
 const compiledStore = require('../build/SPVStore.json');
@@ -143,98 +142,78 @@ describe('BTCUtils', () => {
 
         utils.expectThrow(btcUtilsContract.methods.extractOpReturnData(output).call())
     });
-})
-
-describe('TX', () => {
-    let txContract;
-
-    beforeEach(async () => {
-        accounts = await web3.eth.getAccounts();
-
-        btcUtilsContract = await new web3.eth.Contract(JSON.parse(compiledBTCUtils.interface))
-            .deploy({ data: compiledBTCUtils.bytecode})
-            .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-        // Link
-        bc = await linker.linkBytecode(compiledTx.bytecode,
-                    {'SPV.sol:BTCUtils': btcUtilsContract.options.address});
-
-        txContract = await new web3.eth.Contract(JSON.parse(compiledTx.interface))
-            .deploy({ data: bc })
-            .send({ from: accounts[0], gas: 2000000, gasPrice: 100000000000});
-
-        assert.ok(txContract.options.address);
-    });
 
     it('extracts a locktime as LE bytes and integer', async () => {
         let res;
-        res = await txContract.methods.extractLocktime('0x00112233445566').call();
+        res = await btcUtilsContract.methods.extractLocktime('0x00112233445566').call();
         assert.equal(res, 1716864051);
-        res = await txContract.methods.extractLocktimeLE('0x00112233445566').call();
+        res = await btcUtilsContract.methods.extractLocktimeLE('0x00112233445566').call();
         assert.equal(res, '0x33445566');
-        res = await txContract.methods.extractLocktime(OP_RETURN_TX).call();
+        res = await btcUtilsContract.methods.extractLocktime(OP_RETURN_TX).call();
         assert.equal(res, 0);
-        res = await txContract.methods.extractLocktimeLE(OP_RETURN_TX).call();
+        res = await btcUtilsContract.methods.extractLocktimeLE(OP_RETURN_TX).call();
         assert.equal(res, '0x00000000');
     });
 
     it('finds the index of the number of outputs', async () => {
         let res;
-        res = await txContract.methods.findNumOutputs(OP_RETURN_TX).call();
+        res = await btcUtilsContract.methods.findNumOutputs(OP_RETURN_TX).call();
         assert.equal(res, 48);
-        res = await txContract.methods.findNumOutputs(TWO_IN_TX).call();
+        res = await btcUtilsContract.methods.findNumOutputs(TWO_IN_TX).call();
         assert.equal(res, 89);
     });
 
     it('extracts the number of inputs', async () => {
         let res;
-        res = await txContract.methods.extractNumInputs(OP_RETURN_TX).call();
+        res = await btcUtilsContract.methods.extractNumInputs(OP_RETURN_TX).call();
         assert.equal(res, 1);
-        res = await txContract.methods.extractNumInputs(TWO_IN_TX).call();
+        res = await btcUtilsContract.methods.extractNumInputs(TWO_IN_TX).call();
         assert.equal(res, 2);
     });
 
     it('extracts the number of outputs', async () => {
         let res;
-        res = await txContract.methods.extractNumOutputs(OP_RETURN_TX).call();
+        res = await btcUtilsContract.methods.extractNumOutputs(OP_RETURN_TX).call();
         assert.equal(res, 2);
-        res = await txContract.methods.extractNumOutputs(TWO_IN_TX).call();
+        res = await btcUtilsContract.methods.extractNumOutputs(TWO_IN_TX).call();
         assert.equal(res, 2);
     });
 
     it('extracts inputs at specified indices', async () => {
         let res;
-        res = await txContract.methods.extractInputAtIndex(OP_RETURN_TX, 0).call();
+        res = await btcUtilsContract.methods.extractInputAtIndex(OP_RETURN_TX, 0).call();
         assert.equal(res, '0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff');
-        res = await txContract.methods.extractInputAtIndex(TWO_IN_TX, 0).call();
+        res = await btcUtilsContract.methods.extractInputAtIndex(TWO_IN_TX, 0).call();
         assert.equal(res, '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff');
-        res = await txContract.methods.extractInputAtIndex(TWO_IN_TX, 1).call();
+        res = await btcUtilsContract.methods.extractInputAtIndex(TWO_IN_TX, 1).call();
         assert.equal(res, '0xaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff');
     });
 
     it('determines output length properly', async () => {
         let res;
-        res = await txContract.methods.determineOutputLength('0x2200').call();
+        res = await btcUtilsContract.methods.determineOutputLength('0x2200').call();
         assert.equal(res, 43);
-        res = await txContract.methods.determineOutputLength('0x1600').call();
+        res = await btcUtilsContract.methods.determineOutputLength('0x1600').call();
         assert.equal(res, 31);
-        res = await txContract.methods.determineOutputLength('0x206a').call();
+        res = await btcUtilsContract.methods.determineOutputLength('0x206a').call();
         assert.equal(res, 41);
-        res = await txContract.methods.determineOutputLength('0x026a').call();
+        res = await btcUtilsContract.methods.determineOutputLength('0x026a').call();
         assert.equal(res, 11);
     });
 
     it('extracts outputs at specified indices', async () => {
         let res;
-        res = await txContract.methods.extractOutputAtIndex(OP_RETURN_TX, 0).call();
+        res = await btcUtilsContract.methods.extractOutputAtIndex(OP_RETURN_TX, 0).call();
         assert.equal(res, '0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18');
-        res = await txContract.methods.extractOutputAtIndex(OP_RETURN_TX, 1).call();
+        res = await btcUtilsContract.methods.extractOutputAtIndex(OP_RETURN_TX, 1).call();
         assert.equal(res, '0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211');
-        res = await txContract.methods.extractOutputAtIndex(TWO_IN_TX, 0).call();
+        res = await btcUtilsContract.methods.extractOutputAtIndex(TWO_IN_TX, 0).call();
         assert.equal(res, '0x4db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f0');
-        res = await txContract.methods.extractOutputAtIndex(TWO_IN_TX, 1).call();
+        res = await btcUtilsContract.methods.extractOutputAtIndex(TWO_IN_TX, 1).call();
         assert.equal(res, '0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922');
     });
-});
+})
+
 
 describe('BlockHeader', () => {
     let headerContract;
@@ -333,16 +312,9 @@ describe('SPVStore', async () => {
             .deploy({ data: bc})
             .send({ from: accounts[0], gas: 2000000, gasPrice: 100000000000});
 
-        bc = await linker.linkBytecode(compiledTx.bytecode,
-                    {'SPV.sol:BTCUtils': btcUtilsContract.options.address});
-
-        txContract = await new web3.eth.Contract(JSON.parse(compiledTx.interface))
-            .deploy({ data: bc})
-            .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
 
         bc = await linker.linkBytecode(compiledStore.bytecode,
-            {'SPV.sol:TX': txContract.options.address,
-             'SPV.sol:BTCUtils': btcUtilsContract.options.address,
+            {'SPV.sol:BTCUtils': btcUtilsContract.options.address,
              'SPV.sol:BlockHeader': headerContract.options.address,
              'BytesLib.sol:BytesLib': bytesContract.options.address});
 

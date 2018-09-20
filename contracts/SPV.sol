@@ -91,9 +91,9 @@ library BTCUtils {
     function extractSequence(
         bytes _b
     ) pure public returns (uint32) {
-        bytes memory sequenceLE = extractSequenceLE(_b);
-        bytes memory sequenceBE = reverseEndianness(sequenceLE);
-        return uint32(bytesToUint(sequenceBE));
+        bytes memory _leSeqence = extractSequenceLE(_b);
+        bytes memory _beSequence = reverseEndianness(_leSeqence);
+        return uint32(bytesToUint(_beSequence));
     }
 
     // @notice      Extracts the outpoint from the input in a tx
@@ -134,9 +134,9 @@ library BTCUtils {
     function extractValue(
         bytes _b
     ) pure public returns (uint64) {
-        bytes memory valueLE = extractValueLE(_b);
-        bytes memory valueBE = reverseEndianness(valueLE);
-        return uint64(bytesToUint(valueBE));
+        bytes memory _leValue = extractValueLE(_b);
+        bytes memory _beValue = reverseEndianness(_leValue);
+        return uint64(bytesToUint(_beValue));
     }
 
     // @notice      Extracts the value from the output in a tx
@@ -162,24 +162,8 @@ library BTCUtils {
         uint256 _len = (extractOutputScriptLen(_b).equal(hex'22')) ? 32 : 20;
         return _b.slice(11, _len);
     }
-}
 
-
-library TX {
-
-    // NB: A WitnessTX will always have the same struture:
-    // ( 0 - 3)      4 byte LE version (must be 1 or 2)
-    // ( 4 - 5)      2 byte segwit flag (must be 0x0001)
-    // ( 6 - 6)      1 byte numTxIns (VarInts not supported)
-    // (   7+ )      41 byte TxIn * numTxIns
-    // (  47+ )      1 byte numTxOuts (VarInts not supported)
-    // (  48+ )      31 or 43 byte TxOut * numTxOuts
-    // (   ?   )      ? byte witnesses
-    // (  -4-  )      4 byte LE locktime
-
-    using BytesLib for bytes;
-    using BTCUtils for bytes;
-    using SafeMath for uint256;
+    /* TX */
 
     // @notice      Extracts the locktime bytes from a transaction
     // @dev         Takes the last 4 bytes off a byte array
@@ -188,7 +172,7 @@ library TX {
     function extractLocktimeLE(
         bytes _b
     ) pure public returns (bytes) {
-        return _b.lastBytes(4);
+        return lastBytes(_b, 4);
     }
 
     // @notice      Extracts the locktime and converts it to integer
@@ -199,7 +183,8 @@ library TX {
         bytes _b
     ) pure public returns (uint32) {
         bytes memory _leLocktime = extractLocktimeLE(_b);
-        return uint32(_leLocktime.reverseEndianness().bytesToUint());
+        bytes memory _beLocktime = reverseEndianness(_leLocktime);
+        return uint32(bytesToUint(_beLocktime));
     }
 
     // @notice      Extracts number of inputs as integer
@@ -209,7 +194,7 @@ library TX {
     function extractNumInputs(
         bytes _b
     ) pure public returns (uint8) {
-        uint256 _n = _b.slice(6, 1).bytesToUint();
+        uint256 _n = bytesToUint(_b.slice(6, 1));
         require(_n < 0xfd, 'VarInts not supported');  // Error on VarInts
         return uint8(_n);
     }
@@ -232,7 +217,7 @@ library TX {
         bytes _b
     ) pure public returns (uint8) {
         uint256 _offset = findNumOutputs(_b);
-        uint256 _n = _b.slice(_offset, 1).bytesToUint();
+        uint256 _n = bytesToUint(_b.slice(_offset, 1));
         require(_n < 0xfd, 'VarInts not supported');  // Error on VarInts
         return uint8(_n);
     }
@@ -273,7 +258,7 @@ library TX {
 
         if (keccak256(_b.slice(1, 1)) == keccak256(hex'6a')) {
             // OP_RETURN
-            uint _pushLen = _b.slice(0, 1).bytesToUint();
+            uint _pushLen = bytesToUint(_b.slice(0, 1));
             require(_pushLen < 76, 'Multi-byte pushes not supported');
             // 8 byte value + 1 byte len + len bytes data
             return 9 + _pushLen;
@@ -310,6 +295,7 @@ library TX {
         return _b.slice(_offset, _len);
     }
 }
+
 
 library BlockHeader {
 
