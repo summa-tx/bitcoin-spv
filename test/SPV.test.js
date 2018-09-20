@@ -84,19 +84,9 @@ describe('BTCUtils', () => {
         res = await btcUtilsContract.methods.hash256('0x616263').call(); // 'abc' in utf-8
         assert.equal(res, '0x4f8b42c22dd3729b519ba6f68d2da7cc5b2d606d05daed5ad5128cc03e6c6358');
     });
-})
-
-describe('WitnessInput', () => {
-    const input = '0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff';
-
-    beforeEach(async () => {
-        accounts = await web3.eth.getAccounts();
-        btcUtilsContract = await new web3.eth.Contract(JSON.parse(compiledBTCUtils.interface))
-            .deploy({ data: compiledBTCUtils.bytecode})
-            .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-    });
 
     it('extracts a sequence from an input as LE and int', async () => {
+        const input = '0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff';
         let res;
         res = await btcUtilsContract.methods.extractSequenceLE(input).call();
         assert.equal(res, '0xffffffff');
@@ -105,10 +95,11 @@ describe('WitnessInput', () => {
     });
 
     it('extracts an outpoint as bytes', async () => {
+        const input = '0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff';
         let res = await btcUtilsContract.methods.extractOutpoint(input).call();
         assert.equal(res, '0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000')
     });
-});
+})
 
 describe('WitnessOutput', () => {
     let outputContract;

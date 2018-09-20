@@ -73,7 +73,6 @@ library BTCUtils {
         return abi.encodePacked(sha256(sha256(_b)));
     }
 
-    /* Witness Input */
     // @notice      Extracts the LE sequence bytes from an input
     // @dev         Sequence is used for relative time locks
     // @param _b    The input
@@ -254,7 +253,6 @@ library TX {
     }
 
     // @notice          Extracts the input at a given index in the TxIns vector
-    // @dev             Use the WitnessInput library to parse the result
     // @params _b       The tx to evaluate
     // @params index    The 0-indexed location of the input to extract
     // @returns         The specified input
