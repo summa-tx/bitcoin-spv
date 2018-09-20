@@ -107,9 +107,9 @@ describe('WitnessInput', () => {
 
     it('extracts a sequence from an input as LE and int', async () => {
         let res;
-        res = await inputContract.methods.extractSequenceLE(input).call();
+        res = await btcUtilsContract.methods.extractSequenceLE(input).call();
         assert.equal(res, '0xffffffff');
-        res = await inputContract.methods.extractSequence(input).call();
+        res = await btcUtilsContract.methods.extractSequence(input).call();
         assert.equal(res, 0xffffffff);
     });
 

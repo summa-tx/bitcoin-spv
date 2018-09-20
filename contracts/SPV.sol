@@ -72,20 +72,8 @@ library BTCUtils {
     ) pure public returns (bytes) {
         return abi.encodePacked(sha256(sha256(_b)));
     }
-}
 
-library WitnessInput {
-
-    // NB: A WitnessInput is always 41 bytes:
-    // ( 0 - 31)     32 byte LE txid
-    // (32 - 35)      4 byte LE index
-    // (36 - 36)      1 byte empty scriptsig
-    // (37 - 40)      4 byte LE sequence
-
-    using BytesLib for bytes;
-    using BTCUtils for bytes;
-    using SafeMath for uint256;
-
+    /* Witness Input */
     // @notice      Extracts the LE sequence bytes from an input
     // @dev         Sequence is used for relative time locks
     // @param _b    The input
@@ -103,9 +91,23 @@ library WitnessInput {
     function extractSequence(
         bytes _b
     ) pure public returns (uint32) {
-        return uint32(
-            extractSequenceLE(_b).reverseEndianness().bytesToUint());
+        bytes memory sequenceLE = extractSequenceLE(_b);
+        bytes memory sequenceBE = reverseEndianness(sequenceLE);
+        return uint32(bytesToUint(sequenceBE));
     }
+}
+
+library WitnessInput {
+
+    // NB: A WitnessInput is always 41 bytes:
+    // ( 0 - 31)     32 byte LE txid
+    // (32 - 35)      4 byte LE index
+    // (36 - 36)      1 byte empty scriptsig
+    // (37 - 40)      4 byte LE sequence
+
+    using BytesLib for bytes;
+    using BTCUtils for bytes;
+    using SafeMath for uint256;
 
     // @notice      Extracts the outpoint from the input in a tx
     // @dev         36 byte tx id with 4 byte index
