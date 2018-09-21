@@ -55,7 +55,7 @@ describe('SPVStore', async () => {
         assert.ok(btcUtilsContract.options.address);
 
         bc = await linker.linkBytecode(compiledStore.bytecode,
-                    {'SPV.sol:BTCUtils': btcUtilsContract.options.address,
+                    {'BTCUtils.sol:BTCUtils': btcUtilsContract.options.address,
                      'BytesLib.sol:BytesLib': bytesContract.options.address});
 
         storeContract = await new web3.eth.Contract(JSON.parse(compiledStore.interface))

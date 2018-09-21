@@ -5,66 +5,22 @@ pragma solidity ^0.4.24;
 
 import {BytesLib} from "./BytesLib.sol";
 import {SafeMath} from "./SafeMath.sol";
-import {BTCUtils} from "./SPV.sol";
+import {BTCUtils} from "./BTCUtils.sol";
+import {ValidateSPV} from "./ValidateSPV.sol";
 
-contract SPVStore {
+contract SPVStore is ValidateSPV {
 
     using BTCUtils for bytes;
     using BytesLib for bytes;
     using SafeMath for uint256;
 
-    enum OutputTypes {
-        NONE,
-        WPKH,
-        WSH,
-        OP_RETURN
-    }
 
-    struct TxIn {
-        uint32 sequence;
-        bytes32 outpoint;
-    }
-
-    struct TxOut {
-        uint64 value;
-        OutputTypes outputType;
-        bytes payload;  // pubkey hash, script hash, or OP_RETURN data
-    }
-
-    struct Transaction {
-        bytes32 txid;     // LE Txid
-        uint32 locktime;
-        uint8 numInputs;
-        uint8 numOutputs;
-        TxIn[] inputs;
-        TxOut[] outputs;
-    }
-
-    struct Header {
-        bytes32 digest;     // LE digest
-        uint32 version;     // 4 byte version
-        bytes32 prevblock;  // 32 byte previous block hash
-        bytes32 merkleRoot; // 32 byte tx root
-        uint32 timestamp;   // 4 byte timestamp
-        uint256 target;     // 4 byte nBits == 32 byte integer
-        uint32 nonce;       // 4 byte nonce
-    }
-
-    event Validated(bytes32 indexed _hash);
-    event TxParsed(bytes32 indexed _hash);
-    event HeaderParsed(bytes32 indexed _hash);
-    event WorkTooLow(bytes32 indexed _hash, uint256 _haash, uint256 indexed _target);
-
-    mapping(bytes32 => Transaction) public transactions;  // txns
-    mapping(bytes32 => Header) public headers;  // Parsed headers
-
-
-    // @notice          Parses, a tx, validates its inclusion in the block, stores to the mapping
-    // @dev             hashes are all little-endian
-    // @param _tx       The raw byte transaction
-    // @param _proof    The raw byte proof (concatenated LE hashes)
-    // @param _header   The raw byte header
-    // @returns         true if fully valid, false otherwise
+    /// @notice         Parses, a tx, valides its inclusdion in the block, stores to the
+    /// @notice         mapping
+    /// @param _tx      The raw byte tx
+    /// @param _proof   The raw byte proof (concatenated LE hashes)
+    /// @param _header  The raw byte header
+    /// @return        true if fully valide, false otherwise
     function validateTransaction(
         bytes _tx,
         bytes _proof,
@@ -85,10 +41,10 @@ contract SPVStore {
         return true;
     }
 
-    // @notice      Parses and stores a Transaction struct from a bytestring
-    // @dev         This supports ONLY WITNESS INPUTS AND OUTPUTS
-    // @param _tx   The raw byte transaction
-    // @returns     The LE TXID
+    /// @notice         Parses and stores a Transaction struct from a bytestring
+    /// @dev            This supports ONLY WITNESS INPUTS AND OUTPUTS
+    /// @param _tx      Raw bytes tx
+    /// @return         Transaction id, little endian
     function parseAndStoreTransaction(
         bytes _tx
     ) public returns (bytes32) {
@@ -156,10 +112,10 @@ contract SPVStore {
         return _txid;
     }
 
-    // @notice      Validates the first 6 bytes of a block
-    // @dev         The first byte is the version. The next 5 must be 0x0000000001
-    // @param _tx   The raw byte tx
-    // @returns     true if valid, otherwise false
+    /// @notice         Validates the first 6 bytes of a block
+    /// @dev            First byte is the version. The next must be 0x0000000001
+    /// @param _tx      Raw byte tx
+    /// @return         true if valid, otherwise false
     function validatePrefix(
         bytes _tx
     ) pure internal returns (bool) {
@@ -169,10 +125,10 @@ contract SPVStore {
                 && keccak256(_tx.slice(1, 5)) == keccak256(hex'0000000001'));  // has segwit flag
     }
 
-    // @notice      Parses a TxIn struct from raw input bytes
-    // @dev         Checks for blank scriptsig
-    // @param _tx   The raw byte input
-    // @returns     A TxIn struct
+    /// @notice         Parses a TxIn struct from raw input bytes
+    /// @dev            Checks for blank scriptSig
+    /// @param _input   Raw bytes tx input
+    /// @return         TxIn struct
     function parseInput(
         bytes _input
     ) pure internal returns (TxIn) {
@@ -185,10 +141,10 @@ contract SPVStore {
             _input.extractOutpoint().toBytes32());
     }
 
-    // @notice      Parses a TxOut struct from raw output bytes
-    // @dev         Differentiates by output script prefix
-    // @param _tx   The raw bytes output
-    // @returns     A TxOut struct
+    /// @notice         Parses a TxOut struct from raw output bytes
+    /// @dev            Differentiates by output script prefix
+    /// @param _output  Raw bytes tx output
+    /// @return         TxOut struct
     function parseOutput(
         bytes _output
     ) pure internal returns (TxOut) {
@@ -222,10 +178,10 @@ contract SPVStore {
             _payload);
     }
 
-    // @notice      Parses and stores a Header struct from a bytestring
-    // @dev         Block headers are always 80 bytes, see Bitcoin docs.
-    // @param _tx   The raw byte header
-    // @returns     The LE block hash
+    /// @notice         Parses and stores a Header struct from a bytestring
+    /// @dev            Block headers are always 80 bytes, see Bitcoin docs
+    /// @param _header  Raw bytes header
+    /// @return         Block hash, little endian
     function parseAndStoreHeader(
         bytes _header
     ) public returns (bytes32) {
@@ -241,10 +197,10 @@ contract SPVStore {
         return _h.digest;
     }
 
-    // @notice      Parses a block header struct from a bytestring
-    // @dev         Block headers are always 80 bytes, see Bitcoin docs.
-    // @param _tx   The raw byte header
-    // @returns     The parsed Header struct
+    /// @notice         Parses a block header struct from a bytestring
+    /// @dev            Block headers are always 80 bytes, see Bitcoin docs
+    /// @param _header  Raw bytes header
+    /// @return         Parsed Header struct
     function parseHeader(
         bytes _header
     ) pure internal returns (Header) {
