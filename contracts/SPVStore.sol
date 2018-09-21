@@ -5,15 +5,11 @@ pragma solidity ^0.4.24;
 
 import {BytesLib} from "./BytesLib.sol";
 import {SafeMath} from "./SafeMath.sol";
-import {TX, WitnessInput, WitnessOutput, BlockHeader, BTCUtils} from "./SPV.sol";
+import {BTCUtils} from "./SPV.sol";
 
 contract SPVStore {
 
-    using TX for bytes;
     using BTCUtils for bytes;
-    using BlockHeader for bytes;
-    using WitnessInput for bytes;
-    using WitnessOutput for bytes;
     using BytesLib for bytes;
     using SafeMath for uint256;
 

@@ -43,7 +43,7 @@ library BTCUtils {
 
     // @notice      Get the last _num bytes from a byte array
     // @param _b    The byte array to slice
-    // @param _num  The number of bytes to extrac from the end
+    // @param _num  The number of bytes to extract from the end
     // @return      The last _num bytes of _b
     function lastBytes(
         bytes _b,
@@ -72,19 +72,8 @@ library BTCUtils {
     ) pure public returns (bytes) {
         return abi.encodePacked(sha256(sha256(_b)));
     }
-}
 
-library WitnessInput {
-
-    // NB: A WitnessInput is always 41 bytes:
-    // ( 0 - 31)     32 byte LE txid
-    // (32 - 35)      4 byte LE index
-    // (36 - 36)      1 byte empty scriptsig
-    // (37 - 40)      4 byte LE sequence
-
-    using BytesLib for bytes;
-    using BTCUtils for bytes;
-    using SafeMath for uint256;
+    /* Witness Input */
 
     // @notice      Extracts the LE sequence bytes from an input
     // @dev         Sequence is used for relative time locks
@@ -103,8 +92,9 @@ library WitnessInput {
     function extractSequence(
         bytes _b
     ) pure public returns (uint32) {
-        return uint32(
-            extractSequenceLE(_b).reverseEndianness().bytesToUint());
+        bytes memory _leSeqence = extractSequenceLE(_b);
+        bytes memory _beSequence = reverseEndianness(_leSeqence);
+        return uint32(bytesToUint(_beSequence));
     }
 
     // @notice      Extracts the outpoint from the input in a tx
@@ -116,29 +106,14 @@ library WitnessInput {
     ) pure public returns (bytes) {
         return _b.slice(0, 36);
     }
-}
 
-library WitnessOutput {
-
-    // NB: A WitnessOutput is always 31 or 43 bytes:
-    // ( 0 -  7)      8 byte LE value
-    // ( 8 - 10)      3 byte prefix 0x160014 or 0x220020
-    // (11 - 30/42)  20 or 32 byte hash
-
-    // NB: An OP_RETURN output is variable length
-    // ( 0 -  7)      8 byte LE value
-    // ( 8 - 10)      3 byte prefix (XX6AXX)
-    // (11 - ??)      X byte hash
-
-    using BytesLib for bytes;
-    using BTCUtils for bytes;
-    using SafeMath for uint256;
+    /* Witness Output */
 
     // @notice      Extracts the output script length
     // @dev         Indexes the length prefix on the pk_script
     // @param _b    The output
     // @returns     The 1 byte length prefix
-    function outputScriptLen(
+    function extractOutputScriptLen(
         bytes _b
     ) pure public returns (bytes) {
         return _b.slice(8, 1);
@@ -161,9 +136,9 @@ library WitnessOutput {
     function extractValue(
         bytes _b
     ) pure public returns (uint64) {
-        return
-            uint64(
-                    extractValueLE(_b).reverseEndianness().bytesToUint());
+        bytes memory _leValue = extractValueLE(_b);
+        bytes memory _beValue = reverseEndianness(_leValue);
+        return uint64(bytesToUint(_beValue));
     }
 
     // @notice      Extracts the value from the output in a tx
@@ -174,8 +149,8 @@ library WitnessOutput {
         bytes _b
     ) pure public returns (bytes) {
         require(_b.slice(9, 1).equal(hex'6a'), 'Not an OP_RETURN output');
-        uint256 _dataLen = _b.slice(10, 1).bytesToUint();
-        return _b.slice(11, _dataLen);
+        bytes memory _dataLen = _b.slice(10, 1);
+        return _b.slice(11, bytesToUint(_dataLen));
     }
 
     // @notice      Extracts the hash from the output script
@@ -186,26 +161,11 @@ library WitnessOutput {
         bytes _b
     ) pure public returns (bytes) {
         require(_b.slice(9, 1).equal(hex'00'), 'Not a witness output');
-        uint256 _len = (outputScriptLen(_b).equal(hex'22')) ? 32 : 20;
+        uint256 _len = (extractOutputScriptLen(_b).equal(hex'22')) ? 32 : 20;
         return _b.slice(11, _len);
     }
-}
 
-library TX {
-
-    // NB: A WitnessTX will always have the same struture:
-    // ( 0 - 3)      4 byte LE version (must be 1 or 2)
-    // ( 4 - 5)      2 byte segwit flag (must be 0x0001)
-    // ( 6 - 6)      1 byte numTxIns (VarInts not supported)
-    // (   7+ )      41 byte TxIn * numTxIns
-    // (  47+ )      1 byte numTxOuts (VarInts not supported)
-    // (  48+ )      31 or 43 byte TxOut * numTxOuts
-    // (   ?   )      ? byte witnesses
-    // (  -4-  )      4 byte LE locktime
-
-    using BytesLib for bytes;
-    using BTCUtils for bytes;
-    using SafeMath for uint256;
+    /* TX */
 
     // @notice      Extracts the locktime bytes from a transaction
     // @dev         Takes the last 4 bytes off a byte array
@@ -214,7 +174,7 @@ library TX {
     function extractLocktimeLE(
         bytes _b
     ) pure public returns (bytes) {
-        return _b.lastBytes(4);
+        return lastBytes(_b, 4);
     }
 
     // @notice      Extracts the locktime and converts it to integer
@@ -225,7 +185,8 @@ library TX {
         bytes _b
     ) pure public returns (uint32) {
         bytes memory _leLocktime = extractLocktimeLE(_b);
-        return uint32(_leLocktime.reverseEndianness().bytesToUint());
+        bytes memory _beLocktime = reverseEndianness(_leLocktime);
+        return uint32(bytesToUint(_beLocktime));
     }
 
     // @notice      Extracts number of inputs as integer
@@ -235,7 +196,7 @@ library TX {
     function extractNumInputs(
         bytes _b
     ) pure public returns (uint8) {
-        uint256 _n = _b.slice(6, 1).bytesToUint();
+        uint256 _n = bytesToUint(_b.slice(6, 1));
         require(_n < 0xfd, 'VarInts not supported');  // Error on VarInts
         return uint8(_n);
     }
@@ -258,13 +219,12 @@ library TX {
         bytes _b
     ) pure public returns (uint8) {
         uint256 _offset = findNumOutputs(_b);
-        uint256 _n = _b.slice(_offset, 1).bytesToUint();
+        uint256 _n = bytesToUint(_b.slice(_offset, 1));
         require(_n < 0xfd, 'VarInts not supported');  // Error on VarInts
         return uint8(_n);
     }
 
     // @notice          Extracts the input at a given index in the TxIns vector
-    // @dev             Use the WitnessInput library to parse the result
     // @params _b       The tx to evaluate
     // @params index    The 0-indexed location of the input to extract
     // @returns         The specified input
@@ -300,7 +260,7 @@ library TX {
 
         if (keccak256(_b.slice(1, 1)) == keccak256(hex'6a')) {
             // OP_RETURN
-            uint _pushLen = _b.slice(0, 1).bytesToUint();
+            uint _pushLen = bytesToUint(_b.slice(0, 1));
             require(_pushLen < 76, 'Multi-byte pushes not supported');
             // 8 byte value + 1 byte len + len bytes data
             return 9 + _pushLen;
@@ -311,7 +271,6 @@ library TX {
     }
 
     // @notice          Extracts the output at a given index in the TxIns vector
-    // @dev             Use the WitnessOutput library to parse the result
     // @params _b       The tx to evaluate
     // @params index    The 0-indexed location of the output to extract
     // @returns         The specified output
@@ -337,13 +296,83 @@ library TX {
         // We now have the length and offset of the one we want
         return _b.slice(_offset, _len);
     }
-}
 
-library BlockHeader {
+    /* Block Header */ 
 
-    using BytesLib for bytes;
-    using BTCUtils for bytes;
-    using SafeMath for uint256;
+    // @notice      Extracts the transaction merkle root from a block header
+    // @dev         Use verifyHash256Merkle to verify proofs with this root
+    // @param _b    The header
+    // @returns     The merkle root (little-endian)
+    function extractMerkleRootLE(
+        bytes _b
+    ) pure public returns (bytes) {
+        return _b.slice(36, 32);
+    }
+
+    // @notice      Extracts the transaction merkle root from a block header
+    // @dev         Use verifyHash256Merkle to verify proofs with this root
+    // @param _b    The header
+    // @returns     The merkle root (big-endian)
+    function extractMerkleRootBE(
+        bytes _b
+    ) pure public returns (bytes) {
+        return reverseEndianness(extractMerkleRootLE(_b));
+    }
+
+    // @notice      Extracts the target from a block header
+    // @dev         Difficulty is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
+    // @param _b    The header
+    // @returns     The target threshold
+    function extractTarget(
+        bytes _b
+    ) pure public returns (uint256) {
+        bytes memory _m = _b.slice(72, 3);
+        bytes memory _e = _b.slice(75, 1);
+        uint256 _mantissa = bytesToUint(reverseEndianness(_m));
+        uint _exponent = bytesToUint(_e) - 3;
+
+        return _mantissa * (256 ** _exponent);
+    }
+
+    // @notice      Extracts the previous block's hash from a block header
+    // @dev         Block headers do NOT include block number :(
+    // @param _b    The header
+    // @returns     The previous block's hash (little-endian)
+    function extractPrevBlockLE(
+        bytes _b
+    ) pure public returns (bytes) {
+        return _b.slice(4, 32);
+    }
+
+    // @notice      Extracts the previous block's hash from a block header
+    // @dev         Block headers do NOT include block number :(
+    // @param _b    The header
+    // @returns     The previous block's hash (big-endian)
+    function extractPrevBlockBE(
+        bytes _b
+    ) pure public returns (bytes) {
+        return reverseEndianness(extractPrevBlockLE(_b));
+    }
+
+    // @notice      Extracts the timestamp from a block header
+    // @dev         Time is not 100% reliable
+    // @param _b    The header
+    // @returns     The timestamp (little-endian bytes)
+    function extractTimestampLE(
+        bytes _b
+    ) pure public returns (bytes) {
+        return _b.slice(68, 4);
+    }
+
+    // @notice      Extracts the timestamp from a block header
+    // @dev         Time is not 100% reliable
+    // @param _b    The header
+    // @returns     The timestamp (uint)
+    function extractTimestamp(
+        bytes _b
+    ) pure public returns (uint32) {
+        return uint32(bytesToUint(reverseEndianness(extractTimestampLE(_b))));
+    }
 
     // @notice      Concatenates and hashes two inputs for merkle proving
     // @param _a    The first hash
@@ -353,7 +382,7 @@ library BlockHeader {
         bytes _a,
         bytes _b
     ) pure public returns (bytes) {
-        return abi.encodePacked(_a, _b).hash256();
+        return hash256(abi.encodePacked(_a, _b));
     }
 
     // @notice        Verifies a Bitcoin-style merkle tree
@@ -393,80 +422,5 @@ library BlockHeader {
             }
         }
         return _current.toBytes32() == _root.toBytes32();
-    }
-
-    // @notice      Extracts the transaction merkle root from a block header
-    // @dev         Use verifyHash256Merkle to verify proofs with this root
-    // @param _b    The header
-    // @returns     The merkle root (little-endian)
-    function extractMerkleRootLE(
-        bytes _b
-    ) pure public returns (bytes) {
-        return _b.slice(36, 32);
-    }
-
-    // @notice      Extracts the transaction merkle root from a block header
-    // @dev         Use verifyHash256Merkle to verify proofs with this root
-    // @param _b    The header
-    // @returns     The merkle root (big-endian)
-    function extractMerkleRootBE(
-        bytes _b
-    ) pure public returns (bytes) {
-        return extractMerkleRootLE(_b).reverseEndianness();
-    }
-
-    // @notice      Extracts the target from a block header
-    // @dev         Difficulty is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
-    // @param _b    The header
-    // @returns     The target threshold
-    function extractTarget(
-        bytes _b
-    ) pure public returns (uint256) {
-        bytes memory _m = _b.slice(72, 3);
-        bytes memory _e = _b.slice(75, 1);
-        uint256 _mantissa = _m.reverseEndianness().bytesToUint();
-        uint _exponent = _e.bytesToUint() - 3;
-
-        return _mantissa * (256 ** _exponent);
-    }
-
-    // @notice      Extracts the previous block's hash from a block header
-    // @dev         Block headers do NOT include block number :(
-    // @param _b    The header
-    // @returns     The previous block's hash (little-endian)
-    function extractPrevBlockLE(
-        bytes _b
-    ) pure public returns (bytes) {
-        return _b.slice(4, 32);
-    }
-
-    // @notice      Extracts the previous block's hash from a block header
-    // @dev         Block headers do NOT include block number :(
-    // @param _b    The header
-    // @returns     The previous block's hash (big-endian)
-    function extractPrevBlockBE(
-        bytes _b
-    ) pure public returns (bytes) {
-        return extractPrevBlockLE(_b).reverseEndianness();
-    }
-
-    // @notice      Extracts the timestamp from a block header
-    // @dev         Time is not 100% reliable
-    // @param _b    The header
-    // @returns     The timestamp (little-endian bytes)
-    function extractTimestampLE(
-        bytes _b
-    ) pure public returns (bytes) {
-        return _b.slice(68, 4);
-    }
-
-    // @notice      Extracts the timestamp from a block header
-    // @dev         Time is not 100% reliable
-    // @param _b    The header
-    // @returns     The timestamp (uint)
-    function extractTimestamp(
-        bytes _b
-    ) pure public returns (uint32) {
-        return uint32(extractTimestampLE(_b).reverseEndianness().bytesToUint());
     }
 }
