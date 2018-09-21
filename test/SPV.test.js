@@ -212,6 +212,26 @@ describe('BTCUtils', () => {
         res = await btcUtilsContract.methods.extractOutputAtIndex(TWO_IN_TX, 1).call();
         assert.equal(res, '0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922');
     });
+
+    it('extracts a root from a header', async () => {
+        let res = await btcUtilsContract.methods.extractMerkleRootBE(HEADER_170).call();
+        assert.equal(res, '0x7dac2c5666815c17a3b36427de37bb9d2e2c5ccec3f8633eb91a4205cb4c10ff')
+    });
+
+    it('extracts the target from a header', async () => {
+        let res = await btcUtilsContract.methods.extractTarget(HEADER_170).call();
+        assert.equal(res, 26959535291011309493156476344723991336010898738574164086137773096960);
+    });
+
+    it('extracts the prev block hash', async () => {
+        let res = await btcUtilsContract.methods.extractPrevBlockBE(HEADER_170).call();
+        assert.equal(res, '0x000000002a22cfee1f2c846adbd12b3e183d4f97683f85dad08a79780a84bd55');
+    });
+
+    it('extracts a timestamp from a header', async () => {
+        let res = await btcUtilsContract.methods.extractTimestamp(HEADER_170).call();
+        assert.equal(res, 1231731025);
+    });
 })
 
 
@@ -265,26 +285,6 @@ describe('BlockHeader', () => {
 
         res = await headerContract.methods.verifyHash256Merkle(TWO_IN_PROOF, TWO_IN_INDEX).call();
         assert.ok(res);
-    });
-
-    it('extracts a root from a header', async () => {
-        let res = await headerContract.methods.extractMerkleRootBE(HEADER_170).call();
-        assert.equal(res, '0x7dac2c5666815c17a3b36427de37bb9d2e2c5ccec3f8633eb91a4205cb4c10ff')
-    });
-
-    it('extracts the target from a header', async () => {
-        let res = await headerContract.methods.extractTarget(HEADER_170).call();
-        assert.equal(res, 26959535291011309493156476344723991336010898738574164086137773096960);
-    });
-
-    it('extracts the prev block hash', async () => {
-        let res = await headerContract.methods.extractPrevBlockBE(HEADER_170).call();
-        assert.equal(res, '0x000000002a22cfee1f2c846adbd12b3e183d4f97683f85dad08a79780a84bd55');
-    });
-
-    it('extracts a timestamp from a header', async () => {
-        let res = await headerContract.methods.extractTimestamp(HEADER_170).call();
-        assert.equal(res, 1231731025);
     });
 });
 

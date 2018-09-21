@@ -294,6 +294,84 @@ library BTCUtils {
         // We now have the length and offset of the one we want
         return _b.slice(_offset, _len);
     }
+
+    /* Block Header */ 
+    // @notice      Extracts the transaction merkle root from a block header
+    // @dev         Use verifyHash256Merkle to verify proofs with this root
+    // @param _b    The header
+    // @returns     The merkle root (little-endian)
+    function extractMerkleRootLE(
+        bytes _b
+    ) pure public returns (bytes) {
+        return _b.slice(36, 32);
+    }
+
+    // @notice      Extracts the transaction merkle root from a block header
+    // @dev         Use verifyHash256Merkle to verify proofs with this root
+    // @param _b    The header
+    // @returns     The merkle root (big-endian)
+    function extractMerkleRootBE(
+        bytes _b
+    ) pure public returns (bytes) {
+        return reverseEndianness(extractMerkleRootLE(_b));
+    }
+
+    // @notice      Extracts the target from a block header
+    // @dev         Difficulty is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
+    // @param _b    The header
+    // @returns     The target threshold
+    function extractTarget(
+        bytes _b
+    ) pure public returns (uint256) {
+        bytes memory _m = _b.slice(72, 3);
+        bytes memory _e = _b.slice(75, 1);
+        uint256 _mantissa = bytesToUint(reverseEndianness(_m));
+        uint _exponent = bytesToUint(_e) - 3;
+
+        return _mantissa * (256 ** _exponent);
+    }
+
+    // @notice      Extracts the previous block's hash from a block header
+    // @dev         Block headers do NOT include block number :(
+    // @param _b    The header
+    // @returns     The previous block's hash (little-endian)
+    function extractPrevBlockLE(
+        bytes _b
+    ) pure public returns (bytes) {
+        return _b.slice(4, 32);
+    }
+
+    // @notice      Extracts the previous block's hash from a block header
+    // @dev         Block headers do NOT include block number :(
+    // @param _b    The header
+    // @returns     The previous block's hash (big-endian)
+    function extractPrevBlockBE(
+        bytes _b
+    ) pure public returns (bytes) {
+        return reverseEndianness(extractPrevBlockLE(_b));
+    }
+
+    // @notice      Extracts the timestamp from a block header
+    // @dev         Time is not 100% reliable
+    // @param _b    The header
+    // @returns     The timestamp (little-endian bytes)
+    function extractTimestampLE(
+        bytes _b
+    ) pure public returns (bytes) {
+        return _b.slice(68, 4);
+    }
+
+    // @notice      Extracts the timestamp from a block header
+    // @dev         Time is not 100% reliable
+    // @param _b    The header
+    // @returns     The timestamp (uint)
+    function extractTimestamp(
+        bytes _b
+    ) pure public returns (uint32) {
+        return uint32(bytesToUint(reverseEndianness(extractTimestampLE(_b))));
+    }
+
+
 }
 
 
@@ -353,78 +431,4 @@ library BlockHeader {
         return _current.toBytes32() == _root.toBytes32();
     }
 
-    // @notice      Extracts the transaction merkle root from a block header
-    // @dev         Use verifyHash256Merkle to verify proofs with this root
-    // @param _b    The header
-    // @returns     The merkle root (little-endian)
-    function extractMerkleRootLE(
-        bytes _b
-    ) pure public returns (bytes) {
-        return _b.slice(36, 32);
-    }
-
-    // @notice      Extracts the transaction merkle root from a block header
-    // @dev         Use verifyHash256Merkle to verify proofs with this root
-    // @param _b    The header
-    // @returns     The merkle root (big-endian)
-    function extractMerkleRootBE(
-        bytes _b
-    ) pure public returns (bytes) {
-        return extractMerkleRootLE(_b).reverseEndianness();
-    }
-
-    // @notice      Extracts the target from a block header
-    // @dev         Difficulty is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
-    // @param _b    The header
-    // @returns     The target threshold
-    function extractTarget(
-        bytes _b
-    ) pure public returns (uint256) {
-        bytes memory _m = _b.slice(72, 3);
-        bytes memory _e = _b.slice(75, 1);
-        uint256 _mantissa = _m.reverseEndianness().bytesToUint();
-        uint _exponent = _e.bytesToUint() - 3;
-
-        return _mantissa * (256 ** _exponent);
-    }
-
-    // @notice      Extracts the previous block's hash from a block header
-    // @dev         Block headers do NOT include block number :(
-    // @param _b    The header
-    // @returns     The previous block's hash (little-endian)
-    function extractPrevBlockLE(
-        bytes _b
-    ) pure public returns (bytes) {
-        return _b.slice(4, 32);
-    }
-
-    // @notice      Extracts the previous block's hash from a block header
-    // @dev         Block headers do NOT include block number :(
-    // @param _b    The header
-    // @returns     The previous block's hash (big-endian)
-    function extractPrevBlockBE(
-        bytes _b
-    ) pure public returns (bytes) {
-        return extractPrevBlockLE(_b).reverseEndianness();
-    }
-
-    // @notice      Extracts the timestamp from a block header
-    // @dev         Time is not 100% reliable
-    // @param _b    The header
-    // @returns     The timestamp (little-endian bytes)
-    function extractTimestampLE(
-        bytes _b
-    ) pure public returns (bytes) {
-        return _b.slice(68, 4);
-    }
-
-    // @notice      Extracts the timestamp from a block header
-    // @dev         Time is not 100% reliable
-    // @param _b    The header
-    // @returns     The timestamp (uint)
-    function extractTimestamp(
-        bytes _b
-    ) pure public returns (uint32) {
-        return uint32(extractTimestampLE(_b).reverseEndianness().bytesToUint());
-    }
 }
