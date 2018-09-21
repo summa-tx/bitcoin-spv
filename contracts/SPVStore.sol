@@ -5,12 +5,11 @@ pragma solidity ^0.4.24;
 
 import {BytesLib} from "./BytesLib.sol";
 import {SafeMath} from "./SafeMath.sol";
-import {BlockHeader, BTCUtils} from "./SPV.sol";
+import {BTCUtils} from "./SPV.sol";
 
 contract SPVStore {
 
     using BTCUtils for bytes;
-    using BlockHeader for bytes;
     using BytesLib for bytes;
     using SafeMath for uint256;
 

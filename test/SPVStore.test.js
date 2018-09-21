@@ -3,7 +3,6 @@ const ganache = require('ganache-cli');
 const Web3 = require('web3');
 const web3 = new Web3(ganache.provider());
 const compiledBTCUtils = require('../build/BTCUtils.json');
-const compiledHeader = require('../build/BlockHeader.json');
 const compiledBytes = require('../build/BytesLib.json');
 const compiledStore = require('../build/SPVStore.json');
 const utils = require('./utils');
@@ -33,32 +32,31 @@ const TWO_IN_HEADER = '0x0000002044f2432df0e5b61161259717e975a0d9583f9536d53f020
 
 describe('SPVStore', async () => {
     let storeContract;
+
     beforeEach(async () => {
         let bc;
 
         accounts = await web3.eth.getAccounts();
 
-        bytesContract = await new web3.eth.Contract(JSON.parse(compiledBytes.interface))
+        let bytesContract = await new web3.eth.Contract(JSON.parse(compiledBytes.interface))
             .deploy({ data: compiledBytes.bytecode})
             .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
 
-        btcUtilsContract = await new web3.eth.Contract(JSON.parse(compiledBTCUtils.interface))
-            .deploy({ data: compiledBTCUtils.bytecode})
+        assert.ok(bytesContract.options.address);
+
+        // Link
+        bc = await linker.linkBytecode(compiledBTCUtils.bytecode,
+             {'BytesLib.sol:BytesLib': bytesContract.options.address});
+
+        let btcUtilsContract = await new web3.eth.Contract(JSON.parse(compiledBTCUtils.interface))
+            .deploy({ data: bc })
             .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
 
-        bc = await linker.linkBytecode(compiledHeader.bytecode,
-                    {'SPV.sol:BTCUtils': btcUtilsContract.options.address,
-                     'BytesLib.sol:BytesLib': bytesContract.options.address});
-
-        headerContract = await new web3.eth.Contract(JSON.parse(compiledHeader.interface))
-            .deploy({ data: bc})
-            .send({ from: accounts[0], gas: 2000000, gasPrice: 100000000000});
-
+        assert.ok(btcUtilsContract.options.address);
 
         bc = await linker.linkBytecode(compiledStore.bytecode,
-            {'SPV.sol:BTCUtils': btcUtilsContract.options.address,
-             'SPV.sol:BlockHeader': headerContract.options.address,
-             'BytesLib.sol:BytesLib': bytesContract.options.address});
+                    {'SPV.sol:BTCUtils': btcUtilsContract.options.address,
+                     'BytesLib.sol:BytesLib': bytesContract.options.address});
 
         storeContract = await new web3.eth.Contract(JSON.parse(compiledStore.interface))
             .deploy({ data: bc })

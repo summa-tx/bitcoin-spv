@@ -74,6 +74,7 @@ library BTCUtils {
     }
 
     /* Witness Input */
+
     // @notice      Extracts the LE sequence bytes from an input
     // @dev         Sequence is used for relative time locks
     // @param _b    The input
@@ -107,6 +108,7 @@ library BTCUtils {
     }
 
     /* Witness Output */
+
     // @notice      Extracts the output script length
     // @dev         Indexes the length prefix on the pk_script
     // @param _b    The output
@@ -296,6 +298,7 @@ library BTCUtils {
     }
 
     /* Block Header */ 
+
     // @notice      Extracts the transaction merkle root from a block header
     // @dev         Use verifyHash256Merkle to verify proofs with this root
     // @param _b    The header
@@ -371,16 +374,6 @@ library BTCUtils {
         return uint32(bytesToUint(reverseEndianness(extractTimestampLE(_b))));
     }
 
-
-}
-
-
-library BlockHeader {
-
-    using BytesLib for bytes;
-    using BTCUtils for bytes;
-    using SafeMath for uint256;
-
     // @notice      Concatenates and hashes two inputs for merkle proving
     // @param _a    The first hash
     // @param _b    The second hash
@@ -389,7 +382,7 @@ library BlockHeader {
         bytes _a,
         bytes _b
     ) pure public returns (bytes) {
-        return abi.encodePacked(_a, _b).hash256();
+        return hash256(abi.encodePacked(_a, _b));
     }
 
     // @notice        Verifies a Bitcoin-style merkle tree
@@ -430,5 +423,4 @@ library BlockHeader {
         }
         return _current.toBytes32() == _root.toBytes32();
     }
-
 }
