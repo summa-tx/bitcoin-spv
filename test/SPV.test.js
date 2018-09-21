@@ -5,7 +5,6 @@ const web3 = new Web3(ganache.provider());
 const compiledBTCUtils = require('../build/BTCUtils.json');
 const compiledHeader = require('../build/BlockHeader.json');
 const compiledBytes = require('../build/BytesLib.json');
-const compiledStore = require('../build/SPVStore.json');
 const utils = require('./utils');
 const linker = require('solc/linker');
 
@@ -285,86 +284,5 @@ describe('BlockHeader', () => {
 
         res = await headerContract.methods.verifyHash256Merkle(TWO_IN_PROOF, TWO_IN_INDEX).call();
         assert.ok(res);
-    });
-});
-
-describe('SPVStore', async () => {
-    let storeContract;
-    beforeEach(async () => {
-        // This was a pain to write
-        let bc;
-
-        accounts = await web3.eth.getAccounts();
-
-        bytesContract = await new web3.eth.Contract(JSON.parse(compiledBytes.interface))
-            .deploy({ data: compiledBytes.bytecode})
-            .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-
-        btcUtilsContract = await new web3.eth.Contract(JSON.parse(compiledBTCUtils.interface))
-            .deploy({ data: compiledBTCUtils.bytecode})
-            .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-
-        bc = await linker.linkBytecode(compiledHeader.bytecode,
-                    {'SPV.sol:BTCUtils': btcUtilsContract.options.address,
-                     'BytesLib.sol:BytesLib': bytesContract.options.address});
-
-        headerContract = await new web3.eth.Contract(JSON.parse(compiledHeader.interface))
-            .deploy({ data: bc})
-            .send({ from: accounts[0], gas: 2000000, gasPrice: 100000000000});
-
-
-        bc = await linker.linkBytecode(compiledStore.bytecode,
-            {'SPV.sol:BTCUtils': btcUtilsContract.options.address,
-             'SPV.sol:BlockHeader': headerContract.options.address,
-             'BytesLib.sol:BytesLib': bytesContract.options.address});
-
-        storeContract = await new web3.eth.Contract(JSON.parse(compiledStore.interface))
-            .deploy({ data: bc })
-            .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-
-        assert.ok(storeContract.options.address);
-    });
-
-    it('validates, parses, and stores txns', async () => {
-        let res;
-        res = await storeContract.methods.validateTransaction(OP_RETURN_TX, OP_RETURN_PROOF, OP_RETURN_INDEX, OP_RETURN_HEADER)
-            .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-        assert.ok(res.events.TxParsed);
-        assert.equal(res.events.TxParsed.returnValues._hash, '0x48e5a1a0e616d8fd92b4ef228c424e0c816799a256c6a90892195ccfc53300d6');
-
-        res = await storeContract.methods.transactions('0x48e5a1a0e616d8fd92b4ef228c424e0c816799a256c6a90892195ccfc53300d6').call();
-        assert.equal(res[0], '0x48e5a1a0e616d8fd92b4ef228c424e0c816799a256c6a90892195ccfc53300d6');
-        assert.equal(res[1], 0);
-        assert.equal(res[2], 1);
-        assert.equal(res[3], 2);
-
-        res = await storeContract.methods.validateTransaction(TWO_IN_TX, TWO_IN_PROOF, TWO_IN_INDEX, TWO_IN_HEADER)
-            .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-        assert.ok(res.events.TxParsed);
-        assert.equal(res.events.TxParsed.returnValues._hash, '0x54269907e95e412ef574056ea5b0e0debd2290193879e5c295caea777f0ae8b2');
-
-        res = await storeContract.methods.transactions('0x54269907e95e412ef574056ea5b0e0debd2290193879e5c295caea777f0ae8b2').call();
-        assert.equal(res[0], '0x54269907e95e412ef574056ea5b0e0debd2290193879e5c295caea777f0ae8b2');
-        assert.equal(res[1], 0);
-        assert.equal(res[2], 2);
-        assert.equal(res[3], 2);
-    });
-
-    it('validates, parses, and stores block headers', async () => {
-        let res;
-        res = await storeContract.methods.parseAndStoreHeader(HEADER_170)
-            .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-        assert.ok(res.events.HeaderParsed);
-        assert.equal(res.events.HeaderParsed.returnValues._hash, '0x00000000d1145790a8694403d4063f323d499e655c83426834d4ce2f8dd4a2ee');
-
-        res = await storeContract.methods.parseAndStoreHeader(OP_RETURN_HEADER)
-            .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-        assert.ok(res.events.HeaderParsed);
-        assert.equal(res.events.HeaderParsed.returnValues._hash, '0x00000000000000000024cc6777e93673f53853240d34f1bb7fb1d63983e470fe');
-
-        res = await storeContract.methods.parseAndStoreHeader(TWO_IN_HEADER)
-            .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-        assert.ok(res.events.HeaderParsed);
-        assert.equal(res.events.HeaderParsed.returnValues._hash, '0x00000000000000000019c410fc0e973601e44e75a62e6476fcc4d9ed8421bd73');
     });
 });
