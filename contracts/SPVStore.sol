@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 /** @title BitcoinSPVDemo */
 /** @author Summa (https://summa.one) */
@@ -26,7 +26,7 @@ contract SPVStore is ValidateSPV {
         bytes _proof,
         uint _index,
         bytes _header
-    ) public returns (bool) {
+    ) public returns (bytes32) {
         bytes32 _txid = parseAndStoreTransaction(_tx);
         bytes32 _blockHash = parseAndStoreHeader(_header);
         if( _txid == bytes32(0)  // Parsing failed
@@ -34,11 +34,11 @@ contract SPVStore is ValidateSPV {
             || _proof.slice(0, 32).toBytes32() != _txid  // First hash in proof is not the txid
             || _proof.slice(_proof.length - 32, 32).toBytes32() != headers[_blockHash].merkleRoot  // Last hash in proof is not the merkle root
             || !_proof.verifyHash256Merkle(_index)
-        ) {  // Merkle proof failed
-            return false;
+        ) {  // Merkle proof failed, bubble up error
+            return ;
         }
         emit Validated(_txid);
-        return true;
+        return _txid;
     }
 
     /// @notice         Parses and stores a Transaction struct from a bytestring

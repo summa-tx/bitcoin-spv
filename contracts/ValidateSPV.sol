@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 /** @title ValidateSPV*/
 /** @author Summa (https://summa.one) */
@@ -8,7 +8,7 @@ contract ValidateSPV {
     event Validated(bytes32 indexed _hash);
     event TxParsed(bytes32 indexed _hash);
     event HeaderParsed(bytes32 indexed _hash);
-    event WorkTooLow(bytes32 indexed _hash, uint256 _haash, uint256 indexed _target);
+    event WorkTooLow(bytes32 indexed _hash, uint256 _hashInt, uint256 indexed _target);
 
     enum OutputTypes {
         NONE,
@@ -62,7 +62,7 @@ contract ValidateSPV {
         bytes _proof,
         uint _index,
         bytes _header
-    ) public returns (bool);
+    ) public returns (bytes32);
 
 
     /// @notice         Parses and stores a Transaction struct from a bytestring
