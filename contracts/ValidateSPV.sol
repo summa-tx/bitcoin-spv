@@ -56,7 +56,7 @@ contract ValidateSPV {
     /// @param _tx      The raw byte tx
     /// @param _proof   The raw byte proof (concatenated LE hashes)
     /// @param _header  The raw byte header
-    /// @return        true if fully valide, false otherwise
+    /// @return         true if fully valid, false otherwise
     function validateTransaction(
         bytes _tx,
         bytes _proof,
@@ -102,7 +102,7 @@ contract ValidateSPV {
 
     /// @notice         Parses a block header struct from a bytestring
     /// @dev            Block headers are always 80 bytes, see Bitcoin docs
-    /// @param _header  Raw bytes header
+    /// param _header  Raw bytes header
     /// @return         Parsed Header struct
     function parseHeader(bytes _header) pure internal returns (Header);
 }

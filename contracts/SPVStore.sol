@@ -19,8 +19,9 @@ contract SPVStore is ValidateSPV {
     /// @notice         mapping
     /// @param _tx      The raw byte tx
     /// @param _proof   The raw byte proof (concatenated LE hashes)
+    /// @param _index   The index of the leaf
     /// @param _header  The raw byte header
-    /// @return        true if fully valide, false otherwise
+    /// @return         true if fully valid, false otherwise
     function validateTransaction(
         bytes _tx,
         bytes _proof,
@@ -225,5 +226,9 @@ contract SPVStore is ValidateSPV {
             _target,
             _nonce
         );
+    }
+
+    function getOutput(bytes32 _txid, uint256 _index) public view returns (uint64) {
+        return transactions[_txid].outputs[_index].value;
     }
 }
