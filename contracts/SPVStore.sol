@@ -84,8 +84,8 @@ contract SPVStore is ValidateSPV {
         }
 
         // Get transaction hash
-        bytes32 _txid = abi.encodePacked(_tx.slice(0, 4), _tx.slice(6, preWitnessLen - 6), _tx.extractLocktimeLE())
-            .hash256().toBytes32();
+        bytes32 _txid = abi.encodePacked(
+            _tx.slice(0, 4), _tx.slice(6, preWitnessLen - 6), _tx.extractLocktimeLE()).hash256();
 
         uint32 _locktime = _tx.extractLocktime();
 
@@ -225,10 +225,7 @@ contract SPVStore is ValidateSPV {
             }
         }
 
-        return TxOut(
-            _value,
-            _outputType,
-            _payload);
+        return TxOut(_value, _outputType, _payload);
     }
 
     /// @notice         Parses a block header struct from a bytestring
@@ -246,7 +243,8 @@ contract SPVStore is ValidateSPV {
         uint32 _timestamp = _header.extractTimestamp();
         uint256 _target = _header.extractTarget();
         uint32 _nonce = uint32(_header.slice(76, 4).reverseEndianness().bytesToUint());
-        bytes32 _digest = _header.hash256().reverseEndianness().toBytes32(); // Make it LE
+        // LE digest
+        bytes32 _digest = abi.encodePacked(_header.hash256()).reverseEndianness().toBytes32();
 
         return Header(_digest, _version, _prevblock, _merkleRoot, _timestamp, _target, _nonce);
     }

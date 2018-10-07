@@ -56,16 +56,19 @@ library BTCUtils {
     /// @dev             abi.encodePacked changes the return to bytes instead of bytes32
     /// @param _b        The pre-image
     /// @return          The digest
-    function hash160(bytes _b) public pure returns (bytes) { return abi.encodePacked(ripemd160(sha256(_b))); }
+    function hash160(bytes _b) public pure returns (bytes) {
+        return abi.encodePacked(ripemd160(abi.encodePacked(sha256(_b))));
+    }
 
     /// @notice          Implements bitcoin"s hash256 (double sha2)
     /// @dev             abi.encodePacked changes the return to bytes instead of bytes32
     /// @param _b        The pre-image
     /// @return          The digest
-    function hash256(bytes _b) public pure returns (bytes) { return abi.encodePacked(sha256(sha256(_b))); }
+    function hash256(bytes _b) public pure returns (bytes32) {
+        return abi.encodePacked(sha256(abi.encodePacked(sha256(_b)))).toBytes32();
+    }
 
     /* Witness Input */
-
     /// @notice          Extracts the LE sequence bytes from an input
     /// @dev             Sequence is used for relative time locks
     /// @param _b        The input
@@ -311,7 +314,7 @@ library BTCUtils {
     /// @param _a        The first hash
     /// @param _b        The second hash
     /// @return          The double-sha256 of the concatenated hashes
-    function _hash256MerkleStep(bytes _a, bytes _b) public pure returns (bytes) {
+    function _hash256MerkleStep(bytes _a, bytes _b) public pure returns (bytes32) {
         return hash256(abi.encodePacked(_a, _b));
     }
 
@@ -330,19 +333,19 @@ library BTCUtils {
         // Should never occur
         if (_a.length == 64) { return false; }
 
-        bytes memory _root = _a.slice(_a.length - 32, 32);
-        bytes memory _current = _a.slice(0, 32);
+        bytes32 _root = _a.slice(_a.length - 32, 32).toBytes32();
+        bytes32 _current = _a.slice(0, 32).toBytes32();
 
         for (uint i = 1; i < (_a.length.div(32)) - 1; i++) {
 
             if (_index % 2 == 0) {
-                _current = _hash256MerkleStep(_a.slice(i * 32, 32), _current);
+                _current = _hash256MerkleStep(_a.slice(i * 32, 32), abi.encodePacked(_current));
                 _index = _index.div(2);
             } else {
-                _current = _hash256MerkleStep(_current, _a.slice(i * 32, 32));
+                _current = _hash256MerkleStep(abi.encodePacked(_current), _a.slice(i * 32, 32));
                 _index = _index.div(2) + 1;
             }
         }
-        return _current.toBytes32() == _root.toBytes32();
+        return _current == _root;
     }
 }
