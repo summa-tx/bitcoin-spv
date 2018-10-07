@@ -32,7 +32,7 @@ const TWO_IN_INDEX = 782;
 const TWO_IN_HEADER = '0x0000002044f2432df0e5b61161259717e975a0d9583f9536d53f020000000000000000007209f58088422fc42c5849f910c29ec174fbf89bf4fb25b5600d024773ee5a5e6c339c5ba1192817c6ed8f78';
 
 
-describe.only('SPVStore', async () => {
+describe('SPVStore', async () => {
     let storeContract;
 
     beforeEach(async () => {
@@ -306,7 +306,12 @@ describe.only('SPVStore', async () => {
                 '0x0000000000000000000000000000000000000000000000000000000000000000');
         });
 
-        it.skip('returns bytes32(0) if invalid output', async () => { });
+        it('errors if input is invalid', async () => {
+            // Invalid output, added incorrect OP_PUSHDATA1 (0x4c) to output
+            let err_output_tx = '0x010000000001011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000176a4c14edb1b5c2f39af0fec151732585b1049b07895211024730440220276e0ec78028582054d86614c65bc4bf85ff5710b9d3a248ca28dd311eb2fa6802202ec950dd2a8c9435ff2d400cc45d7a4854ae085f49e05cc3f503834546d410de012103732783eef3af7e04d3af444430a629b16a9261e4025f52bf4d6d026299c37c7400000000';
+            utils.expectThrow(storeContract.methods.parseAndStoreTransaction(err_output_tx)
+                .call({ from: accounts[0], gas: 5000000, gasPrice: 100000000000 }));
+        });
     });
 
     describe('#parseAndStoreHeader', async () => {
