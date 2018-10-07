@@ -336,11 +336,12 @@ library BTCUtils {
     }
 
     /// @notice          Calculate difficulty from the difficulty 1 target and current target
-    /// @dev             Difficulty 1 is 0x1d00ffff on mainnet and testnet, 0x207fffff on regtest
+    /// @dev             Difficulty 1 is 0x1d00ffff on mainnet and testnet
     /// @dev             Difficulty 1 is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
     /// @param _target   The current target
     /// @return          The block difficulty (bdiff)
     function calculateDifficulty(uint256 _target) pure public returns (uint256) {
+        // Difficulty 1 calculated from 0x1d00ffff 
         uint256 _difficulty1Target = 26959535291011309493156476344723991336010898738574164086137773096960;
         return _difficulty1Target.div(_target);
     }

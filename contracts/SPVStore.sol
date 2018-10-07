@@ -228,7 +228,22 @@ contract SPVStore is ValidateSPV {
         );
     }
 
-    function getOutput(bytes32 _txid, uint256 _index) public view returns (uint64) {
-        return transactions[_txid].outputs[_index].value;
+    function getTxOutValue(bytes32 _txid, uint256 _index) public view returns (uint64) {
+        Transaction memory _tx = transactions[_txid];
+        return _tx.outputs[_index].value;
+    }
+    
+    function getTxOutOutputType(bytes32 _txid, uint256 _index) public view returns (OutputTypes) {
+        Transaction memory _tx = transactions[_txid];
+        return _tx.outputs[_index].outputType;
+    }
+
+    /// @notice         Returns tx output payload
+    /// @params _txid   Transaction id
+    /// @params _index  Output index to return payload from
+    /// @return         Payload of tx outpu
+    function getTxOutPayload(bytes32 _txid, uint256 _index) public view returns (bytes) {
+        Transaction memory _tx = transactions[_txid];
+        return _tx.outputs[_index].payload;
     }
 }
