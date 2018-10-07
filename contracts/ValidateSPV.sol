@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity 0.4.25;
 
 /** @title ValidateSPV*/
 /** @author Summa (https://summa.one) */
@@ -50,20 +50,13 @@ contract ValidateSPV {
     mapping(bytes32 => Transaction) public transactions;    // Transactions
     mapping(bytes32 => Header) public headers;              // Parsed headers
 
-
     /// @notice         Parses, a tx, valides its inclusdion in the block, stores to the
     /// @notice         mapping
     /// @param _tx      The raw byte tx
     /// @param _proof   The raw byte proof (concatenated LE hashes)
     /// @param _header  The raw byte header
     /// @return         true if fully valid, false otherwise
-    function validateTransaction(
-        bytes _tx,
-        bytes _proof,
-        uint _index,
-        bytes _header
-    ) public returns (bytes32);
-
+    function validateTransaction(bytes _tx, bytes _proof, uint _index, bytes _header) public returns (bytes32);
 
     /// @notice         Parses and stores a Transaction struct from a bytestring
     /// @dev            This supports ONLY WITNESS INPUTS AND OUTPUTS
@@ -71,38 +64,33 @@ contract ValidateSPV {
     /// @return         Transaction id, little endian
     function parseAndStoreTransaction(bytes _tx) public returns (bytes32);
 
-
-    /// @notice         Validates the first 6 bytes of a block
-    /// @dev            First byte is the version. The next must be 0x0000000001
-    /// @param _tx      Raw byte tx
-    /// @return         true if valid, otherwise false
-    function validatePrefix(bytes _tx) pure internal returns (bool);
-
-
-    /// @notice         Parses a TxIn struct from raw input bytes
-    /// @dev            Checks for blank scriptSig
-    /// @param _input   Raw bytes tx input
-    /// @return         TxIn struct
-    function parseInput(bytes _input) pure internal returns (TxIn);
-
-
-    /// @notice         Parses a TxOut struct from raw output bytes
-    /// @dev            Differentiates by output script prefix
-    /// @param _output  Raw bytes tx output
-    /// @return         TxOut struct
-    function parseOutput(bytes _output) pure internal returns (TxOut);
-
-
     /// @notice         Parses and stores a Header struct from a bytestring
     /// @dev            Block headers are always 80 bytes, see Bitcoin docs
     /// @param _header  Raw bytes header
     /// @return         Block hash, little endian
     function parseAndStoreHeader(bytes _header) public returns (bytes32);
 
+    /// @notice         Validates the first 6 bytes of a block
+    /// @dev            First byte is the version. The next must be 0x0000000001
+    /// @param _tx      Raw byte tx
+    /// @return         true if valid, otherwise false
+    function validatePrefix(bytes _tx) internal pure returns (bool);
+
+    /// @notice         Parses a TxIn struct from raw input bytes
+    /// @dev            Checks for blank scriptSig
+    /// @param _input   Raw bytes tx input
+    /// @return         TxIn struct
+    function parseInput(bytes _input) internal pure returns (TxIn);
+
+    /// @notice         Parses a TxOut struct from raw output bytes
+    /// @dev            Differentiates by output script prefix
+    /// @param _output  Raw bytes tx output
+    /// @return         TxOut struct
+    function parseOutput(bytes _output) internal pure returns (TxOut);
 
     /// @notice         Parses a block header struct from a bytestring
     /// @dev            Block headers are always 80 bytes, see Bitcoin docs
     /// param _header  Raw bytes header
     /// @return         Parsed Header struct
-    function parseHeader(bytes _header) pure internal returns (Header);
+    function parseHeader(bytes _header) internal pure returns (Header);
 }

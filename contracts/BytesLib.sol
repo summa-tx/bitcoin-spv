@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity 0.4.25;
 
 /** @title BytesLib **/
 /** @author https://github.com/GNSPS **/
@@ -67,8 +67,8 @@ library BytesLib {
             // 32. If the sum of the length of the two arrays is zero then add
             // one before rounding down to leave a blank 32 bytes (the length block with 0).
             mstore(0x40, and(
-              add(add(end, iszero(add(length, mload(_preBytes)))), 31),
-              not(31) // Round down to the nearest 32 bytes.
+                add(add(end, iszero(add(length, mload(_preBytes)))), 31),
+                not(31) // Round down to the nearest 32 bytes.
             ))
         }
 
@@ -114,14 +114,14 @@ library BytesLib {
                                     mload(add(_postBytes, 0x20)),
                                     // zero all bytes to the right
                                     exp(0x100, sub(32, mlength))
-                                ),
-                                // and now shift left the number of bytes to
-                                // leave space for the length in the slot
-                                exp(0x100, sub(32, newlength))
-                            ),
-                            // increase length by the double of the memory
-                            // bytes length
-                            mul(mlength, 2)
+                        ),
+                        // and now shift left the number of bytes to
+                        // leave space for the length in the slot
+                        exp(0x100, sub(32, newlength))
+                        ),
+                        // increase length by the double of the memory
+                        // bytes length
+                        mul(mlength, 2)
                         )
                     )
                 )
@@ -156,8 +156,8 @@ library BytesLib {
                         and(
                             fslot,
                             0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00
-                        ),
-                        and(mload(mc), mask)
+                    ),
+                    and(mload(mc), mask)
                     )
                 )
 
@@ -311,8 +311,8 @@ library BytesLib {
 
                 for {
                     let cc := add(_postBytes, 0x20)
-                // the next line is the loop condition:
-                // while(uint(mc < end) + cb == 2)
+                    // the next line is the loop condition:
+                    // while(uint(mc < end) + cb == 2)
                 } eq(add(lt(mc, end), cb), 2) {
                     mc := add(mc, 0x20)
                     cc := add(cc, 0x20)
@@ -400,13 +400,13 @@ library BytesLib {
     }
 
     function toBytes32(bytes memory _source) pure public returns (bytes32 result) {
-    bytes memory tempEmptyStringTest = bytes(_source);
-    if (tempEmptyStringTest.length == 0) {
-        return 0x0;
-    }
+        bytes memory tempEmptyStringTest = bytes(_source);
+        if (tempEmptyStringTest.length == 0) {
+            return 0x0;
+        }
 
-    assembly {
-        result := mload(add(_source, 32))
+        assembly {
+            result := mload(add(_source, 32))
+        }
     }
-}
 }
