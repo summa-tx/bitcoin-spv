@@ -78,13 +78,13 @@ describe.only('SPVStore', async () => {
             txid = await storeContract.methods.validateTransaction(
                 OP_RETURN_TX, OP_RETURN_PROOF, OP_RETURN_INDEX, OP_RETURN_HEADER)
                 .call({ from: accounts[0], gas: 5000000, gasPrice: 100000000000 });
-            assert.ok(txid, op_return_txid);
+            assert.equal(txid, op_return_txid);
 
             // TWO_IN TX
             txid = await storeContract.methods.validateTransaction(
                 TWO_IN_TX, TWO_IN_PROOF, TWO_IN_INDEX, TWO_IN_HEADER)
-                .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-            assert.ok(txid, two_in_txid);
+                .call({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
+            assert.equal(txid, two_in_txid);
 
         });
 
@@ -186,7 +186,35 @@ describe.only('SPVStore', async () => {
         
         });
 
-        it.skip('emits a Validated event', async () => { });
+        it('emits a Validated event', async () => {
+            let op_return_txid = '0x48e5a1a0e616d8fd92b4ef228c424e0c816799a256c6a90892195ccfc53300d6';
+            let two_in_txid = '0x54269907e95e412ef574056ea5b0e0debd2290193879e5c295caea777f0ae8b2';
+
+            // OP_RETURN TX
+            await storeContract.methods.validateTransaction(
+                OP_RETURN_TX, OP_RETURN_PROOF, OP_RETURN_INDEX, OP_RETURN_HEADER)
+                .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
+
+            // TWO_IN TX
+            await storeContract.methods.validateTransaction(
+                TWO_IN_TX, TWO_IN_PROOF, TWO_IN_INDEX, TWO_IN_HEADER)
+                .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
+
+            // Emits a Validated event
+            utils.expectEvent(storeContract.getPastEvents('Validated',
+                { fromBlock: 0, toBlock: 'latest'}));
+
+            // Filter by txid
+            let op_return_event = await storeContract.getPastEvents('Validated',
+                { filter: { _hash: op_return_txid },
+                    fromBlock: 0, toBlock: 'latest'});
+            assert.equal(op_return_event[0].raw.topics[1], op_return_txid);
+
+            let two_in_event = await storeContract.getPastEvents('Validated',
+                { filter: { _hash: two_in_txid },
+                    fromBlock: 0, toBlock: 'latest'});
+            assert.equal(two_in_event[0].raw.topics[1], two_in_txid);
+        });
 
         it('emits a TxParsed event', async () => {
             let op_return_txid = '0x48e5a1a0e616d8fd92b4ef228c424e0c816799a256c6a90892195ccfc53300d6';
@@ -291,12 +319,12 @@ describe.only('SPVStore', async () => {
             // OP_RETURN TX
             digest = await storeContract.methods.parseAndStoreHeader(OP_RETURN_HEADER)
                 .call({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-            assert.ok(digest, op_return_digest);
+            assert.equal(digest, op_return_digest);
 
             // TWO_IN TX
             digest = await storeContract.methods.parseAndStoreHeader(TWO_IN_HEADER)
-                .send({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
-            assert.ok(digest, two_in_digest);
+                .call({ from: accounts[0], gas: 5000000, gasPrice: 100000000000});
+            assert.equal(digest, two_in_digest);
         });
 
         it('stores a header digest, version, prevBlock, merkleRoot, time, tartget, nonce',
@@ -385,34 +413,34 @@ describe.only('SPVStore', async () => {
             value = await storeContract.methods.getTxOutValue(op_return_txid, index).call();
             outputType = await storeContract.methods.getTxOutOutputType(op_return_txid, index).call();
             payload = await storeContract.methods.getTxOutPayload(op_return_txid, index).call();
-            assert.ok(value, 497480);
-            assert.ok(outputType, 2);
-            assert.ok(payload, '0xa4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18');
+            assert.equal(value, 497480);
+            assert.equal(outputType, 2);
+            assert.equal(payload, '0xa4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18');
 
             index = 1;
             value = await storeContract.methods.getTxOutValue(op_return_txid, index).call();
             outputType = await storeContract.methods.getTxOutOutputType(op_return_txid, index).call();
             payload = await storeContract.methods.getTxOutPayload(op_return_txid, index).call();
-            assert.ok(value, 0);
-            assert.ok(outputType, 3);       // OutputTypes: OP_RETURN
-            assert.ok(payload, '0xedb1b5c2f39af0fec151732585b1049b07895211');   // data: eth address
+            assert.equal(value, 0);
+            assert.equal(outputType, 3);       // OutputTypes: OP_RETURN
+            assert.equal(payload, '0xedb1b5c2f39af0fec151732585b1049b07895211');   // data: eth address
 
             // TWO_IN TX
             index = 0;
             value = await storeContract.methods.getTxOutValue(two_in_txid, index).call();
             outputType = await storeContract.methods.getTxOutOutputType(two_in_txid, index).call();
             payload = await storeContract.methods.getTxOutPayload(two_in_txid, index).call();
-            assert.ok(value, 497480);
-            assert.ok(outputType, 1);       // OutputTypes: WPKH
-            assert.ok(payload, '0x455c0ea778752831d6fc25f6f8cf55dc49d335f0');   // data: eth address
+            assert.equal(value, 46669);
+            assert.equal(outputType, 1);       // OutputTypes: WPKH
+            assert.equal(payload, '0x455c0ea778752831d6fc25f6f8cf55dc49d335f0');   // data: eth address
 
             index = 1;
             value = await storeContract.methods.getTxOutValue(two_in_txid, index).call();
             outputType = await storeContract.methods.getTxOutOutputType(two_in_txid, index).call();
             payload = await storeContract.methods.getTxOutPayload(two_in_txid, index).call();
-            assert.ok(value, 0);
-            assert.ok(outputType, 2);       // OutputTypes: WSH
-            assert.ok(payload, '0xaedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922');
+            assert.equal(value, 1000000);
+            assert.equal(outputType, 2);       // OutputTypes: WSH
+            assert.equal(payload, '0xaedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922');
         });
 
         it('errors if invalid index', async () => {
