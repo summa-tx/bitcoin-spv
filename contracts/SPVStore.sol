@@ -6,14 +6,58 @@ pragma solidity 0.4.25;
 import {BytesLib} from "./BytesLib.sol";
 import {SafeMath} from "./SafeMath.sol";
 import {BTCUtils} from "./BTCUtils.sol";
-import {ValidateSPV} from "./ValidateSPV.sol";
 
 
-contract SPVStore is ValidateSPV {
+contract SPVStore {
 
     using BTCUtils for bytes;
     using BytesLib for bytes;
     using SafeMath for uint256;
+
+    event Validated(bytes32 indexed _hash);
+    event TxParsed(bytes32 indexed _hash);
+    event HeaderParsed(bytes32 indexed _hash);
+    event WorkTooLow(bytes32 indexed _hash, uint256 _hashInt, uint256 indexed _target);
+
+    enum OutputTypes {
+        NONE,
+        WPKH,
+        WSH,
+        OP_RETURN
+    }
+
+    struct TxIn {
+        uint32 sequence;            // 4 byte sequence number
+        bytes32 outpoint;           // 32 byte outpoint
+    }
+
+    struct TxOut {
+        uint64 value;               // 8 byte value
+        OutputTypes outputType;
+        bytes payload;              // pubkey hash, script hash, or OP_RETURN data
+    }
+
+    struct Transaction {
+        bytes32 txid;               // 32 byte tx id, little endian
+        uint32 locktime;            // 4 byte locktime
+        uint8 numInputs;            // number tx inputs
+        uint8 numOutputs;           // number tx outputs
+        TxIn[] inputs;              // tx input struct array
+        TxOut[] outputs;            // tx output struct array
+    }
+
+    struct Header {
+        bytes32 digest;             // 32 byte little endian digest
+        uint32 version;             // 4 byte version
+        bytes32 prevblock;          // 32 byte previous block hash
+        bytes32 merkleRoot;         // 32 byte tx root
+        uint32 timestamp;           // 4 byte timestamp
+        uint256 target;             // 4 byte nBits == 32 byte integer
+        uint32 nonce;               // 4 byte nonce
+    }
+
+    mapping(bytes32 => Transaction) public transactions;    // Transactions
+    mapping(bytes32 => Header) public headers;              // Parsed headers
 
     /// @notice         Parses, a tx, valides its inclusdion in the block, stores to the
     /// @notice         mapping
