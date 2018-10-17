@@ -136,7 +136,7 @@ contract SPVStore is ValidateSPV {
             // If header is invalid and could not be parsed, bubble up error
             return;
         }
-        
+
         // Return header digest
         return _h.digest;
     }
@@ -149,7 +149,7 @@ contract SPVStore is ValidateSPV {
         Transaction memory _tx = transactions[_txid];
         return _tx.outputs[_index].value;
     }
-    
+
     /// @notice         Returns tx output type (NONE, WPKH, WSH, OP_RETURN)
     /// @param _txid    Transaction id
     /// @param _index   Output index to return output type from
@@ -204,7 +204,7 @@ contract SPVStore is ValidateSPV {
         OutputTypes _outputType;
 
         bytes memory _payload;
-    
+
         if (keccak256(_output.slice(9, 1)) == keccak256(hex'6a')) {
             // OP_RETURN
             _outputType = OutputTypes.OP_RETURN;

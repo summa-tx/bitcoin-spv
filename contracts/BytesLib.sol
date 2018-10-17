@@ -213,7 +213,7 @@ library BytesLib {
     }
 
     function slice(bytes _bytes, uint _start, uint _length) internal  pure returns (bytes) {
-        require(_bytes.length >= (_start + _length));
+        require(_bytes.length >= (_start + _length), 'Slice out of bounds');
 
         bytes memory tempBytes;
 
@@ -270,7 +270,7 @@ library BytesLib {
     }
 
     function toAddress(bytes _bytes, uint _start) internal  pure returns (address) {
-        require(_bytes.length >= (_start + 20));
+        require(_bytes.length >= (_start + 20), 'Address conversion out of bounds.');
         address tempAddress;
 
         assembly {
@@ -281,7 +281,7 @@ library BytesLib {
     }
 
     function toUint(bytes _bytes, uint _start) internal  pure returns (uint256) {
-        require(_bytes.length >= (_start + 32));
+        require(_bytes.length >= (_start + 32), 'Uint conversion out of bounds.');
         uint256 tempUint;
 
         assembly {
