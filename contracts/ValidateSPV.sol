@@ -41,11 +41,20 @@ library ValidateSPV {
     // /// @return         true if valid, otherwise false
     // function validatePrefix(bytes _tx) internal pure returns (bool);
     //
-    // /// @notice         Parses a TxIn struct from raw input bytes
-    // /// @dev            Checks for blank scriptSig
-    // /// @param _input   Raw bytes tx input
-    // /// @return         TxIn struct
-    // function parseInput(bytes _input) internal pure returns (TxIn);
+    /// @notice         Parses a tx input from raw input bytes
+    /// @dev            Checks for blank scriptSig
+    /// @param _input   Raw bytes tx input
+    /// @return         Tx input sequence number and outpoint
+    function parseInput(bytes _input) public pure returns (uint32 _sequence, bytes _outpoint) {
+
+        // Require segwit: if no 00 scriptSig, error
+        require(keccak256(_input.slice(36, 1)) == keccak256(hex'00'), "No 00 scriptSig found.");
+
+        // Require that input is 41 bytes
+        require(_input.length == 41, "Tx input must be 41 bytes.");
+
+        return (_input.extractSequence(), _input.extractOutpoint());
+    }
 
     /// @notice         Parses a tx output from raw output bytes
     /// @dev            Differentiates by output script prefix
@@ -150,7 +159,9 @@ library ValidateSPV {
             _header = _headers.slice(_start, 80);
 
             // Check if the hash of the previous header and the current header prevHash are equal
-            require(validateHeaderPrevHash(_header, _prevHeaderDigest), "Header chain prevHash must match previous header digest.");
+            require(
+                validateHeaderPrevHash(_header, _prevHeaderDigest),
+                "Header chain prevHash must match previous header digest.");
         }
 
         return true;

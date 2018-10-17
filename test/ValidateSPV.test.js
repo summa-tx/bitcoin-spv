@@ -62,6 +62,46 @@ describe.only('ValidateSPV', () => {
 
     it('compiles the ValidateSPV library', async () => assert.ok(vspv.options.address));
 
+    describe('#parseInput', async () => {
+        let input;
+        let sequence;
+        let outpoint;
+
+        it('returns the tx input sequence and outpoint', async () => {
+            input = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff';
+            sequence = 4294967295;
+            outpoint = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000';
+
+            let txIn = await vspv.methods.parseInput(input)
+                .call({ from: seller, gas: gas, gasPrice: gasPrice });
+
+            assert.equal(txIn._sequence, sequence);
+            assert.equal(txIn._outpoint, outpoint);
+        });
+
+        it('errors if the input does not have a 00 scriptSig', async () => {
+            // Removed 00 scriptSig from input to create error
+            input = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000ffffffff';
+            await vspv.methods.parseInput(input)
+                .call({ from: seller, gas: gas, gasPrice: gasPrice })
+                .then(() => assert(false))
+                .catch(e => {
+                    assert(e.message.search('No 00 scriptSig found.') >= 1);
+                });
+        });
+
+        it('errors if the input length is incorrect', async () => {
+            // Added extra 0xff byte at the end to create and invalid input length of 42 bytes
+            input = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffff';
+            await vspv.methods.parseInput(input)
+                .call({ from: seller, gas: gas, gasPrice: gasPrice })
+                .then(() => assert(false))
+                .catch(e => {
+                    assert(e.message.search('Tx input must be 41 bytes.') >= 1);
+                });
+        });
+    });
+
     describe('#parseOutput', async () => {
         let output;
         let value;
