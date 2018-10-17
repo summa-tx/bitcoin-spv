@@ -30,6 +30,18 @@ def get_block_from_api(block_hash):
     return block_json, bytes.fromhex(block_hex.text)
 
 
+def get_header_chain_from_api(block_hash, num_headers):
+    headers = bytearray()
+    for i in range(num_headers):
+
+        (block_json, rawblock) = get_block_from_api(block_hash)
+        block_hash = block_json['data']['next_blockhash']
+
+        headers.extend(rawblock[0:80])
+
+    return headers
+
+
 def txns_from_block(block_json, block):
     tx_list = []
     current = 0
@@ -141,6 +153,12 @@ def main():
     # Create a proof using the hashes and index
     proof = create_proof(tx_hashes, index)
 
+    # Create a header chain
+    chain = bytearray()
+    chain.extend(header)
+    chain.extend(
+        get_header_chain_from_api(block_json['data']['next_blockhash'], 6))
+
     # Error if the proof isn't valid
     assert(verify_proof(proof, index))
 
@@ -160,6 +178,10 @@ def main():
     print()
     print('--- INDEX ---')
     print(index)
+    print()
+    print()
+    print('--- CHAIN ---')
+    print(chain.hex())
 
 
 if __name__ == '__main__':
