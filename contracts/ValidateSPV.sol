@@ -14,6 +14,7 @@ library ValidateSPV {
     using BytesLib for bytes;
     using SafeMath for uint256;
 
+    enum OutputTypes { NONE, WPKH, WSH, OP_RETURN }
     // /// @notice         Parses, a tx, valides its inclusdion in the block, stores to the
     // /// @notice         mapping
     // /// @param _tx      The raw byte tx
@@ -45,12 +46,37 @@ library ValidateSPV {
     // /// @param _input   Raw bytes tx input
     // /// @return         TxIn struct
     // function parseInput(bytes _input) internal pure returns (TxIn);
-    //
-    // /// @notice         Parses a TxOut struct from raw output bytes
-    // /// @dev            Differentiates by output script prefix
-    // /// @param _output  Raw bytes tx output
-    // /// @return         TxOut struct
-    // function parseOutput(bytes _output) internal pure returns (TxOut);
+
+    /// @notice         Parses a tx output from raw output bytes
+    /// @dev            Differentiates by output script prefix
+    /// @param _output  Raw bytes tx output
+    /// @return         Tx output value, output type, payload
+    function parseOutput(bytes _output) public pure returns (uint64 _value, uint8 _outputType, bytes _payload) {
+
+        _value = _output.extractValue();
+
+        if (keccak256(_output.slice(9, 1)) == keccak256(hex'6a')) {
+            // OP_RETURN
+            _outputType = uint8(OutputTypes.OP_RETURN);
+            _payload = _output.extractOpReturnData();
+        } else {
+            bytes32 _prefixHash = keccak256(_output.slice(8, 2));
+            if (_prefixHash == keccak256(hex'2200')) {
+                // P2WSH
+                _outputType = uint8(OutputTypes.WSH);
+                _payload = _output.slice(11, 32);
+            } else if (_prefixHash == keccak256(hex'1600')) {
+                // P2WPKH
+                _outputType = uint8(OutputTypes.WPKH);
+                _payload = _output.slice(11, 20);
+            } else {
+                // If unidentifiable output type, error
+                require(false, "Tx output must be a WPKH, WSH, or OP_RETURN.");
+            } 
+        }
+
+        return (_value, _outputType, _payload);
+    }
 
     /// @notice         Parses a block header struct from a bytestring
     /// @dev            Block headers are always 80 bytes, see Bitcoin docs
@@ -79,7 +105,7 @@ library ValidateSPV {
 
         return(_digest, _version, _prevHash, _merkleRoot, _timestamp, _target, _nonce);
     }
-    
+
     /// @notice             Checks validity of header chain
     /// @notice             Compares the hash of each header to the prevHash in the next header
     /// @param _headers     Raw byte array of header chain
@@ -113,6 +139,9 @@ library ValidateSPV {
             // Previous header
             _prevHeader = _headers.slice(_start, 80);
 
+            // Previous header hash
+            bytes32 _prevHeaderDigest = _prevHeader.hash256();
+
             // Increment start index by 80 for next header
             _start = _start.add(80);
 >>>>>>> ValidateSPV from contract to library, split up Header functions
@@ -121,21 +150,18 @@ library ValidateSPV {
             _header = _headers.slice(_start, 80);
 
             // Check if the hash of the previous header and the current header prevHash are equal
-            if (!validateHeaderPrevHash(_prevHeader, _header)) { return false; }
+            require(validateHeaderPrevHash(_header, _prevHeaderDigest), "Header chain prevHash must match previous header digest.");
         }
 
         return true;
     }
 
-    function validateHeaderPrevHash(bytes _prevHeader, bytes _header) public pure returns (bool) {
-
-        // prevHeader hash
-        bytes32 _prevHeaderHash = _prevHeader.hash256();
+    function validateHeaderPrevHash(bytes _header, bytes32 _prevHeaderDigest) public pure returns (bool) {
 
         // prevHash of _header
         bytes32 _prevHash = _header.extractPrevBlockLE().toBytes32();
 
-        if (_prevHeaderHash != _prevHash) { return false; }
+        if (_prevHash != _prevHeaderDigest) { return false; }
 
         return true;
     }

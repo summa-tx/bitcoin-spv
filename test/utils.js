@@ -109,7 +109,14 @@ module.exports = {
                     assert.fail('No event emitted');
                 }
             }).catch(err => assert.fail(err));
-    }
+    },
+
+    OUTPUT_TYPES: {
+        NONE: 0,
+        WPKH: 1,
+        WSH: 2,
+        OP_RETURN:3,
+    },
 }
 
 
