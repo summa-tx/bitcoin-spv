@@ -78,6 +78,16 @@ library ValidateSPV {
 
         return(_digest, _version, _prevHash, _merkleRoot, _timestamp, _target, _nonce);
     }
+    
+    // function getPrevHeader(bytes _headers) public returns (bytes) {
+    //     bytes memory _prevHeader = _headers.slice(0, 80);
+    //     return _prevHeader;
+    // }
+    //
+    // function getHeader(bytes _headers) public returns (bytes) {
+    //     bytes memory _header = _headers.slice(80, 80);
+    //     return _header;
+    // }
 
     /// @notice             Checks validity of header chain
     /// @notice             Compares the hash of each header to the prevHash in the next header
@@ -100,26 +110,27 @@ library ValidateSPV {
         // Check header chain length
         require(validateHeaderLength(_headers), "Header chain must be divisible by 80.");
 
+        uint _nHeaders = _headers.length / 80;
+
         // Initialize header start index
         uint256 _start = 0;
+        bytes memory _prevHeader;
+        bytes memory _header;
 
-        for (uint i = 0; i < _header.length; i++) {
+        for (uint i = 0; i < _nHeaders - 1; i++) {
 
             // Previous header
-            bytes memory _prevHeader = _headers.slice(0, 80);
+            _prevHeader = _headers.slice(_start, 80);
 
             // Increment start index by 80 for next header
             _start = _start.add(80);
 >>>>>>> ValidateSPV from contract to library, split up Header functions
 
             // Current header
-            bytes memory _header = _header.slice(80, 80);
+            _header = _headers.slice(_start, 80);
 
             // Check if the hash of the previous header and the current header prevHash are equal
             if (!validateHeaderPrevHash(_prevHeader, _header)) { return false; }
-
-            // Increment start index by 80 for next header
-            _start = _start.add(80);
         }
 
         return true;

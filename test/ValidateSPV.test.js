@@ -75,17 +75,13 @@ describe.only('ValidateSPV', () => {
     });
 
     describe('#validateHeaderChain', async () => {
-        it.skip('returns true if header chain is valid', async () => {
+        it('returns true if header chain is valid', async () => {
             let res = await vspv.methods.validateHeaderChain(HEADER_CHAIN).call();
-            console.log('res');
-            console.log(res);
-            assert.ok(true);
+            assert.equal(res, true);
         });
 
-        it.skip('returns false if header chain is invalid', async () => {
+        it('returns false if header chain is invalid', async () => {
             let res = await vspv.methods.validateHeaderChain(HEADER_CHAIN_INVALID_PREVHASH).call();
-            console.log('res');
-            console.log(res);
             assert.equal(res, false);
         });
 
