@@ -66,7 +66,8 @@ library ValidateSPV {
         uint32 _nonce
     ) {
         // If header has an invalid length, bubble up error
-        if (_header.length != 80) { return; }
+        // Check header chain length
+        require(validateHeaderLength(_header), "Header chain must be divisible by 80.");
 
         _digest = abi.encodePacked(_header.hash256()).reverseEndianness().toBytes32();
         _version = uint32(_header.slice(0, 4).reverseEndianness().bytesToUint());
@@ -79,16 +80,6 @@ library ValidateSPV {
         return(_digest, _version, _prevHash, _merkleRoot, _timestamp, _target, _nonce);
     }
     
-    // function getPrevHeader(bytes _headers) public returns (bytes) {
-    //     bytes memory _prevHeader = _headers.slice(0, 80);
-    //     return _prevHeader;
-    // }
-    //
-    // function getHeader(bytes _headers) public returns (bytes) {
-    //     bytes memory _header = _headers.slice(80, 80);
-    //     return _header;
-    // }
-
     /// @notice             Checks validity of header chain
     /// @notice             Compares the hash of each header to the prevHash in the next header
     /// @param _headers     Raw byte array of header chain
