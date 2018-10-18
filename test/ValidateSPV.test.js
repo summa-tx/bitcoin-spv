@@ -98,7 +98,7 @@ describe.only('ValidateSPV', () => {
                 .call({ from: seller, gas: gas, gasPrice: gasPrice }), false);
         });
 
-        it('errors if input string is less than 6 bytes', async () => {
+        it.skip('errors if input string is less than 6 bytes', async () => {
             prefix = '0x01000000';
             await vspv.methods.validatePrefix(prefix)
                 .call({ from: seller, gas: gas, gasPrice: gasPrice })

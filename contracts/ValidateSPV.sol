@@ -21,19 +21,65 @@ library ValidateSPV {
     // /// @param _proof   The raw byte proof (concatenated LE hashes)
     // /// @param _header  The raw byte header
     // /// @return         true if fully valid, false otherwise
-    // function validateTransaction(bytes _tx, bytes _proof, uint _index, bytes _header) public returns (bytes32);
-    //
-    // /// @notice         Parses and stores a Transaction struct from a bytestring
-    // /// @dev            This supports ONLY WITNESS INPUTS AND OUTPUTS
-    // /// @param _tx      Raw bytes tx
-    // /// @return         Transaction id, little endian
-    // function parseAndStoreTransaction(bytes _tx) public returns (bytes32);
-    //
-    // /// @notice         Parses and stores a Header struct from a bytestring
-    // /// @dev            Block headers are always 80 bytes, see Bitcoin docs
-    // /// @param _header  Raw bytes header
-    // /// @return         Block hash, little endian
-    // function parseAndStoreHeader(bytes _header) public returns (bytes32);
+    // function validate(bytes _tx, bytes _proof, uint _index, bytes _header) public returns (bytes32);
+
+    /// @notice         Validates a tx from a bytestring
+    /// @dev            This supports ONLY WITNESS INPUTS AND OUTPUTS
+    /// @param _tx      Raw bytes tx
+    /// @return         Transaction id, little endian
+    /// arrry of uints that are output types, nInputs, numOuptuts, locktime, txid, inputIndices, outputIndices
+    /// add getter functions that tkes _tx and index and returns iths input/output
+    function validateTransaction(
+        bytes _tx
+    ) public pure returns (
+        uint8 _nInputs,
+        uint8 _nOutputs,
+        bytes _prefix,
+        bytes _inputs,
+        bytes _outputs,
+        bytes _locktime,
+        bytes32 _txid
+    ) {
+
+        _prefix = _tx.extractPrefix();
+
+        // If invalid prefix, bubble up error
+        if (!validatePrefix(_prefix)) { return; }
+
+        (_nInputs, _inputs) = extractAllInputs(_tx);
+
+        (_nOutputs, _outputs) = extractAllOutputs(_tx);
+
+        _locktime = _tx.extractLocktimeLE();
+
+        _txid = transactionHash(_prefix, _inputs, _outputs, _locktime);
+    }
+
+    function extractAllInputs(bytes _tx) public pure returns (uint8 _nInputs, bytes _inputs) {
+        _nInputs = _tx.extractNumInputs();
+
+        for (uint8 i = 0; i < _nInputs; i++) {
+            _inputs = _inputs.concat(_tx.extractInputAtIndex(i));
+        }
+    }
+
+    function extractAllOutputs(bytes _tx) public pure returns (uint8 _nOutputs, bytes _outputs) {
+        _nOutputs = _tx.extractNumOutputs();
+
+        for (uint8 i = 0; i < _nOutputs; i++) {
+            _outputs = _outputs.concat(_tx.extractOutputAtIndex(i));
+        }
+    }
+
+    function transactionHash(
+        bytes _prefix,
+        bytes _inputs,
+        bytes _outputs,
+        bytes _locktime
+    ) public pure returns (bytes32) {
+        // Get transaction hash dSha256(version + inputs + outputs + locktime)
+        return abi.encodePacked(_prefix, _inputs, _outputs, _locktime).hash256();
+    }
 
     /// @notice         Validates the first 6 bytes of a block
     /// @dev            First byte is the version. The next must be 0x0000000001
@@ -41,13 +87,25 @@ library ValidateSPV {
     /// @return         true if valid, otherwise false
     function validatePrefix(bytes _bytes) public pure returns (bool) {
 
-        require(_bytes.length >= 6, "A byte string of at least 6 bytes is required.");
+        if (_bytes.length < 6) { return false; }
 
         bytes32 _versionHash = keccak256(_bytes.slice(0, 1));
 
         // Return true if prefix is version 1 or 2 and has segwit flag
         return ((_versionHash == keccak256(hex'01') || _versionHash == keccak256(hex'02'))
                 && keccak256(_bytes.slice(1, 5)) == keccak256(hex'0000000001'));
+    }
+
+    function getInput(bytes _tx, uint8 _index) public pure returns (uint32 _sequence, bytes _outpoint) {
+        (_sequence, _outpoint) = parseInput(_tx.extractInputAtIndex(_index)); 
+    }
+
+    function getOutput(bytes _tx, uint8 _index) public pure returns (
+        uint256 _value,
+        uint8 _outputType,
+        bytes _payload
+    ) {
+        (_value, _outputType, _payload) = parseOutput(_tx.extractOutputAtIndex(_index)); 
     }
 
     /// @notice         Parses a tx input from raw input bytes
@@ -174,6 +232,11 @@ library ValidateSPV {
         }
 
         return true;
+    }
+
+    function validateHeaderWork(bytes32 _digest, uint256 _target) public pure returns (bool) {
+        require(_digest != bytes32(0));
+        return (abi.encodePacked(_digest).bytesToUint() < _target);
     }
 
     function validateHeaderPrevHash(bytes _header, bytes32 _prevHeaderDigest) public pure returns (bool) {

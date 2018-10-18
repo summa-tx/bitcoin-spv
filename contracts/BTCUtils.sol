@@ -12,6 +12,13 @@ library BTCUtils {
     using BytesLib for bytes;
     using SafeMath for uint256;
 
+    function extractPrefix(bytes _b) public pure returns (bytes) {
+        // Not enough bytes to extract a valid prefix
+        if (_b.length < 6) { return; }
+        return _b.slice(0, 6);
+    }
+
+
     /// @notice          Changes the endianness of a byte array
     /// @dev             Returns a new, backwards, bytes
     /// @param _b        The bytes to reverse
@@ -162,7 +169,7 @@ library BTCUtils {
         return uint8(_n);
     }
 
-    /// @notice          Finds the location of the number of outpus
+    /// @notice          Finds the location of the number of outputs
     /// @dev             This depends on the number of inputs
     /// @param _b        The tx to evaluate
     /// @return          The index of the VarInt numTxOuts
