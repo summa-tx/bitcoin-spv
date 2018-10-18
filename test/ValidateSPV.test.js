@@ -62,6 +62,53 @@ describe.only('ValidateSPV', () => {
 
     it('compiles the ValidateSPV library', async () => assert.ok(vspv.options.address));
 
+    describe('#validatePrefix', async () => {
+        let tx;
+        let prefix;
+
+        it('returns true for a valid prefix with version 01', async () => {
+            tx = '0x0100000000010235815cf40015f7b128dc5d86dea441e85721321b10d4d93d76a1bf6070f97fff0000000000feffffff0ad99758ff754b51ef0d72dfa9b9965ae3d510d1e282dfc099b6b3eaea4c30050000000000feffffff03e8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c0000000000000000176a4c1423d81b160cb51f763e7bf9b373a34f5ddb75fcbb7b000000000000001600140be3e4aa1656bb811db32da61d40e9171c8895e20248304502210099525661b53abc1aacc505d8e0919d1ee3210afa4bd40038c46345a9b72d3631022022ee807da4cc4a743c3243063d30174c6752b3e57d02f92d7a083604f73c3e20832102a004b949e4769ed341064829137b18992be884da5932c755e48f9465c1069dc2024830450221008dba80574b4e1852cd1312c3fe2d6d4ad2958895b9bbad82f45820de02b32a4902201c2b807596c3aa603d659a1be4eb09e5d7ab56836722bfe1cdb649de7164ab9f012102ef21caa25eca974d3bdd73c034d6943cbf145a700d493adaa6f496bd87c5b33be26ab25b';
+            assert.equal(await vspv.methods.validatePrefix(tx)
+                .call({ from: seller, gas: gas, gasPrice: gasPrice }), true);
+
+            prefix = '0x010000000001';
+            assert.equal(await vspv.methods.validatePrefix(prefix)
+                .call({ from: seller, gas: gas, gasPrice: gasPrice }), true);
+        });
+
+        it('returns true for a valid prefix with version 02', async () => {
+            tx = '0x0200000000010235815cf40015f7b128dc5d86dea441e85721321b10d4d93d76a1bf6070f97fff0000000000feffffff0ad99758ff754b51ef0d72dfa9b9965ae3d510d1e282dfc099b6b3eaea4c30050000000000feffffff03e8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c0000000000000000176a4c1423d81b160cb51f763e7bf9b373a34f5ddb75fcbb7b000000000000001600140be3e4aa1656bb811db32da61d40e9171c8895e20248304502210099525661b53abc1aacc505d8e0919d1ee3210afa4bd40038c46345a9b72d3631022022ee807da4cc4a743c3243063d30174c6752b3e57d02f92d7a083604f73c3e20832102a004b949e4769ed341064829137b18992be884da5932c755e48f9465c1069dc2024830450221008dba80574b4e1852cd1312c3fe2d6d4ad2958895b9bbad82f45820de02b32a4902201c2b807596c3aa603d659a1be4eb09e5d7ab56836722bfe1cdb649de7164ab9f012102ef21caa25eca974d3bdd73c034d6943cbf145a700d493adaa6f496bd87c5b33be26ab25b';
+            assert.equal(await vspv.methods.validatePrefix(tx)
+                .call({ from: seller, gas: gas, gasPrice: gasPrice }), true);
+
+            prefix = '0x020000000001';
+            assert.equal(await vspv.methods.validatePrefix(prefix)
+                .call({ from: seller, gas: gas, gasPrice: gasPrice }), true);
+        });
+
+        it('returns false if the version is invalid', async () => {
+            prefix = '0x030000000001';
+            assert.equal(await vspv.methods.validatePrefix(prefix)
+                .call({ from: seller, gas: gas, gasPrice: gasPrice }), false);
+        });
+
+        it('returns false if the segwit flag is invalid', async () => {
+            prefix = '0x010000000002';
+            assert.equal(await vspv.methods.validatePrefix(prefix)
+                .call({ from: seller, gas: gas, gasPrice: gasPrice }), false);
+        });
+
+        it('errors if input string is less than 6 bytes', async () => {
+            prefix = '0x01000000';
+            await vspv.methods.validatePrefix(prefix)
+                .call({ from: seller, gas: gas, gasPrice: gasPrice })
+                .then(() => assert(false))
+                .catch(e => {
+                    assert(e.message.search('A byte string of at least 6 bytes is required.') >= 1);
+                });
+        });
+    });
+
     describe('#parseInput', async () => {
         let input;
         let sequence;

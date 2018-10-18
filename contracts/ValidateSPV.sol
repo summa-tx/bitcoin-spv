@@ -34,13 +34,22 @@ library ValidateSPV {
     // /// @param _header  Raw bytes header
     // /// @return         Block hash, little endian
     // function parseAndStoreHeader(bytes _header) public returns (bytes32);
-    //
-    // /// @notice         Validates the first 6 bytes of a block
-    // /// @dev            First byte is the version. The next must be 0x0000000001
-    // /// @param _tx      Raw byte tx
-    // /// @return         true if valid, otherwise false
-    // function validatePrefix(bytes _tx) internal pure returns (bool);
-    //
+
+    /// @notice         Validates the first 6 bytes of a block
+    /// @dev            First byte is the version. The next must be 0x0000000001
+    /// @param _bytes   Raw byte string whos first 6 bytes are the prefix
+    /// @return         true if valid, otherwise false
+    function validatePrefix(bytes _bytes) public pure returns (bool) {
+
+        require(_bytes.length >= 6, "A byte string of at least 6 bytes is required.");
+
+        bytes32 _versionHash = keccak256(_bytes.slice(0, 1));
+
+        // Return true if prefix is version 1 or 2 and has segwit flag
+        return ((_versionHash == keccak256(hex'01') || _versionHash == keccak256(hex'02'))
+                && keccak256(_bytes.slice(1, 5)) == keccak256(hex'0000000001'));
+    }
+
     /// @notice         Parses a tx input from raw input bytes
     /// @dev            Checks for blank scriptSig
     /// @param _input   Raw bytes tx input
