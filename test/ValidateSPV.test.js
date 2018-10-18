@@ -20,7 +20,7 @@ const HEADER_CHAIN_INVALID_PREVHASH = '0x0000002073bd2184edd9c4fc76642ea6754ee40
 // Removed a byte from Header00's version to create invalid chain length
 const HEADER_CHAIN_INVALID_LEN = '0x00002073bd2184edd9c4fc76642ea6754ee40136970efc10c4190000000000000000000296ef123ea96da5cf695f22bf7d94be87d49db1ad7ac371ac43c4da4161c8c216349c5ba11928170d38782b00000020fe70e48339d6b17fbbf1340d245338f57336e97767cc240000000000000000005af53b865c27c6e9b5e5db4c3ea8e024f8329178a79ddb39f7727ea2fe6e6825d1349c5ba1192817e2d9515900000020baaea6746f4c16ccb7cd961655b636d39b5fe1519b8f15000000000000000000c63a8848a448a43c9e4402bd893f701cd11856e14cbbe026699e8fdc445b35a8d93c9c5ba1192817b945dc6c00000020f402c0b551b944665332466753f1eebb846a64ef24c71700000000000000000033fc68e070964e908d961cd11033896fa6c9b8b76f64a2db7ea928afa7e304257d3f9c5ba11928176164145d0000ff3f63d40efa46403afd71a254b54f2b495b7b0164991c2d22000000000000000000f046dc1b71560b7d0786cfbdb25ae320bd9644c98d5c7c77bf9df05cbe96212758419c5ba1192817a2bb2caa00000020e2d4f0edd5edd80bdcb880535443747c6b22b48fb6200d0000000000000000001d3799aa3eb8d18916f46bf2cf807cb89a9b1b4c56c3f2693711bf1064d9a32435429c5ba1192817752e49ae0000002022dba41dff28b337ee3463bf1ab1acf0e57443e0f7ab1d000000000000000000c3aadcc8def003ecbd1ba514592a18baddddcd3a287ccf74f584b04c5c10044e97479c5ba1192817c341f595';
 
-describe.only('ValidateSPV', () => {
+describe('ValidateSPV', () => {
     let bc;
     let vspv;
     let accounts;
@@ -61,6 +61,40 @@ describe.only('ValidateSPV', () => {
             .send({ from: accounts[0], gas: gas, gasPrice: gasPrice }));
 
     it('compiles the ValidateSPV library', async () => assert.ok(vspv.options.address));
+
+    describe.skip('#validateTransaction', async () => {
+
+        it('returns the transaction hash', async () => {
+        });
+    });
+
+    describe.skip('#extractallinputs', async () => {
+
+        it('returns the number of inputs and inputs string', async () => {
+        });
+    });
+
+    describe.skip('#extractAllOutputs', async () => {
+
+        it('returns the number of outputs and outputs string', async () => {
+        });
+    });
+
+    describe('#transactionHash', async () => {
+
+        it('returns the transaction hash', async () => {
+            let prefix = '0x010000000001';
+            let nInputs = '0x02';
+            let inputs = '0x35815cf40015f7b128dc5d86dea441e85721321b10d4d93d76a1bf6070f97fff0000000000feffffff0ad99758ff754b51ef0d72dfa9b9965ae3d510d1e282dfc099b6b3eaea4c30050000000000feffffff';
+            let nOutputs = '0x03';
+            let outputs = '0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c0000000000000000176a4c1423d81b160cb51f763e7bf9b373a34f5ddb75fcbb7b000000000000001600140be3e4aa1656bb811db32da61d40e9171c8895e2';
+            let locktime = '0xe26ab25b';
+            let hash = '0xb117d24b4ed7b0fd35758f082075373a2cca1d03aadea727a99214b79de47a71';
+            let txHash = await vspv.methods.transactionHash(prefix, nInputs, inputs, nOutputs, outputs, locktime)
+                .call({ from: seller, gas: gas, gasPrice: gasPrice });
+            assert.equal(hash, txHash);
+        });
+    });
 
     describe('#validatePrefix', async () => {
         let tx;

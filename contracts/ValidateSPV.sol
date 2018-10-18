@@ -32,8 +32,8 @@ library ValidateSPV {
     function validateTransaction(
         bytes _tx
     ) public pure returns (
-        uint8 _nInputs,
-        uint8 _nOutputs,
+        bytes _nInputs,
+        bytes _nOutputs,
         bytes _prefix,
         bytes _inputs,
         bytes _outputs,
@@ -52,33 +52,37 @@ library ValidateSPV {
 
         _locktime = _tx.extractLocktimeLE();
 
-        _txid = transactionHash(_prefix, _inputs, _outputs, _locktime);
+        _txid = transactionHash(_prefix, _nInputs, _inputs, _nOutputs, _outputs, _locktime);
     }
 
-    function extractAllInputs(bytes _tx) public pure returns (uint8 _nInputs, bytes _inputs) {
-        _nInputs = _tx.extractNumInputs();
+    function extractAllInputs(bytes _tx) public pure returns (bytes _nInputs, bytes _inputs) {
+        _nInputs = _tx.extractNumInputsBytes();
+        uint8 _tmpN = _tx.extractNumInputs();
 
-        for (uint8 i = 0; i < _nInputs; i++) {
+        for (uint8 i = 0; i < _tmpN; i++) {
             _inputs = _inputs.concat(_tx.extractInputAtIndex(i));
         }
     }
 
-    function extractAllOutputs(bytes _tx) public pure returns (uint8 _nOutputs, bytes _outputs) {
-        _nOutputs = _tx.extractNumOutputs();
+    function extractAllOutputs(bytes _tx) public pure returns (bytes _nOutputs, bytes _outputs) {
+        _nOutputs = _tx.extractNumOutputsBytes();
+        uint8 _tmpN = _tx.extractNumOutputs();
 
-        for (uint8 i = 0; i < _nOutputs; i++) {
+        for (uint8 i = 0; i < _tmpN; i++) {
             _outputs = _outputs.concat(_tx.extractOutputAtIndex(i));
         }
     }
 
     function transactionHash(
         bytes _prefix,
+        bytes _nInputs,
         bytes _inputs,
+        bytes _nOutputs,
         bytes _outputs,
         bytes _locktime
     ) public pure returns (bytes32) {
         // Get transaction hash dSha256(version + inputs + outputs + locktime)
-        return abi.encodePacked(_prefix, _inputs, _outputs, _locktime).hash256();
+        return abi.encodePacked(_prefix, _nInputs, _inputs, _nOutputs, _outputs, _locktime).hash256();
     }
 
     /// @notice         Validates the first 6 bytes of a block

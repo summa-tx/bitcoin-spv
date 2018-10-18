@@ -159,12 +159,20 @@ library BTCUtils {
         return uint32(bytesToUint(_beLocktime));
     }
 
+    /// @notice          Extracts number of inputs as bytes
+    /// @dev             This is encoded as a VarInt, and errors for high values
+    /// @param _b        The tx to evaluate
+    /// @return          The number of inputs
+    function extractNumInputsBytes(bytes _b) public pure returns (bytes) {
+        return _b.slice(6, 1);
+    }
+
     /// @notice          Extracts number of inputs as integer
     /// @dev             This is encoded as a VarInt, and errors for high values
     /// @param _b        The tx to evaluate
     /// @return          The number of inputs
     function extractNumInputs(bytes _b) public pure returns (uint8) {
-        uint256 _n = bytesToUint(_b.slice(6, 1));
+        uint256 _n = bytesToUint(extractNumInputsBytes(_b));
         require(_n < 0xfd, "VarInts not supported");  // Error on VarInts
         return uint8(_n);
     }
@@ -175,6 +183,15 @@ library BTCUtils {
     /// @return          The index of the VarInt numTxOuts
     function findNumOutputs(bytes _b) public pure returns (uint256) {
         return 7 + (41 * extractNumInputs(_b));
+    }
+
+    /// @notice          Extracts number of outputs as integer
+    /// @dev             This is encoded as a VarInt, and errors for high values
+    /// @param _b        The tx to evaluate
+    /// @return          The number of outputs
+    function extractNumOutputsBytes(bytes _b) public pure returns (bytes) {
+        uint256 _offset = findNumOutputs(_b);
+        return _b.slice(_offset, 1);
     }
 
     /// @notice          Extracts number of outputs as integer
