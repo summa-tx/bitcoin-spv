@@ -67,7 +67,7 @@ contract SPVStore is ValidateSPV {
 
             _inputs[i] = parseInput(_tx.extractInputAtIndex(i));
 
-            // If invalid outpoint, ubble up error
+            // If invalid outpoint, bubble up error
             if (_inputs[i].outpoint == bytes32(0)) { return; }
         }
 
@@ -234,7 +234,7 @@ contract SPVStore is ValidateSPV {
     /// @return         Parsed Header struct
     function parseHeader(bytes _header) internal pure returns (Header) {
 
-        // If header has an invalid length, ubble up error
+        // If header has an invalid length, bubble up error
         if (_header.length != 80) { return; }
 
         uint32 _version = uint32(_header.slice(0, 4).reverseEndianness().bytesToUint());
