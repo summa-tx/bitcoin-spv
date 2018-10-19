@@ -32,7 +32,7 @@ const TWO_IN_INDEX = 782;
 const TWO_IN_HEADER = '0x0000002044f2432df0e5b61161259717e975a0d9583f9536d53f020000000000000000007209f58088422fc42c5849f910c29ec174fbf89bf4fb25b5600d024773ee5a5e6c339c5ba1192817c6ed8f78';
 
 
-describe('SPVStore', async () => {
+describe.skip('SPVStore', async () => {
     let storeContract;
 
     beforeEach(async () => {

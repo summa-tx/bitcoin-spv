@@ -18,7 +18,6 @@ library BTCUtils {
         return _b.slice(0, 6);
     }
 
-
     /// @notice          Changes the endianness of a byte array
     /// @dev             Returns a new, backwards, bytes
     /// @param _b        The bytes to reverse

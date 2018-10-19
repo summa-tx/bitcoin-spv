@@ -23,7 +23,7 @@ library ValidateSPV {
     /// @param _proof       The proof (concatenated LE hashes)
     /// @param _index       The proof index
     /// @return             true if fully valid, false otherwise
-    function proove(
+    function prove(
         bytes32 _txid,
         bytes32 _blockHash,
         bytes32 _merkleRoot,
@@ -49,12 +49,11 @@ library ValidateSPV {
     /// @notice         Validates a tx from a bytestring
     /// @dev            This supports ONLY WITNESS INPUTS AND OUTPUTS
     /// @param _tx      Raw bytes tx
-    /// @return         Transaction prefix, num inputs, inputs, num outputs, outputs, locktime, txid
+    /// @return         Transaction num inputs, inputs, num outputs, outputs, locktime, txid
     function parseTransaction(
         bytes _tx
     )
     public pure returns (
-        bytes _prefix,
         bytes _nInputs,
         bytes _inputs,
         bytes _nOutputs,
@@ -63,7 +62,7 @@ library ValidateSPV {
         bytes32 _txid
     ) {
 
-        _prefix = _tx.extractPrefix();
+        bytes memory _prefix = _tx.extractPrefix();
 
         // If invalid prefix, bubble up error
         if (!validatePrefix(_prefix)) { return; }
@@ -215,18 +214,6 @@ library ValidateSPV {
     /// @return             true if header chain is valid, false otherwise
     function validateHeaderChain(bytes _headers) public pure returns (bool) {
 
-<<<<<<< HEAD
-    struct Transaction {
-        bytes32 txid;               // 32 byte tx id, little endian
-        uint32 locktime;            // 4 byte locktime
-        uint8 numInputs;            // number tx inputs
-        uint8 numOutputs;           // number tx outputs
-        mapping (uint8 => TxIn) inputs;
-        mapping (uint8 => TxOut) outputs;
-        /*TxIn[] inputs;              // tx input struct array
-        TxOut[] outputs;            // tx output struct array*/
-    }
-=======
         // Check header chain length
         require(validateHeaderLength(_headers), "Header chain must be divisible by 80.");
 
@@ -247,7 +234,6 @@ library ValidateSPV {
 
             // Increment start index by 80 for next header
             _start = _start.add(80);
->>>>>>> ValidateSPV from contract to library, split up Header functions
 
             // Current header
             _header = _headers.slice(_start, 80);
@@ -261,16 +247,26 @@ library ValidateSPV {
         return true;
     }
 
+    /// @notice             Checks validity of header work
+    /// @param _digest      Header digest
+    /// @param _target      The target threshold
+    /// @return             true if header work is valid, false otherwise
     function validateHeaderWork(bytes32 _digest, uint256 _target) public pure returns (bool) {
         require(_digest != bytes32(0));
         return (abi.encodePacked(_digest).bytesToUint() < _target);
     }
 
+    /// @notice                     Checks validity of header chain
+    /// @dev                        Compares current header prevHash to previous header's digest
+    /// @param _header              The raw bytes header
+    /// @param _prevHeaderDigest    The previous header's digest
+    /// @return                     true if header chain is valid, false otherwise
     function validateHeaderPrevHash(bytes _header, bytes32 _prevHeaderDigest) public pure returns (bool) {
 
-        // prevHash of _header
+        // Extract prevHash of current header
         bytes32 _prevHash = _header.extractPrevBlockLE().toBytes32();
 
+        // Compare prevHash of current header to previous header's digest
         if (_prevHash != _prevHeaderDigest) { return false; }
 
         return true;
