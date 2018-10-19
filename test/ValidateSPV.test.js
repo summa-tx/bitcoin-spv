@@ -62,21 +62,58 @@ describe('ValidateSPV', () => {
 
     it('compiles the ValidateSPV library', async () => assert.ok(vspv.options.address));
 
-    describe.skip('#validateTransaction', async () => {
+    describe('#parseTransaction', async () => {
 
-        it('returns the transaction hash', async () => {
+        it('returns the prefix, nInputs, inputs, nOutputs, outputs, locktime, and txid', async () => {
+            let tx = '0x0100000000010235815cf40015f7b128dc5d86dea441e85721321b10d4d93d76a1bf6070f97fff0000000000feffffff0ad99758ff754b51ef0d72dfa9b9965ae3d510d1e282dfc099b6b3eaea4c30050000000000feffffff03e8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c0000000000000000176a4c1423d81b160cb51f763e7bf9b373a34f5ddb75fcbb7b000000000000001600140be3e4aa1656bb811db32da61d40e9171c8895e20248304502210099525661b53abc1aacc505d8e0919d1ee3210afa4bd40038c46345a9b72d3631022022ee807da4cc4a743c3243063d30174c6752b3e57d02f92d7a083604f73c3e20832102a004b949e4769ed341064829137b18992be884da5932c755e48f9465c1069dc2024830450221008dba80574b4e1852cd1312c3fe2d6d4ad2958895b9bbad82f45820de02b32a4902201c2b807596c3aa603d659a1be4eb09e5d7ab56836722bfe1cdb649de7164ab9f012102ef21caa25eca974d3bdd73c034d6943cbf145a700d493adaa6f496bd87c5b33be26ab25b';
+            let prefix = '0x010000000001';
+            let nInputs = '0x02';
+            let inputs = '0x35815cf40015f7b128dc5d86dea441e85721321b10d4d93d76a1bf6070f97fff0000000000feffffff0ad99758ff754b51ef0d72dfa9b9965ae3d510d1e282dfc099b6b3eaea4c30050000000000feffffff';
+            let nOutputs = '0x03';
+            let outputs = '0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c0000000000000000176a4c1423d81b160cb51f763e7bf9b373a34f5ddb75fcbb7b000000000000001600140be3e4aa1656bb811db32da61d40e9171c8895e2';
+            let locktime = '0xe26ab25b';
+            let txid = '0xb117d24b4ed7b0fd35758f082075373a2cca1d03aadea727a99214b79de47a71';
+
+            let parsedTx = await vspv.methods.parseTransaction(tx)
+                .call({ from: seller, gas: gas, gasPrice: gasPrice });
+
+            assert.equal(prefix, parsedTx._prefix);
+            assert.equal(nInputs, parsedTx._nInputs);
+            assert.equal(inputs, parsedTx._inputs);
+            assert.equal(nOutputs, parsedTx._nOutputs);
+            assert.equal(outputs, parsedTx._outputs);
+            assert.equal(locktime, parsedTx._locktime);
+            assert.equal(txid, parsedTx._txid);
         });
     });
 
-    describe.skip('#extractallinputs', async () => {
+    describe('#extractallinputs', async () => {
 
         it('returns the number of inputs and inputs string', async () => {
+            let tx = '0x0100000000010235815cf40015f7b128dc5d86dea441e85721321b10d4d93d76a1bf6070f97fff0000000000feffffff0ad99758ff754b51ef0d72dfa9b9965ae3d510d1e282dfc099b6b3eaea4c30050000000000feffffff03e8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c0000000000000000176a4c1423d81b160cb51f763e7bf9b373a34f5ddb75fcbb7b000000000000001600140be3e4aa1656bb811db32da61d40e9171c8895e20248304502210099525661b53abc1aacc505d8e0919d1ee3210afa4bd40038c46345a9b72d3631022022ee807da4cc4a743c3243063d30174c6752b3e57d02f92d7a083604f73c3e20832102a004b949e4769ed341064829137b18992be884da5932c755e48f9465c1069dc2024830450221008dba80574b4e1852cd1312c3fe2d6d4ad2958895b9bbad82f45820de02b32a4902201c2b807596c3aa603d659a1be4eb09e5d7ab56836722bfe1cdb649de7164ab9f012102ef21caa25eca974d3bdd73c034d6943cbf145a700d493adaa6f496bd87c5b33be26ab25b';
+            let nInputs = '0x02';
+            let inputs = '0x35815cf40015f7b128dc5d86dea441e85721321b10d4d93d76a1bf6070f97fff0000000000feffffff0ad99758ff754b51ef0d72dfa9b9965ae3d510d1e282dfc099b6b3eaea4c30050000000000feffffff';
+
+            let extractedInputs = await vspv.methods.extractAllInputs(tx)
+                .call({ from: seller, gas: gas, gasPrice: gasPrice });
+
+            assert.equal(nInputs, extractedInputs._nInputs);
+            assert.equal(inputs, extractedInputs._inputs);
         });
     });
 
-    describe.skip('#extractAllOutputs', async () => {
+    describe('#extractAllOutputs', async () => {
 
         it('returns the number of outputs and outputs string', async () => {
+            let tx = '0x0100000000010235815cf40015f7b128dc5d86dea441e85721321b10d4d93d76a1bf6070f97fff0000000000feffffff0ad99758ff754b51ef0d72dfa9b9965ae3d510d1e282dfc099b6b3eaea4c30050000000000feffffff03e8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c0000000000000000176a4c1423d81b160cb51f763e7bf9b373a34f5ddb75fcbb7b000000000000001600140be3e4aa1656bb811db32da61d40e9171c8895e20248304502210099525661b53abc1aacc505d8e0919d1ee3210afa4bd40038c46345a9b72d3631022022ee807da4cc4a743c3243063d30174c6752b3e57d02f92d7a083604f73c3e20832102a004b949e4769ed341064829137b18992be884da5932c755e48f9465c1069dc2024830450221008dba80574b4e1852cd1312c3fe2d6d4ad2958895b9bbad82f45820de02b32a4902201c2b807596c3aa603d659a1be4eb09e5d7ab56836722bfe1cdb649de7164ab9f012102ef21caa25eca974d3bdd73c034d6943cbf145a700d493adaa6f496bd87c5b33be26ab25b';
+            let nOutputs = '0x03';
+            let outputs = '0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c0000000000000000176a4c1423d81b160cb51f763e7bf9b373a34f5ddb75fcbb7b000000000000001600140be3e4aa1656bb811db32da61d40e9171c8895e2';
+
+            let extractedOutputs = await vspv.methods.extractAllOutputs(tx)
+                .call({ from: seller, gas: gas, gasPrice: gasPrice });
+
+            assert.equal(nOutputs, extractedOutputs._nOutputs);
+            assert.equal(outputs, extractedOutputs._outputs);
         });
     });
 
@@ -89,10 +126,12 @@ describe('ValidateSPV', () => {
             let nOutputs = '0x03';
             let outputs = '0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c0000000000000000176a4c1423d81b160cb51f763e7bf9b373a34f5ddb75fcbb7b000000000000001600140be3e4aa1656bb811db32da61d40e9171c8895e2';
             let locktime = '0xe26ab25b';
-            let hash = '0xb117d24b4ed7b0fd35758f082075373a2cca1d03aadea727a99214b79de47a71';
+            let txid = '0xb117d24b4ed7b0fd35758f082075373a2cca1d03aadea727a99214b79de47a71';
+
             let txHash = await vspv.methods.transactionHash(prefix, nInputs, inputs, nOutputs, outputs, locktime)
                 .call({ from: seller, gas: gas, gasPrice: gasPrice });
-            assert.equal(hash, txHash);
+
+            assert.equal(txid, txHash);
         });
     });
 

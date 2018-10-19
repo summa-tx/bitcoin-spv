@@ -29,13 +29,13 @@ library ValidateSPV {
     /// @return         Transaction id, little endian
     /// arrry of uints that are output types, nInputs, numOuptuts, locktime, txid, inputIndices, outputIndices
     /// add getter functions that tkes _tx and index and returns iths input/output
-    function validateTransaction(
+    function parseTransaction(
         bytes _tx
     ) public pure returns (
-        bytes _nInputs,
-        bytes _nOutputs,
         bytes _prefix,
+        bytes _nInputs,
         bytes _inputs,
+        bytes _nOutputs,
         bytes _outputs,
         bytes _locktime,
         bytes32 _txid
