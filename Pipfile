@@ -6,8 +6,9 @@ verify_ssl = true
 [packages]
 riemann-tx = "*"
 requests = "*"
+ethereum = "*"
 
 [requires]
-python_version = "3.5"
+python_version = "3.6.6"
 
 [dev-packages]
