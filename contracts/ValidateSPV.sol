@@ -15,23 +15,45 @@ library ValidateSPV {
     using SafeMath for uint256;
 
     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN }
-    // /// @notice         Parses, a tx, valides its inclusdion in the block, stores to the
-    // /// @notice         mapping
-    // /// @param _tx      The raw byte tx
-    // /// @param _proof   The raw byte proof (concatenated LE hashes)
-    // /// @param _header  The raw byte header
-    // /// @return         true if fully valid, false otherwise
-    // function validate(bytes _tx, bytes _proof, uint _index, bytes _header) public returns (bytes32);
+
+    /// @notice         Valides a tx inclusion in the block
+    /// @param _txid        The txid (LE)
+    /// @param _blockHash   The block hash
+    /// @param _merkleRoot  The merkle root
+    /// @param _proof       The proof (concatenated LE hashes)
+    /// @param _index       The proof index
+    /// @return             true if fully valid, false otherwise
+    function proove(
+        bytes32 _txid,
+        bytes32 _blockHash,
+        bytes32 _merkleRoot,
+        bytes _proof,
+        uint _index
+    ) public pure returns (bool) {
+
+        // If parsing failed, bubble up error
+        if (_txid == bytes32(0) || _blockHash == bytes32(0)) { return false; }
+
+        // If the first hash in the proof is not the txid, bubble up error
+        if (_proof.slice(0, 32).toBytes32() != _txid) { return false; }
+
+        // If the last hash in the proof is not the merkle root, bubble up error
+        if (_proof.slice(_proof.length - 32, 32).toBytes32() != _merkleRoot) { return false; }
+
+        // If the Merkle proof failed, bubble up error
+        if (!_proof.verifyHash256Merkle(_index)) { return false; }
+
+        return true;
+    }
 
     /// @notice         Validates a tx from a bytestring
     /// @dev            This supports ONLY WITNESS INPUTS AND OUTPUTS
     /// @param _tx      Raw bytes tx
-    /// @return         Transaction id, little endian
-    /// arrry of uints that are output types, nInputs, numOuptuts, locktime, txid, inputIndices, outputIndices
-    /// add getter functions that tkes _tx and index and returns iths input/output
+    /// @return         Transaction prefix, num inputs, inputs, num outputs, outputs, locktime, txid
     function parseTransaction(
         bytes _tx
-    ) public pure returns (
+    )
+    public pure returns (
         bytes _prefix,
         bytes _nInputs,
         bytes _inputs,
@@ -55,6 +77,9 @@ library ValidateSPV {
         _txid = transactionHash(_prefix, _nInputs, _inputs, _nOutputs, _outputs, _locktime);
     }
 
+    /// @notice         Parses tx input
+    /// @param _tx      The raw byte tx
+    /// @return         Raw bytes num inputs and inputs
     function extractAllInputs(bytes _tx) public pure returns (bytes _nInputs, bytes _inputs) {
         _nInputs = _tx.extractNumInputsBytes();
         uint8 _tmpN = _tx.extractNumInputs();
@@ -64,6 +89,9 @@ library ValidateSPV {
         }
     }
 
+    /// @notice         Parses tx ouputs
+    /// @param _tx      The raw byte tx
+    /// @return         Raw bytes num ouputs and outputs
     function extractAllOutputs(bytes _tx) public pure returns (bytes _nOutputs, bytes _outputs) {
         _nOutputs = _tx.extractNumOutputsBytes();
         uint8 _tmpN = _tx.extractNumOutputs();
@@ -73,6 +101,14 @@ library ValidateSPV {
         }
     }
 
+    /// @notice             Hashes transaction to get txid
+    /// @dev                This supports ONLY WITNESS INPUTS AND OUTPUTS
+    /// @param _prefix      Raw bytes prefix
+    /// @param _nInputs     Raw bytes num inputs
+    /// @param _inputs      Raw bytes inputs
+    /// @param _nOutputs    Raw bytes num outputs
+    /// @param _outputs     Raw bytes ouputs
+    /// @return             Transaction id, little endian
     function transactionHash(
         bytes _prefix,
         bytes _nInputs,
@@ -98,18 +134,6 @@ library ValidateSPV {
         // Return true if prefix is version 1 or 2 and has segwit flag
         return ((_versionHash == keccak256(hex'01') || _versionHash == keccak256(hex'02'))
                 && keccak256(_bytes.slice(1, 5)) == keccak256(hex'0000000001'));
-    }
-
-    function getInput(bytes _tx, uint8 _index) public pure returns (uint32 _sequence, bytes _outpoint) {
-        (_sequence, _outpoint) = parseInput(_tx.extractInputAtIndex(_index)); 
-    }
-
-    function getOutput(bytes _tx, uint8 _index) public pure returns (
-        uint256 _value,
-        uint8 _outputType,
-        bytes _payload
-    ) {
-        (_value, _outputType, _payload) = parseOutput(_tx.extractOutputAtIndex(_index)); 
     }
 
     /// @notice         Parses a tx input from raw input bytes
@@ -158,10 +182,9 @@ library ValidateSPV {
         return (_value, _outputType, _payload);
     }
 
-    /// @notice         Parses a block header struct from a bytestring
-    /// @dev            Block headers are always 80 bytes, see Bitcoin docs
-    /// @param _header  Raw bytes header
-    /// @return         Header digest, version, previous block header hash, merkle root, timestamp, target, nonce
+    /// @notice             Parses a block header struct from a bytestring
+    /// @dev                Block headers are always 80 bytes, see Bitcoin docs
+    /// @return             Header digest, version, previous block header hash, merkle root, timestamp, target, nonce
     function parseHeader(bytes _header) public pure returns (
         bytes32 _digest,
         uint32 _version,
