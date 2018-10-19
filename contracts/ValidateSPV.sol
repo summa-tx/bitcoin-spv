@@ -33,8 +33,10 @@ contract ValidateSPV {
         uint32 locktime;            // 4 byte locktime
         uint8 numInputs;            // number tx inputs
         uint8 numOutputs;           // number tx outputs
-        TxIn[] inputs;              // tx input struct array
-        TxOut[] outputs;            // tx output struct array
+        mapping (uint8 => TxIn) inputs;
+        mapping (uint8 => TxOut) outputs;
+        /*TxIn[] inputs;              // tx input struct array
+        TxOut[] outputs;            // tx output struct array*/
     }
 
     struct Header {

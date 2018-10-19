@@ -96,11 +96,11 @@ contract SPVStore is ValidateSPV {
 
         // This can be improved when solidity can copy memory structs and arrays to storage
         for (i = 0; i < _numInputs; i++) {
-            transactions[_txid].inputs.push(_inputs[i]);
+            transactions[_txid].inputs[i] = _inputs[i];
         }
 
         for (i = 0; i < _numOutputs; i++) {
-            transactions[_txid].outputs.push(_outputs[i]);
+            transactions[_txid].outputs[i] = _outputs[i];
         }
 
         // Emit TxParsed event
@@ -145,8 +145,8 @@ contract SPVStore is ValidateSPV {
     /// @param _txid    Transaction id
     /// @param _index   Output index to return value from
     /// @return         Value of tx output
-    function getTxOutValue(bytes32 _txid, uint256 _index) public view returns (uint64) {
-        Transaction memory _tx = transactions[_txid];
+    function getTxOutValue(bytes32 _txid, uint8 _index) public view returns (uint64) {
+        Transaction storage _tx = transactions[_txid];
         return _tx.outputs[_index].value;
     }
 
@@ -154,17 +154,17 @@ contract SPVStore is ValidateSPV {
     /// @param _txid    Transaction id
     /// @param _index   Output index to return output type from
     /// @return         Output type of tx output
-    function getTxOutOutputType(bytes32 _txid, uint256 _index) public view returns (OutputTypes) {
-        Transaction memory _tx = transactions[_txid];
-        return _tx.outputs[_index].outputType;
+    function getTxOutOutputType(bytes32 _txid, uint8 _index) public view returns (uint) {
+        Transaction storage _tx = transactions[_txid];
+        return uint(_tx.outputs[_index].outputType);
     }
 
     /// @notice         Returns tx output payload
     /// @param _txid    Transaction id
     /// @param _index   Output index to return payload from
     /// @return         Payload of tx output
-    function getTxOutPayload(bytes32 _txid, uint256 _index) public view returns (bytes) {
-        Transaction memory _tx = transactions[_txid];
+    function getTxOutPayload(bytes32 _txid, uint8 _index) public view returns (bytes) {
+        Transaction storage _tx = transactions[_txid];
         return _tx.outputs[_index].payload;
     }
 
