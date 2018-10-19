@@ -7,11 +7,21 @@ npm run compile
 npm test
 ```
 
-### Generating merkle proofs
+### Generating merkle proofs from real chain data
 
 ```
 pipenv install
 pipenv run python scripts/merkle.py {txid BE}
+```
+
+### Generating header chains from scratch (useful for testing)
+
+Not recommended to set nbits lower than 2000ffff.
+
+```
+pipenv install
+pipenv run python scripts/header_chain.py {num_headers} {nbits_as_hex_string}
+pipenv run python scripts/header_chain.py 7 2000ffff
 ```
 
 ### Test Txns
