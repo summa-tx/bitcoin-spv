@@ -117,7 +117,7 @@ library BTCUtils {
     /// @dev             4 byte tx index
     /// @param _b        The input
     /// @return          The tx index (little-endian bytes)
-    function extractTxIndexLE(bytes _b) public pure returns (bytes) { return _b.slice(32, 36); }
+    function extractTxIndexLE(bytes _b) public pure returns (bytes) { return _b.slice(32, 4); }
 
     /// @notice          Extracts the tx input index from the input in a tx
     /// @dev             4 byte tx index

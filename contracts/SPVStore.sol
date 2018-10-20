@@ -20,7 +20,6 @@ contract SPVStore {
     event Validated(bytes32 indexed _hash);
     event TxParsed(bytes32 indexed _hash);
     event HeaderParsed(bytes32 indexed _digest);
-    event WorkTooLow(bytes32 indexed _hash, uint256 _hashInt, uint256 indexed _target);
 
     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN }
 

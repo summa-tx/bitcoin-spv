@@ -138,7 +138,7 @@ library ValidateSPV {
     /// @notice         Parses a tx input from raw input bytes
     /// @dev            Checks for blank scriptSig
     /// @param _input   Raw bytes tx input
-    /// @return         Tx input sequence number and outpoint
+    /// @return         Tx input sequence number, tx hash, and index
     function parseInput(bytes _input) public pure returns (uint32 _sequence, bytes32 _hash, uint32 _index) {
 
         // Require segwit: if no 00 scriptSig, error

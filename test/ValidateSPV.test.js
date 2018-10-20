@@ -62,6 +62,15 @@ describe('ValidateSPV', () => {
 
     it('compiles the ValidateSPV library', async () => assert.ok(vspv.options.address));
 
+    describe.skip('#prove', async () => {
+        it.skip('returns true if proof is valid', async () => { });
+        it.skip('returns false if txid is invalid', async () => { });
+        it.skip('returns false if block header hash is invalid', async () => { });
+        it.skip('returns false if first proof hash is not txid', async () => { });
+        it.skip('returns false if last proof hash is not Merkle root', async () => { });
+        it.skip('returns false if Merkle root is invalid', async () => { });
+    });
+
     describe('#parseTransaction', async () => {
 
         it('returns the nInputs, inputs, nOutputs, outputs, locktime, and txid', async () => {
@@ -185,18 +194,21 @@ describe('ValidateSPV', () => {
     describe('#parseInput', async () => {
         let input;
         let sequence;
-        let outpoint;
+        let txid;
+        let index;
 
         it('returns the tx input sequence and outpoint', async () => {
             input = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff';
             sequence = 4294967295;
-            outpoint = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000';
+            hash_be = '0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b';
+            index = '0';
 
             let txIn = await vspv.methods.parseInput(input)
                 .call({ from: seller, gas: gas, gasPrice: gasPrice });
 
             assert.equal(txIn._sequence, sequence);
-            assert.equal(txIn._outpoint, outpoint);
+            assert.equal(txIn._hash, hash_be);
+            assert.equal(txIn._index, index);
         });
 
         it('errors if the input does not have a 00 scriptSig', async () => {
