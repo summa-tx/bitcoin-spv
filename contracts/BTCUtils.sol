@@ -84,7 +84,7 @@ library BTCUtils {
     /// @notice          Extracts the sequence from the input in a tx
     /// @dev             Sequence is a 4-byte little-endian number
     /// @param _b        The input
-    /// @return          The sequence number
+    /// @return          The sequence number (big-endian uint)
     function extractSequence(bytes _b) public pure returns (uint32) {
         bytes memory _leSeqence = extractSequenceLE(_b);
         bytes memory _beSequence = reverseEndianness(_leSeqence);
@@ -92,13 +92,44 @@ library BTCUtils {
     }
 
     /// @notice          Extracts the outpoint from the input in a tx
-    /// @dev             36 byte tx id with 4 byte index
+    /// @dev             32 byte tx id with 4 byte index
     /// @param _b        The input
-    /// @return          The outpoint (bytes)
+    /// @return          The outpoint (little-endian bytes)
     function extractOutpoint(bytes _b) public pure returns (bytes) { return _b.slice(0, 36); }
 
-    /* Witness Output */
+    /// @notice          Extracts the tx input tx id from the input in a tx
+    /// @dev             32 byte tx id
+    /// @param _b        The input
+    /// @return          The tx id (little-endian bytes)
+    function extractTxIdLE(bytes _b) public pure returns (bytes32) { return _b.slice(0, 32).toBytes32(); }
 
+    /// @notice          Extracts the tx input tx id from the input in a tx
+    /// @dev             32 byte tx id
+    /// @param _b        The input
+    /// @return          The tx id (big-endian bytes)
+    function extractTxId(bytes _b) public pure returns (bytes32) {
+        bytes memory _leId = abi.encodePacked(extractTxIdLE(_b));
+        bytes memory _beId = reverseEndianness(_leId);
+        return _beId.toBytes32();
+    }
+
+    /// @notice          Extracts the LE tx input index from the input in a tx
+    /// @dev             4 byte tx index
+    /// @param _b        The input
+    /// @return          The tx index (little-endian bytes)
+    function extractTxIndexLE(bytes _b) public pure returns (bytes) { return _b.slice(32, 36); }
+
+    /// @notice          Extracts the tx input index from the input in a tx
+    /// @dev             4 byte tx index
+    /// @param _b        The input
+    /// @return          The tx index (big-endian uint)
+    function extractTxIndex(bytes _b) public pure returns (uint32) {
+        bytes memory _leIndex = extractTxIndexLE(_b);
+        bytes memory _beIndex = reverseEndianness(_leIndex);
+        return uint32(bytesToUint(_beIndex));
+    }
+
+    /* Witness Output */
     /// @notice          Extracts the output script length
     /// @dev             Indexes the length prefix on the pk_script
     /// @param _b        The output

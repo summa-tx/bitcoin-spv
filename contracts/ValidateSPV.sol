@@ -88,9 +88,9 @@ library ValidateSPV {
         }
     }
 
-    /// @notice         Parses tx ouputs
+    /// @notice         Parses tx outputs
     /// @param _tx      The raw byte tx
-    /// @return         Raw bytes num ouputs and outputs
+    /// @return         Raw bytes num outputs and outputs
     function extractAllOutputs(bytes _tx) public pure returns (bytes _nOutputs, bytes _outputs) {
         _nOutputs = _tx.extractNumOutputsBytes();
         uint8 _tmpN = _tx.extractNumOutputs();
@@ -139,7 +139,7 @@ library ValidateSPV {
     /// @dev            Checks for blank scriptSig
     /// @param _input   Raw bytes tx input
     /// @return         Tx input sequence number and outpoint
-    function parseInput(bytes _input) public pure returns (uint32 _sequence, bytes _outpoint) {
+    function parseInput(bytes _input) public pure returns (uint32 _sequence, bytes32 _hash, uint32 _index) {
 
         // Require segwit: if no 00 scriptSig, error
         require(keccak256(_input.slice(36, 1)) == keccak256(hex'00'), "No 00 scriptSig found.");
@@ -147,7 +147,7 @@ library ValidateSPV {
         // Require that input is 41 bytes
         require(_input.length == 41, "Tx input must be 41 bytes.");
 
-        return (_input.extractSequence(), _input.extractOutpoint());
+        return (_input.extractSequence(), _input.extractTxId(), _input.extractTxIndex());
     }
 
     /// @notice         Parses a tx output from raw output bytes
