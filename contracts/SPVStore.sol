@@ -17,8 +17,8 @@ contract SPVStore {
     using BytesLib for bytes;
     using SafeMath for uint256;
 
-    event Validated(bytes32 indexed _hash);
-    event TxParsed(bytes32 indexed _hash);
+    event Validated(bytes32 indexed _txid, bytes32 indexed _digest);
+    event TxParsed(bytes32 indexed _txid);
     event HeaderParsed(bytes32 indexed _digest);
 
     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN }
@@ -65,11 +65,13 @@ contract SPVStore {
     /// @return         true if fully valid, false otherwise
     function validate( bytes32 _txid, bytes32 _digest, bytes _proof, uint _index) public returns (bool) {
 
+        // require(headers[_digest] != 0);
+
         // Return false if invalid proof
         if (!_txid.prove(_digest, headers[_digest].merkleRoot, _proof, _index)) { return false; }
 
         // Emit Validated event
-        emit Validated(_txid);
+        emit Validated(_txid, _digest);
 
         // Return true if valid proof
         return true;
