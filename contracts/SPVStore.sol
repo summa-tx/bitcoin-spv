@@ -157,7 +157,7 @@ contract SPVStore {
 
             (_inputs.sequence, _inputs.hash, _inputs.index) = _tx.extractInputAtIndex(i).parseInput();
 
-            // If invalid outpoint, bubble up error
+            // If invalid hash, return false
             if (_inputs.hash == bytes32(0)) { return false; }
 
             transactions[_txid].inputs[i] = _inputs;

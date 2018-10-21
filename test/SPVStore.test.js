@@ -100,25 +100,20 @@ describe('SPVStore', async () => {
                 .call({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE }), true);
         });
 
-        it.skip('emits a Validated event', async () => {
-            let op_return_txid = '0x48e5a1a0e616d8fd92b4ef228c424e0c816799a256c6a90892195ccfc53300d6';
+        it('emits a Validated event', async () =>
 
-            // OP_RETURN TX
             await storeContract.methods.validate(
-                constants.OP_RETURN.TX, OP_RETURN_PROOF, OP_RETURN_INDEX, OP_RETURN_HEADER)
-                .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE});
-
-            // Emits a Validated event
-            utils.expectEvent(storeContract.getPastEvents('Validated',
-                { fromBlock: 0, toBlock: 'latest'}));
-
-            // Filter by txid
-            let op_return_event = await storeContract.getPastEvents('Validated',
-                { filter: { _hash: op_return_txid },
-                    fromBlock: 0, toBlock: 'latest'});
-            assert.equal(op_return_event[0].raw.topics[1], op_return_txid);
-        });
-
+                constants.OP_RETURN.TXID_LE,
+                constants.OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE,
+                constants.OP_RETURN.PROOF,
+                constants.OP_RETURN.PROOF_INDEX)
+            .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE })
+            .then(res => {
+                assert.ok(res.events.Validated);
+                assert.equal(constants.OP_RETURN.TXID_LE, res.events.Validated.returnValues._txid);
+                assert.equal(constants.OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE,
+                    res.events.Validated.returnValues._digest);
+            }));
     });
 
     describe('#parseAndStoreTransaction', async () => {
@@ -150,33 +145,34 @@ describe('SPVStore', async () => {
             assert.equal(constants.OP_RETURN.LOCKTIME, storedTx.locktime);
         });
 
-        it.skip('emits a TxParsed event', async () => {
-
+        it('emits a TxParsed event', async () =>
             await storeContract.methods.parseAndStoreTransaction(constants.OP_RETURN.TX)
-                .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE });
-
-            // Emits a TxParsed event
-            utils.expectEvent(storeContract.getPastEvents('TxParsed',
-                { fromBlock: 0, toBlock: 'latest'}));
-
-            // Filter by txid
-            let op_return_event = await storeContract.getPastEvents('TxParsed',
-                { filter: { _hash: op_return_txid },
-                    fromBlock: 0, toBlock: 'latest'});
-
-            assert.equal(op_return_event[0].raw.topics[1], op_return_txid);
-        });
+            .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE })
+            .then(res => {
+                assert.ok(res.events.TxParsed);
+                assert.equal(constants.OP_RETURN.TXID_LE, res.events.TxParsed.returnValues._txid);
+            }));
 
         it('returns bytes32(0) if invalid prefix', async () => {
 
             let err_prefix_tx = '0x040000000001011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211024730440220276e0ec78028582054d86614c65bc4bf85ff5710b9d3a248ca28dd311eb2fa6802202ec950dd2a8c9435ff2d400cc45d7a4854ae085f49e05cc3f503834546d410de012103732783eef3af7e04d3af444430a629b16a9261e4025f52bf4d6d026299c37c7400000000';
             assert.equal(
                 await storeContract.methods.parseAndStoreTransaction(err_prefix_tx)
-                    .call({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE }), constants.EMPTY);
+                .call({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE }), constants.EMPTY);
         });
 
-        it.skip('returns bytes32(0) if invalid outpoint', async() => { });
-        it.skip('errors if input is invalid', async () => { });
+        it.skip('returns bytes32(0) if invalid outpoint', async() => {
+            await storeContract.methods.parseAndStoreTransaction(
+                constants.OP_RETURN.TX_ERR.TX_INPUT_0_HASH)
+                .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE });
+            console.log(await storeContract.methods.parseAndStoreTransaction(
+                constants.OP_RETURN.TX_ERR.TX_INPUT_0_HASH)
+                .call({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE }));
+            assert.equal(constants.EMPTY,
+                await storeContract.methods.parseAndStoreTransaction(
+                    constants.OP_RETURN.TX_ERR.TX_INPUT_0_HASH)
+                .call({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE }))
+        });
     });
 
     describe('#parseAndStoreHeader', async () => {
@@ -210,9 +206,22 @@ describe('SPVStore', async () => {
                 assert.equal(constants.OP_RETURN.INDEXED_HEADERS[0].TIMESTAMP, storedHeader.timestamp);
                 assert.equal(constants.OP_RETURN.INDEXED_HEADERS[0].TARGET, storedHeader.target);
                 assert.equal(constants.OP_RETURN.INDEXED_HEADERS[0].NONCE, storedHeader.nonce);
-        });
+            });
 
-        it.skip('emits a HeaderParsed event', async () => { });
-        it.skip('errors if the header is not 80 bytes long', async () => { });
+        it('emits a HeaderParsed event', async () =>
+
+            await storeContract.methods.parseAndStoreHeader(
+                constants.OP_RETURN.INDEXED_HEADERS[0].HEADER)
+            .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE })
+            .then(res => {
+                assert.ok(res.events.HeaderParsed);
+                assert.equal(constants.OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE,
+                    res.events.HeaderParsed.returnValues._digest);
+            }));
+
+        it('errors if the header is not 80 bytes long', async () =>
+            assert.equal(await storeContract.methods.parseAndStoreHeader(
+                constants.OP_RETURN.HEADER_ERR.HEADER_CHAIN_LEN)
+                .call({from: seller, gas: GAS, gasPrice: GAS_PRICE}), constants.EMPTY));
     });
 });
