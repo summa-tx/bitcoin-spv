@@ -265,6 +265,34 @@ describe('ValidateSPV', () => {
             assert.equal(null, parsedTx._locktime);
             assert.equal(constants.EMPTY, parsedTx._txid);
         });
+
+        it('returns null if number of inputs is 0', async () => {
+            // No marker and witness flag
+            parsedTx = await vspv.methods.parseTransaction(
+                constants.OP_RETURN.TX_ERR.TX_NINPUT_ZERO
+            ).call({ from: seller, gas: gas, gasPrice: gasPrice });
+
+            assert.equal('0x00', parsedTx._nInputs);
+            assert.equal(null, parsedTx._inputs);
+            assert.equal(null, parsedTx._nOutputs);
+            assert.equal(null, parsedTx._outputs);
+            assert.equal(null, parsedTx._locktime);
+            assert.equal(constants.EMPTY, parsedTx._txid);
+        });
+
+        it('returns null if number of outputs is 0', async () => {
+            // No marker and witness flag
+            parsedTx = await vspv.methods.parseTransaction(
+                constants.OP_RETURN.TX_ERR.TX_NOUTPUT_ZERO
+            ).call({ from: seller, gas: gas, gasPrice: gasPrice });
+
+            assert.equal(constants.OP_RETURN.N_INPUTS_HEX, parsedTx._nInputs);
+            assert.ok(parsedTx._inputs);
+            assert.equal('0x00', parsedTx._nOutputs);
+            assert.equal(null, parsedTx._outputs);
+            assert.equal(null, parsedTx._locktime);
+            assert.equal(constants.EMPTY, parsedTx._txid);
+        });
     });
 
     describe('#extractAllInputs', async () => {

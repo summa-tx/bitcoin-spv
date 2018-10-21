@@ -16,13 +16,13 @@ library ValidateSPV {
 
     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN }
 
-    /// @notice         Valides a tx inclusion in the block
-    /// @param _txid        The txid (LE)
-    /// @param _blockHash   The block hash
-    /// @param _merkleRoot  The merkle root
-    /// @param _proof       The proof (concatenated LE hashes)
-    /// @param _index       The proof index
-    /// @return             true if fully valid, false otherwise
+    /// @notice                 Valides a tx inclusion in the block
+    /// @param _txid            The txid (LE)
+    /// @param _blockHash       The block hash
+    /// @param _merkleRoot      The merkle root
+    /// @param _proof           The proof (concatenated LE hashes)
+    /// @param _index           The proof index
+    /// @return                 true if fully valid, false otherwise
     function prove(
         bytes32 _txid,
         bytes32 _blockHash,
@@ -62,19 +62,25 @@ library ValidateSPV {
         bytes32 _txid
     ) {
 
+        // Extract prefix and validate, if invalid, bubble up error
         bytes memory _prefix = _tx.extractPrefix();
-
-        // If invalid prefix, bubble up error
         if (!validatePrefix(_prefix)) { return; }
 
+        // Extract version to calculate txid
         bytes memory _version = _prefix.slice(0, 4);
 
+        // Extract number of inputs and inputs, if _nInputs is 0, bubble up error
         (_nInputs, _inputs) = extractAllInputs(_tx);
+        if (keccak256(_nInputs) == keccak256(hex'00')) { return; }
 
+        // Extract number of outputs and outputs, if _nOutputs is 0, bubble up error
         (_nOutputs, _outputs) = extractAllOutputs(_tx);
+        if (keccak256(_nOutputs) == keccak256(hex'00')) { return; }
 
+        // Extract locktime
         _locktime = _tx.extractLocktimeLE();
 
+        // Calculate txid
         _txid = transactionHash(_version, _nInputs, _inputs, _nOutputs, _outputs, _locktime);
     }
 

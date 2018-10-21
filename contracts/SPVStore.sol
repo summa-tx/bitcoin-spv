@@ -91,16 +91,17 @@ contract SPVStore {
         uint8 _nInputs = uint8(_nIns.bytesToUint());
         uint8 _nOutputs = uint8(_nOuts.bytesToUint());
 
-        transactions[_txid].txid = _txid;
-        transactions[_txid].locktime = uint32(_locktime.bytesToUint());
-        transactions[_txid].numInputs = _nInputs;
-        transactions[_txid].numOutputs = _nOutputs;
-
         // Parse and store inputs, if failed to parse or store then bubble up error
         if (!parseAndStoreInputs(_txid, _tx, _nInputs)) { return; }
 
         // Parse and store outputs, if failed to parse or store then bubble up error
         if (!parseAndStoreOutputs(_txid, _tx, _nOutputs)) { return; }
+
+        // Store transaction data in mapping
+        transactions[_txid].txid = _txid;
+        transactions[_txid].locktime = uint32(_locktime.bytesToUint());
+        transactions[_txid].numInputs = _nInputs;
+        transactions[_txid].numOutputs = _nOutputs;
 
         // Emit TxStored event
         emit TxStored(_txid);
@@ -108,7 +109,6 @@ contract SPVStore {
         // Return transaction hash
         return _txid;
     }
-
 
     /// @notice             Parses a header and stores to the mapping
     /// @param _header      The raw byte header
