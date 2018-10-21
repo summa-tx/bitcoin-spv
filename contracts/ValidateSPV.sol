@@ -221,7 +221,7 @@ library ValidateSPV {
     function validateHeaderChain(bytes _headers) public pure returns (uint256 _reqDiff) {
 
         // Check header chain length
-        if (_headers.length % 80 != 0) { return 0; }
+        if (_headers.length % 80 != 0) { return 1; }
 
         // Initialize header start index
         bytes32 _digest;
@@ -237,7 +237,7 @@ library ValidateSPV {
 
             // After the first header, check that headers are in a chain
             if (i != 0) {
-                if (!validateHeaderPrevHash(_header, _digest)) { return 1; }
+                if (!validateHeaderPrevHash(_header, _digest)) { return 2; }
             }
 
             // ith header target
@@ -246,7 +246,7 @@ library ValidateSPV {
             // Require that the header has sufficient work
             _digest = _header.hash256();
             if(abi.encodePacked(_digest).reverseEndianness().bytesToUint() > _target) {
-                return 2;
+                return 3;
             }
 
             // Add ith header difficulty to difficulty sum
