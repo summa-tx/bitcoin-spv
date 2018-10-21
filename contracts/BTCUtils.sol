@@ -94,7 +94,7 @@ library BTCUtils {
     /// @notice          Extracts the outpoint from the input in a tx
     /// @dev             32 byte tx id with 4 byte index
     /// @param _b        The input
-    /// @return          The outpoint (little-endian bytes)
+    /// @return          The outpoint (LE bytes of prev tx hash + LE bytes of prev tx index)
     function extractOutpoint(bytes _b) public pure returns (bytes) { return _b.slice(0, 36); }
 
     /// @notice          Extracts the tx input tx id from the input in a tx

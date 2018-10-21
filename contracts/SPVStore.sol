@@ -18,8 +18,8 @@ contract SPVStore {
     using SafeMath for uint256;
 
     event Validated(bytes32 indexed _txid, bytes32 indexed _digest);
-    event TxParsed(bytes32 indexed _txid);
-    event HeaderParsed(bytes32 indexed _digest);
+    event TxStored(bytes32 indexed _txid);
+    event HeaderStored(bytes32 indexed _digest);
 
     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN }
 
@@ -47,7 +47,7 @@ contract SPVStore {
     struct Header {
         bytes32 digest;             // 32 byte little endian digest
         uint32 version;             // 4 byte version
-        bytes32 prevHash;          // 32 byte previous block hash
+        bytes32 prevHash;           // 32 byte previous block hash
         bytes32 merkleRoot;         // 32 byte tx root
         uint32 timestamp;           // 4 byte timestamp
         uint256 target;             // 4 byte nBits == 32 byte integer
@@ -57,12 +57,12 @@ contract SPVStore {
     mapping(bytes32 => Transaction) public transactions;    // Transactions
     mapping(bytes32 => Header) public headers;              // Parsed headers
 
-    /// @notice         Parses, a tx, valides its inclusdion in the block, stores to the mapping
-    /// @param _txid    The transaction hash
-    /// @param _digest  The header hash
-    /// @param _proof   The raw byte proof (concatenated LE hashes)
-    /// @param _index   The index of the leaf
-    /// @return         true if fully valid, false otherwise
+    /// @notice             Validates tx inclusion in block
+    /// @param _txid        The transaction hash
+    /// @param _digest      The header hash
+    /// @param _proof       The raw byte proof (concatenated LE hashes)
+    /// @param _index       The index of the leaf
+    /// @return             true if fully valid, false otherwise
     function validate( bytes32 _txid, bytes32 _digest, bytes _proof, uint _index) public returns (bool) {
 
         // Return false if invalid proof
@@ -75,7 +75,7 @@ contract SPVStore {
         return true;
     }
 
-    /// @notice         Parses, a tx, valides its inclusdion in the block, stores to the mapping
+    /// @notice         Parses a tx, validates its inclusion in the block, stores to the mapping
     /// @param _tx      The raw byte tx
     /// @return         true if fully valid, false otherwise
     function parseAndStoreTransaction(bytes _tx) public returns (bytes32) {
@@ -102,8 +102,8 @@ contract SPVStore {
         // Parse and store outputs, if failed to parse or store then bubble up error
         if (!parseAndStoreOutputs(_txid, _tx, _nOutputs)) { return; }
 
-        // Emit TxParsed event
-        emit TxParsed(_txid);
+        // Emit TxStored event
+        emit TxStored(_txid);
 
         // Return transaction hash
         return _txid;
@@ -129,8 +129,8 @@ contract SPVStore {
         headers[_digest].target = _target;
         headers[_digest].nonce = _nonce;
 
-        // Emit HeaderParsed event
-        emit HeaderParsed(_digest);
+        // Emit HeaderStored event
+        emit HeaderStored(_digest);
 
         // Return header digest
         return _digest;
@@ -151,16 +151,16 @@ contract SPVStore {
     }
 
     function parseAndStoreInputs(bytes32 _txid, bytes _tx, uint8 _nInputs) internal returns (bool) {
-        TxIn memory _inputs;
+        TxIn memory _input;
 
         for (uint8 i = 0; i < _nInputs; i++) {
 
-            (_inputs.sequence, _inputs.hash, _inputs.index) = _tx.extractInputAtIndex(i).parseInput();
+            (_input.sequence, _input.hash, _input.index) = _tx.extractInputAtIndex(i).parseInput();
 
             // If invalid hash, return false
-            if (_inputs.hash == bytes32(0)) { return false; }
+            if (_input.hash == bytes32(0)) { return false; }
 
-            transactions[_txid].inputs[i] = _inputs;
+            transactions[_txid].inputs[i] = _input;
         }
         
         return true;
@@ -168,24 +168,24 @@ contract SPVStore {
 
     function parseAndStoreOutputs(bytes32 _txid, bytes _tx, uint8 _nOutputs) internal returns (bool) {
         uint8 _outputType;
-        TxOut memory _outputs;
+        TxOut memory _output;
 
         for (uint8 i = 0; i < _nOutputs; i++) {
 
-            (_outputs.value, _outputType, _outputs.payload) = _tx.extractOutputAtIndex(i).parseOutput();
+            (_output.value, _outputType, _output.payload) = _tx.extractOutputAtIndex(i).parseOutput();
 
             // If unidentifiable output type, return false
             if (_outputType == 0) { return false; }
 
             if (_outputType == 1) {
-                _outputs.outputType = OutputTypes.WPKH;
+                _output.outputType = OutputTypes.WPKH;
             } else if (_outputType == 2) {
-                _outputs.outputType = OutputTypes.WSH;
+                _output.outputType = OutputTypes.WSH;
             } else if (_outputType == 3) {
-                _outputs.outputType = OutputTypes.OP_RETURN;
+                _output.outputType = OutputTypes.OP_RETURN;
             }
 
-            transactions[_txid].outputs[i] = _outputs;
+            transactions[_txid].outputs[i] = _output;
         }
         
         return true;

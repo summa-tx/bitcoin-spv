@@ -145,12 +145,12 @@ describe('SPVStore', async () => {
             assert.equal(constants.OP_RETURN.LOCKTIME, storedTx.locktime);
         });
 
-        it('emits a TxParsed event', async () =>
+        it('emits a TxStored event', async () =>
             await storeContract.methods.parseAndStoreTransaction(constants.OP_RETURN.TX)
             .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE })
             .then(res => {
-                assert.ok(res.events.TxParsed);
-                assert.equal(constants.OP_RETURN.TXID_LE, res.events.TxParsed.returnValues._txid);
+                assert.ok(res.events.TxStored);
+                assert.equal(constants.OP_RETURN.TXID_LE, res.events.TxStored.returnValues._txid);
             }));
 
         it('returns bytes32(0) if invalid prefix', async () => {
@@ -205,15 +205,15 @@ describe('SPVStore', async () => {
                 assert.equal(constants.OP_RETURN.INDEXED_HEADERS[0].NONCE, storedHeader.nonce);
             });
 
-        it('emits a HeaderParsed event', async () =>
+        it('emits a HeaderStored event', async () =>
 
             await storeContract.methods.parseAndStoreHeader(
                 constants.OP_RETURN.INDEXED_HEADERS[0].HEADER)
             .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE })
             .then(res => {
-                assert.ok(res.events.HeaderParsed);
+                assert.ok(res.events.HeaderStored);
                 assert.equal(constants.OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE,
-                    res.events.HeaderParsed.returnValues._digest);
+                    res.events.HeaderStored.returnValues._digest);
             }));
 
         it('errors if the header is not 80 bytes long', async () =>

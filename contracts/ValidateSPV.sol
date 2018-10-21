@@ -124,7 +124,7 @@ library ValidateSPV {
 
     /// @notice         Validates the first 6 bytes of a block
     /// @dev            First byte is the version. The next must be 0x0000000001
-    /// @param _bytes   Raw byte string whos first 6 bytes are the prefix
+    /// @param _bytes   Prefixed raw byte string (probably a tx)
     /// @return         true if valid, otherwise false
     function validatePrefix(bytes _bytes) public pure returns (bool) {
 
