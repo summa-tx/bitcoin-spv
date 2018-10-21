@@ -67,13 +67,15 @@ library ValidateSPV {
         // If invalid prefix, bubble up error
         if (!validatePrefix(_prefix)) { return; }
 
+        bytes memory _version = _prefix.slice(0, 4);
+
         (_nInputs, _inputs) = extractAllInputs(_tx);
 
         (_nOutputs, _outputs) = extractAllOutputs(_tx);
 
         _locktime = _tx.extractLocktimeLE();
 
-        _txid = transactionHash(_prefix, _nInputs, _inputs, _nOutputs, _outputs, _locktime);
+        _txid = transactionHash(_version, _nInputs, _inputs, _nOutputs, _outputs, _locktime);
     }
 
     /// @notice         Parses tx input
@@ -102,22 +104,22 @@ library ValidateSPV {
 
     /// @notice             Hashes transaction to get txid
     /// @dev                This supports ONLY WITNESS INPUTS AND OUTPUTS
-    /// @param _prefix      Raw bytes prefix
-    /// @param _nInputs     Raw bytes num inputs
+    /// @param _version     4-bytes version
+    /// @param _nInputs     1-byte num inputs
     /// @param _inputs      Raw bytes inputs
-    /// @param _nOutputs    Raw bytes num outputs
+    /// @param _nOutputs    1-byte num outputs
     /// @param _outputs     Raw bytes ouputs
-    /// @return             Transaction id, little endian
+    /// @return             32-byte transaction id, little endian
     function transactionHash(
-        bytes _prefix,
+        bytes _version,
         bytes _nInputs,
         bytes _inputs,
         bytes _nOutputs,
         bytes _outputs,
         bytes _locktime
     ) public pure returns (bytes32) {
-        // Get transaction hash dSha256(version + inputs + outputs + locktime)
-        return abi.encodePacked(_prefix, _nInputs, _inputs, _nOutputs, _outputs, _locktime).hash256();
+        // Get transaction hash dSha256(version + nIns + inputs + nOuts + outputs + locktime)
+        return abi.encodePacked(_version, _nInputs, _inputs, _nOutputs, _outputs, _locktime).hash256();
     }
 
     /// @notice         Validates the first 6 bytes of a block
@@ -142,10 +144,10 @@ library ValidateSPV {
     function parseInput(bytes _input) public pure returns (uint32 _sequence, bytes32 _hash, uint32 _index) {
 
         // Require segwit: if no 00 scriptSig, error
-        require(keccak256(_input.slice(36, 1)) == keccak256(hex'00'), "No 00 scriptSig found.");
+        if (keccak256(_input.slice(36, 1)) != keccak256(hex'00')) { return; }
 
         // Require that input is 41 bytes
-        require(_input.length == 41, "Tx input must be 41 bytes.");
+        if (_input.length != 41) { return; }
 
         return (_input.extractSequence(), _input.extractTxId(), _input.extractTxIndex());
     }
@@ -173,8 +175,8 @@ library ValidateSPV {
                 _outputType = uint8(OutputTypes.WPKH);
                 _payload = _output.slice(11, 20);
             } else {
-                // If unidentifiable output type, error
-                require(false, "Tx output must be a WPKH, WSH, or OP_RETURN.");
+                // If unidentifiable output type, bubble up error
+                return;
             } 
         }
 
@@ -194,8 +196,7 @@ library ValidateSPV {
         uint32 _nonce
     ) {
         // If header has an invalid length, bubble up error
-        // Check header chain length
-        require(validateHeaderLength(_header), "Header chain must be divisible by 80.");
+        if (!validateHeaderLength(_header)) { return; }
 
         _digest = abi.encodePacked(_header.hash256()).reverseEndianness().toBytes32();
         _version = uint32(_header.slice(0, 4).reverseEndianness().bytesToUint());
@@ -215,7 +216,7 @@ library ValidateSPV {
     function validateHeaderChain(bytes _headers) public pure returns (bool) {
 
         // Check header chain length
-        require(validateHeaderLength(_headers), "Header chain must be divisible by 80.");
+        if (!validateHeaderLength(_headers)) {return false; }
 
         uint _nHeaders = _headers.length / 80;
 
@@ -239,9 +240,7 @@ library ValidateSPV {
             _header = _headers.slice(_start, 80);
 
             // Check if the hash of the previous header and the current header prevHash are equal
-            require(
-                validateHeaderPrevHash(_header, _prevHeaderDigest),
-                "Header chain prevHash must match previous header digest.");
+            if (!validateHeaderPrevHash(_header, _prevHeaderDigest)) { return false; }
         }
 
         return true;
@@ -252,7 +251,7 @@ library ValidateSPV {
     /// @param _target      The target threshold
     /// @return             true if header work is valid, false otherwise
     function validateHeaderWork(bytes32 _digest, uint256 _target) public pure returns (bool) {
-        require(_digest != bytes32(0));
+        if (_digest == bytes32(0)) { return false; }
         return (abi.encodePacked(_digest).bytesToUint() < _target);
     }
 
