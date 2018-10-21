@@ -125,7 +125,7 @@ describe('ValidateSPV', () => {
 
             assert.ok(await vspv.methods.prove(
                 parsedTx._txid,
-                parsedHeader._digest,
+                constants.EMPTY,
                 parsedHeader._merkleRoot, 
                 constants.OP_RETURN.PROOF,
                 constants.OP_RETURN.PROOF_INDEX
@@ -140,8 +140,43 @@ describe('ValidateSPV', () => {
             ).call({from: seller, gas: gas, gasPrice: gasPrice}), false);
         });
 
-        it.skip('returns false if first proof hash is not txid', async () => { });
-        it.skip('returns false if last proof hash is not Merkle root', async () => { });
+        it('returns false if first proof hash is not txid', async () => {
+
+            assert.ok(await vspv.methods.prove(
+                parsedTx._txid,
+                parsedHeader._digest,
+                parsedHeader._merkleRoot, 
+                constants.OP_RETURN.PROOF_ERR.PROOF_FIRST_HASH,
+                constants.OP_RETURN.PROOF_INDEX
+            ).send({from: seller, gas: gas, gasPrice: gasPrice}));
+
+            assert.equal(await vspv.methods.prove(
+                parsedTx._txid,
+                parsedHeader._digest,
+                parsedHeader._merkleRoot, 
+                constants.OP_RETURN.PROOF_ERR.PROOF_FIRST_HASH,
+                constants.OP_RETURN.PROOF_INDEX
+            ).call({from: seller, gas: gas, gasPrice: gasPrice}), false);
+        });
+
+        it('returns false if last proof hash is not Merkle root', async () => {
+
+            assert.ok(await vspv.methods.prove(
+                parsedTx._txid,
+                parsedHeader._digest,
+                parsedHeader._merkleRoot, 
+                constants.OP_RETURN.PROOF_ERR.PROOF_LAST_HASH,
+                constants.OP_RETURN.PROOF_INDEX
+            ).send({from: seller, gas: gas, gasPrice: gasPrice}));
+
+            assert.equal(await vspv.methods.prove(
+                parsedTx._txid,
+                parsedHeader._digest,
+                parsedHeader._merkleRoot, 
+                constants.OP_RETURN.PROOF_ERR.PROOF_LAST_HASH,
+                constants.OP_RETURN.PROOF_INDEX
+            ).call({from: seller, gas: gas, gasPrice: gasPrice}), false);
+        });
 
         it('returns false if Merkle root is invalid', async () => {
             assert.ok(await vspv.methods.prove(

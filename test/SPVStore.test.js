@@ -161,13 +161,10 @@ describe('SPVStore', async () => {
                 .call({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE }), constants.EMPTY);
         });
 
-        it.skip('returns bytes32(0) if invalid outpoint', async() => {
+        it('returns bytes32(0) if invalid outpoint', async() => {
             await storeContract.methods.parseAndStoreTransaction(
                 constants.OP_RETURN.TX_ERR.TX_INPUT_0_HASH)
                 .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE });
-            console.log(await storeContract.methods.parseAndStoreTransaction(
-                constants.OP_RETURN.TX_ERR.TX_INPUT_0_HASH)
-                .call({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE }));
             assert.equal(constants.EMPTY,
                 await storeContract.methods.parseAndStoreTransaction(
                     constants.OP_RETURN.TX_ERR.TX_INPUT_0_HASH)
