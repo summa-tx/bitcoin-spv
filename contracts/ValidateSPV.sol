@@ -11,6 +11,7 @@ import {BTCUtils} from "./BTCUtils.sol";
 library ValidateSPV {
 
     using BTCUtils for bytes;
+    using BTCUtils for uint256;
     using BytesLib for bytes;
     using SafeMath for uint256;
 
@@ -18,21 +19,19 @@ library ValidateSPV {
 
     /// @notice                 Valides a tx inclusion in the block
     /// @param _txid            The txid (LE)
-    /// @param _blockHash       The block hash
     /// @param _merkleRoot      The merkle root
     /// @param _proof           The proof (concatenated LE hashes)
     /// @param _index           The proof index
     /// @return                 true if fully valid, false otherwise
     function prove(
         bytes32 _txid,
-        bytes32 _blockHash,
         bytes32 _merkleRoot,
         bytes _proof,
         uint _index
     ) public pure returns (bool) {
 
         // If parsing failed, bubble up error
-        if (_txid == bytes32(0) || _blockHash == bytes32(0)) { return false; }
+        if (_txid == bytes32(0)) { return false; }
 
         // If the first hash in the proof is not the txid, bubble up error
         if (_proof.slice(0, 32).toBytes32() != _txid) { return false; }
@@ -183,7 +182,7 @@ library ValidateSPV {
             } else {
                 // If unidentifiable output type, bubble up error
                 return;
-            } 
+            }
         }
 
         return (_value, _outputType, _payload);
@@ -202,7 +201,7 @@ library ValidateSPV {
         uint32 _nonce
     ) {
         // If header has an invalid length, bubble up error
-        if (!validateHeaderLength(_header)) { return; }
+        if (_header.length != 80) { return; }
 
         _digest = abi.encodePacked(_header.hash256()).reverseEndianness().toBytes32();
         _version = uint32(_header.slice(0, 4).reverseEndianness().bytesToUint());
@@ -219,37 +218,40 @@ library ValidateSPV {
     /// @notice             Compares the hash of each header to the prevHash in the next header
     /// @param _headers     Raw byte array of header chain
     /// @return             true if header chain is valid, false otherwise
-    function validateHeaderChain(bytes _headers) public pure returns (bool) {
+    function validateHeaderChain(bytes _headers) public pure returns (uint256 _reqDiff) {
 
         // Check header chain length
-        if (!validateHeaderLength(_headers)) {return false; }
-
-        uint _nHeaders = _headers.length / 80;
+        if (_headers.length % 80 != 0) { return 0; }
 
         // Initialize header start index
+        bytes32 _digest;
         uint256 _start = 0;
-        bytes memory _prevHeader;
-        bytes memory _header;
 
-        for (uint i = 0; i < _nHeaders - 1; i++) {
+        _reqDiff = 0;
 
-            // Previous header
-            _prevHeader = _headers.slice(_start, 80);
+        for (uint i = 0; i < _headers.length / 80; i++) {
 
-            // Previous header hash
-            bytes32 _prevHeaderDigest = _prevHeader.hash256();
+            // ith header start index and ith header
+            _start = i * 80;
+            bytes memory _header = _headers.slice(_start, 80);
 
-            // Increment start index by 80 for next header
-            _start = _start.add(80);
+            // After the first header, check that headers are in a chain
+            if (i != 0) {
+                if (!validateHeaderPrevHash(_header, _digest)) { return 1; }
+            }
 
-            // Current header
-            _header = _headers.slice(_start, 80);
+            // ith header target
+            uint256 _target = _header.extractTarget();
 
-            // Check if the hash of the previous header and the current header prevHash are equal
-            if (!validateHeaderPrevHash(_header, _prevHeaderDigest)) { return false; }
+            // Require that the header has sufficient work
+            _digest = _header.hash256();
+            if(abi.encodePacked(_digest).reverseEndianness().bytesToUint() > _target) {
+                return 2;
+            }
+
+            // Add ith header difficulty to difficulty sum
+            _reqDiff = _reqDiff.add(_target.calculateDifficulty());
         }
-
-        return true;
     }
 
     /// @notice             Checks validity of header work
@@ -275,13 +277,5 @@ library ValidateSPV {
         if (_prevHash != _prevHeaderDigest) { return false; }
 
         return true;
-    }
-
-    /// @notice             Validates that headers are the correct length
-    /// @dev                Each header is 80 bytes
-    /// @param _headers     Raw byte array of header chain
-    /// @return             true if header byte array is divisible by 80, false otherwise
-    function validateHeaderLength(bytes _headers) public pure returns (bool) {
-        return (_headers.length % 80 == 0);
     }
 }

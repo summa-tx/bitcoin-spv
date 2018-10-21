@@ -67,7 +67,8 @@ contract SPVStore {
     function validate( bytes32 _txid, bytes32 _digest, bytes _proof, uint _index) public returns (bool) {
 
         // Return false if invalid proof
-        if (!_txid.prove(_digest, headers[_digest].merkleRoot, _proof, _index)) { return false; }
+        if (headers[_digest].digest == bytes32(0)) { return false; }
+        if (!_txid.prove(headers[_digest].merkleRoot, _proof, _index)) { return false; }
 
         // Emit Validated event
         emit Validated(_txid, _digest);
@@ -151,7 +152,7 @@ contract SPVStore {
     function getTransactionInput(bytes32 _txid, uint8 _index) public view returns (uint32, bytes32, uint32) {
         return (
             transactions[_txid].inputs[_index].sequence,
-            transactions[_txid].inputs[_index].hash, 
+            transactions[_txid].inputs[_index].hash,
             transactions[_txid].inputs[_index].index);
     }
 
@@ -183,7 +184,7 @@ contract SPVStore {
 
             transactions[_txid].inputs[i] = _input;
         }
-        
+
         return true;
     }
 
@@ -213,7 +214,7 @@ contract SPVStore {
 
             transactions[_txid].outputs[i] = _output;
         }
-        
+
         return true;
     }
 }
