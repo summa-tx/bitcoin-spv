@@ -66,7 +66,7 @@ describe('ValidateSPV', () => {
 
     it('compiles the ValidateSPV library', async () => assert.ok(vspv.options.address));
 
-    describe.only('#prove', async () => {
+    describe('#prove', async () => {
         let parsedTx;
         let parsedHeader;
 

@@ -65,8 +65,6 @@ contract SPVStore {
     /// @return         true if fully valid, false otherwise
     function validate( bytes32 _txid, bytes32 _digest, bytes _proof, uint _index) public returns (bool) {
 
-        // require(headers[_digest] != 0);
-
         // Return false if invalid proof
         if (!_txid.prove(_digest, headers[_digest].merkleRoot, _proof, _index)) { return false; }
 
@@ -111,47 +109,6 @@ contract SPVStore {
         return _txid;
     }
 
-    function parseAndStoreInputs(bytes32 _txid, bytes _tx, uint8 _nInputs) internal returns (bool) {
-        TxIn memory _inputs;
-
-        for (uint8 i = 0; i < _nInputs; i++) {
-
-            (_inputs.sequence, _inputs.hash, _inputs.index) = _tx.extractInputAtIndex(i).parseInput();
-
-            // If invalid outpoint, bubble up error
-            if (_inputs.hash == bytes32(0)) { return false; }
-
-            transactions[_txid].inputs[i] = _inputs;
-        }
-        
-        return true;
-    }
-
-    function parseAndStoreOutputs(bytes32 _txid, bytes _tx, uint8 _nOutputs) internal returns (bool) {
-        uint8 _outputType;
-        TxOut memory _outputs;
-
-        for (uint8 i = 0; i < _nOutputs; i++) {
-
-            (_outputs.value, _outputType, _outputs.payload)  = _tx.extractOutputAtIndex(i).parseOutput();
-
-            // If unidentifiable output type, return false
-            if (_outputType == 0) { return false; }
-
-            if (_outputType == 1) {
-                _outputs.outputType = OutputTypes.WPKH;
-            } else if (_outputType == 2) {
-                _outputs.outputType = OutputTypes.WSH;
-            } else if (_outputType == 3) {
-                _outputs.outputType == OutputTypes.OP_RETURN; 
-            }
-
-            transactions[_txid].outputs[i] = _outputs;
-        }
-        
-        return true;
-    }
-
     function parseAndStoreHeader(bytes _header) public returns (bytes32) {
 
         bytes32 _digest;
@@ -177,5 +134,60 @@ contract SPVStore {
 
         // Return header digest
         return _digest;
+    }
+
+    function getTransactionInput(bytes32 _txid, uint8 _index) public view returns (uint32, bytes32, uint32) {
+        return (
+            transactions[_txid].inputs[_index].sequence,
+            transactions[_txid].inputs[_index].hash, 
+            transactions[_txid].inputs[_index].index);
+    }
+
+    function getTransactionOutput(bytes32 _txid, uint8 _index) public view returns (uint64, OutputTypes, bytes) {
+        return (
+            transactions[_txid].outputs[_index].value,
+            transactions[_txid].outputs[_index].outputType,
+            transactions[_txid].outputs[_index].payload);
+    }
+
+    function parseAndStoreInputs(bytes32 _txid, bytes _tx, uint8 _nInputs) internal returns (bool) {
+        TxIn memory _inputs;
+
+        for (uint8 i = 0; i < _nInputs; i++) {
+
+            (_inputs.sequence, _inputs.hash, _inputs.index) = _tx.extractInputAtIndex(i).parseInput();
+
+            // If invalid outpoint, bubble up error
+            if (_inputs.hash == bytes32(0)) { return false; }
+
+            transactions[_txid].inputs[i] = _inputs;
+        }
+        
+        return true;
+    }
+
+    function parseAndStoreOutputs(bytes32 _txid, bytes _tx, uint8 _nOutputs) internal returns (bool) {
+        uint8 _outputType;
+        TxOut memory _outputs;
+
+        for (uint8 i = 0; i < _nOutputs; i++) {
+
+            (_outputs.value, _outputType, _outputs.payload) = _tx.extractOutputAtIndex(i).parseOutput();
+
+            // If unidentifiable output type, return false
+            if (_outputType == 0) { return false; }
+
+            if (_outputType == 1) {
+                _outputs.outputType = OutputTypes.WPKH;
+            } else if (_outputType == 2) {
+                _outputs.outputType = OutputTypes.WSH;
+            } else if (_outputType == 3) {
+                _outputs.outputType = OutputTypes.OP_RETURN;
+            }
+
+            transactions[_txid].outputs[i] = _outputs;
+        }
+        
+        return true;
     }
 }
