@@ -36,6 +36,7 @@ contract SPVStore {
     }
 
     struct Transaction {
+        bool validationComplete;    // true if transaction is validated
         bytes32 txid;               // 32 byte tx id, little endian
         uint32 locktime;            // 4 byte locktime
         uint8 numInputs;            // number tx inputs
@@ -105,6 +106,9 @@ contract SPVStore {
 
         // Emit TxStored event
         emit TxStored(_txid);
+
+        // Mark transaction validated
+        transactions[_txid].validationComplete = true;
 
         // Return transaction hash
         return _txid;

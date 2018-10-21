@@ -143,6 +143,7 @@ describe('SPVStore', async () => {
             assert.equal(constants.OP_RETURN.N_INPUTS, storedTx.numInputs);
             assert.equal(constants.OP_RETURN.N_OUTPUTS, storedTx.numOutputs);
             assert.equal(constants.OP_RETURN.LOCKTIME, storedTx.locktime);
+            assert.equal(true, storedTx.validationComplete);
         });
 
         it('emits a TxStored event', async () =>
@@ -156,19 +157,26 @@ describe('SPVStore', async () => {
         it('returns bytes32(0) if invalid prefix', async () => {
 
             let err_prefix_tx = '0x040000000001011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211024730440220276e0ec78028582054d86614c65bc4bf85ff5710b9d3a248ca28dd311eb2fa6802202ec950dd2a8c9435ff2d400cc45d7a4854ae085f49e05cc3f503834546d410de012103732783eef3af7e04d3af444430a629b16a9261e4025f52bf4d6d026299c37c7400000000';
-            assert.equal(
-                await storeContract.methods.parseAndStoreTransaction(err_prefix_tx)
-                .call({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE }), constants.EMPTY);
+
+            await storeContract.methods.parseAndStoreTransaction(err_prefix_tx)
+                .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE });
+
+            let invalidTx = await storeContract.methods.parseAndStoreTransaction(err_prefix_tx)
+                .call({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE });
+
+            assert.equal(invalidTx, constants.EMPTY);
         });
 
         it('returns bytes32(0) if invalid outpoint', async() => {
             await storeContract.methods.parseAndStoreTransaction(
                 constants.OP_RETURN.TX_ERR.TX_INPUT_0_HASH)
                 .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE });
-            assert.equal(constants.EMPTY,
-                await storeContract.methods.parseAndStoreTransaction(
-                    constants.OP_RETURN.TX_ERR.TX_INPUT_0_HASH)
-                .call({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE }))
+
+            let invalidTx = await storeContract.methods.parseAndStoreTransaction(
+                constants.OP_RETURN.TX_ERR.TX_INPUT_0_HASH)
+                .call({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE });
+
+            assert.equal(constants.EMPTY, invalidTx);
         });
     });
 
