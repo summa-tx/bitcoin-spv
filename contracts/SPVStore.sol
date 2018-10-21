@@ -75,9 +75,9 @@ contract SPVStore {
         return true;
     }
 
-    /// @notice         Parses a tx, validates its inclusion in the block, stores to the mapping
+    /// @notice         Parses a tx and stores to the mapping
     /// @param _tx      The raw byte tx
-    /// @return         true if fully valid, false otherwise
+    /// @return         true if valid format, false otherwise
     function parseAndStoreTransaction(bytes _tx) public returns (bytes32) {
 
         bytes memory _nIns;
@@ -109,6 +109,10 @@ contract SPVStore {
         return _txid;
     }
 
+
+    /// @notice             Parses a header and stores to the mapping
+    /// @param _header      The raw byte header
+    /// @return             true if valid format, false otherwise
     function parseAndStoreHeader(bytes _header) public returns (bytes32) {
 
         bytes32 _digest;
@@ -136,6 +140,10 @@ contract SPVStore {
         return _digest;
     }
 
+    /// @notice             View stored transaction input variables
+    /// @param _txid        The transaction hash
+    /// @param _index       Input index to view
+    /// @return             Input sequence, hash, and index
     function getTransactionInput(bytes32 _txid, uint8 _index) public view returns (uint32, bytes32, uint32) {
         return (
             transactions[_txid].inputs[_index].sequence,
@@ -143,6 +151,10 @@ contract SPVStore {
             transactions[_txid].inputs[_index].index);
     }
 
+    /// @notice             View stored transaction output variables
+    /// @param _txid        Transaction hash
+    /// @param _index       Output index to view
+    /// @return             Output valiue, type, and payload
     function getTransactionOutput(bytes32 _txid, uint8 _index) public view returns (uint64, OutputTypes, bytes) {
         return (
             transactions[_txid].outputs[_index].value,
@@ -150,6 +162,11 @@ contract SPVStore {
             transactions[_txid].outputs[_index].payload);
     }
 
+    /// @notice             Parses a tx's inputs and stores to the mapping
+    /// @param _txid        Transaction hash
+    /// @param _tx          Raw byte tx
+    /// @param _nInputs     Number of inputs
+    /// @return             true if valid format, false otherwise
     function parseAndStoreInputs(bytes32 _txid, bytes _tx, uint8 _nInputs) internal returns (bool) {
         TxIn memory _input;
 
@@ -166,6 +183,11 @@ contract SPVStore {
         return true;
     }
 
+    /// @notice             Parses a tx's outputs and stores to the mapping
+    /// @param _txid        Transaction hash
+    /// @param _tx          Raw byte tx
+    /// @param _nOutputs    Number of outputs
+    /// @return             true if valid format, false otherwise
     function parseAndStoreOutputs(bytes32 _txid, bytes _tx, uint8 _nOutputs) internal returns (bool) {
         uint8 _outputType;
         TxOut memory _output;
