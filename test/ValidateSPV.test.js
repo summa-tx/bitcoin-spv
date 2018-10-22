@@ -17,12 +17,6 @@ listeners.forEach(listener => process.removeListener('warning', listener));
 let GAS = 6712388;
 let GAS_PRICE = 100000000000;
 
-// Header chain data
-const HEADER_CHAIN = '0x0000002073bd2184edd9c4fc76642ea6754ee40136970efc10c4190000000000000000000296ef123ea96da5cf695f22bf7d94be87d49db1ad7ac371ac43c4da4161c8c216349c5ba11928170d38782b00000020fe70e48339d6b17fbbf1340d245338f57336e97767cc240000000000000000005af53b865c27c6e9b5e5db4c3ea8e024f8329178a79ddb39f7727ea2fe6e6825d1349c5ba1192817e2d9515900000020baaea6746f4c16ccb7cd961655b636d39b5fe1519b8f15000000000000000000c63a8848a448a43c9e4402bd893f701cd11856e14cbbe026699e8fdc445b35a8d93c9c5ba1192817b945dc6c00000020f402c0b551b944665332466753f1eebb846a64ef24c71700000000000000000033fc68e070964e908d961cd11033896fa6c9b8b76f64a2db7ea928afa7e304257d3f9c5ba11928176164145d0000ff3f63d40efa46403afd71a254b54f2b495b7b0164991c2d22000000000000000000f046dc1b71560b7d0786cfbdb25ae320bd9644c98d5c7c77bf9df05cbe96212758419c5ba1192817a2bb2caa00000020e2d4f0edd5edd80bdcb880535443747c6b22b48fb6200d0000000000000000001d3799aa3eb8d18916f46bf2cf807cb89a9b1b4c56c3f2693711bf1064d9a32435429c5ba1192817752e49ae0000002022dba41dff28b337ee3463bf1ab1acf0e57443e0f7ab1d000000000000000000c3aadcc8def003ecbd1ba514592a18baddddcd3a287ccf74f584b04c5c10044e97479c5ba1192817c341f595';
-// Changed Header01 prevHash to be the same as Header00 prevHash to create invalid chain
-const HEADER_CHAIN_INVALID_PREVHASH = '0x0000002073bd2184edd9c4fc76642ea6754ee40136970efc10c4190000000000000000000296ef123ea96da5cf695f22bf7d94be87d49db1ad7ac371ac43c4da4161c8c216349c5ba11928170d38782b0000002073bd2184edd9c4fc76642ea6754ee40136970efc10c4190000000000000000005af53b865c27c6e9b5e5db4c3ea8e024f8329178a79ddb39f7727ea2fe6e6825d1349c5ba1192817e2d951590000002073bd2184edd9c4fc76642ea6754ee40136970efc10c419000000000000000000c63a8848a448a43c9e4402bd893f701cd11856e14cbbe026699e8fdc445b35a8d93c9c5ba1192817b945dc6c00000020f402c0b551b944665332466753f1eebb846a64ef24c71700000000000000000033fc68e070964e908d961cd11033896fa6c9b8b76f64a2db7ea928afa7e304257d3f9c5ba11928176164145d0000ff3f63d40efa46403afd71a254b54f2b495b7b0164991c2d22000000000000000000f046dc1b71560b7d0786cfbdb25ae320bd9644c98d5c7c77bf9df05cbe96212758419c5ba1192817a2bb2caa00000020e2d4f0edd5edd80bdcb880535443747c6b22b48fb6200d0000000000000000001d3799aa3eb8d18916f46bf2cf807cb89a9b1b4c56c3f2693711bf1064d9a32435429c5ba1192817752e49ae0000002022dba41dff28b337ee3463bf1ab1acf0e57443e0f7ab1d000000000000000000c3aadcc8def003ecbd1ba514592a18baddddcd3a287ccf74f584b04c5c10044e97479c5ba1192817c341f595';
-// Removed a byte from Header00's version to create invalid chain length
-const HEADER_CHAIN_INVALID_LEN = '0x00002073bd2184edd9c4fc76642ea6754ee40136970efc10c4190000000000000000000296ef123ea96da5cf695f22bf7d94be87d49db1ad7ac371ac43c4da4161c8c216349c5ba11928170d38782b00000020fe70e48339d6b17fbbf1340d245338f57336e97767cc240000000000000000005af53b865c27c6e9b5e5db4c3ea8e024f8329178a79ddb39f7727ea2fe6e6825d1349c5ba1192817e2d9515900000020baaea6746f4c16ccb7cd961655b636d39b5fe1519b8f15000000000000000000c63a8848a448a43c9e4402bd893f701cd11856e14cbbe026699e8fdc445b35a8d93c9c5ba1192817b945dc6c00000020f402c0b551b944665332466753f1eebb846a64ef24c71700000000000000000033fc68e070964e908d961cd11033896fa6c9b8b76f64a2db7ea928afa7e304257d3f9c5ba11928176164145d0000ff3f63d40efa46403afd71a254b54f2b495b7b0164991c2d22000000000000000000f046dc1b71560b7d0786cfbdb25ae320bd9644c98d5c7c77bf9df05cbe96212758419c5ba1192817a2bb2caa00000020e2d4f0edd5edd80bdcb880535443747c6b22b48fb6200d0000000000000000001d3799aa3eb8d18916f46bf2cf807cb89a9b1b4c56c3f2693711bf1064d9a32435429c5ba1192817752e49ae0000002022dba41dff28b337ee3463bf1ab1acf0e57443e0f7ab1d000000000000000000c3aadcc8def003ecbd1ba514592a18baddddcd3a287ccf74f584b04c5c10044e97479c5ba1192817c341f595';
 
 describe('ValidateSPV', () => {
     let bc;
@@ -87,16 +81,14 @@ describe('ValidateSPV', () => {
 
             assert.ok(await vspv.methods.prove(
                 parsedTx._txid,
-                parsedHeader._digest,
-                parsedHeader._merkleRoot, 
+                parsedHeader._merkleRoot,
                 constants.OP_RETURN.PROOF,
                 constants.OP_RETURN.PROOF_INDEX
             ).send({from: seller, gas: gas, gasPrice: gasPrice}));
 
             assert.equal(await vspv.methods.prove(
                 parsedTx._txid,
-                parsedHeader._digest,
-                parsedHeader._merkleRoot, 
+                parsedHeader._merkleRoot,
                 constants.OP_RETURN.PROOF,
                 constants.OP_RETURN.PROOF_INDEX
             ).call({from: seller, gas: gas, gasPrice: gasPrice}), true);
@@ -106,35 +98,14 @@ describe('ValidateSPV', () => {
 
             assert.ok(await vspv.methods.prove(
                 constants.OP_RETURN.TXID_BE,
-                parsedHeader._digest,
-                parsedHeader._merkleRoot, 
+                parsedHeader._merkleRoot,
                 constants.OP_RETURN.PROOF,
                 constants.OP_RETURN.PROOF_INDEX
             ).send({from: seller, gas: gas, gasPrice: gasPrice}));
 
             assert.equal(await vspv.methods.prove(
                 constants.EMPTY,
-                parsedHeader._digest,
-                parsedHeader._merkleRoot, 
-                constants.OP_RETURN.PROOF,
-                constants.OP_RETURN.PROOF_INDEX
-            ).call({from: seller, gas: gas, gasPrice: gasPrice}), false);
-        });
-
-        it('returns false if block header hash is invalid', async () => {
-
-            assert.ok(await vspv.methods.prove(
-                parsedTx._txid,
-                constants.EMPTY,
-                parsedHeader._merkleRoot, 
-                constants.OP_RETURN.PROOF,
-                constants.OP_RETURN.PROOF_INDEX
-            ).send({from: seller, gas: gas, gasPrice: gasPrice}));
-
-            assert.equal(await vspv.methods.prove(
-                parsedTx._txid,
-                constants.EMPTY,
-                parsedHeader._merkleRoot, 
+                parsedHeader._merkleRoot,
                 constants.OP_RETURN.PROOF,
                 constants.OP_RETURN.PROOF_INDEX
             ).call({from: seller, gas: gas, gasPrice: gasPrice}), false);
@@ -144,16 +115,14 @@ describe('ValidateSPV', () => {
 
             assert.ok(await vspv.methods.prove(
                 parsedTx._txid,
-                parsedHeader._digest,
-                parsedHeader._merkleRoot, 
+                parsedHeader._merkleRoot,
                 constants.OP_RETURN.PROOF_ERR.PROOF_FIRST_HASH,
                 constants.OP_RETURN.PROOF_INDEX
             ).send({from: seller, gas: gas, gasPrice: gasPrice}));
 
             assert.equal(await vspv.methods.prove(
                 parsedTx._txid,
-                parsedHeader._digest,
-                parsedHeader._merkleRoot, 
+                parsedHeader._merkleRoot,
                 constants.OP_RETURN.PROOF_ERR.PROOF_FIRST_HASH,
                 constants.OP_RETURN.PROOF_INDEX
             ).call({from: seller, gas: gas, gasPrice: gasPrice}), false);
@@ -163,16 +132,14 @@ describe('ValidateSPV', () => {
 
             assert.ok(await vspv.methods.prove(
                 parsedTx._txid,
-                parsedHeader._digest,
-                parsedHeader._merkleRoot, 
+                parsedHeader._merkleRoot,
                 constants.OP_RETURN.PROOF_ERR.PROOF_LAST_HASH,
                 constants.OP_RETURN.PROOF_INDEX
             ).send({from: seller, gas: gas, gasPrice: gasPrice}));
 
             assert.equal(await vspv.methods.prove(
                 parsedTx._txid,
-                parsedHeader._digest,
-                parsedHeader._merkleRoot, 
+                parsedHeader._merkleRoot,
                 constants.OP_RETURN.PROOF_ERR.PROOF_LAST_HASH,
                 constants.OP_RETURN.PROOF_INDEX
             ).call({from: seller, gas: gas, gasPrice: gasPrice}), false);
@@ -181,7 +148,6 @@ describe('ValidateSPV', () => {
         it('returns false if Merkle root is invalid', async () => {
             assert.ok(await vspv.methods.prove(
                 parsedTx._txid,
-                parsedHeader._digest,
                 parsedTx._txid,
                 constants.OP_RETURN.PROOF,
                 constants.OP_RETURN.PROOF_INDEX
@@ -189,7 +155,6 @@ describe('ValidateSPV', () => {
 
             assert.equal(await vspv.methods.prove(
                 parsedTx._txid,
-                parsedHeader._digest,
                 parsedTx._txid,
                 constants.OP_RETURN.PROOF,
                 constants.OP_RETURN.PROOF_INDEX
@@ -428,7 +393,7 @@ describe('ValidateSPV', () => {
         let output;
         let value;
         let payload;
-        
+
         it('returns the tx output value, output type, and payload for an OP_RETURN output',
             async () => {
                 let opReturnTxOut = await vspv.methods.parseOutput(
@@ -439,7 +404,7 @@ describe('ValidateSPV', () => {
                 assert.equal(utils.OUTPUT_TYPES.OP_RETURN, opReturnTxOut._outputType);
                 assert.equal(constants.OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD, opReturnTxOut._payload);
         });
-        
+
         it('returns the tx output value, output type, and payload for an WPKH output', async () => {
             output = '0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c';
             value = 1000001000;
@@ -452,7 +417,7 @@ describe('ValidateSPV', () => {
             assert.equal(wpkhOutput._outputType, utils.OUTPUT_TYPES.WPKH);
             assert.equal(wpkhOutput._payload, payload);
         });
-        
+
         it('returns the tx output value, output type, and payload for an WSH output', async () => {
             output = '0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922';
             value = 1000000;
@@ -465,7 +430,7 @@ describe('ValidateSPV', () => {
             assert.equal(wshOutput._outputType, utils.OUTPUT_TYPES.WSH);
             assert.equal(wshOutput._payload, payload);
         });
-        
+
         it('bubble up errors if the tx output type is not identifiable', async () => {
             // Changes 0x6a (OP_RETURN) to 0x7a to create error
             output = '0x0000000000000000167a14edb1b5c2f39af0fec151732585b1049b07895211';
@@ -498,7 +463,7 @@ describe('ValidateSPV', () => {
         it('bubble up errors if input header is not 80 bytes', async () => {
             // Removed a byte from the header version to create error
             let invalidHeader = await vspv.methods.parseHeader(
-                constants.OP_RETURN.HEADER_ERR.HEADER_0_LEN
+                constants.HEADER_ERR.HEADER_0_LEN
             ).call({from: seller, gas: gas, gasPrice: gasPrice})
 
             assert.equal(constants.EMPTY, invalidHeader._digest);
@@ -512,16 +477,28 @@ describe('ValidateSPV', () => {
     });
 
     describe('#validateHeaderChain', async () => {
-        it('returns true if header chain is valid', async () =>
-            assert.equal(await vspv.methods.validateHeaderChain(HEADER_CHAIN).call(), true));
+        it('returns true if header chain is valid', async () => {
+            let res = await vspv.methods.validateHeaderChain(constants.OP_RETURN.HEADER_CHAIN).call()
+            assert.equal(res, 49134394618239);
+        });
 
-        it('returns false if header chain prevHash is invalid', async () =>
-            assert.equal(await vspv.methods.validateHeaderChain(HEADER_CHAIN_INVALID_PREVHASH)
-                .call({from: seller, gas: gas, gasPrice: gasPrice}), false));
+        it('returns 1 if header chain is not divisible by 80', async () => {
+            let res = await vspv.methods.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_INVALID_LEN)
+            .call({from: seller, gas: gas, gasPrice: gasPrice});
+            assert.equal(res, 0);
+        });
 
-        it('returns false if header chain is not divisible by 80', async () =>
-            assert.equal(await vspv.methods.validateHeaderChain(HEADER_CHAIN_INVALID_LEN)
-                .call({from: seller, gas: gas, gasPrice: gasPrice}), false));
+        it('returns 2 if header chain prevHash is invalid', async () => {
+            let res = await vspv.methods.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_INVALID_PREVHASH)
+                .call({from: seller, gas: gas, gasPrice: gasPrice});
+            assert.equal(res, 1);
+        });
+
+        it('returns 3 if a header does not meet its target', async () => {
+            let res = await vspv.methods.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_LOW_WORK)
+                .call({from: seller, gas: gas, gasPrice: gasPrice});
+            assert.equal(res, 2);
+        });
     });
 
     describe('#validateHeaderPrevHash', async () => {
@@ -539,22 +516,4 @@ describe('ValidateSPV', () => {
             ).call(), false));
     });
 
-    describe('#validateHeaderLength', async () => {
-
-        it('returns true if header chain length is valid', async () =>
-            assert.equal(await vspv.methods.validateHeaderLength(
-                constants.OP_RETURN.HEADER_CHAIN).call(), true));
-
-        it('returns false if header chain length is invalid', async () =>
-            assert.equal(await vspv.methods.validateHeaderLength(
-                constants.OP_RETURN.HEADER_ERR.HEADER_CHAIN_LEN).call(), false));
-
-        it('returns true if header length is valid', async () =>
-            assert.equal(await vspv.methods.validateHeaderLength(
-                constants.OP_RETURN.INDEXED_HEADERS[0].HEADER).call(), true));
-
-        it('returns false if header length is invalid', async () =>
-            assert.equal(await vspv.methods.validateHeaderLength(
-                constants.OP_RETURN.HEADER_ERR.HEADER_0_LEN).call(), false));
-    });
 });

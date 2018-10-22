@@ -124,7 +124,7 @@ describe('SPVStore', async () => {
                 .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE }));
 
             assert.equal(await storeContract.methods.parseAndStoreTransaction(constants.OP_RETURN.TX)
-                .call({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE }), 
+                .call({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE }),
                 constants.OP_RETURN.TXID_LE);
         });
 
@@ -226,7 +226,7 @@ describe('SPVStore', async () => {
 
         it('errors if the header is not 80 bytes long', async () =>
             assert.equal(await storeContract.methods.parseAndStoreHeader(
-                constants.OP_RETURN.HEADER_ERR.HEADER_CHAIN_LEN)
+                constants.HEADER_ERR.HEADER_CHAIN_LEN)
                 .call({from: seller, gas: GAS, gasPrice: GAS_PRICE}), constants.EMPTY));
     });
 });
