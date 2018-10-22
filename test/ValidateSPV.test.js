@@ -485,19 +485,19 @@ describe('ValidateSPV', () => {
         it('returns 1 if header chain is not divisible by 80', async () => {
             let res = await vspv.methods.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_INVALID_LEN)
             .call({from: seller, gas: gas, gasPrice: gasPrice});
-            assert.equal(res, 0);
+            assert.equal(res, 1);
         });
 
         it('returns 2 if header chain prevHash is invalid', async () => {
             let res = await vspv.methods.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_INVALID_PREVHASH)
                 .call({from: seller, gas: gas, gasPrice: gasPrice});
-            assert.equal(res, 1);
+            assert.equal(res, 2);
         });
 
         it('returns 3 if a header does not meet its target', async () => {
             let res = await vspv.methods.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_LOW_WORK)
                 .call({from: seller, gas: gas, gasPrice: gasPrice});
-            assert.equal(res, 2);
+            assert.equal(res, 3);
         });
     });
 
