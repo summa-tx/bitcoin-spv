@@ -186,7 +186,7 @@ def main():
     chain.extend(get_header_chain_from_api(
         block_json['data']['next_blockhash'], num_headers))
 
-    submission = make_ether_tx(t, header, proof, index)
+    # submission = make_ether_tx(t, header, proof, index)
 
     # Error if the proof isn't valid
     assert(verify_proof(proof, index))
@@ -213,8 +213,8 @@ def main():
     print(chain.hex())
     print()
     print()
-    print('--- SUBMISSION ---')
-    print(submission.hex())
+    # print('--- SUBMISSION ---')
+    # print(submission.hex())
 
 
 if __name__ == '__main__':

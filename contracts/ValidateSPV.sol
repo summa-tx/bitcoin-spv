@@ -217,7 +217,7 @@ library ValidateSPV {
     /// @notice             Checks validity of header chain
     /// @notice             Compares the hash of each header to the prevHash in the next header
     /// @param _headers     Raw byte array of header chain
-    /// @return             true if header chain is valid, false otherwise
+    /// @return             The total accumulated difficulty of the header chain
     function validateHeaderChain(bytes _headers) public pure returns (uint256 _reqDiff) {
 
         // Check header chain length
