@@ -246,7 +246,7 @@ library BTCUtils {
     }
 
     /// @notice          Determines the length of an output
-    /// @dev             3 types: WPKH, WSH, and OP_RETURN
+    /// @dev             5 types: WPKH, WSH, PKH, SH, and OP_RETURN
     /// @param _b        2 bytes from the start of the output script
     /// @return          The length indicated by the prefix, error if invalid length
     function determineOutputLength(bytes _b) public pure returns (uint256) {
@@ -259,6 +259,12 @@ library BTCUtils {
 
         // P2WPKH
         if (keccak256(_b) == keccak256(hex"1600")) { return 31; }
+
+        // Legacy P2PKH
+        if (keccak256(_b) == keccak256(hex'1976')) { return 34; }
+
+        // legacy P2SH
+        if (keccak256(_b) == keccak256(hex'17a9')) { return 32; }
 
         // OP_RETURN
         if (keccak256(_b.slice(1, 1)) == keccak256(hex"6a")) {
@@ -284,7 +290,7 @@ library BTCUtils {
         // First output is the next byte after the number of outputs
         uint256 _offset = findNumOutputs(_b) + 1;
 
-        // Determine if first output P2WPKH (31 bytes) or P2WSH (43 bytes)
+        // Determine length of first ouput
         uint _len = determineOutputLength(_b.slice(_offset + 8, 2));
 
         // This loop moves forward, and then gets the len of the next one
@@ -297,7 +303,7 @@ library BTCUtils {
         return _b.slice(_offset, _len);
     }
 
-    /* Block Header */ 
+    /* Block Header */
     /// @notice          Extracts the transaction merkle root from a block header
     /// @dev             Use verifyHash256Merkle to verify proofs with this root
     /// @param _b        The header
@@ -331,7 +337,7 @@ library BTCUtils {
     /// @param _target   The current target
     /// @return          The block difficulty (bdiff)
     function calculateDifficulty(uint256 _target) public pure returns (uint256) {
-        // Difficulty 1 calculated from 0x1d00ffff 
+        // Difficulty 1 calculated from 0x1d00ffff
         uint256 _difficulty1Target = 26959535291011309493156476344723991336010898738574164086137773096960;
         return _difficulty1Target.div(_target);
     }
@@ -383,7 +389,7 @@ library BTCUtils {
 
         // Special case for coinbase-only blocks
         if (_a.length == 32) { return true; }
-        
+
         // Should never occur
         if (_a.length == 64) { return false; }
 
