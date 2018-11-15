@@ -180,11 +180,11 @@ library ValidateSPV {
                 _outputType = uint8(OutputTypes.WPKH);
                 _payload = _output.slice(11, 20);
             } else if (_prefixHash == keccak256(hex'1976')) {
-                // P2WPKH
+                // PKH
                 _outputType = uint8(OutputTypes.PKH);
                 _payload = _output.slice(12, 20);
             } else if (_prefixHash == keccak256(hex'17a9')) {
-                // P2WPKH
+                // SH
                 _outputType = uint8(OutputTypes.SH);
                 _payload = _output.slice(11, 20);
             } else {
