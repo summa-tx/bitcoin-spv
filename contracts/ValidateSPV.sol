@@ -15,7 +15,7 @@ library ValidateSPV {
     using BytesLib for bytes;
     using SafeMath for uint256;
 
-    enum OutputTypes { NONE, WPKH, WSH, OP_RETURN }
+    enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH }
 
     /// @notice                 Valides a tx inclusion in the block
     /// @param _txid            The txid (LE)
@@ -178,6 +178,14 @@ library ValidateSPV {
             } else if (_prefixHash == keccak256(hex'1600')) {
                 // P2WPKH
                 _outputType = uint8(OutputTypes.WPKH);
+                _payload = _output.slice(11, 20);
+            } else if (_prefixHash == keccak256(hex'1976')) {
+                // P2WPKH
+                _outputType = uint8(OutputTypes.PKH);
+                _payload = _output.slice(12, 20);
+            } else if (_prefixHash == keccak256(hex'17a9')) {
+                // P2WPKH
+                _outputType = uint8(OutputTypes.SH);
                 _payload = _output.slice(11, 20);
             } else {
                 // If unidentifiable output type, bubble up error
