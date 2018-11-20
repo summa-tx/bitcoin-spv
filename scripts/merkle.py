@@ -53,13 +53,16 @@ def get_block_from_api(block_hash):
     block_json = json.loads(block_json.text)
 
     block_hex = requests.get(raw_url)
-    return block_json, bytes.fromhex(block_hex.text)
+    try:
+        return block_json, bytes.fromhex(block_hex.text)
+    except Exception:
+        print(block_hash)
+        print(block_hex.text)
 
 
 def get_header_chain_from_api(block_hash, num_headers):
     headers = bytearray()
     for i in range(num_headers):
-
         (block_json, rawblock) = get_block_from_api(block_hash)
         block_hash = block_json['data']['next_blockhash']
 
@@ -161,6 +164,10 @@ def verify_proof(proof, index):
 
 
 def main():
+    print()
+    print('this script pulls 1 MB per header from blockchain.info')
+    print('this is not ideal, and will be fixed eventually')
+    print('in the meantime, please use sparingly')
     # Read tx_id from args, and then get it and its block from explorers
     tx_id = str(sys.argv[1])
     num_headers = int(sys.argv[2]) if len(sys.argv) > 2 else 6
