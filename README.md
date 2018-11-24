@@ -1,11 +1,11 @@
 ## Bitcoin SPV Proofs in Solidity
 
 ### Deployed Instances
-  
+
 |            | Main                                         | Ropsten
 |------------|----------------------------------------------|-------------------------------------------
-|ValidateSPV |	0xaa75a0d48fca26ec2102ab68047e98a80a63df1d	|	0x37e3b3bff46507345dd3559027a91a76cfc430c8
-|BTCUtils    |	0xD0d4EA34e4a5c27cA40e78838a4Ed5C1bB033BbC	|	0x1d1bbe766b3ccebba48e1323f1bbbeb7fa710b2f
+|ValidateSPV |	0xaa75a0d48fca26ec2102ab68047e98a80a63df1d	|	0x112ef10aef3bde1cd8fd062d805ae8173ec36d66
+|BTCUtils    |	0xD0d4EA34e4a5c27cA40e78838a4Ed5C1bB033BbC	|	0x7a79d4112d79af980e741e0b10c47ffa543cc93a
 |BytesLib    |	0x302A17fcE39E877966817b7cc5479D8BfCe05295	|	0xcc69fec9ba70d6b4e386bfdb70b94349aff15f53
 
 
