@@ -4,30 +4,22 @@ import requests
 from riemann import tx
 from riemann import utils as rutils
 
-from ethereum import abi, transactions
+from ethereum import abi
 
 with open('build/ValidateSPV.json', 'r') as jsonfile:
     j = json.loads(jsonfile.read())
     ABI = json.loads(j['interface'])
 
-ADDRESS = '0x0011223300112233001122330011223300112233'
+# # # # # # # # # # # # # # #
+# Use this script Sparingly #
+# # # # # # # # # # # # # # #
 
 
-# Use Sparingly
-
-def make_ether_tx(t, header, proof, index):
+def make_ether_data(t, header, proof, index):
     ct = abi.ContractTranslator(ABI)
-    tx_data = ct.encode(
+    return ct.encode(
         'validateTransaction',
         [t.to_bytes(), proof, index, header])
-    return transactions.Transaction(
-        nonce=0,
-        gasprice=20,
-        startgas=1000000,
-        to=ADDRESS,
-        value=0,
-        data=tx_data,
-        v=0, r=0, s=0)
 
 
 def get_tx_from_api(tx_id):
@@ -193,7 +185,7 @@ def main():
     chain.extend(get_header_chain_from_api(
         block_json['data']['next_blockhash'], num_headers))
 
-    # submission = make_ether_tx(t, header, proof, index)
+    # submission = make_ether_data(t, header, proof, index)
 
     # Error if the proof isn't valid
     assert(verify_proof(proof, index))
@@ -218,9 +210,9 @@ def main():
     print()
     print('--- CHAIN ---')
     print(chain.hex())
-    print()
-    print()
-    # print('--- SUBMISSION ---')
+    # print()
+    # print()
+    # print('--- ETHER DATA ---')
     # print(submission.hex())
 
 
