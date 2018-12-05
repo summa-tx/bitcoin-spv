@@ -1,130 +1,151 @@
 import sys
 import json
-import requests
+import asyncio
+
+from connectrum.svr_info import ServerInfo
+from connectrum.client import StratumClient
+
 from riemann import tx
 from riemann import utils as rutils
 
 from ethereum import abi
 
+from typing import Tuple
+
 with open('build/ValidateSPV.json', 'r') as jsonfile:
     j = json.loads(jsonfile.read())
     ABI = json.loads(j['interface'])
+
+
+CLIENT = None
+
+
+async def get_client():
+    global CLIENT
+    if CLIENT is not None:
+        return CLIENT
+    else:
+        CLIENT = await setup_client()
+        return CLIENT
+
+
+async def setup_client():
+    if CLIENT is not None:
+        return CLIENT
+    server = ServerInfo({
+        "nickname": None,
+        "hostname": "bitcoin.cluelessperson.com",
+        "ip_addr": "172.92.140.254",
+        "ports": [
+            "s50002",
+            "t50001"
+        ],
+        "version": "1.2",
+        "pruning_limit": 0,
+        "seen_at": 1533670768.588772
+    })
+
+    client = StratumClient()
+
+    await asyncio.wait_for(
+        client.connect(
+            server_info=server,
+            proto_code='s',
+            use_tor=False,
+            disable_cert_verify=True),
+        timeout=5)
+
+    await asyncio.wait_for(
+        client.RPC(
+            'server.version',
+            'bitcoin-spv-merkle',
+            '1.2'),
+        timeout=5)
+
+    return client
 
 # # # # # # # # # # # # # # #
 # Use this script Sparingly #
 # # # # # # # # # # # # # # #
 
 
-def make_ether_data(t, header, proof, index):
+def make_ether_data(t: tx.Tx, proof: bytes, index: bytes, header: bytes):
     ct = abi.ContractTranslator(ABI)
     return ct.encode(
         'validateTransaction',
         [t.to_bytes(), proof, index, header])
 
 
-def get_tx_from_api(tx_id):
-    url = 'https://chain.so/api/v2/get_tx/BTC/{}'.format(tx_id)
-    raw_url = 'https://blockchain.info/rawtx/{}?format=hex'.format(tx_id)
-
-    tx_json = requests.get(url)
-    tx_hex = requests.get(raw_url)
-
-    tx_json = json.loads(tx_json.text)
-    t = tx.Tx.from_bytes(bytes.fromhex(tx_hex.text))
-    return tx_json, t
+async def get_latest_blockheight() -> int:
+    client = await get_client()
+    fut, _ = client.subscribe('blockchain.headers.subscribe')
+    block_dict = await fut
+    return block_dict['block_height']
 
 
-def get_block_from_api(block_hash):
-    block_hash = str(block_hash)
+async def get_block_merkle_root(height: int) -> str:
+    client = await get_client()
 
-    url = 'https://chain.so/api/v2/get_block/BTC/{}'.format(block_hash)
-    raw_url = 'https://blockchain.info/rawblock/{}?format=hex' \
-        .format(block_hash)
+    header_dict = await client.RPC('blockchain.block.headers', height, 1)
+    merkle_root = bytes.fromhex(header_dict['hex'])[36:68]
 
-    block_json = requests.get(url.format(block_hash))
-    block_json = json.loads(block_json.text)
-
-    block_hex = requests.get(raw_url)
-    try:
-        return block_json, bytes.fromhex(block_hex.text)
-    except Exception:
-        print(block_hash)
-        print(block_hex.text)
+    return merkle_root
 
 
-def get_header_chain_from_api(block_hash, num_headers):
-    headers = bytearray()
-    for i in range(num_headers):
-        (block_json, rawblock) = get_block_from_api(block_hash)
-        block_hash = block_json['data']['next_blockhash']
+async def get_tx_from_api(tx_id: str) -> Tuple[dict, tx.Tx]:
+    # url = 'https://chain.so/api/v2/get_tx/BTC/{}'.format(tx_id)
+    # raw_url = 'https://blockchain.info/rawtx/{}?format=hex'.format(tx_id)
+    #
+    # tx_json = requests.get(url)
+    # tx_hex = requests.get(raw_url)
+    #
+    # tx_json = json.loads(tx_json.text)
+    # t = tx.Tx.from_bytes(bytes.fromhex(tx_hex.text))
 
-        headers.extend(rawblock[0:80])
+    client = await get_client()
+    tx_dict = await client.RPC('blockchain.transaction.get', tx_id, True)
+    t = tx.Tx.from_hex(tx_dict['hex'])
 
-    return headers
+    latest_blockheight = await get_latest_blockheight()
 
+    # NB: I'm not sure why this works. I feel like it should be -1
+    tx_dict['block_height'] = latest_blockheight - tx_dict['confirmations'] + 1
 
-def txns_from_block(block_json, block):
-    tx_list = []
-    current = 0
-    # Get the VarInt countn
-    tx_count = tx.VarInt.from_bytes(block[80:])
-    # txns are after the header and VarInt count
-    txns = block[80 + len(tx_count):]
-    try:
-        for i in range(tx_count.number):
-            # Parse a tx
-            t = tx.Tx.from_bytes(txns[current:])
-
-            # Add it to the list and jump forward
-            tx_list.append(t)
-            current += len(t)
-
-            # Compare against the explorer's list
-            if(t.tx_id.hex() != block_json['data']['txs'][i]):
-                raise ValueError(
-                    'WRONG HASH {} {} {}'
-                    .format(i, t.tx_id.hex(), block_json['data']['txs'][i]))
-    except Exception as e:
-        print(e)
-        print(len(tx_list))
-        # print(txns[current:current + 200].hex())  # Useful for debugging
-        raise
-
-    return tx_list
+    return tx_dict, t
 
 
-def create_proof(tx_hashes, index):
-    idx = index - 1  # This is 0-indexed
-    # TODO: making creating and verifying indexes the same
-    hashes = [h for h in tx_hashes]  # copy the list
-    proof = bytearray(hashes[idx])
+async def get_header_chain(start_height: int,
+                           count: int) -> str:
+    client = await get_client()
 
-    while len(hashes) > 1:
-        next_tree_row = []
+    res = await client.RPC(
+        'blockchain.block.headers', start_height, count)
 
-        # if length is odd, duplicate last entry
-        if len(hashes) % 2 != 0:
-            hashes.append(hashes[-1])
-
-        # Append next hash to proof
-        proof += hashes[idx + (1 if idx % 2 == 0 else -1)]
-
-        # Half the index
-        idx = idx // 2
-
-        # Take each pair in order, and hash them
-        for i in range(0, len(hashes), 2):
-            next_tree_row.append(rutils.hash256(hashes[i] + hashes[i + 1]))
-
-        # update tx_hashes
-        hashes = next_tree_row
-
-    # Put the root on the end
-    proof.extend(hashes[0])
-    return proof
+    return res['hex']
 
 
-def verify_proof(proof, index):
+async def get_merkle_proof_from_api(tx_id: str, hght: int) -> Tuple[str, int]:
+    client = await get_client()
+
+    res = await client.RPC('blockchain.transaction.get_merkle', tx_id, hght)
+
+    pos = res['pos']
+
+    proof = bytearray()
+    proof.extend(bytes.fromhex(tx_id)[::-1])
+    for tx_id in res['merkle']:
+        proof.extend(bytes.fromhex(tx_id)[::-1])
+
+    block_root = await get_block_merkle_root(hght)
+
+    print(block_root)
+    proof.extend(block_root)
+
+    # NB: add 1 because our proof uses 1-indexed position
+    return proof.hex(), pos + 1
+
+
+def verify_proof(proof: bytes, index: int):
     index = index  # This is 1 indexed
     # TODO: making creating and verifying indexes the same
     root = proof[-32:]
@@ -155,40 +176,21 @@ def verify_proof(proof, index):
     return True
 
 
-def main():
-    print()
-    print('this script pulls 1 MB per header from blockchain.info')
-    print('this is not ideal, and will be fixed eventually')
-    print('in the meantime, please use sparingly')
-    # Read tx_id from args, and then get it and its block from explorers
-    tx_id = str(sys.argv[1])
-    num_headers = int(sys.argv[2]) if len(sys.argv) > 2 else 6
-    (tx_json, t) = get_tx_from_api(tx_id)
-    (block_json, block) = get_block_from_api(tx_json['data']['blockhash'])
+async def do_it_all(tx_id: str, num_headers: int):
+    (tx_json, t) = await get_tx_from_api(tx_id)
 
-    # Read off the header
-    header = block[0:80]
-
-    # Build the LE hash array
-    tx_hashes = [txn.tx_id_le for txn in txns_from_block(block_json, block)]
-
-    # Find the tx we want in the hash array
-    # modify the index so it's 1-indexed
-    index = tx_hashes.index(bytes.fromhex(tx_id)[::-1]) + 1
-
-    # Create a proof using the hashes and index
-    proof = create_proof(tx_hashes, index)
+    proof, index = await get_merkle_proof_from_api(
+        t.tx_id.hex(), tx_json['block_height'])
 
     # Create a header chain
-    chain = bytearray()
-    chain.extend(header)
-    chain.extend(get_header_chain_from_api(
-        block_json['data']['next_blockhash'], num_headers))
+    chain = await get_header_chain(
+        tx_json['block_height'],
+        num_headers + 1)
 
-    # submission = make_ether_data(t, header, proof, index)
+    # submission = make_ether_data(t, proof, index, header)
 
     # Error if the proof isn't valid
-    assert(verify_proof(proof, index))
+    assert(verify_proof(bytes.fromhex(proof), index))
 
     print()
     print()
@@ -196,12 +198,8 @@ def main():
     print(t.hex())
     print()
     print()
-    print('--- HEADER ---')
-    print(header.hex())
-    print()
-    print()
     print('--- PROOF ---')
-    print(proof.hex())
+    print(proof)
     print()
     print()
     print('--- INDEX ---')
@@ -209,11 +207,19 @@ def main():
     print()
     print()
     print('--- CHAIN ---')
-    print(chain.hex())
+    print(chain)
     # print()
     # print()
     # print('--- ETHER DATA ---')
     # print(submission.hex())
+
+
+def main():
+    # Read tx_id from args, and then get it and its block from explorers
+    tx_id = str(sys.argv[1])
+    num_headers = int(sys.argv[2]) if len(sys.argv) > 2 else 6
+
+    asyncio.get_event_loop().run_until_complete(do_it_all(tx_id, num_headers))
 
 
 if __name__ == '__main__':

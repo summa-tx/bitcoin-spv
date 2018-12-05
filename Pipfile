@@ -7,8 +7,10 @@ verify_ssl = true
 riemann-tx = ">=1.1.2"
 requests = "*"
 ethereum = "*"
+connectrum = "*"
 
 [requires]
 python_version = "3.6.6"
 
 [dev-packages]
+ipython = "*"
