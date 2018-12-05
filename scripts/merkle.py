@@ -83,7 +83,7 @@ async def get_latest_blockheight() -> int:
     return block_dict['block_height']
 
 
-async def get_block_merkle_root(height: int) -> str:
+async def get_block_merkle_root(height: int) -> bytes:
     client = await get_client()
 
     header_dict = await client.RPC('blockchain.block.headers', height, 1)
