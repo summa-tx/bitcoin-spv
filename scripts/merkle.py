@@ -1,6 +1,8 @@
 import sys
 import json
+import logging
 import asyncio
+import argparse
 
 from connectrum.svr_info import ServerInfo
 from connectrum.client import StratumClient
@@ -10,7 +12,11 @@ from riemann import utils as rutils
 
 from ethereum import abi
 
-from typing import Tuple
+from typing import List, Tuple
+from logging.config import dictConfig
+from log_config import logging_config
+dictConfig(logging_config)
+logger = logging.getLogger('root').getChild('merkle')
 
 with open('build/ValidateSPV.json', 'r') as jsonfile:
     j = json.loads(jsonfile.read())
@@ -47,13 +53,17 @@ async def setup_client():
 
     client = StratumClient()
 
-    await asyncio.wait_for(
-        client.connect(
-            server_info=server,
-            proto_code='s',
-            use_tor=False,
-            disable_cert_verify=True),
-        timeout=5)
+    try:
+        await asyncio.wait_for(
+            client.connect(
+                server_info=server,
+                proto_code='s',
+                use_tor=False,
+                disable_cert_verify=True),
+            timeout=5)
+    except Exception as e:
+        print('eeeee')
+        print(e)
 
     await asyncio.wait_for(
         client.RPC(
@@ -214,13 +224,26 @@ async def do_it_all(tx_id: str, num_headers: int):
     # print(submission.hex())
 
 
-def main():
-    # Read tx_id from args, and then get it and its block from explorers
-    tx_id = str(sys.argv[1])
-    num_headers = int(sys.argv[2]) if len(sys.argv) > 2 else 6
+def parse_args(argv: List[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('tx_id', help='big-endian transaction id', type=str)
+    parser.add_argument('num_headers', help='number of headers to include in header chain', type=int, default=0)
+    return parser.parse_args(argv[1:])
 
-    asyncio.get_event_loop().run_until_complete(do_it_all(tx_id, num_headers))
+
+def main(argv: List[str]) -> int:
+    '''Read tx_id from args, and then get it and its block from explorers
+        argv (List[str]):   cli arguments
+    Return
+        (int):  error code. 0 on success
+    '''
+    args = parse_args(argv)
+    logger.info('tx_id: {}'.format(args.tx_id))
+    logger.info('num_headers: {}'.format(args.num_headers))
+
+    asyncio.get_event_loop().run_until_complete(do_it_all(args.tx_id, args.num_headers))
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main(sys.argv))

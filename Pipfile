@@ -9,9 +9,11 @@ requests = "*"
 ethereum = "*"
 connectrum = "*"
 
-[requires]
-python_version = "3.6.6"
-
 [dev-packages]
 ipython = "*"
 mypy = "*"
+pytest = "*"
+"flake8" = "*"
+
+[requires]
+python_version = "3.6.6"
