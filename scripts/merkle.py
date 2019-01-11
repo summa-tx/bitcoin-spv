@@ -32,17 +32,30 @@ async def get_client():
 async def setup_client():
     if CLIENT is not None:
         return CLIENT
+    # server = ServerInfo({
+    #     "nickname": None,
+    #     "hostname": "bitcoin.cluelessperson.com",
+    #     "ip_addr": "172.92.140.254",
+    #     "ports": [
+    #         "s50002",
+    #         "t50001"
+    #     ],
+    #     "version": "1.2",
+    #     "pruning_limit": 0,
+    #     "seen_at": 1533670768.588772
+    # })
+
     server = ServerInfo({
         "nickname": None,
-        "hostname": "bitcoin.cluelessperson.com",
-        "ip_addr": "172.92.140.254",
+        "hostname": "electrum.anduck.net",
+        "ip_addr": "62.210.6.26",
         "ports": [
             "s50002",
             "t50001"
         ],
         "version": "1.2",
         "pruning_limit": 0,
-        "seen_at": 1533670768.588772
+        "seen_at": 1533670768.86758
     })
 
     client = StratumClient()
@@ -138,7 +151,7 @@ async def get_merkle_proof_from_api(tx_id: str, hght: int) -> Tuple[str, int]:
 
     block_root = await get_block_merkle_root(hght)
 
-    print(block_root)
+    # print(block_root)
     proof.extend(block_root)
 
     # NB: add 1 because our proof uses 1-indexed position
@@ -157,16 +170,16 @@ def verify_proof(proof: bytes, index: int):
         # The next hash goes before the current one
         if index % 2 == 0:
             current = rutils.hash256(
-                proof[i * 32: (i + 1) * 32] +
-                current
+                proof[i * 32: (i + 1) * 32]
+                + current
             )
             # Halve and floor the index
             index = index // 2
         else:
             # The next hash goes after the current one
             current = rutils.hash256(
-                current +
-                proof[i * 32: (i + 1) * 32]
+                current
+                + proof[i * 32: (i + 1) * 32]
             )
             # Halve and ceil the index
             index = index // 2 + 1
