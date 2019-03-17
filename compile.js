@@ -13,6 +13,7 @@ const BTCUtilsPath = path.resolve(__dirname, 'contracts', 'BTCUtils.sol')
 const ValidateSPVPath = path.resolve(__dirname, 'contracts', 'ValidateSPV.sol')
 const BytesPath = path.resolve(__dirname, 'contracts', 'BytesLib.sol')
 const SafeMathPath = path.resolve(__dirname, 'contracts', 'SafeMath.sol')
+const SigCheckPath = path.resolve(__dirname, 'contracts', 'SigCheck.sol')
 
 
 let input = {
@@ -20,7 +21,8 @@ let input = {
     'BTCUtils.sol': fs.readFileSync(BTCUtilsPath, 'utf8'),
     'ValidateSPV.sol': fs.readFileSync(ValidateSPVPath, 'utf8'),
     'BytesLib.sol': fs.readFileSync(BytesPath, 'utf8'),
-    'SafeMath.sol': fs.readFileSync(SafeMathPath, 'utf8')
+    'SafeMath.sol': fs.readFileSync(SafeMathPath, 'utf8'),
+    'SigCheck.sol': fs.readFileSync(SigCheckPath, 'utf8')
 }
 
 const output = solc.compile({sources: input}, 1);
