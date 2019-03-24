@@ -69,15 +69,15 @@ contract CheckBitcoinSigs {
     ) public pure returns (bytes32) {
         // Fixes elements to easily make a 1-in 1-out sighash digest
         // Does not support timelocks
-        bytes _scriptCode = abi.encodePacked(
+        bytes memory _scriptCode = abi.encodePacked(
             hex"1976a914",  // length, dup, hash160, pkh_length
-            _outputPKH,
+            _inputPKH,
             hex"88ac");  // equal, checksig
-        bytes _hashOutputs = abi.encodePacked(
+        bytes32 _hashOutputs = abi.encodePacked(
             _outputValue,  // 8-byte LE
             hex"160014",  // this assumes p2wpkh
             _outputPKH).hash256();
-        bytes _sighashPreimage = abi.encodePacked(
+        bytes memory _sighashPreimage = abi.encodePacked(
             hex"01000000",  // version
             _outpoint.hash256(),  // hashPrevouts
             hex"8cb9012517c817fead650287d61bdd9c68803b6bf9c64133dcab3e65b5a50cb9",  // hashSequence
