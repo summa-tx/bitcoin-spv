@@ -74,8 +74,8 @@ contract CheckBitcoinSigs {
             _outputPKH,
             hex"88ac");  // equal, checksig
         bytes _hashOutputs = abi.encodePacked(
-            _outputValue,
-            hex"160014",
+            _outputValue,  // 8-byte LE
+            hex"160014",  // this assumes p2wpkh
             _outputPKH).hash256();
         bytes _sighashPreimage = abi.encodePacked(
             hex"01000000",  // version
