@@ -59,4 +59,36 @@ contract CheckBitcoinSigs {
     ) public pure returns (bool) {
         return sha256(_candidate) == _digest;
     }
+
+    function oneInputOneOutputSighash(
+        bytes _outpoint,  // 36 byte UTXO id
+        bytes _inputPKH,  // 20 byte hash160
+        bytes _inputValue,  // 8-byte LE
+        bytes _outputValue,  // 8-byte LE
+        bytes _outputPKH  // 20 byte hash160
+    ) public pure returns (bytes32) {
+        // Fixes elements to easily make a 1-in 1-out sighash digest
+        // Does not support timelocks
+        bytes _scriptCode = abi.encodePacked(
+            hex"1976a914",  // length, dup, hash160, pkh_length
+            _outputPKH,
+            hex"88ac");  // equal, checksig
+        bytes _hashOutputs = abi.encodePacked(
+            _outputValue,
+            hex"160014",
+            _outputPKH).hash256();
+        bytes _sighashPreimage = abi.encodePacked(
+            hex"01000000",  // version
+            _outpoint.hash256(),  // hashPrevouts
+            hex"8cb9012517c817fead650287d61bdd9c68803b6bf9c64133dcab3e65b5a50cb9",  // hashSequence
+            _outpoint,  // outpoint
+            _scriptCode,  // p2wpkh script code
+            _inputValue,  // value of the input in 8-byte LE
+            hex"00000000",  // input nSequence
+            _hashOutputs,  // hash of the single output
+            hex"00000000",  //
+            hex"01000000"  // SIGHASH_ALL
+        );
+        return _sighashPreimage.hash256();
+    }
 }

@@ -319,7 +319,7 @@ library BTCUtils {
     }
 
     /// @notice          Extracts the target from a block header
-    /// @dev             Difficulty is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
+    /// @dev             Target is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
     /// @param _b        The header
     /// @return          The target threshold
     function extractTarget(bytes _b) public pure returns (uint256) {
