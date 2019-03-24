@@ -86,7 +86,7 @@ contract CheckBitcoinSigs {
             _inputValue,  // value of the input in 8-byte LE
             hex"00000000",  // input nSequence
             _hashOutputs,  // hash of the single output
-            hex"00000000",  //
+            hex"00000000",  // nLockTime
             hex"01000000"  // SIGHASH_ALL
         );
         return _sighashPreimage.hash256();
