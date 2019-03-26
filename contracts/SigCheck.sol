@@ -30,7 +30,7 @@ contract CheckBitcoinSigs {
     /// @return          the p2wkph output script
     function p2wpkhFromPubkey(bytes _pubkey) public pure returns (bytes) {
         if (_pubkey.length == 64) {
-            _pubkey = abi.encodePacked(hex'04', _pubkey)
+            _pubkey = abi.encodePacked(hex'04', _pubkey);
         }
         require(_pubkey.length == 65);  // prefixed uncompressed
 
@@ -75,10 +75,10 @@ contract CheckBitcoinSigs {
         bytes32 _r,
         bytes32 _s
     ) public pure returns (bool) {
-        bool _isExpected = p2wpkhFromPubkey(_pubkey).equal(_p2wpkhOutputScript);  // is it the expected signer?
+        bool _isExpectedSigner = keccak256(p2wpkhFromPubkey(_pubkey)) == keccak256(_p2wpkhOutputScript);  // is it the expected signer?
         bytes memory _truncatedPubkey = _pubkey.slice(1, _pubkey.length - 1);  // slice off the 04 prefix
         bool _sigResult = checkSig(_truncatedPubkey, _digest, _v, _r, _s);
-        return (_isExpected && _sigResult);
+        return (_isExpectedSigner && _sigResult);
     }
 
     /// @notice             checks if a message is the sha256 preimage of a digest
@@ -102,7 +102,6 @@ contract CheckBitcoinSigs {
     /// @param _outputValue     the value of the output in satoshi
     /// @param _outputPKH       the output pubkeyhash (hash160(recipient_pubkey))
     /// @return                 the double-sha256 (hash256) signature hash as defined by bip143
-    function checkBitcoinSig(
     function oneInputOneOutputSighash(
         bytes _outpoint,  // 36 byte UTXO id
         bytes _inputPKH,  // 20 byte hash160
