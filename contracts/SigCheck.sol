@@ -7,7 +7,7 @@ import {BytesLib} from "./BytesLib.sol";
 import {BTCUtils} from "./BTCUtils.sol";
 
 
-contract CheckBitcoinSigs {
+library CheckBitcoinSigs {
 
     using BytesLib for bytes;
     using BTCUtils for bytes;
