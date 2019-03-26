@@ -104,10 +104,10 @@ contract CheckBitcoinSigs {
     /// @return                 the double-sha256 (hash256) signature hash as defined by bip143
     function oneInputOneOutputSighash(
         bytes _outpoint,  // 36 byte UTXO id
-        bytes _inputPKH,  // 20 byte hash160
-        bytes _inputValue,  // 8-byte LE
-        bytes _outputValue,  // 8-byte LE
-        bytes _outputPKH  // 20 byte hash160
+        bytes20 _inputPKH,  // 20 byte hash160
+        bytes8 _inputValue,  // 8-byte LE
+        bytes8 _outputValue,  // 8-byte LE
+        bytes20 _outputPKH  // 20 byte hash160
     ) public pure returns (bytes32) {
         // Fixes elements to easily make a 1-in 1-out sighash digest
         // Does not support timelocks
