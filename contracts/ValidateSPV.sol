@@ -127,7 +127,7 @@ library ValidateSPV {
         return abi.encodePacked(_version, _nInputs, _inputs, _nOutputs, _outputs, _locktime).hash256();
     }
 
-    /// @notice         Validates the first 6 bytes of a block
+    /// @notice         Validates the first 6 bytes of a transaction
     /// @dev            First byte is the version. The next must be 0x0000000001
     /// @param _bytes   Prefixed raw byte string (probably a tx)
     /// @return         true if valid, otherwise false
