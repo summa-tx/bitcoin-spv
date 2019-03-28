@@ -87,8 +87,8 @@ library CheckBitcoinSigs {
     /// @param _candidate   the purported preimage
     /// @return             the p2wkph output script
     function isSha256Preimage(
-        bytes32 _digest,
-        bytes _candidate
+        bytes _candidate,
+        bytes32 _digest
     ) public pure returns (bool) {
         return sha256(_candidate) == _digest;
     }
