@@ -79,7 +79,17 @@ library BTCUtils {
     /// @dev             Sequence is used for relative time locks
     /// @param _b        The input
     /// @return          The sequence bytes (LE uint)
-    function extractSequenceLE(bytes _b) public pure returns (bytes) { return _b.slice(37, 4); }
+    function extractSequenceLE(bytes _b) public pure returns (bytes) { 
+        
+        uint8 _k;
+        if (keccak256(_b.slice(36, 1)) == keccak256(hex'00')) {
+            _k = 37;
+        } else if (keccak256(_b.slice(36, 1)) == keccak256(hex'17')) {
+            _k = 60;
+        }
+        return _b.slice(_k, 4); 
+    
+    }
 
     /// @notice          Extracts the sequence from the input in a tx
     /// @dev             Sequence is a 4-byte little-endian number
@@ -96,6 +106,12 @@ library BTCUtils {
     /// @param _b        The input
     /// @return          The outpoint (LE bytes of prev tx hash + LE bytes of prev tx index)
     function extractOutpoint(bytes _b) public pure returns (bytes) { return _b.slice(0, 36); }
+
+    /// @notice          Extracts the signature script from the input in a tx
+    /// @dev             23 byte signature script
+    /// @param _b        The input
+    /// @return          The signature script (little-endian bytes)
+    function extractSigScript(bytes _b) public pure returns (bytes) {return _b.slice(37, 23); }
 
     /// @notice          Extracts the tx input tx id from the input in a tx
     /// @dev             32 byte tx id
@@ -212,7 +228,14 @@ library BTCUtils {
     /// @param _b        The tx to evaluate
     /// @return          The index of the VarInt numTxOuts
     function findNumOutputs(bytes _b) public pure returns (uint256) {
-        return 7 + (41 * extractNumInputs(_b));
+        
+        uint8 _k;
+        if (keccak256(_b.slice(43, 1)) == keccak256(hex'00')) {
+            _k = 41;
+        } else if (keccak256(_b.slice(43, 1)) == keccak256(hex'17')) {
+            _k = 64;
+        }
+        return 7 + (_k  * extractNumInputs(_b));
     }
 
     /// @notice          Extracts number of outputs as integer
@@ -241,8 +264,14 @@ library BTCUtils {
     /// @return          The specified input
     function extractInputAtIndex(bytes _b, uint8 _index) public pure returns (bytes) {
         require(_index < extractNumInputs(_b), "Index more than number of inputs");
-        uint256 _offset = 7 + (41 * _index);
-        return _b.slice(_offset, 41);
+        uint8 _k;
+        if (keccak256(_b.slice(43, 1)) == keccak256(hex'00')) {
+            _k = 41;
+        } else if (keccak256(_b.slice(43, 1)) == keccak256(hex'17')) {
+            _k = 64;
+        }
+        uint256 _offset = 7 + (_k * _index);
+        return _b.slice(_offset, _k);
     }
 
     /// @notice          Determines the length of an output

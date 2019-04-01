@@ -6,7 +6,7 @@ pragma solidity 0.4.25;
 import {ValidateSPV} from "./ValidateSPV.sol";
 import {BTCUtils} from "./BTCUtils.sol";
 import {BytesLib} from "./BytesLib.sol";
-import {SafeMath} from "./SafeMath.sol";
+import {SafeMath} from "../SafeMath.sol";
 
 
 contract SPVStore {
@@ -21,7 +21,7 @@ contract SPVStore {
     event TxStored(bytes32 indexed _txid);
     event HeaderStored(bytes32 indexed _digest);
 
-    enum OutputTypes { NONE, WPKH, WSH, OP_RETURN }
+    enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH}
 
     struct TxIn {
         uint32 sequence;            // 4 byte sequence number
@@ -210,6 +210,10 @@ contract SPVStore {
                 _output.outputType = OutputTypes.WSH;
             } else if (_outputType == 3) {
                 _output.outputType = OutputTypes.OP_RETURN;
+            } else if (_outputType == 4) {
+                _output.outputType = OutputTypes.PKH;
+            } else if (_outputType == 5) {
+                _output.outputType = OutputTypes.SH;
             }
 
             transactions[_txid].outputs[i] = _output;

@@ -148,13 +148,11 @@ library ValidateSPV {
     /// @return         Tx input sequence number, tx hash, and index
     function parseInput(bytes _input) public pure returns (uint32 _sequence, bytes32 _hash, uint32 _index) {
 
-        // Require segwit: if no 00 scriptSig, error
-        if (keccak256(_input.slice(36, 1)) != keccak256(hex'00')) { return; }
-
-        // Require that input is 41 bytes
-        if (_input.length != 41) { return; }
-
-        return (_input.extractSequence(), _input.extractTxId(), _input.extractTxIndex());
+        if (keccak256(_input.slice(36, 1)) == keccak256(hex'00') && (_input.length == 41) || 
+            keccak256(_input.slice(36, 1)) == keccak256(hex'17') && (_input.length == 64)) { 
+    
+                return (_input.extractSequence(), _input.extractTxId(), _input.extractTxIndex());
+            } else { return ; }
     }
 
     /// @notice         Parses a tx output from raw output bytes
