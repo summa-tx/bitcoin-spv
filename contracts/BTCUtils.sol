@@ -229,13 +229,21 @@ library BTCUtils {
     /// @return          The index of the VarInt numTxOuts
     function findNumOutputs(bytes _b) public pure returns (uint256) {
         
-        uint8 _k;
-        if (keccak256(_b.slice(43, 1)) == keccak256(hex'00')) {
-            _k = 41;
-        } else if (keccak256(_b.slice(43, 1)) == keccak256(hex'17')) {
-            _k = 64;
+        uint8 _numInputs = extractNumInputs(_b);
+        uint256 _offset = 0; 
+        uint256 _totalInputLen = 0; //including script sig and nsequence
+      
+        for(uint i = 0; i < _numInputs; i++) {
+            
+             if (keccak256(_b.slice(_totalInputLen + 43, 1)) == keccak256(hex'00')) {
+             _offset = 41;
+             } else if (keccak256(_b.slice(_totalInputLen + 43, 1)) == keccak256(hex'17')) {
+             _offset = 64;
+             } 
+                _totalInputLen = _totalInputLen + _offset;
         }
-        return 7 + (_k  * extractNumInputs(_b));
+
+        return 7 + _totalInputLen;
     }
 
     /// @notice          Extracts number of outputs as integer
@@ -263,15 +271,34 @@ library BTCUtils {
     /// @param _index    The 0-indexed location of the input to extract
     /// @return          The specified input
     function extractInputAtIndex(bytes _b, uint8 _index) public pure returns (bytes) {
+        
         require(_index < extractNumInputs(_b), "Index more than number of inputs");
-        uint8 _k;
-        if (keccak256(_b.slice(43, 1)) == keccak256(hex'00')) {
-            _k = 41;
-        } else if (keccak256(_b.slice(43, 1)) == keccak256(hex'17')) {
-            _k = 64;
+        
+        uint256 _offset = 0; 
+        uint256 _totalInputLen = 0; //including script sig and nsequence
+      
+        if (_index == 0) {
+            _totalInputLen = 0;
+            if (keccak256(_b.slice(43, 1)) == keccak256(hex'00')) {
+                _offset = 41;
+            } else if (keccak256(_b.slice(43, 1)) == keccak256(hex'17')) {
+                _offset = 64;
+            }
+        } else if ( _index > 0) {
+             
+            for(uint i = 0; i < _index; i++) {
+            
+                if (keccak256(_b.slice(_totalInputLen + 43, 1)) == keccak256(hex'00')) {
+                _offset = 41;
+                } else if (keccak256(_b.slice(_totalInputLen + 43, 1)) == keccak256(hex'17')) {
+                _offset = 64;
+                } 
+                _totalInputLen = _totalInputLen + _offset;
+            }
         }
-        uint256 _offset = 7 + (_k * _index);
-        return _b.slice(_offset, _k);
+       
+        _totalInputLen = _totalInputLen + 7;
+        return _b.slice(_totalInputLen, _offset);
     }
 
     /// @notice          Determines the length of an output
