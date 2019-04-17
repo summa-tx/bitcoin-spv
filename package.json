@@ -1,7 +1,7 @@
 {
     "name": "bitcoin-spv",
-    "version": "0.0.0",
-    "description": "bitcoin SPV proofs in Solidity for Integral",
+    "version": "1.0.0",
+    "description": "bitcoin SPV proofs in Solidity",
     "scripts": {
         "compile": "node compile.js",
         "test": "mocha"
