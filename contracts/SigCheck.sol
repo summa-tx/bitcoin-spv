@@ -82,7 +82,7 @@ library CheckBitcoinSigs {
     }
 
     /// @notice             checks if a message is the sha256 preimage of a digest
-    /// @dev                this is NOT the hash256!
+    /// @dev                this is NOT the hash256!  this step is necessary for ECDSA security!
     /// @param _digest      the digest
     /// @param _candidate   the purported preimage
     /// @return             the p2wkph output script
@@ -91,6 +91,18 @@ library CheckBitcoinSigs {
         bytes32 _digest
     ) public pure returns (bool) {
         return sha256(_candidate) == _digest;
+    }
+
+    /// @notice             checks if a message is the keccak256 preimage of a digest
+    /// @dev                this step is necessary for ECDSA security!
+    /// @param _digest      the digest
+    /// @param _candidate   the purported preimage
+    /// @return             the p2wkph output script
+    function isKeccak256Preimage(
+        bytes _candidate,
+        bytes32 _digest
+    ) public pure returns (bool) {
+        return keccak256(_candidate) == _digest;
     }
 
 
