@@ -6,8 +6,8 @@ verify_ssl = true
 [packages]
 riemann-tx = ">=1.1.2"
 requests = "*"
-ethereum = "*"
 connectrum = "*"
+riemann-ether = "*"
 
 [requires]
 python_version = "3.6.6"

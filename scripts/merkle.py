@@ -8,7 +8,7 @@ from connectrum.client import StratumClient
 from riemann import tx
 from riemann import utils as rutils
 
-from ethereum import abi
+from ether import calldata
 
 from typing import Tuple
 
@@ -83,10 +83,10 @@ async def setup_client():
 
 
 def make_ether_data(t: tx.Tx, proof: bytes, index: bytes, header: bytes):
-    ct = abi.ContractTranslator(ABI)
-    return ct.encode(
+    calldata.call(
         'validateTransaction',
-        [t.to_bytes(), proof, index, header])
+        [t.to_bytes(), proof, index, header],
+        ABI)
 
 
 async def get_latest_blockheight() -> int:
