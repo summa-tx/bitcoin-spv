@@ -23,7 +23,7 @@ try:
         j = json.loads(jsonfile.read())
         ABI = json.loads(j['interface'])
 except Exception:
-    raise ValueError('Couldn\'t open ABI file. Hint: Did you run npm compile?')
+    raise ValueError('Couldn\'t open ABI file. Hint: Did you npm run compile?')
 
 CLIENT = None
 
