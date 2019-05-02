@@ -1,5 +1,11 @@
 ## Bitcoin SPV Proofs in Solidity
 
+### What is it?
+
+`bitcoin-spv` is a collection of Solidity libraries for working with Bitcoin
+transactions in Solidity contracts. Basically, these tools help you parse,
+inspect, and authenticate Bitcoin transactions.
+
 ### Deployed Instances
 
 |            | Main                                         | Ropsten
@@ -9,14 +15,17 @@
 |BytesLib    |	0x302A17fcE39E877966817b7cc5479D8BfCe05295	|	0xcc69fec9ba70d6b4e386bfdb70b94349aff15f53
 
 
-### Setup
+### Development Setup
 ```
 npm install
 npm run compile
 npm test
 ```
 
-### Generating merkle proofs from real chain data
+### Generating merkle proofs from mainnet Bitcoin
+
+We included a basic tool for this! It uses Electrum to get tx data. Make sure
+you have python3.6 or greater, then do the following:
 
 ```
 pipenv install
@@ -35,6 +44,8 @@ pipenv run python scripts/header_chain.py 7 2000ffff
 
 ### Test Txns
 
+These transactions are used in tests:
+
 #### P2WPKH With witness:
 https://www.blockchain.com/btc/tx/10e3eaed1ef21787944f0d151a1a6553397e2ee4074887e344a112e13f22b70b
 LE ID: `0bb7223fe112a144e3874807e42e7e3953651a1a150d4f948717f21eedeae310`
@@ -48,8 +59,8 @@ https://blockchair.com/bitcoin/transaction/d60033c5cf5c199208a9c656a29967810c4e4
 010000000001011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211024730440220276e0ec78028582054d86614c65bc4bf85ff5710b9d3a248ca28dd311eb2fa6802202ec950dd2a8c9435ff2d400cc45d7a4854ae085f49e05cc3f503834546d410de012103732783eef3af7e04d3af444430a629b16a9261e4025f52bf4d6d026299c37c7400000000
 ```
 
-### Notes:
-Blockchain.info shows txids and merkle root in BE
+### Usage notes
+Blockchain.info shows txids and merkle root in BE format
 
 They should be in LE for the proof construction
 
@@ -57,7 +68,9 @@ They need to be in LE for hashing
 
 They are in LE in the block
 
-### 1-in 1-out P2WPKH map (inclusive)
+### Byte maps for simple bitcoin transaction 
+
+#### 1-in 1-out P2WPKH map (inclusive)
 * 0-3: Version
 * 4-5: Segwit Flag (0001)
 * 6-6: len(tx_ins) (01)
@@ -70,7 +83,7 @@ They are in LE in the block
 * 60-79: hash160(pubkey)
 * -4- : locktime
 
-### 1-in 1-out P2WSH map (inclusive)
+#### 1-in 1-out P2WSH map (inclusive)
 * 0-3: Version
 * 4-5: Segwit Flag (0001)
 * 6-6: len(tx_ins) (01)
@@ -83,7 +96,7 @@ They are in LE in the block
 * 60-91: sha256(script)
 * -4- : locktime
 
-### Header Map
+#### Header Map
 * 0-3: version
 * 4-35: prevblock
 * 36-67: merkle root
@@ -91,7 +104,7 @@ They are in LE in the block
 * 72-75: difficulty bits
 * 76-79: nonce
 
-### Output structure
+#### Output structure
 
 The locktime is always 4 bytes
 
