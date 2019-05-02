@@ -12,10 +12,18 @@ from ether import calldata
 
 from typing import Tuple
 
-with open('build/ValidateSPV.json', 'r') as jsonfile:
-    j = json.loads(jsonfile.read())
-    ABI = json.loads(j['interface'])
 
+# # # # # # # # # # # # # # #
+# Use this script Sparingly #
+# # # # # # # # # # # # # # #
+
+
+try:
+    with open('build/ValidateSPV.json', 'r') as jsonfile:
+        j = json.loads(jsonfile.read())
+        ABI = json.loads(j['interface'])
+except Exception:
+    raise ValueError('Couldn\'t open ABI file. Hint: Did you run npm compile?')
 
 CLIENT = None
 
@@ -32,18 +40,6 @@ async def get_client():
 async def setup_client():
     if CLIENT is not None:
         return CLIENT
-    # server = ServerInfo({
-    #     "nickname": None,
-    #     "hostname": "bitcoin.cluelessperson.com",
-    #     "ip_addr": "172.92.140.254",
-    #     "ports": [
-    #         "s50002",
-    #         "t50001"
-    #     ],
-    #     "version": "1.2",
-    #     "pruning_limit": 0,
-    #     "seen_at": 1533670768.588772
-    # })
 
     server = ServerInfo({
         "nickname": None,
@@ -77,12 +73,9 @@ async def setup_client():
 
     return client
 
-# # # # # # # # # # # # # # #
-# Use this script Sparingly #
-# # # # # # # # # # # # # # #
-
 
 def make_ether_data(t: tx.Tx, proof: bytes, index: bytes, header: bytes):
+    '''Creates a data blob for a transaction calling validateTransaction'''
     calldata.call(
         'validateTransaction',
         [t.to_bytes(), proof, index, header],
@@ -90,6 +83,7 @@ def make_ether_data(t: tx.Tx, proof: bytes, index: bytes, header: bytes):
 
 
 async def get_latest_blockheight() -> int:
+    '''Gets the electrum server's latest known blockheight'''
     client = await get_client()
     fut, _ = client.subscribe('blockchain.headers.subscribe')
     block_dict = await fut
@@ -97,6 +91,7 @@ async def get_latest_blockheight() -> int:
 
 
 async def get_block_merkle_root(height: int) -> bytes:
+    '''Gets the merkle root of the block at a specified height'''
     client = await get_client()
 
     header_dict = await client.RPC('blockchain.block.headers', height, 1)
@@ -105,23 +100,17 @@ async def get_block_merkle_root(height: int) -> bytes:
     return merkle_root
 
 
-async def get_tx_from_api(tx_id: str) -> Tuple[dict, tx.Tx]:
-    # url = 'https://chain.so/api/v2/get_tx/BTC/{}'.format(tx_id)
-    # raw_url = 'https://blockchain.info/rawtx/{}?format=hex'.format(tx_id)
-    #
-    # tx_json = requests.get(url)
-    # tx_hex = requests.get(raw_url)
-    #
-    # tx_json = json.loads(tx_json.text)
-    # t = tx.Tx.from_bytes(bytes.fromhex(tx_hex.text))
-
+async def get_tx(tx_id: str) -> Tuple[dict, tx.Tx]:
     client = await get_client()
     tx_dict = await client.RPC('blockchain.transaction.get', tx_id, True)
     t = tx.Tx.from_hex(tx_dict['hex'])
 
     latest_blockheight = await get_latest_blockheight()
 
-    # NB: I'm not sure why this works. I feel like it should be -1
+    # NB: This has a small probability of causing failure
+    #     If the server updates its highest between when we get the TX dict
+    #     when we get the latest height
+
     tx_dict['block_height'] = latest_blockheight - tx_dict['confirmations'] + 1
 
     return tx_dict, t
@@ -190,7 +179,7 @@ def verify_proof(proof: bytes, index: int):
 
 
 async def do_it_all(tx_id: str, num_headers: int):
-    (tx_json, t) = await get_tx_from_api(tx_id)
+    (tx_json, t) = await get_tx(tx_id)
 
     proof, index = await get_merkle_proof_from_api(
         t.tx_id.hex(), tx_json['block_height'])
@@ -227,13 +216,12 @@ async def do_it_all(tx_id: str, num_headers: int):
     # print(submission.hex())
 
 
-def main():
-    # Read tx_id from args, and then get it and its block from explorers
-    tx_id = str(sys.argv[1])
-    num_headers = int(sys.argv[2]) if len(sys.argv) > 2 else 6
-
+def main(tx_id: str, num_headers: int):
     asyncio.get_event_loop().run_until_complete(do_it_all(tx_id, num_headers))
 
 
 if __name__ == '__main__':
-    main()
+    # Read tx_id from args, and then get it and its block from explorers
+    tx_id = str(sys.argv[1])
+    num_headers = int(sys.argv[2]) if len(sys.argv) > 2 else 6
+    main(tx_id, num_headers)
