@@ -8,8 +8,6 @@ from connectrum.client import StratumClient
 from riemann import tx
 from riemann import utils as rutils
 
-from ether import calldata
-
 from typing import Tuple
 
 
@@ -43,15 +41,15 @@ async def setup_client():
 
     server = ServerInfo({
         "nickname": None,
-        "hostname": "electrum.anduck.net",
-        "ip_addr": "62.210.6.26",
+        "hostname": "fortress.qtornado.com",
+        "ip_addr": None,
         "ports": [
             "s50002",
             "t50001"
         ],
-        "version": "1.2",
+        "version": "1.4",
         "pruning_limit": 0,
-        "seen_at": 1533670768.86758
+        "seen_at": 1533670768.8676858
     })
 
     client = StratumClient()
@@ -64,22 +62,22 @@ async def setup_client():
             disable_cert_verify=True),
         timeout=5)
 
-    await asyncio.wait_for(
-        client.RPC(
-            'server.version',
-            'bitcoin-spv-merkle',
-            '1.2'),
-        timeout=5)
+    # await asyncio.wait_for(
+    #     client.RPC(
+    #         'server.version',
+    #         'bitcoin-spv-merkle',
+    #         '1.2'),
+    #     timeout=5)
 
     return client
 
 
-def make_ether_data(t: tx.Tx, proof: bytes, index: bytes, header: bytes):
-    '''Creates a data blob for a transaction calling validateTransaction'''
-    calldata.call(
-        'validateTransaction',
-        [t.to_bytes(), proof, index, header],
-        ABI)
+# def make_ether_data(t: tx.Tx, proof: bytes, index: bytes, header: bytes):
+#     '''Creates a data blob for a transaction calling validateTransaction'''
+#     calldata.call(
+#         'validateTransaction',
+#         [t.to_bytes(), proof, index, header],
+#         ABI)
 
 
 async def get_latest_blockheight() -> int:
@@ -87,7 +85,10 @@ async def get_latest_blockheight() -> int:
     client = await get_client()
     fut, _ = client.subscribe('blockchain.headers.subscribe')
     block_dict = await fut
-    return block_dict['block_height']
+    height = block_dict['height'] \
+        if 'height' in block_dict \
+        else block_dict['block_height']
+    return height
 
 
 async def get_block_merkle_root(height: int) -> bytes:
