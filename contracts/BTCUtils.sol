@@ -14,7 +14,7 @@ library BTCUtils {
 
     function extractPrefix(bytes memory _b) public pure returns (bytes memory) {
         // Not enough bytes to extract a valid prefix
-        if (_b.length < 6) { return; }
+        if (_b.length < 6) { return ""; }
         return _b.slice(0, 6);
     }
 

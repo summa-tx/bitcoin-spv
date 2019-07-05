@@ -94,10 +94,10 @@ contract SPVStore {
         uint8 _nOutputs = uint8(_nOuts.bytesToUint());
 
         // Parse and store inputs, if failed to parse or store then bubble up error
-        if (!parseAndStoreInputs(_txid, _tx, _nInputs)) { return; }
+        if (!parseAndStoreInputs(_txid, _tx, _nInputs)) { return ""; }
 
         // Parse and store outputs, if failed to parse or store then bubble up error
-        if (!parseAndStoreOutputs(_txid, _tx, _nOutputs)) { return; }
+        if (!parseAndStoreOutputs(_txid, _tx, _nOutputs)) { return ""; }
 
         // Store transaction data in mapping
         transactions[_txid].txid = _txid;

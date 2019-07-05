@@ -63,18 +63,24 @@ library ValidateSPV {
 
         // Extract prefix and validate, if invalid, bubble up error
         bytes memory _prefix = _tx.extractPrefix();
-        if (!validatePrefix(_prefix)) { return; }
+        if (!validatePrefix(_prefix)) { 
+            return (_nInputs, _inputs, _nOutputs, _outputs, _locktime, _txid);
+        }
 
         // Extract version to calculate txid
         bytes memory _version = _prefix.slice(0, 4);
 
         // Extract number of inputs and inputs, if _nInputs is 0, bubble up error
         (_nInputs, _inputs) = extractAllInputs(_tx);
-        if (keccak256(_nInputs) == keccak256(hex'00')) { return; }
+        if (keccak256(_nInputs) == keccak256(hex'00')) { 
+            return (_nInputs, _inputs, _nOutputs, _outputs, _locktime, _txid); 
+        }
 
         // Extract number of outputs and outputs, if _nOutputs is 0, bubble up error
         (_nOutputs, _outputs) = extractAllOutputs(_tx);
-        if (keccak256(_nOutputs) == keccak256(hex'00')) { return; }
+        if (keccak256(_nOutputs) == keccak256(hex'00')) { 
+            return (_nInputs, _inputs, _nOutputs, _outputs, _locktime, _txid);
+        }
 
         // Extract locktime
         _locktime = _tx.extractLocktimeLE();
@@ -149,10 +155,10 @@ library ValidateSPV {
     function parseInput(bytes memory _input) public pure returns (uint32 _sequence, bytes32 _hash, uint32 _index) {
 
         // Require segwit: if no 00 scriptSig, error
-        if (keccak256(_input.slice(36, 1)) != keccak256(hex'00')) { return; }
+        if (keccak256(_input.slice(36, 1)) != keccak256(hex'00')) { return (_sequence,_hash,_index); }
 
         // Require that input is 41 bytes
-        if (_input.length != 41) { return; }
+        if (_input.length != 41) { return (_sequence,_hash,_index);}
 
         return (_input.extractSequence(), _input.extractTxId(), _input.extractTxIndex());
     }
@@ -189,7 +195,7 @@ library ValidateSPV {
                 _payload = _output.slice(11, 20);
             } else {
                 // If unidentifiable output type, bubble up error
-                return;
+                return (_value, _outputType, _payload);
             }
         }
 
@@ -209,7 +215,9 @@ library ValidateSPV {
         uint32 _nonce
     ) {
         // If header has an invalid length, bubble up error
-        if (_header.length != 80) { return; }
+        if (_header.length != 80) { 
+            return(_digest, _version, _prevHash, _merkleRoot, _timestamp, _target, _nonce); 
+        }
 
         _digest = abi.encodePacked(_header.hash256()).reverseEndianness().toBytes32();
         _version = uint32(_header.slice(0, 4).reverseEndianness().bytesToUint());
