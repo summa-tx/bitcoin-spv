@@ -69,10 +69,30 @@ describe('BTCUtils', () => {
     });
 
     it('converts big-endian bytes to integers', async () => {
-        let res = await btcUtilsContract.methods.bytesToUint('0xff').call();
+        let res = await btcUtilsContract.methods.bytesToUint('0x00').call();
+        assert.equal(res, 0);
+
+        res = await btcUtilsContract.methods.bytesToUint('0xff').call();
         assert.equal(res, 255);
+
+        res = await btcUtilsContract.methods.bytesToUint('0x00ff').call();
+        assert.equal(res, 255);
+
+        res = await btcUtilsContract.methods.bytesToUint('0xff00').call();
+        assert.equal(res, 65280);
+
+        res = await btcUtilsContract.methods.bytesToUint('0x01').call();
+        assert.equal(res, 1);
+
+        res = await btcUtilsContract.methods.bytesToUint('0x0001').call();
+        assert.equal(res, 1);
+
         res = await btcUtilsContract.methods.bytesToUint('0x0100').call();
         assert.equal(res, 256);
+
+        // max uint256: (2^256)-1
+        res = await btcUtilsContract.methods.bytesToUint('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff').call();
+        assert.equal(res, 115792089237316195423570985008687907853269984665640564039457584007913129639935);
     });
 
     it('implements bitcoin\'s hash160', async () => {
