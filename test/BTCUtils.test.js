@@ -35,20 +35,19 @@ describe('BTCUtils', () => {
     beforeEach(async() => {
         accounts = await web3.eth.getAccounts();
 
-        let bytesContract = await new web3.eth.Contract(JSON.parse(compiledBytes.interface))
-            .deploy({ data: compiledBytes.bytecode})
-            .send({ from: accounts[0], gas: 6712388, gasPrice: 100000000000});
+        let bytesContract = await new web3.eth.Contract(compiledBytes.abi)
+            .deploy({ data: compiledBytes.evm.bytecode.object })
+            .send({ from: accounts[0], gas: 6712388, gasPrice: 100000000000 });
 
         assert.ok(bytesContract.options.address);
 
         // Link
-        let bc = await linker.linkBytecode(compiledBTCUtils.bytecode,
-             {'BytesLib.sol:BytesLib': bytesContract.options.address});
+        let bc = await linker.linkBytecode(compiledBTCUtils.evm.bytecode.object,
+            { 'BytesLib.sol:BytesLib': bytesContract.options.address });
 
-        btcUtilsContract = await new web3.eth.Contract(JSON.parse(compiledBTCUtils.interface))
+        btcUtilsContract = await new web3.eth.Contract(compiledBTCUtils.abi)
             .deploy({ data: bc })
-            .send({ from: accounts[0], gas: 6712388, gasPrice: 100000000000});
-
+            .send({ from: accounts[0], gas: 6712388, gasPrice: 100000000000 });
 
         assert.ok(btcUtilsContract.options.address);
     });
