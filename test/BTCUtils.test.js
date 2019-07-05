@@ -1,7 +1,7 @@
 const assert = require('assert');
 const ganache = require('ganache-cli');
 const Web3 = require('web3');
-const web3 = new Web3(ganache.provider());
+const web3 = new Web3(ganache.provider(), null, { transactionConfirmationBlocks: 1 });
 const compiledBTCUtils = require('../build/BTCUtils.json');
 const compiledBytes = require('../build/BytesLib.json');
 const utils = require('./utils');
