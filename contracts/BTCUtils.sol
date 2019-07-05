@@ -41,7 +41,7 @@ library BTCUtils {
         uint256 _number;
 
         for (uint i = 0; i < _b.length; i++) {
-            _number = _number + uint(_b[i]) * (2 ** (8 * (_b.length - (i + 1))));
+            _number = _number + uint8(_b[i]) * (2 ** (8 * (_b.length - (i + 1))));
         }
 
         return _number;
