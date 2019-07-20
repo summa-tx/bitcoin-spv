@@ -1,4 +1,4 @@
-pragma solidity 0.4.25;
+pragma solidity ^0.5.10;
 
 /** @title BitcoinSPV */
 /** @author Summa (https://summa.one) */
@@ -12,9 +12,9 @@ library BTCUtils {
     using BytesLib for bytes;
     using SafeMath for uint256;
 
-    function extractPrefix(bytes _b) public pure returns (bytes) {
+    function extractPrefix(bytes memory _b) public pure returns (bytes memory) {
         // Not enough bytes to extract a valid prefix
-        if (_b.length < 6) { return; }
+        if (_b.length < 6) { return ""; }
         return _b.slice(0, 6);
     }
 
@@ -22,7 +22,7 @@ library BTCUtils {
     /// @dev             Returns a new, backwards, bytes
     /// @param _b        The bytes to reverse
     /// @return          The reversed bytes
-    function reverseEndianness(bytes _b) public pure returns (bytes) {
+    function reverseEndianness(bytes memory _b) public pure returns (bytes memory) {
 
         bytes memory _newValue = new bytes(_b.length);
 
@@ -37,11 +37,11 @@ library BTCUtils {
     /// @dev             Traverses the byte array and sums the bytes
     /// @param _b        The big-endian bytes-encoded integer
     /// @return          The integer representation
-    function bytesToUint(bytes _b) public pure returns (uint256) {
+    function bytesToUint(bytes memory _b) public pure returns (uint256) {
         uint256 _number;
 
         for (uint i = 0; i < _b.length; i++) {
-            _number = _number + uint(_b[i]) * (2 ** (8 * (_b.length - (i + 1))));
+            _number = _number + uint8(_b[i]) * (2 ** (8 * (_b.length - (i + 1))));
         }
 
         return _number;
@@ -51,7 +51,7 @@ library BTCUtils {
     /// @param _b        The byte array to slice
     /// @param _num      The number of bytes to extract from the end
     /// @return          The last _num bytes of _b
-    function lastBytes(bytes _b, uint256 _num) public pure returns (bytes) {
+    function lastBytes(bytes memory _b, uint256 _num) public pure returns (bytes memory) {
 
         uint256 _start = _b.length.sub(_num);
 
@@ -62,7 +62,7 @@ library BTCUtils {
     /// @dev             abi.encodePacked changes the return to bytes instead of bytes32
     /// @param _b        The pre-image
     /// @return          The digest
-    function hash160(bytes _b) public pure returns (bytes) {
+    function hash160(bytes memory _b) public pure returns (bytes memory) {
         return abi.encodePacked(ripemd160(abi.encodePacked(sha256(_b))));
     }
 
@@ -70,7 +70,7 @@ library BTCUtils {
     /// @dev             abi.encodePacked changes the return to bytes instead of bytes32
     /// @param _b        The pre-image
     /// @return          The digest
-    function hash256(bytes _b) public pure returns (bytes32) {
+    function hash256(bytes memory _b) public pure returns (bytes32) {
         return abi.encodePacked(sha256(abi.encodePacked(sha256(_b)))).toBytes32();
     }
 
@@ -79,13 +79,13 @@ library BTCUtils {
     /// @dev             Sequence is used for relative time locks
     /// @param _b        The input
     /// @return          The sequence bytes (LE uint)
-    function extractSequenceLE(bytes _b) public pure returns (bytes) { return _b.slice(37, 4); }
+    function extractSequenceLE(bytes memory _b) public pure returns (bytes memory) { return _b.slice(37, 4); }
 
     /// @notice          Extracts the sequence from the input in a tx
     /// @dev             Sequence is a 4-byte little-endian number
     /// @param _b        The input
     /// @return          The sequence number (big-endian uint)
-    function extractSequence(bytes _b) public pure returns (uint32) {
+    function extractSequence(bytes memory _b) public pure returns (uint32) {
         bytes memory _leSeqence = extractSequenceLE(_b);
         bytes memory _beSequence = reverseEndianness(_leSeqence);
         return uint32(bytesToUint(_beSequence));
@@ -95,19 +95,19 @@ library BTCUtils {
     /// @dev             32 byte tx id with 4 byte index
     /// @param _b        The input
     /// @return          The outpoint (LE bytes of prev tx hash + LE bytes of prev tx index)
-    function extractOutpoint(bytes _b) public pure returns (bytes) { return _b.slice(0, 36); }
+    function extractOutpoint(bytes memory _b) public pure returns (bytes memory) { return _b.slice(0, 36); }
 
     /// @notice          Extracts the tx input tx id from the input in a tx
     /// @dev             32 byte tx id
     /// @param _b        The input
     /// @return          The tx id (little-endian bytes)
-    function extractTxIdLE(bytes _b) public pure returns (bytes32) { return _b.slice(0, 32).toBytes32(); }
+    function extractTxIdLE(bytes memory _b) public pure returns (bytes32) { return _b.slice(0, 32).toBytes32(); }
 
     /// @notice          Extracts the tx input tx id from the input in a tx
     /// @dev             32 byte tx id
     /// @param _b        The input
     /// @return          The tx id (big-endian bytes)
-    function extractTxId(bytes _b) public pure returns (bytes32) {
+    function extractTxId(bytes memory _b) public pure returns (bytes32) {
         bytes memory _leId = abi.encodePacked(extractTxIdLE(_b));
         bytes memory _beId = reverseEndianness(_leId);
         return _beId.toBytes32();
@@ -117,13 +117,13 @@ library BTCUtils {
     /// @dev             4 byte tx index
     /// @param _b        The input
     /// @return          The tx index (little-endian bytes)
-    function extractTxIndexLE(bytes _b) public pure returns (bytes) { return _b.slice(32, 4); }
+    function extractTxIndexLE(bytes memory _b) public pure returns (bytes memory) { return _b.slice(32, 4); }
 
     /// @notice          Extracts the tx input index from the input in a tx
     /// @dev             4 byte tx index
     /// @param _b        The input
     /// @return          The tx index (big-endian uint)
-    function extractTxIndex(bytes _b) public pure returns (uint32) {
+    function extractTxIndex(bytes memory _b) public pure returns (uint32) {
         bytes memory _leIndex = extractTxIndexLE(_b);
         bytes memory _beIndex = reverseEndianness(_leIndex);
         return uint32(bytesToUint(_beIndex));
@@ -134,19 +134,19 @@ library BTCUtils {
     /// @dev             Indexes the length prefix on the pk_script
     /// @param _b        The output
     /// @return          The 1 byte length prefix
-    function extractOutputScriptLen(bytes _b) public pure returns (bytes) { return _b.slice(8, 1); }
+    function extractOutputScriptLen(bytes memory _b) public pure returns (bytes memory) { return _b.slice(8, 1); }
 
     /// @notice          Extracts the value bytes from the output in a tx
     /// @dev             Value is an 8-byte little-endian number
     /// @param _b        The tx
     /// @return          The output value as LE bytes
-    function extractValueLE(bytes _b) public pure returns (bytes) { return _b.slice(0, 8); }
+    function extractValueLE(bytes memory _b) public pure returns (bytes memory) { return _b.slice(0, 8); }
 
     /// @notice          Extracts the value from the output in a tx
     /// @dev             Value is an 8-byte little-endian number
     /// @param _b        The tx
     /// @return          The output value
-    function extractValue(bytes _b) public pure returns (uint64) {
+    function extractValue(bytes memory _b) public pure returns (uint64) {
         bytes memory _leValue = extractValueLE(_b);
         bytes memory _beValue = reverseEndianness(_leValue);
         return uint64(bytesToUint(_beValue));
@@ -156,7 +156,7 @@ library BTCUtils {
     /// @dev             Value is an 8-byte little-endian number
     /// @param _b        The tx
     /// @return          The output value
-    function extractOpReturnData(bytes _b) public pure returns (bytes) {
+    function extractOpReturnData(bytes memory _b) public pure returns (bytes memory) {
         require(_b.slice(9, 1).equal(hex"6a"), "Not an OP_RETURN output");
         bytes memory _dataLen = _b.slice(10, 1);
         return _b.slice(11, bytesToUint(_dataLen));
@@ -166,7 +166,7 @@ library BTCUtils {
     /// @dev             Determines type by the length prefix
     /// @param _b        The output
     /// @return          The hash committed to by the pk_script
-    function extractHash(bytes _b) public pure returns (bytes) {
+    function extractHash(bytes memory _b) public pure returns (bytes memory) {
         require(_b.slice(9, 1).equal(hex"00"), "Not a witness output");
         uint256 _len = (extractOutputScriptLen(_b).equal(hex"22")) ? 32 : 20;
         return _b.slice(11, _len);
@@ -177,13 +177,13 @@ library BTCUtils {
     /// @dev             Takes the last 4 bytes off a byte array
     /// @param _b        The bytes containing the encoded locktime
     /// @return          The LE-encoded locktime
-    function extractLocktimeLE(bytes _b) public pure returns (bytes) { return lastBytes(_b, 4); }
+    function extractLocktimeLE(bytes memory _b) public pure returns (bytes memory) { return lastBytes(_b, 4); }
 
     /// @notice          Extracts the locktime and converts it to integer
     /// @dev             Locktimes are littleendian
     /// @param _b        The transaction terminating in the lock time
     /// @return          The uint value of the locktime bytes
-    function extractLocktime(bytes _b) public pure returns (uint32) {
+    function extractLocktime(bytes memory _b) public pure returns (uint32) {
         bytes memory _leLocktime = extractLocktimeLE(_b);
         bytes memory _beLocktime = reverseEndianness(_leLocktime);
         return uint32(bytesToUint(_beLocktime));
@@ -193,7 +193,7 @@ library BTCUtils {
     /// @dev             This is encoded as a VarInt, and errors for high values
     /// @param _b        The tx to evaluate
     /// @return          The number of inputs
-    function extractNumInputsBytes(bytes _b) public pure returns (bytes) {
+    function extractNumInputsBytes(bytes memory _b) public pure returns (bytes memory) {
         return _b.slice(6, 1);
     }
 
@@ -201,7 +201,7 @@ library BTCUtils {
     /// @dev             This is encoded as a VarInt, and errors for high values
     /// @param _b        The tx to evaluate
     /// @return          The number of inputs
-    function extractNumInputs(bytes _b) public pure returns (uint8) {
+    function extractNumInputs(bytes memory _b) public pure returns (uint8) {
         uint256 _n = bytesToUint(extractNumInputsBytes(_b));
         require(_n < 0xfd, "VarInts not supported");  // Error on VarInts
         return uint8(_n);
@@ -211,7 +211,7 @@ library BTCUtils {
     /// @dev             This depends on the number of inputs
     /// @param _b        The tx to evaluate
     /// @return          The index of the VarInt numTxOuts
-    function findNumOutputs(bytes _b) public pure returns (uint256) {
+    function findNumOutputs(bytes memory _b) public pure returns (uint256) {
         return 7 + (41 * extractNumInputs(_b));
     }
 
@@ -219,7 +219,7 @@ library BTCUtils {
     /// @dev             This is encoded as a VarInt, and errors for high values
     /// @param _b        The tx to evaluate
     /// @return          The number of outputs
-    function extractNumOutputsBytes(bytes _b) public pure returns (bytes) {
+    function extractNumOutputsBytes(bytes memory _b) public pure returns (bytes memory) {
         uint256 _offset = findNumOutputs(_b);
         return _b.slice(_offset, 1);
     }
@@ -228,7 +228,7 @@ library BTCUtils {
     /// @dev             This is encoded as a VarInt, and errors for high values
     /// @param _b        The tx to evaluate
     /// @return          The number of outputs
-    function extractNumOutputs(bytes _b) public pure returns (uint8) {
+    function extractNumOutputs(bytes memory _b) public pure returns (uint8) {
         uint256 _offset = findNumOutputs(_b);
         uint256 _n = bytesToUint(_b.slice(_offset, 1));
         require(_n < 0xfd, "VarInts not supported");  // Error on VarInts
@@ -239,7 +239,7 @@ library BTCUtils {
     /// @param _b        The tx to evaluate
     /// @param _index    The 0-indexed location of the input to extract
     /// @return          The specified input
-    function extractInputAtIndex(bytes _b, uint8 _index) public pure returns (bytes) {
+    function extractInputAtIndex(bytes memory _b, uint8 _index) public pure returns (bytes memory) {
         require(_index < extractNumInputs(_b), "Index more than number of inputs");
         uint256 _offset = 7 + (41 * _index);
         return _b.slice(_offset, 41);
@@ -249,7 +249,7 @@ library BTCUtils {
     /// @dev             5 types: WPKH, WSH, PKH, SH, and OP_RETURN
     /// @param _b        2 bytes from the start of the output script
     /// @return          The length indicated by the prefix, error if invalid length
-    function determineOutputLength(bytes _b) public pure returns (uint256) {
+    function determineOutputLength(bytes memory _b) public pure returns (uint256) {
 
         // Keccak for equality because it doesn"t work otherwise.
         // Wasted an hour here
@@ -282,7 +282,7 @@ library BTCUtils {
     /// @param _b        The tx to evaluate
     /// @param _index    The 0-indexed location of the output to extract
     /// @return          The specified output
-    function extractOutputAtIndex(bytes _b, uint8 _index) public pure returns (bytes) {
+    function extractOutputAtIndex(bytes memory _b, uint8 _index) public pure returns (bytes memory) {
 
         // Some gas wasted here. This duplicates findNumOutputs
         require(_index < extractNumOutputs(_b), "Index more than number of outputs");
@@ -308,13 +308,13 @@ library BTCUtils {
     /// @dev             Use verifyHash256Merkle to verify proofs with this root
     /// @param _b        The header
     /// @return          The merkle root (little-endian)
-    function extractMerkleRootLE(bytes _b) public pure returns (bytes) { return _b.slice(36, 32); }
+    function extractMerkleRootLE(bytes memory _b) public pure returns (bytes memory) { return _b.slice(36, 32); }
 
     /// @notice          Extracts the transaction merkle root from a block header
     /// @dev             Use verifyHash256Merkle to verify proofs with this root
     /// @param _b        The header
     /// @return          The merkle root (big-endian)
-    function extractMerkleRootBE(bytes _b) public pure returns (bytes) {
+    function extractMerkleRootBE(bytes memory _b) public pure returns (bytes memory) {
         return reverseEndianness(extractMerkleRootLE(_b));
     }
 
@@ -322,7 +322,7 @@ library BTCUtils {
     /// @dev             Target is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
     /// @param _b        The header
     /// @return          The target threshold
-    function extractTarget(bytes _b) public pure returns (uint256) {
+    function extractTarget(bytes memory _b) public pure returns (uint256) {
         bytes memory _m = _b.slice(72, 3);
         bytes memory _e = _b.slice(75, 1);
         uint256 _mantissa = bytesToUint(reverseEndianness(_m));
@@ -346,13 +346,13 @@ library BTCUtils {
     /// @dev             Block headers do NOT include block number :(
     /// @param _b        The header
     /// @return          The previous block"s hash (little-endian)
-    function extractPrevBlockLE(bytes _b) public pure returns (bytes) { return _b.slice(4, 32); }
+    function extractPrevBlockLE(bytes memory _b) public pure returns (bytes memory) { return _b.slice(4, 32); }
 
     /// @notice          Extracts the previous block"s hash from a block header
     /// @dev             Block headers do NOT include block number :(
     /// @param _b        The header
     /// @return          The previous block"s hash (big-endian)
-    function extractPrevBlockBE(bytes _b) public pure returns (bytes) {
+    function extractPrevBlockBE(bytes memory _b) public pure returns (bytes memory) {
         return reverseEndianness(extractPrevBlockLE(_b));
     }
 
@@ -360,13 +360,13 @@ library BTCUtils {
     /// @dev             Time is not 100% reliable
     /// @param _b        The header
     /// @return          The timestamp (little-endian bytes)
-    function extractTimestampLE(bytes _b) public pure returns (bytes) { return _b.slice(68, 4); }
+    function extractTimestampLE(bytes memory _b) public pure returns (bytes memory) { return _b.slice(68, 4); }
 
     /// @notice          Extracts the timestamp from a block header
     /// @dev             Time is not 100% reliable
     /// @param _b        The header
     /// @return          The timestamp (uint)
-    function extractTimestamp(bytes _b) public pure returns (uint32) {
+    function extractTimestamp(bytes memory _b) public pure returns (uint32) {
         return uint32(bytesToUint(reverseEndianness(extractTimestampLE(_b))));
     }
 
@@ -374,7 +374,7 @@ library BTCUtils {
     /// @param _a        The first hash
     /// @param _b        The second hash
     /// @return          The double-sha256 of the concatenated hashes
-    function _hash256MerkleStep(bytes _a, bytes _b) public pure returns (bytes32) {
+    function _hash256MerkleStep(bytes memory _a, bytes memory _b) public pure returns (bytes32) {
         return hash256(abi.encodePacked(_a, _b));
     }
 
@@ -383,7 +383,7 @@ library BTCUtils {
     /// @param _a        The proof. Tightly packed LE sha256 hashes. The last hash is the root
     /// @param _index    The index of the leaf
     /// @return          true if the proof is valid, else false
-    function verifyHash256Merkle(bytes _a, uint _index) public pure returns (bool) {
+    function verifyHash256Merkle(bytes memory _a, uint _index) public pure returns (bool) {
         // Not an even number of hashes
         if (_a.length % 32 != 0) { return false; }
 

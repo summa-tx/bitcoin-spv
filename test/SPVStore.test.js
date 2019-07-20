@@ -1,7 +1,7 @@
 const assert = require('assert');
 const ganache = require('ganache-cli');
 const Web3 = require('web3');
-const web3 = new Web3(ganache.provider());
+const web3 = new Web3(ganache.provider(), null, { transactionConfirmationBlocks: 1 });
 const compiledVSPV = require('../build/ValidateSPV.json');
 const compiledBTCUtils = require('../build/BTCUtils.json');
 const compiledBytes = require('../build/BytesLib.json');
@@ -29,41 +29,45 @@ describe('SPVStore', async () => {
         seller = accounts[1];
 
         // Link
-        let bytesContract = await new web3.eth.Contract(JSON.parse(compiledBytes.interface))
-            .deploy({ data: compiledBytes.bytecode})
-            .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE});
+        let bytesContract = await new web3.eth.Contract(compiledBytes.abi)
+            .deploy({ data: compiledBytes.evm.bytecode.object })
+            .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE });
 
         assert.ok(bytesContract.options.address);
 
-        bc = await linker.linkBytecode(compiledBTCUtils.bytecode,
-            {'BytesLib.sol:BytesLib': bytesContract.options.address});
+        bc = await linker.linkBytecode(compiledBTCUtils.evm.bytecode.object,
+            { 'BytesLib.sol:BytesLib': bytesContract.options.address });
 
         // Link
-        let btcUtilsContract = await new web3.eth.Contract(JSON.parse(compiledBTCUtils.interface))
+        let btcUtilsContract = await new web3.eth.Contract(compiledBTCUtils.abi)
             .deploy({ data: bc })
-            .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE});
+            .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE });
 
         assert.ok(btcUtilsContract.options.address);
 
-        bc = await linker.linkBytecode(compiledVSPV.bytecode,
-            {'BTCUtils.sol:BTCUtils': btcUtilsContract.options.address,
-                'BytesLib.sol:BytesLib': bytesContract.options.address});
+        bc = await linker.linkBytecode(compiledVSPV.evm.bytecode.object,
+            {
+                'BTCUtils.sol:BTCUtils': btcUtilsContract.options.address,
+                'BytesLib.sol:BytesLib': bytesContract.options.address
+            });
 
         // Link
-        let vspvContract = await new web3.eth.Contract(JSON.parse(compiledVSPV.interface))
+        let vspvContract = await new web3.eth.Contract(compiledVSPV.abi)
             .deploy({ data: bc })
-            .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE});
+            .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE });
 
         assert.ok(vspvContract.options.address);
 
-        bc = await linker.linkBytecode(compiledStore.bytecode,
-            {'ValidateSPV.sol:ValidateSPV': vspvContract.options.address,
+        bc = await linker.linkBytecode(compiledStore.evm.bytecode.object,
+            {
+                'ValidateSPV.sol:ValidateSPV': vspvContract.options.address,
                 'BTCUtils.sol:BTCUtils': btcUtilsContract.options.address,
-                'BytesLib.sol:BytesLib': bytesContract.options.address});
+                'BytesLib.sol:BytesLib': bytesContract.options.address
+            });
 
-        storeContract = await new web3.eth.Contract(JSON.parse(compiledStore.interface))
+        storeContract = await new web3.eth.Contract(compiledStore.abi)
             .deploy({ data: bc })
-            .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE});
+            .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE });
 
         assert.ok(storeContract.options.address);
     });

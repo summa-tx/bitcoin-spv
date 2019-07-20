@@ -1,4 +1,4 @@
-pragma solidity 0.4.25;
+pragma solidity ^0.5.10;
 
 /** @title CheckBitcoinSigs */
 /** @author Summa (https://summa.one) */
@@ -16,7 +16,7 @@ library CheckBitcoinSigs {
     /// @dev             the address is the last 20 bytes of the keccak256 of the address
     /// @param _pubkey   the public key
     /// @return          the account address
-    function accountFromPubkey(bytes _pubkey) public pure returns (address) {
+    function accountFromPubkey(bytes memory _pubkey) public pure returns (address) {
         require(_pubkey.length == 64);
 
         // keccak hash of uncompressed unprefixed pubkey
@@ -28,7 +28,7 @@ library CheckBitcoinSigs {
     /// @dev             pads uncompressed pubkeys to 65 bytes as required by Bitcoin
     /// @param _pubkey   the public key
     /// @return          the p2wkph output script
-    function p2wpkhFromPubkey(bytes _pubkey) public pure returns (bytes) {
+    function p2wpkhFromPubkey(bytes memory _pubkey) public pure returns (bytes memory) {
         if (_pubkey.length == 64) {
             _pubkey = abi.encodePacked(hex'04', _pubkey);
         }
@@ -47,7 +47,7 @@ library CheckBitcoinSigs {
     /// @param _s        the signature s value
     /// @return          true if signature is valid, else false
     function checkSig(
-        bytes _pubkey,
+        bytes memory _pubkey,
         bytes32 _digest,
         uint8 _v,
         bytes32 _r,
@@ -68,8 +68,8 @@ library CheckBitcoinSigs {
     /// @param _s                   the signature s value
     /// @return                     true if signature is valid, else false
     function checkBitcoinSig(
-        bytes _p2wpkhOutputScript,
-        bytes _pubkey,
+        bytes memory _p2wpkhOutputScript,
+        bytes memory _pubkey,
         bytes32 _digest,
         uint8 _v,
         bytes32 _r,
@@ -87,7 +87,7 @@ library CheckBitcoinSigs {
     /// @param _candidate   the purported preimage
     /// @return             the p2wkph output script
     function isSha256Preimage(
-        bytes _candidate,
+        bytes memory _candidate,
         bytes32 _digest
     ) public pure returns (bool) {
         return sha256(_candidate) == _digest;
@@ -99,7 +99,7 @@ library CheckBitcoinSigs {
     /// @param _candidate   the purported preimage
     /// @return             the p2wkph output script
     function isKeccak256Preimage(
-        bytes _candidate,
+        bytes memory _candidate,
         bytes32 _digest
     ) public pure returns (bool) {
         return keccak256(_candidate) == _digest;
@@ -115,7 +115,7 @@ library CheckBitcoinSigs {
     /// @param _outputPKH       the output pubkeyhash (hash160(recipient_pubkey))
     /// @return                 the double-sha256 (hash256) signature hash as defined by bip143
     function oneInputOneOutputSighash(
-        bytes _outpoint,  // 36 byte UTXO id
+        bytes memory _outpoint,  // 36 byte UTXO id
         bytes20 _inputPKH,  // 20 byte hash160
         bytes8 _inputValue,  // 8-byte LE
         bytes8 _outputValue,  // 8-byte LE

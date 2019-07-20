@@ -1,4 +1,4 @@
-pragma solidity 0.4.25;
+pragma solidity ^0.5.10;
 
 /*
 
@@ -35,7 +35,7 @@ For more information, please refer to <https://unlicense.org>
 /** @author https://github.com/GNSPS **/
 
 library BytesLib {
-    function concat(bytes memory _preBytes, bytes memory _postBytes) internal pure returns (bytes) {
+    function concat(bytes memory _preBytes, bytes memory _postBytes) internal pure returns (bytes memory) {
         bytes memory tempBytes;
 
         assembly {
@@ -243,7 +243,7 @@ library BytesLib {
         }
     }
 
-    function slice(bytes _bytes, uint _start, uint _length) internal  pure returns (bytes) {
+    function slice(bytes memory _bytes, uint _start, uint _length) internal  pure returns (bytes memory) {
         require(_bytes.length >= (_start + _length), 'Slice out of bounds');
 
         bytes memory tempBytes;
@@ -300,7 +300,7 @@ library BytesLib {
         return tempBytes;
     }
 
-    function toAddress(bytes _bytes, uint _start) internal  pure returns (address) {
+    function toAddress(bytes memory _bytes, uint _start) internal  pure returns (address) {
         require(_bytes.length >= (_start + 20), 'Address conversion out of bounds.');
         address tempAddress;
 
@@ -311,7 +311,7 @@ library BytesLib {
         return tempAddress;
     }
 
-    function toUint(bytes _bytes, uint _start) internal  pure returns (uint256) {
+    function toUint(bytes memory _bytes, uint _start) internal  pure returns (uint256) {
         require(_bytes.length >= (_start + 32), 'Uint conversion out of bounds.');
         uint256 tempUint;
 

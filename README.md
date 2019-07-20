@@ -14,8 +14,13 @@ inspect, and authenticate Bitcoin transactions.
 |BTCUtils    |	0xD0d4EA34e4a5c27cA40e78838a4Ed5C1bB033BbC	|	0x7a79d4112d79af980e741e0b10c47ffa543cc93a
 |BytesLib    |	0x302A17fcE39E877966817b7cc5479D8BfCe05295	|	0xcc69fec9ba70d6b4e386bfdb70b94349aff15f53
 
+### Solidity Compiler
+
+Starting from version `1.1.0`, required solidity compiler (`solc`) version is 
+at least `0.5.10`.
 
 ### Development Setup
+
 ```
 npm install
 npm run compile

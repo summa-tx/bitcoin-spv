@@ -1,7 +1,7 @@
 const assert = require('assert');
 const ganache = require('ganache-cli');
 const Web3 = require('web3');
-const web3 = new Web3(ganache.provider());
+const web3 = new Web3(ganache.provider(), null, { transactionConfirmationBlocks: 1 });
 const compiledBTCUtils = require('../build/BTCUtils.json');
 const compiledBytes = require('../build/BytesLib.json');
 const utils = require('./utils');
@@ -35,20 +35,19 @@ describe('BTCUtils', () => {
     beforeEach(async() => {
         accounts = await web3.eth.getAccounts();
 
-        let bytesContract = await new web3.eth.Contract(JSON.parse(compiledBytes.interface))
-            .deploy({ data: compiledBytes.bytecode})
-            .send({ from: accounts[0], gas: 6712388, gasPrice: 100000000000});
+        let bytesContract = await new web3.eth.Contract(compiledBytes.abi)
+            .deploy({ data: compiledBytes.evm.bytecode.object })
+            .send({ from: accounts[0], gas: 6712388, gasPrice: 100000000000 });
 
         assert.ok(bytesContract.options.address);
 
         // Link
-        let bc = await linker.linkBytecode(compiledBTCUtils.bytecode,
-             {'BytesLib.sol:BytesLib': bytesContract.options.address});
+        let bc = await linker.linkBytecode(compiledBTCUtils.evm.bytecode.object,
+            { 'BytesLib.sol:BytesLib': bytesContract.options.address });
 
-        btcUtilsContract = await new web3.eth.Contract(JSON.parse(compiledBTCUtils.interface))
+        btcUtilsContract = await new web3.eth.Contract(compiledBTCUtils.abi)
             .deploy({ data: bc })
-            .send({ from: accounts[0], gas: 6712388, gasPrice: 100000000000});
-
+            .send({ from: accounts[0], gas: 6712388, gasPrice: 100000000000 });
 
         assert.ok(btcUtilsContract.options.address);
     });
@@ -70,10 +69,30 @@ describe('BTCUtils', () => {
     });
 
     it('converts big-endian bytes to integers', async () => {
-        let res = await btcUtilsContract.methods.bytesToUint('0xff').call();
+        let res = await btcUtilsContract.methods.bytesToUint('0x00').call();
+        assert.equal(res, 0);
+
+        res = await btcUtilsContract.methods.bytesToUint('0xff').call();
         assert.equal(res, 255);
+
+        res = await btcUtilsContract.methods.bytesToUint('0x00ff').call();
+        assert.equal(res, 255);
+
+        res = await btcUtilsContract.methods.bytesToUint('0xff00').call();
+        assert.equal(res, 65280);
+
+        res = await btcUtilsContract.methods.bytesToUint('0x01').call();
+        assert.equal(res, 1);
+
+        res = await btcUtilsContract.methods.bytesToUint('0x0001').call();
+        assert.equal(res, 1);
+
         res = await btcUtilsContract.methods.bytesToUint('0x0100').call();
         assert.equal(res, 256);
+
+        // max uint256: (2^256)-1
+        res = await btcUtilsContract.methods.bytesToUint('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff').call();
+        assert.equal(res, 115792089237316195423570985008687907853269984665640564039457584007913129639935);
     });
 
     it('implements bitcoin\'s hash160', async () => {
