@@ -30,12 +30,58 @@ building with these libraries.
 Starting from version `1.1.0`, required solidity compiler (`solc`) version is
 at least `0.5.10`.
 
+### Why is there a library and a Delegate?
+
+1.0.0 was accessable only by the EVM's `DELEGATECALL`. For v2.0.0 we give you
+the option to use `DELEGATECALL` or to compile the library methods into your
+contract.
+
+If you're using the Delegate, make sure to add a linking step to your
+deployment scripts. :)
+
+Usage Example:
+```Solidity
+import {BTCUtils} from "./BTCUtils.sol";
+import {BTCUtilsDelegate} from "./BTCUtilsDelegate.sol";
+
+
+contract CompilesIn {
+    using BTCUtils for bytes;
+
+    function multiHash(bytes memory _b) {
+        return keccak256(_b.hash256());
+    }
+
+}
+
+contract DelegateCalls {
+    using BTCUtilsDelegate for bytes;
+
+    function multiHash(bytes memory _b) {
+        return keccak256(_b.hash256());
+    }
+}
+
+contract MixedAccess {
+
+    function multiHash(bytes memory _b) {
+        return keccak256(BTCUtils.hash256(_b));  // Compiled In
+    }
+
+    function multiHashWithDelegate(bytes memory _b) {
+        return keccak256(BTCUtilsDelegate.hash256(_b)); // DELEGATECALLED
+    }
+
+}
+
+```
+
+
 ### Development Setup
 
 ```
-npm install
-npm run compile
-npm test
+truffle compile
+truffle test
 ```
 
 ### Generating merkle proofs from mainnet Bitcoin
@@ -58,8 +104,7 @@ pipenv run python scripts/header_chain.py {num_headers} {nbits_as_hex_string}
 pipenv run python scripts/header_chain.py 7 2000ffff
 ```
 
-
-### Usage notes (gotchas)
+### Important Bitcoin Gotchas
 Blockchain.info shows txids and merkle root in BE format
 
 They should be in LE for the proof construction
