@@ -1,4 +1,5 @@
 /* global artifacts contract before it assert */
+const BN = require('bn.js');
 
 const BTCUtilsDelegate = artifacts.require('BTCUtilsDelegate');
 
@@ -44,30 +45,30 @@ contract('BTCUtils', () => {
 
   it('converts big-endian bytes to integers', async () => {
     let res = await instance.bytesToUint.call('0x00');
-    assert.equal(res, 0);
+    assert(res, new BN('0', 10));
 
     res = await instance.bytesToUint.call('0xff');
-    assert.equal(res, 255);
+    assert(res, new BN('255', 10));
 
     res = await instance.bytesToUint.call('0x00ff');
-    assert.equal(res, 255);
+    assert(res, new BN('255', 10));
 
     res = await instance.bytesToUint.call('0xff00');
-    assert.equal(res, 65280);
+    assert(res, new BN('65280', 10));
 
     res = await instance.bytesToUint.call('0x01');
-    assert.equal(res, 1);
+    assert(res, new BN('1', 10));
 
     res = await instance.bytesToUint.call('0x0001');
-    assert.equal(res, 1);
+    assert(res, new BN('1', 10));
 
     res = await instance.bytesToUint.call('0x0100');
-    assert.equal(res, 256);
+    assert(res, new BN('256', 10));
 
     // max uint256: (2^256)-1
     res = await instance.bytesToUint.call('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
-    assert.equal(
-      res, 115792089237316195423570985008687907853269984665640564039457584007913129639935
+    assert(
+      res, new BN('115792089237316195423570985008687907853269984665640564039457584007913129639935', 10)
     );
   });
 
@@ -94,7 +95,7 @@ contract('BTCUtils', () => {
     res = await instance.extractSequenceLE.call(input);
     assert.equal(res, '0xffffffff');
     res = await instance.extractSequence.call(input);
-    assert.equal(res, 0xffffffff);
+    assert(res.eq(new BN('ffffffff', 16)));
   });
 
   it('extracts an outpoint as bytes', async () => {
@@ -134,11 +135,11 @@ contract('BTCUtils', () => {
     res = await instance.extractValueLE.call(output);
     assert.equal(res, '0x4897070000000000');
     res = await instance.extractValue.call(output);
-    assert.equal(res, 0x079748);
+    assert(res.eq(new BN('079748', 16)));
     res = await instance.extractValueLE.call(opReturnOutput);
     assert.equal(res, '0x0000000000000000');
     res = await instance.extractValue.call(opReturnOutput);
-    assert.equal(res, 0x00);
+    assert(res.eq(new BN('00', 16)));
   });
 
   it('extracts op_return data blobs', async () => {
@@ -157,11 +158,11 @@ contract('BTCUtils', () => {
   it('extracts a locktime as LE bytes and integer', async () => {
     let res;
     res = await instance.extractLocktime.call('0x00112233445566');
-    assert.equal(res, 1716864051);
+    assert(res.eq(new BN('1716864051', 10)));
     res = await instance.extractLocktimeLE.call('0x00112233445566');
     assert.equal(res, '0x33445566');
     res = await instance.extractLocktime.call(OP_RETURN_TX);
-    assert.equal(res, 0);
+    assert(res.eq(new BN('0', 10)));
     res = await instance.extractLocktimeLE.call(OP_RETURN_TX);
     assert.equal(res, '0x00000000');
   });
@@ -169,25 +170,25 @@ contract('BTCUtils', () => {
   it('finds the index of the number of outputs', async () => {
     let res;
     res = await instance.findNumOutputs.call(OP_RETURN_TX);
-    assert.equal(res, 48);
+    assert(res.eq(new BN('48', 10)));
     res = await instance.findNumOutputs.call(TWO_IN_TX);
-    assert.equal(res, 89);
+    assert(res.eq(new BN('89', 10)));
   });
 
   it('extracts the number of inputs', async () => {
     let res;
     res = await instance.extractNumInputs.call(OP_RETURN_TX);
-    assert.equal(res, 1);
+    assert(res.eq(new BN('1', 10)));
     res = await instance.extractNumInputs.call(TWO_IN_TX);
-    assert.equal(res, 2);
+    assert(res.eq(new BN('2', 10)));
   });
 
   it('extracts the number of outputs', async () => {
     let res;
     res = await instance.extractNumOutputs.call(OP_RETURN_TX);
-    assert.equal(res, 2);
+    assert(res.eq(new BN('2', 10)));
     res = await instance.extractNumOutputs.call(TWO_IN_TX);
-    assert.equal(res, 2);
+    assert(res.eq(new BN('2', 10)));
   });
 
   it('extracts inputs at specified indices', async () => {
@@ -203,13 +204,13 @@ contract('BTCUtils', () => {
   it('determines output length properly', async () => {
     let res;
     res = await instance.determineOutputLength.call('0x2200');
-    assert.equal(res, 43);
+    assert(res.eq(new BN('43', 10)));
     res = await instance.determineOutputLength.call('0x1600');
-    assert.equal(res, 31);
+    assert(res.eq(new BN('31', 10)));
     res = await instance.determineOutputLength.call('0x206a');
-    assert.equal(res, 41);
+    assert(res.eq(new BN('41', 10)));
     res = await instance.determineOutputLength.call('0x026a');
-    assert.equal(res, 11);
+    assert(res.eq(new BN('11', 10)));
   });
 
   it('extracts outputs at specified indices', async () => {
@@ -231,7 +232,7 @@ contract('BTCUtils', () => {
 
   it('extracts the target from a header', async () => {
     const res = await instance.extractTarget.call(HEADER_170);
-    assert.equal(res, 26959535291011309493156476344723991336010898738574164086137773096960);
+    assert(res.eq(new BN('26959535291011309493156476344723991336010898738574164086137773096960', 10)));
   });
 
   it('extracts the prev block hash', async () => {
@@ -241,7 +242,7 @@ contract('BTCUtils', () => {
 
   it('extracts a timestamp from a header', async () => {
     const res = await instance.extractTimestamp.call(HEADER_170);
-    assert.equal(res, 1231731025);
+    assert(res.eq(new BN('1231731025', 10)));
   });
 
   it('verifies a bitcoin merkle root', async () => {
@@ -250,24 +251,24 @@ contract('BTCUtils', () => {
       '0x82501c1178fa0b222c1f3d474ec726b832013f0a532b44bb620cce8624a5feb1169e1e83e930853391bc6f35f605c6754cfead57cf8387639d3b4096c54f18f4ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d',
       1 // 1-indexed
     );
-    assert.ok(res);
+    assert.equal(res, true);
 
     res = await instance.verifyHash256Merkle.call(
       '0x169e1e83e930853391bc6f35f605c6754cfead57cf8387639d3b4096c54f18f482501c1178fa0b222c1f3d474ec726b832013f0a532b44bb620cce8624a5feb1ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d',
       2 // 1-indexed
     );
-    assert.ok(res);
+    assert.equal(res, true);
 
     res = await instance.verifyHash256Merkle.call(
       '0x6c1320f4552ba68f3dbdd91f9422405f779b779e21678448e8035c21c1e2edd67a6190a846e318878be71565841d90a78e9e617b2d859d5e0767c13de427be4a2a6a6d55b17316d45ac11c4e613c38b293db606bace5062470d783471cc66c180455e6472ce92d32179994c3d44b75dd9834e1e7438cf9ab5be1ef6edf1e4a8d361dda470aca6e97c3b4056d4b329beba9ffd6a26c86a2a3f8f9ad31826b69ee49693027a439b3149853907afe87031f3bcf484b8bdd2e047d579d2ee2569c16769a33473b652d1d365886f9f9fba64fdea23ab16306ae1484ed632dcd381e5132c401084bc783478306202844b9cf34aff6ab24182206caa6eebc3e016fa373986d08ac9ae256ddda2deedc6662fd8f8a300ecdd38db2c5d6d2765a7515531e7f96f0310f9493cf79be3e60f63d8a6fa0c62ea59312731fd5b71b261abd99f5b908b3166d53532c9557a0f6ce9bc18f7b7619b2257043052a7ff2e5030e838f2e9edcc0f7273fa273a6b3ce2112dbd686f060b5f61deb1abc7247edf1bd6cd7ca4a6c5cfaedbc5905ef4f0511b143a0672ce4fa2dc1ed8852e077e0184febca',
       5 // 1-indexed
     );
-    assert.ok(res);
+    assert.equal(res, true);
 
     res = await instance.verifyHash256Merkle.call(OP_RETURN_PROOF, OP_RETURN_INDEX);
-    assert.ok(res);
+    assert.equal(res, true);
 
     res = await instance.verifyHash256Merkle.call(TWO_IN_PROOF, TWO_IN_INDEX);
-    assert.ok(res);
+    assert.equal(res, true);
   });
 });

@@ -1,5 +1,6 @@
 /* global artifacts contract describe before it assert */
 /* eslint-disable no-underscore-dangle */
+const BN = require('bn.js');
 
 const ValidateSPV = artifacts.require('ValidateSPVDelegate');
 const utils = require('./utils');
@@ -7,8 +8,9 @@ const constants = require('./constants');
 
 
 contract('ValidateSPV', () => {
-  let instance;
+  const zeroBN = new BN('0', 10);
 
+  let instance;
   let parsedTx;
   let parsedHeader;
 
@@ -246,37 +248,35 @@ contract('ValidateSPV', () => {
 
   describe('#parseInput', async () => {
     const input = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff';
-    const sequence = 4294967295;
-    let index;
+    const sequence = '4294967295';
+    const index = zeroBN;
 
     it('returns the tx input sequence and outpoint', async () => {
       const hashBE = '0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b';
-      index = '0';
 
       const txIn = await instance.parseInput.call(input);
 
-      assert.equal(txIn._sequence, sequence);
+      assert(txIn._sequence.eq(new BN(sequence, 10)));
       assert.equal(txIn._hash, hashBE);
-      assert.equal(txIn._index, index);
+      assert(txIn._index.eq(index));
     });
 
     it('bubble up errors if the input does not have a 00 scriptSig', async () => {
       // Removed 00 scriptSig from input to create error
       const badInput = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000ffffffff';
       const invalidTxIn = await instance.parseInput.call(badInput);
-
-      assert.equal(0, invalidTxIn._sequence);
+      assert(zeroBN.eq(invalidTxIn._sequence));
       assert.equal(constants.EMPTY, invalidTxIn._hash);
-      assert.equal(0, invalidTxIn._index);
+      assert(zeroBN.eq(invalidTxIn._index));
     });
 
     it('bubble up errors if the input length is incorrect', async () => {
       // Added extra 0xff byte at the end to create and invalid input length of 42 bytes
       const badInput = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffff';
       const invalidTxIn = await instance.parseInput.call(badInput);
-      assert.equal(0, invalidTxIn._sequence);
+      assert(zeroBN.eq(invalidTxIn._sequence));
       assert.equal(constants.EMPTY, invalidTxIn._hash);
-      assert.equal(0, invalidTxIn._index);
+      assert(zeroBN.eq(invalidTxIn._index));
     });
   });
 
@@ -326,8 +326,8 @@ contract('ValidateSPV', () => {
 
       const invalidOutput = await instance.parseOutput.call(output);
 
-      assert.equal(0, invalidOutput._value);
-      assert.equal(0, invalidOutput._outputType);
+      assert(zeroBN.eq(invalidOutput._value));
+      assert(zeroBN.eq(invalidOutput._outputType));
       assert.isNull(invalidOutput._payload);
     });
   });
@@ -357,37 +357,37 @@ contract('ValidateSPV', () => {
       );
 
       assert.equal(constants.EMPTY, invalidHeader._digest);
-      assert.equal(0, invalidHeader._version);
+      assert(zeroBN.eq(invalidHeader._version));
       assert.equal(constants.EMPTY, invalidHeader._prevHash);
       assert.equal(constants.EMPTY, invalidHeader._merkleRoot);
-      assert.equal(0, invalidHeader._timestamp);
-      assert.equal(0, invalidHeader._target);
-      assert.equal(0, invalidHeader._nonce);
+      assert(zeroBN.eq(invalidHeader._timestamp));
+      assert(zeroBN.eq(invalidHeader._target));
+      assert(zeroBN.eq(invalidHeader._nonce));
     });
   });
 
   describe('#validateHeaderChain', async () => {
     it('returns true if header chain is valid', async () => {
       const res = await instance.validateHeaderChain.call(constants.OP_RETURN.HEADER_CHAIN);
-      assert.equal(res, 49134394618239);
+      assert(res.eq(new BN('49134394618239', 10)));
     });
 
     it('returns 1 if header chain is not divisible by 80', async () => {
       const res = await instance.validateHeaderChain
         .call(constants.HEADER_ERR.HEADER_CHAIN_INVALID_LEN);
-      assert.equal(res, 1);
+      assert(res.eq(new BN('1', 10)));
     });
 
     it('returns 2 if header chain prevHash is invalid', async () => {
       const res = await instance.validateHeaderChain
         .call(constants.HEADER_ERR.HEADER_CHAIN_INVALID_PREVHASH);
-      assert.equal(res, 2);
+      assert(res.eq(new BN('2', 10)));
     });
 
     it('returns 3 if a header does not meet its target', async () => {
       const res = await instance.validateHeaderChain
         .call(constants.HEADER_ERR.HEADER_CHAIN_LOW_WORK);
-      assert.equal(res, 3);
+      assert(res.eq(new BN('3', 10)));
     });
   });
 
