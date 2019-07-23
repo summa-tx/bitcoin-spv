@@ -32,14 +32,14 @@ at least `0.5.10`.
 
 ### Why is there a library and a Delegate?
 
-1.0.0 was accessable only by the EVM's `DELEGATECALL`. For v2.0.0 we give you
+1.0.0 was accessible only by the EVM's `DELEGATECALL`. For v2.0.0 we give you
 the option to use `DELEGATECALL` or to compile the library methods into your
 contract.
 
 If you're using the Delegate, make sure to add a linking step to your
 deployment scripts. :)
 
-Usage Example:
+**Usage Example:**
 ```Solidity
 import {BTCUtils} from "./BTCUtils.sol";
 import {BTCUtilsDelegate} from "./BTCUtilsDelegate.sol";
@@ -49,7 +49,7 @@ contract CompilesIn {
     using BTCUtils for bytes;
 
     function multiHash(bytes memory _b) {
-        return keccak256(_b.hash256());
+        return keccak256(_b.hash256());  // Compiled In
     }
 
 }
@@ -58,7 +58,7 @@ contract DelegateCalls {
     using BTCUtilsDelegate for bytes;
 
     function multiHash(bytes memory _b) {
-        return keccak256(_b.hash256());
+        return keccak256(_b.hash256());  // DELEGATECALL
     }
 }
 
@@ -69,7 +69,7 @@ contract MixedAccess {
     }
 
     function multiHashWithDelegate(bytes memory _b) {
-        return keccak256(BTCUtilsDelegate.hash256(_b)); // DELEGATECALLED
+        return keccak256(BTCUtilsDelegate.hash256(_b)); // DELEGATECALL
     }
 
 }
