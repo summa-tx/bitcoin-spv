@@ -156,7 +156,6 @@ library BTCUtils {
     /// @param _b        The tx
     /// @return          The output value
     function extractOpReturnData(bytes memory _b) internal pure returns (bytes memory) {
-        /* require(_b.slice(9, 1).equal(hex"6a"), "Not an OP_RETURN output"); */
         if (keccak256(_b.slice(9, 1)) != keccak256(hex"6a")) {
             return hex"";
         }
@@ -172,7 +171,7 @@ library BTCUtils {
         if (keccak256(_b.slice(9, 1)) != keccak256(hex"00")) {
             return hex"";
         }
-        uint256 _len = (extractOutputScriptLen(_b).equal(hex"22")) ? 32 : 20;
+        uint256 _len = (keccak256(extractOutputScriptLen(_b)) == keccak256(hex"22")) ? 32 : 20;
         return _b.slice(11, _len);
     }
 
@@ -403,13 +402,12 @@ library BTCUtils {
 
         for (uint i = 1; i < (_a.length.div(32)) - 1; i++) {
 
-            if (_idx % 2 == 0) {
+            if (_idx % 2 == 1) {
                 _current = _hash256MerkleStep(_a.slice(i * 32, 32), abi.encodePacked(_current));
-                _idx = _idx.div(2);
             } else {
                 _current = _hash256MerkleStep(abi.encodePacked(_current), _a.slice(i * 32, 32));
-                _idx = _idx.div(2) + 1;
             }
+            _idx = _idx >> 1;
         }
         return _current == _root;
     }

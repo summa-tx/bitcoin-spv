@@ -12,6 +12,7 @@
         "solc": "^0.5.10"
     },
     "devDependencies": {
+        "solidity-coverage": "^0.6.3",
         "eth-gas-reporter": "^0.2.4",
         "eslint": "^5.16.0",
         "eslint-config-airbnb-base": "^13.2.0",

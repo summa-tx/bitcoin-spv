@@ -36,6 +36,10 @@ at least `0.5.10`.
 the option to use `DELEGATECALL` or to compile the library methods into your
 contract.
 
+Compiling them in will save several hundred gas per invocation. That's
+significant for higher-level functions like `prove` in `ValidateSPV`. But it
+does add additional deployment cost to your contracts.
+
 If you're using the Delegate, make sure to add a linking step to your
 deployment scripts. :)
 
