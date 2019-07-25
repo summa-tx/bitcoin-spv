@@ -122,8 +122,8 @@ contract('BTCUtils', () => {
   /* Witness Output */
   it('extracts the length of the output script', async () => {
     let res;
-    const output = '0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18';
-    const opReturnOutput = '0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211';
+    const output = constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
+    const opReturnOutput = constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
     res = await instance.extractOutputScriptLen.call(output);
     assert.equal(res, '0x22');
     res = await instance.extractOutputScriptLen.call(opReturnOutput);
@@ -131,10 +131,10 @@ contract('BTCUtils', () => {
   });
 
   it('extracts the hash from an output', async () => {
-    const output = '0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18';
-    const opReturnOutput = '0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211';
+    const output = constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
+    const opReturnOutput = constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
     let res = await instance.extractHash.call(output);
-    assert.equal(res, '0xa4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18');
+    assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[0].PAYLOAD);
 
     res = await instance.extractHash.call(opReturnOutput);
     assert.isNull(res);
@@ -142,23 +142,25 @@ contract('BTCUtils', () => {
 
   it('extracts the value as LE and int', async () => {
     let res;
-    const output = '0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18';
-    const opReturnOutput = '0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211';
+
+    const output = constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
     res = await instance.extractValueLE.call(output);
-    assert.equal(res, '0x4897070000000000');
+    assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[0].VALUE_LE);
     res = await instance.extractValue.call(output);
     assert(res.eq(new BN('079748', 16)));
+
+    const opReturnOutput = constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
     res = await instance.extractValueLE.call(opReturnOutput);
-    assert.equal(res, '0x0000000000000000');
+    assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[1].VALUE_LE);
     res = await instance.extractValue.call(opReturnOutput);
     assert(res.eq(new BN('00', 16)));
   });
 
   it('extracts op_return data blobs', async () => {
-    const output = '0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18';
-    const opReturnOutput = '0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211';
+    const output = constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
+    const opReturnOutput = constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
     let res = await instance.extractOpReturnData.call(opReturnOutput);
-    assert.equal(res, '0xedb1b5c2f39af0fec151732585b1049b07895211');
+    assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD);
 
     res = await instance.extractOpReturnData.call(output);
     assert.isNull(res);
@@ -192,10 +194,10 @@ contract('BTCUtils', () => {
 
   it('extracts outputs at specified indices', async () => {
     let res;
-    res = await instance.extractOutputAtIndex.call(constans.OP_RETURN.VOUT, 0);
-    assert.equal(res, '0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18');
-    res = await instance.extractOutputAtIndex.call(constans.OP_RETURN.VOUT, 1);
-    assert.equal(res, '0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211');
+    res = await instance.extractOutputAtIndex.call(constants.OP_RETURN.VOUT, 0);
+    assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT);
+    res = await instance.extractOutputAtIndex.call(constants.OP_RETURN.VOUT, 1);
+    assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT);
     res = await instance.extractOutputAtIndex.call(TWO_IN_TX_VOUT, 0);
     assert.equal(res, '0x4db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f0');
     res = await instance.extractOutputAtIndex.call(TWO_IN_TX_VOUT, 1);
