@@ -31,7 +31,7 @@ for these:
     1. The transaction version (currently always 1 or 2 as a 4-byte LE integer)
     1. The variable-length input vector
         1. Tightly packed in a single bytearray called `vin`
-    1. The variable-length input vector
+    1. The variable-length output vector
         1. Tightly packed in a single bytearray called `vout`
     1. The transaction locktime (a 4-byte LE integer)
 1. The header chain:
