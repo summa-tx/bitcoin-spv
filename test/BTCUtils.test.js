@@ -16,7 +16,7 @@ const TWO_IN_PROOF = '0x54269907e95e412ef574056ea5b0e0debd2290193879e5c295caea77
 const TWO_IN_INDEX = 781;
 
 
-contract('BTCUtils', () => {
+contract.only('BTCUtils', () => {
   let instance;
 
   before(async () => {
@@ -89,13 +89,21 @@ contract('BTCUtils', () => {
     assert.equal(res, '0x4f8b42c22dd3729b519ba6f68d2da7cc5b2d606d05daed5ad5128cc03e6c6358');
   });
 
-  /* Witness Input */
-  it('extracts a sequence from an input as LE and int', async () => {
+  it('extracts a sequence from a witness input as LE and int', async () => {
     const input = '0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff';
     let res;
-    res = await instance.extractSequenceLE.call(input);
+    res = await instance.extractSequenceLEWitness.call(input);
     assert.equal(res, '0xffffffff');
-    res = await instance.extractSequence.call(input);
+    res = await instance.extractSequenceWitness.call(input);
+    assert(res.eq(new BN('ffffffff', 16)));
+  });
+
+  it('extracts a sequence from a legacy input as LE and int', async () => {
+    const input = '0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff';
+    let res;
+    res = await instance.extractSequenceLELegacy.call(input);
+    assert.equal(res, '0xffffffff');
+    res = await instance.extractSequenceLegacy.call(input);
     assert(res.eq(new BN('ffffffff', 16)));
   });
 
@@ -150,42 +158,6 @@ contract('BTCUtils', () => {
     assert.isNull(res);
   });
 
-  it('extracts a locktime as LE bytes and integer', async () => {
-    let res;
-    res = await instance.extractLocktime.call('0x00112233445566');
-    assert(res.eq(new BN('1716864051', 10)));
-    res = await instance.extractLocktimeLE.call('0x00112233445566');
-    assert.equal(res, '0x33445566');
-    res = await instance.extractLocktime.call(OP_RETURN_TX);
-    assert(res.eq(new BN('0', 10)));
-    res = await instance.extractLocktimeLE.call(OP_RETURN_TX);
-    assert.equal(res, '0x00000000');
-  });
-
-  it('finds the index of the number of outputs', async () => {
-    let res;
-    res = await instance.findNumOutputs.call(OP_RETURN_TX);
-    assert(res.eq(new BN('48', 10)));
-    res = await instance.findNumOutputs.call(TWO_IN_TX);
-    assert(res.eq(new BN('89', 10)));
-  });
-
-  it('extracts the number of inputs', async () => {
-    let res;
-    res = await instance.extractNumInputs.call(OP_RETURN_TX);
-    assert(res.eq(new BN('1', 10)));
-    res = await instance.extractNumInputs.call(TWO_IN_TX);
-    assert(res.eq(new BN('2', 10)));
-  });
-
-  it('extracts the number of outputs', async () => {
-    let res;
-    res = await instance.extractNumOutputs.call(OP_RETURN_TX);
-    assert(res.eq(new BN('2', 10)));
-    res = await instance.extractNumOutputs.call(TWO_IN_TX);
-    assert(res.eq(new BN('2', 10)));
-  });
-
   it('extracts inputs at specified indices', async () => {
     let res;
     res = await instance.extractInputAtIndex.call(OP_RETURN_TX, 0);
@@ -198,20 +170,18 @@ contract('BTCUtils', () => {
 
   it('determines output length properly', async () => {
     let res;
-    res = await instance.determineOutputLength.call('0x2200');
+    res = await instance.determineOutputLength.call('0x00000000000000002200');
     assert(res.eq(new BN('43', 10)));
-    res = await instance.determineOutputLength.call('0x1600');
+    res = await instance.determineOutputLength.call('0x00000000000000001600');
     assert(res.eq(new BN('31', 10)));
-    res = await instance.determineOutputLength.call('0x206a');
+    res = await instance.determineOutputLength.call('0x0000000000000000206a');
     assert(res.eq(new BN('41', 10)));
-    res = await instance.determineOutputLength.call('0x026a');
+    res = await instance.determineOutputLength.call('0x000000000000000002');
     assert(res.eq(new BN('11', 10)));
-    try {
-      res = await instance.determineOutputLength.call('0x0000');
-      assert(false, 'expected an error');
-    } catch (e) {
-      assert.include(e.message, 'Unable to determine output length');
-    }
+    res = await instance.determineOutputLength.call('0x000000000000000000');
+    assert(res.eq(new BN('9', 10)));
+    res = await instance.determineOutputLength.call('0x000000000000000088');
+    assert(res.eq(new BN('145', 10)));
   });
 
   it('extracts outputs at specified indices', async () => {

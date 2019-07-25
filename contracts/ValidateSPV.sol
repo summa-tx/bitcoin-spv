@@ -15,7 +15,9 @@ library ValidateSPV {
     using BytesLib for bytes;
     using SafeMath for uint256;
 
+    enum InputTypes { NONE, LEGACY, COMPATIBILITY, WITNESS }
     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH }
+
 
     /// @notice                 Valides a tx inclusion in the block
     /// @param _txid            The txid (LE)
@@ -44,91 +46,21 @@ library ValidateSPV {
         return true;
     }
 
-    /// @notice         Validates a tx from a bytestring
-    /// @dev            This supports ONLY WITNESS INPUTS AND OUTPUTS
-    /// @param _tx      Raw bytes tx
-    /// @return         Transaction num inputs, inputs, num outputs, outputs, locktime, txid
-    function parseTransaction(
-        bytes memory _tx
-    )
-    internal pure returns (
-        bytes memory _nInputs,
-        bytes memory _inputs,
-        bytes memory _nOutputs,
-        bytes memory _outputs,
-        bytes memory _locktime,
-        bytes32 _txid
-      ) {
-        // Extract prefix and validate, if invalid, bubble up error
-        bytes memory _prefix = _tx.extractPrefix();
-        if (!validatePrefix(_prefix)) {
-            return (_nInputs, _inputs, _nOutputs, _outputs, _locktime, _txid);
-        }
-
-        // Extract version to calculate txid
-        bytes memory _version = _prefix.slice(0, 4);
-
-        // Extract number of inputs and inputs, if _nInputs is 0, bubble up error
-        (_nInputs, _inputs) = extractAllInputs(_tx);
-        if (keccak256(_nInputs) == keccak256(hex"00")) {
-            return (_nInputs, _inputs, _nOutputs, _outputs, _locktime, _txid);
-        }
-
-        // Extract number of outputs and outputs, if _nOutputs is 0, bubble up error
-        (_nOutputs, _outputs) = extractAllOutputs(_tx);
-        if (keccak256(_nOutputs) == keccak256(hex"00")) {
-            return (_nInputs, _inputs, _nOutputs, _outputs, _locktime, _txid);
-        }
-
-        // Extract locktime
-        _locktime = _tx.extractLocktimeLE();
-
-        // Calculate txid
-        _txid = calculateTxId(_version, _nInputs, _inputs, _nOutputs, _outputs, _locktime);
-    }
-
-    /// @notice         Parses tx input
-    /// @param _tx      The raw byte tx
-    /// @return         Raw bytes num inputs and inputs
-    function extractAllInputs(bytes memory _tx) internal pure returns (bytes memory _nInputs, bytes memory _inputs) {
-        _nInputs = _tx.extractNumInputsBytes();
-        uint8 _tmpN = _tx.extractNumInputs();
-
-        for (uint8 i = 0; i < _tmpN; i++) {
-            _inputs = _inputs.concat(_tx.extractInputAtIndex(i));
-        }
-    }
-
-    /// @notice         Parses tx outputs
-    /// @param _tx      The raw byte tx
-    /// @return         Raw bytes num outputs and outputs
-    function extractAllOutputs(bytes memory _tx) internal pure returns (bytes memory _nOutputs, bytes memory _outputs) {
-        _nOutputs = _tx.extractNumOutputsBytes();
-        uint8 _tmpN = _tx.extractNumOutputs();
-
-        for (uint8 i = 0; i < _tmpN; i++) {
-            _outputs = _outputs.concat(_tx.extractOutputAtIndex(i));
-        }
-    }
-
     /// @notice             Hashes transaction to get txid
-    /// @dev                This supports ONLY WITNESS INPUTS AND OUTPUTS
+    /// @dev                This supports legacy now
     /// @param _version     4-bytes version
-    /// @param _nInputs     1-byte num inputs
-    /// @param _inputs      Raw bytes inputs
-    /// @param _nOutputs    1-byte num outputs
-    /// @param _outputs     Raw bytes ouputs
+    /// @param _vin         Raw bytes length-prefixed input vector
+    /// @param _vout        Raw bytes length-prefixed output vector
+    /// @ param _locktime   4-byte tx locktime
     /// @return             32-byte transaction id, little endian
     function calculateTxId(
         bytes memory _version,
-        bytes memory _nInputs,
-        bytes memory _inputs,
-        bytes memory _nOutputs,
-        bytes memory _outputs,
+        bytes memory _vin,
+        bytes memory _vout,
         bytes memory _locktime
     ) internal pure returns (bytes32) {
         // Get transaction hash dSha256(version + nIns + inputs + nOuts + outputs + locktime)
-        return abi.encodePacked(_version, _nInputs, _inputs, _nOutputs, _outputs, _locktime).hash256();
+        return abi.encodePacked(_version, _vin, _vout, _locktime).hash256();
     }
 
     /// @notice         Validates the first 6 bytes of a transaction
@@ -147,17 +79,26 @@ library ValidateSPV {
     }
 
     /// @notice         Parses a tx input from raw input bytes
-    /// @dev            Checks for blank scriptSig
+    /// @dev            Supports Legacy Inputs now too
     /// @param _input   Raw bytes tx input
     /// @return         Tx input sequence number, tx hash, and index
-    function parseInput(bytes memory _input) internal pure returns (uint32 _sequence, bytes32 _hash, uint32 _index) {
-        // Require segwit: if no 00 scriptSig, error
-        if (keccak256(_input.slice(36, 1)) != keccak256(hex"00")) {return (_sequence, _hash, _index);}
+    function parseInput(bytes memory _input) internal pure returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {
+        // Require segwit: if no 00 scriptSig, we are witness
+        if (keccak256(_input.slice(36, 1)) != keccak256(hex"00")) {
+            _sequence = _input.extractSequenceLegacy();
+            bytes32 _witnessTag = keccak256(_input.slice(36, 3));
 
-        // Require that input is 41 bytes
-        if (_input.length != 41) {return (_sequence, _hash, _index);}
+            if (_witnessTag == keccak256(hex"220020") || _witnessTag == keccak256(hex"160014")) {
+                _inputType = uint8(InputTypes.COMPATIBILITY);
+            } else {
+                _inputType = uint8(InputTypes.LEGACY);
+            }
+        } else {
+            _sequence = _input.extractSequenceWitness();
+            _inputType = uint8(InputTypes.WITNESS);
+        }
 
-        return (_input.extractSequence(), _input.extractTxId(), _input.extractTxIndex());
+        return (_sequence, _input.extractInputTxId(), _input.extractTxIndex(), _inputType);
     }
 
     /// @notice         Parses a tx output from raw output bytes
