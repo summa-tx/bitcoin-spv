@@ -2,7 +2,10 @@
     "name": "bitcoin-spv",
     "version": "1.1.0",
     "description": "bitcoin SPV proofs in Solidity",
-    "scripts": {},
+    "scripts": {
+        "coverage": "npx solidity-coverage",
+        "test": "truffle test"
+    },
     "author": "",
     "license": "NONE",
     "dependencies": {

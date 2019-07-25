@@ -9,7 +9,7 @@ inspect, and authenticate Bitcoin transactions.
 ### IMPORTANT WARNING
 
 It is extremely easy to write insecure code using these libraries. We do not
-espouse a specific security model. Any SPV verification involves complex
+recommend a specific security model. Any SPV verification involves complex
 security assumptions. Please seek external review for your design before
 building with these libraries.
 
@@ -121,6 +121,7 @@ contract MixedAccess {
 ```
 truffle compile
 truffle test
+npm run coverage
 ```
 
 ### Generating merkle proofs from mainnet Bitcoin
