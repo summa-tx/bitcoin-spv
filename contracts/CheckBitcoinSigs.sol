@@ -20,8 +20,8 @@ library CheckBitcoinSigs {
         require(_pubkey.length == 64, "Pubkey must be 64-byte raw, uncompressed key.");
 
         // keccak hash of uncompressed unprefixed pubkey
-        bytes memory _digest = abi.encodePacked(keccak256(_pubkey));
-        return _digest.toAddress(_digest.length - 20);  // last 20 bytes
+        bytes32 _digest = keccak256(_pubkey);
+        return address(uint160(uint256(_digest)));
     }
 
     /// @notice          calculates the p2wpkh output script of a pubkey
@@ -30,14 +30,21 @@ library CheckBitcoinSigs {
     /// @return          the p2wkph output script
     function p2wpkhFromPubkey(bytes memory _pubkey) internal pure returns (bytes memory) {
         bytes memory _pub;
+        uint8 _prefix;
+
         if (_pubkey.length == 64) {
-            _pub = abi.encodePacked(hex"04", _pubkey);
+            _prefix = uint8(_pubkey[_pubkey.length - 1]) % 2 == 1 ? 3 : 2;
+            _pub = abi.encodePacked(_prefix, _pubkey.slice(0, 32));
+        } else if (_pubkey.length == 65) {
+            _prefix = uint8(_pubkey[_pubkey.length - 1]) % 2 == 1 ? 3 : 2;
+            _pub = abi.encodePacked(_prefix, _pubkey.slice(1, 32));
         } else {
             _pub = _pubkey;
         }
-        require(_pubkey.length == 65, "Pubkey must be (raw) 64- or (prefixed) 65-byte uncompressed key");
 
-        bytes memory _pubkeyHash = _pubkey.hash160();
+        require(_pub.length == 33, "Witness PKH requires compressed keys");
+
+        bytes memory _pubkeyHash = _pub.hash160();
         return abi.encodePacked(hex"0014", _pubkeyHash);
     }
 
@@ -56,6 +63,7 @@ library CheckBitcoinSigs {
         bytes32 _r,
         bytes32 _s
     ) internal pure returns (bool) {
+        require(_pubkey.length == 64, 'Requires uncompressed unprefixed pubkey');
         address _expected = accountFromPubkey(_pubkey);
         address _actual = ecrecover(_digest, _v, _r, _s);
         return _actual == _expected;
@@ -64,7 +72,7 @@ library CheckBitcoinSigs {
     /// @notice                     checks a signed message against a bitcoin p2wpkh output script
     /// @dev                        does this my verifying the p2wpkh matches an ethereum account
     /// @param _p2wpkhOutputScript  the bitcoin output script
-    /// @param _pubkey              the public key to check
+    /// @param _pubkey              the uncompressed, unprefixed public key to check
     /// @param _digest              the message digest signed
     /// @param _v                   the signature recovery value
     /// @param _r                   the signature r value
@@ -78,10 +86,13 @@ library CheckBitcoinSigs {
         bytes32 _r,
         bytes32 _s
     ) internal pure returns (bool) {
+        require(_pubkey.length == 64, 'Requires uncompressed unprefixed pubkey');
+
         bool _isExpectedSigner = keccak256(p2wpkhFromPubkey(_pubkey)) == keccak256(_p2wpkhOutputScript);  // is it the expected signer?
-        bytes memory _truncatedPubkey = _pubkey.slice(1, _pubkey.length - 1);  // slice off the 04 prefix
-        bool _sigResult = checkSig(_truncatedPubkey, _digest, _v, _r, _s);
-        return (_isExpectedSigner && _sigResult);
+        if (!_isExpectedSigner) {return false;}
+
+        bool _sigResult = checkSig(_pubkey, _digest, _v, _r, _s);
+        return _sigResult;
     }
 
     /// @notice             checks if a message is the sha256 preimage of a digest
