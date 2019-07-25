@@ -1,15 +1,15 @@
 /* global artifacts contract before it assert */
 const BN = require('bn.js');
+const constants = require('./constants');
 
 const BTCUtilsDelegate = artifacts.require('BTCUtilsDelegate');
+
 
 const HEADER_170 = '0x0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70';
 
 // txid BE: d60033c5cf5c199208a9c656a29967810c4e428c22efb492fdd816e6a0a1e548
 /* eslint-disable-next-line */
 const OP_RETURN_TX = '0x010000000001011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211024730440220276e0ec78028582054d86614c65bc4bf85ff5710b9d3a248ca28dd311eb2fa6802202ec950dd2a8c9435ff2d400cc45d7a4854ae085f49e05cc3f503834546d410de012103732783eef3af7e04d3af444430a629b16a9261e4025f52bf4d6d026299c37c7400000000';
-const OP_RETURN_TX_VIN = '0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff';
-const OP_RETURN_TX_VOUT = '0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211';
 const OP_RETURN_PROOF = '0x48e5a1a0e616d8fd92b4ef228c424e0c816799a256c6a90892195ccfc53300d6e35a0d6de94b656694589964a252957e4673a9fb1d2f8b4a92e3f0a7bb654fddb94e5a1e6d7f7f499fd1be5dd30a73bf5584bf137da5fdd77cc21aeb95b9e35788894be019284bd4fbed6dd6118ac2cb6d26bc4be4e423f55a3a48f2874d8d02a65d9c87d07de21d4dfe7b0a9f4a23cc9a58373e9e6931fefdb5afade5df54c91104048df1ee999240617984e18b6f931e2373673d0195b8c6987d7ff7650d5ce53bcec46e13ab4f2da1146a7fc621ee672f62bc22742486392d75e55e67b09960c3386a0b49e75f1723d6ab28ac9a2028a0c72866e2111d79d4817b88e17c821937847768d92837bae3832bb8e5a4ab4434b97e00a6c10182f211f592409068d6f5652400d9a3d1cc150a7fb692e874cc42d76bdafc842f2fe0f835a7c24d2d60c109b187d64571efbaa8047be85821f8e67e0e85f2f5894bc63d00c2ed9d640296ef123ea96da5cf695f22bf7d94be87d49db1ad7ac371ac43c4da4161c8c2';
 const OP_RETURN_INDEX = 281;
 
@@ -22,7 +22,7 @@ const TWO_IN_PROOF = '0x54269907e95e412ef574056ea5b0e0debd2290193879e5c295caea77
 const TWO_IN_INDEX = 781;
 
 
-contract.only('BTCUtils', () => {
+contract('BTCUtils', () => {
   let instance;
 
   before(async () => {
@@ -166,7 +166,7 @@ contract.only('BTCUtils', () => {
 
   it('extracts inputs at specified indices', async () => {
     let res;
-    res = await instance.extractInputAtIndex.call(OP_RETURN_TX_VIN, 0);
+    res = await instance.extractInputAtIndex.call(constants.OP_RETURN.VIN, 0);
     assert.equal(res, '0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff');
     res = await instance.extractInputAtIndex.call(TWO_IN_TX_VIN, 0);
     assert.equal(res, '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff');
@@ -192,9 +192,9 @@ contract.only('BTCUtils', () => {
 
   it('extracts outputs at specified indices', async () => {
     let res;
-    res = await instance.extractOutputAtIndex.call(OP_RETURN_TX_VOUT, 0);
+    res = await instance.extractOutputAtIndex.call(constans.OP_RETURN.VOUT, 0);
     assert.equal(res, '0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18');
-    res = await instance.extractOutputAtIndex.call(OP_RETURN_TX_VOUT, 1);
+    res = await instance.extractOutputAtIndex.call(constans.OP_RETURN.VOUT, 1);
     assert.equal(res, '0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211');
     res = await instance.extractOutputAtIndex.call(TWO_IN_TX_VOUT, 0);
     assert.equal(res, '0x4db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f0');
