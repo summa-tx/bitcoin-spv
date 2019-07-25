@@ -38,14 +38,6 @@ contract ValidateSPVDelegate {
         return ValidateSPV.calculateTxId(_version, _vin, _vout, _locktime);
     }
 
-    /// @notice         Validates the first 6 bytes of a transaction
-    /// @dev            First byte is the version. The next must be 0x0000000001
-    /// @param _bytes   Prefixed raw byte string (probably a tx)
-    /// @return         true if valid, otherwise false
-    function validatePrefix(bytes memory _bytes) public pure returns (bool) {
-        return ValidateSPV.validatePrefix(_bytes);
-    }
-
     /// @notice         Parses a tx input from raw input bytes
     /// @dev            Supports Legacy Inputs now too
     /// @param _input   Raw bytes tx input

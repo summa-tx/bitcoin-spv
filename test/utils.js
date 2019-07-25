@@ -1,4 +1,5 @@
 const createHash = require('create-hash');
+const BN = require('bn.js');
 
 module.exports = {
 
@@ -38,11 +39,21 @@ module.exports = {
   },
 
   OUTPUT_TYPES: {
-    NONE: 0,
-    WPKH: 1,
-    WSH: 2,
-    OP_RETURN: 3,
+    NONE: new BN(0, 10),
+    WPKH: new BN(1, 10),
+    WSH: new BN(2, 10),
+    OP_RETURN: new BN(3, 10),
+    PKH: new BN(4, 10),
+    SH: new BN(5, 10),
+    NONSTANDARD: new BN(6, 10)
   },
+
+  INPUT_TYPES: {
+    NONE: new BN('0', 10),
+    LEGACY: new BN('1', 10),
+    COMPATIBILITY: new BN('2', 10),
+    WITNESS: new BN('3', 10)
+  }
 };
 
 

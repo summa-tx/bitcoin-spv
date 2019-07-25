@@ -16,7 +16,7 @@ library ValidateSPV {
     using SafeMath for uint256;
 
     enum InputTypes { NONE, LEGACY, COMPATIBILITY, WITNESS }
-    enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH }
+    enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH, NONSTANDARD }
 
 
     /// @notice                     Validates a tx inclusion in the block
@@ -58,27 +58,13 @@ library ValidateSPV {
         return abi.encodePacked(_version, _vin, _vout, _locktime).hash256();
     }
 
-    /// @notice         Validates the first 6 bytes of a transaction
-    /// @dev            First byte is the version. The next must be 0x0000000001
-    /// @param _bytes   Prefixed raw byte string (probably a tx)
-    /// @return         true if valid, otherwise false
-    function validatePrefix(bytes memory _bytes) internal pure returns (bool) {
-        if (_bytes.length < 6) {return false;}
-
-        bytes32 _versionHash = keccak256(_bytes.slice(0, 1));
-
-        // Return true if prefix is version 1 or 2 and has segwit flag
-        return (
-            keccak256(_bytes.slice(1, 5)) == keccak256(hex"0000000001") &&
-            (_versionHash == keccak256(hex"01") || _versionHash == keccak256(hex"02")));
-    }
-
     /// @notice         Parses a tx input from raw input bytes
     /// @dev            Supports Legacy Inputs now too
     /// @param _input   Raw bytes tx input
     /// @return         Tx input sequence number, tx hash, and index
     function parseInput(bytes memory _input) internal pure returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {
-        // Require segwit: if no 00 scriptSig, we are witness
+        // NB: If the scriptsig is exactly 00, we are witness.
+        //     Otherwise we are compatibility
         if (keccak256(_input.slice(36, 1)) != keccak256(hex"00")) {
             _sequence = _input.extractSequenceLegacy();
             bytes32 _witnessTag = keccak256(_input.slice(36, 3));
@@ -88,6 +74,7 @@ library ValidateSPV {
             } else {
                 _inputType = uint8(InputTypes.LEGACY);
             }
+
         } else {
             _sequence = _input.extractSequenceWitness();
             _inputType = uint8(InputTypes.WITNESS);
@@ -127,8 +114,7 @@ library ValidateSPV {
                 _outputType = uint8(OutputTypes.SH);
                 _payload = _output.slice(11, 20);
             } else {
-                // If unidentifiable output type, bubble up error
-                return (_value, _outputType, _payload);
+                _outputType = uint8(OutputTypes.NONSTANDARD);
             }
         }
 
