@@ -19,31 +19,26 @@ library ValidateSPV {
     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH }
 
 
-    /// @notice                 Valides a tx inclusion in the block
-    /// @param _txid            The txid (LE)
-    /// @param _merkleRoot      The merkle root
-    /// @param _proof           The proof (concatenated LE hashes)
-    /// @param _index           The proof index
-    /// @return                 true if fully valid, false otherwise
+    /// @notice                     Validates a tx inclusion in the block
+    /// @param _txid                The txid (LE)
+    /// @param _merkleRoot          The merkle root
+    /// @param _intermediateNodes   The proof's intermediate nodes (digests between leaf and root)
+    /// @param _index               The leaf's index in the tree (0-indexed)
+    /// @return                     true if fully valid, false otherwise
     function prove(
         bytes32 _txid,
         bytes32 _merkleRoot,
-        bytes memory _proof,
+        bytes memory _intermediateNodes,
         uint _index
     ) internal pure returns (bool) {
-        // If parsing failed, bubble up error
-        if (_txid == bytes32(0)) {return false;}
+        // Shortcut the empty-block case
+        if (_txid == _merkleRoot && _index == 0 && _intermediateNodes.length == 0) {
+            return true;
+        }
 
-        // If the first hash in the proof is not the txid, bubble up error
-        if (_proof.slice(0, 32).toBytes32() != _txid) {return false;}
-
-        // If the last hash in the proof is not the merkle root, bubble up error
-        if (_proof.slice(_proof.length - 32, 32).toBytes32() != _merkleRoot) {return false;}
-
+        bytes memory _proof = abi.encodePacked(_txid, _intermediateNodes, _merkleRoot);
         // If the Merkle proof failed, bubble up error
-        if (!_proof.verifyHash256Merkle(_index)) {return false;}
-
-        return true;
+        return _proof.verifyHash256Merkle(_index);
     }
 
     /// @notice             Hashes transaction to get txid

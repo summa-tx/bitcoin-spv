@@ -230,24 +230,24 @@ contract('BTCUtils', () => {
       '0x82501c1178fa0b222c1f3d474ec726b832013f0a532b44bb620cce8624a5feb1169e1e83e930853391bc6f35f605c6754cfead57cf8387639d3b4096c54f18f4ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d',
       0 // 1-indexed
     );
-    assert.equal(res, true, '1');
+    assert.equal(res, true);
 
     res = await instance.verifyHash256Merkle.call(
       '0x169e1e83e930853391bc6f35f605c6754cfead57cf8387639d3b4096c54f18f482501c1178fa0b222c1f3d474ec726b832013f0a532b44bb620cce8624a5feb1ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d',
       1 // 1-indexed
     );
-    assert.equal(res, true, '2');
+    assert.equal(res, true);
 
     res = await instance.verifyHash256Merkle.call(
       '0x6c1320f4552ba68f3dbdd91f9422405f779b779e21678448e8035c21c1e2edd67a6190a846e318878be71565841d90a78e9e617b2d859d5e0767c13de427be4a2a6a6d55b17316d45ac11c4e613c38b293db606bace5062470d783471cc66c180455e6472ce92d32179994c3d44b75dd9834e1e7438cf9ab5be1ef6edf1e4a8d361dda470aca6e97c3b4056d4b329beba9ffd6a26c86a2a3f8f9ad31826b69ee49693027a439b3149853907afe87031f3bcf484b8bdd2e047d579d2ee2569c16769a33473b652d1d365886f9f9fba64fdea23ab16306ae1484ed632dcd381e5132c401084bc783478306202844b9cf34aff6ab24182206caa6eebc3e016fa373986d08ac9ae256ddda2deedc6662fd8f8a300ecdd38db2c5d6d2765a7515531e7f96f0310f9493cf79be3e60f63d8a6fa0c62ea59312731fd5b71b261abd99f5b908b3166d53532c9557a0f6ce9bc18f7b7619b2257043052a7ff2e5030e838f2e9edcc0f7273fa273a6b3ce2112dbd686f060b5f61deb1abc7247edf1bd6cd7ca4a6c5cfaedbc5905ef4f0511b143a0672ce4fa2dc1ed8852e077e0184febca',
       4 // 1-indexed
     );
-    assert.equal(res, true, '3');
+    assert.equal(res, true);
 
     res = await instance.verifyHash256Merkle.call(OP_RETURN_PROOF, OP_RETURN_INDEX);
-    assert.equal(res, true, '4');
+    assert.equal(res, true);
 
     res = await instance.verifyHash256Merkle.call(TWO_IN_PROOF, TWO_IN_INDEX);
-    assert.equal(res, true, '5');
+    assert.equal(res, true);
   });
 });
