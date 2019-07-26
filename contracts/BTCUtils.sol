@@ -215,7 +215,7 @@ library BTCUtils {
         return 7 + (41 * extractNumInputs(_b));
     }
 
-    /// @notice          Extracts number of outputs as integer
+    /// @notice          Extracts number of outputs as bytes
     /// @dev             This is encoded as a VarInt, and errors for high values
     /// @param _b        The tx to evaluate
     /// @return          The number of outputs
