@@ -435,14 +435,13 @@ library BTCUtils {
         return uint32(bytesToUint(reverseEndianness(extractTimestampLE(_header))));
     }
 
+    /// @notice          Extracts the expected difficulty from a block header
+    /// @dev             Does NOT verify the work
+    /// @param _header   The header
+    /// @return          The difficulty as an integer
     function extractDifficulty(bytes memory _header) internal pure returns (uint256) {
-        return difficultyFromTarget(extractTarget(_header));
+        return calculateDifficulty(extractTarget(_header));
     }
-
-    function difficultyFromTarget(uint256 _target) public pure returns (uint256) {
-        return DIFF1_TARGET.div(_target);
-    }
-
 
     /// @notice          Concatenates and hashes two inputs for merkle proving
     /// @param _a        The first hash

@@ -56,7 +56,6 @@ module.exports = {
   }
 };
 
-
 // Some code is used under the following license:
 // The MIT License (MIT)
 //

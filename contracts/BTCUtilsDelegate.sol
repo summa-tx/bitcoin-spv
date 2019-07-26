@@ -11,6 +11,14 @@ contract BTCUtilsDelegate {
     /* UTILS */
     /* ***** */
 
+    /// @notice         determines the length of a VarInt in bytes
+    /// @dev            a VarInt of >1 byte is prefixed with a flag indicating its length
+    /// @param _flag    the first byte of a VarInt
+    /// @return         the number of non-flag bytes in the VarInt
+    function determineVarIntDataLength(bytes memory _flag) public pure returns (uint256) {
+        return BTCUtils.determineVarIntDataLength(_flag);
+    }
+
     /// @notice          Changes the endianness of a byte array
     /// @dev             Returns a new, backwards, bytes
     /// @param _b        The bytes to reverse
@@ -328,6 +336,14 @@ contract BTCUtilsDelegate {
         return BTCUtils.extractTimestamp(_header);
     }
 
+    /// @notice          Extracts the expected difficulty from a block header
+    /// @dev             Does NOT verify the work
+    /// @param _header   The header
+    /// @return          The difficulty as an integer
+    function extractDifficulty(bytes memory _header) public pure returns (uint256) {
+        return BTCUtils.extractDifficulty(_header);
+    }
+
     /// @notice          Concatenates and hashes two inputs for merkle proving
     /// @param _a        The first hash
     /// @param _b        The second hash
@@ -361,15 +377,7 @@ contract BTCUtilsDelegate {
         uint256 _previousTarget,
         uint256 _firstTimestamp,
         uint256 _secondTimestamp
-    ) internal pure returns (uint256) {
+    ) public pure returns (uint256) {
         return BTCUtils.retargetAlgorithm(_previousTarget, _firstTimestamp, _secondTimestamp);
-    }
-
-    /// @notice         determines the length of a VarInt in bytes
-    /// @dev            a VarInt of >1 byte is prefixed with a flag indicating its length
-    /// @param _flag    the first byte of a VarInt
-    /// @return         the number of non-flag bytes in the VarInt
-    function determineVarIntDataLength(bytes memory _flag) public pure returns (uint256) {
-        return BTCUtils.determineVarIntDataLength(_flag);
     }
 }
