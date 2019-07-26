@@ -35,6 +35,13 @@ contract Relay {
         blockHeight[_genesisDigest] = _height;
     }
 
+    /// @notice                   Gives a starting point for the relay
+    /// @dev                      We don't check this AT ALL really. Don't use relays with bad genesis
+    /// @param  _ancestor         The digest of the most recent common ancestor
+    /// @param  _currentBest      The 80-byte header referenced by bestKnownDigest
+    /// @param  _newBest          The 80-byte header to mark as the new best
+    /// @param  _limit            Limit the amount of traversal of the chain
+    /// @return                   True if successfully updates bestKnownDigest, error otherwise
     function _markNewHeaviest(
         bytes32 _ancestor,
         bytes memory _currentBest,
@@ -58,6 +65,13 @@ contract Relay {
         return true;
     }
 
+    /// @notice                   Gives a starting point for the relay
+    /// @dev                      We don't check this AT ALL really. Don't use relays with bad genesis
+    /// @param  _ancestor         The digest of the most recent common ancestor
+    /// @param  _currentBest      The 80-byte header referenced by bestKnownDigest
+    /// @param  _newBest          The 80-byte header to mark as the new best
+    /// @param  _limit            Limit the amount of traversal of the chain
+    /// @return                   True if successfully updates bestKnownDigest, error otherwise
     function markNewHeaviest(
         bytes32 _ancestor,
         bytes calldata _currentBest,
@@ -120,7 +134,7 @@ contract Relay {
         emit Extension(
             _headers.slice(0, 80).hash256(),
             _currentDigest);
-            return true;
+        return true;
     }
 
     /// @notice             Adds headers to storage after validating
@@ -336,8 +350,8 @@ contract Relay {
             return _leftHeight >= _rightHeight ? _left.hash256() : _right.hash256();
         }
         if (!_leftInPeriod && !_rightInPeriod) {
-            if (((_leftHeight % 2016) * _left.extractDifficulty())
-                < (_rightHeight % 2016 * _right.extractDifficulty())) {
+            if (((_leftHeight % 2016) * _left.extractDifficulty()) <
+                (_rightHeight % 2016 * _right.extractDifficulty())) {
                 return _right.hash256();
             } else {
                 return _left.hash256();
@@ -345,6 +359,12 @@ contract Relay {
         }
     }
 
+    /// @notice             Decides which header is heaviest from the ancestor
+    /// @dev                Does not support reorgs above 2017 blocks (:
+    /// @param _ancestor    The prospective shared ancestor
+    /// @param _left        A chain tip
+    /// @param _right       A chain tip
+    /// @return             true if it is the most recent common ancestor within _limit, false otherwise
     function heaviestFromAncestor(
         bytes32 _ancestor,
         bytes calldata _left,
