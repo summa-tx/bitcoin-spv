@@ -342,7 +342,7 @@ library BTCUtils {
         return _difficulty1Target.div(_target);
     }
 
-    /// @notice          Extracts the previous block"s hash from a block header
+    /// @notice          Extracts the previous block's hash from a block header
     /// @dev             Block headers do NOT include block number :(
     /// @param _b        The header
     /// @return          The previous block"s hash (little-endian)

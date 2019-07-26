@@ -12,8 +12,8 @@ func ExtractPrefix(memory []byte) ([]byte, error) {
 
 // ReverseEndianness takes in a byte slice and returns a
 // reversed endian byte slice.
-func ReverseEndianness(memory []byte) ([]byte, error) {
-	return nil, errors.New("not impl")
+func ReverseEndianness(memory []byte) []byte {
+	return nil
 }
 
 // BytesToUint takes a byte slice and then returns a Uint256
@@ -37,7 +37,7 @@ func Hash256(bytes []byte) []byte {
 }
 
 //
-/* Witness Input */
+// Witness Input
 //
 
 // ExtractSequenceLE returns the LE sequence bytes from an inpute
@@ -143,4 +143,57 @@ func ExtractNumOutputsBytes(bytes []byte) []byte {
 // ExtractNumOutputs extracts the number of outputs as an integer
 func ExtractNumOutputs(bytes []byte) uint8 {
 	return 0
+}
+
+// ExtractInputAtIndex returns the input at a given index in the TxIns vector
+func ExtractInputAtIndex(bytes []byte, index uint8) []byte {
+	return nil
+}
+
+// DetermineOutputLength returns the length of an output
+func DetermineOutputLength(bytes []byte) uint64 {
+	return 0
+}
+
+// ExtractOutputAtIndex returns the output at a given index in the TxIns vector
+func ExtractOutputAtIndex(bytes []byte, index uint8) []byte {
+	return nil
+}
+
+//
+// Block Header
+//
+
+// ExtractMerkleRootLE returns the transaction merkle root from a given block header
+// The returned merkle root is little-endian
+func ExtractMerkleRootLE(bytes []byte) []byte {
+	return nil
+}
+
+// ExtractMerkleRootBE returns the transaction merkle root from a given block header
+// The returned merkle root is big-endian
+func ExtractMerkleRootBE(bytes []byte) []byte {
+	return ReverseEndianness(ExtractMerkleRootLE(bytes))
+}
+
+// ExtractTarget returns the target from a given block hedaer
+func ExtractTarget(bytes []byte) []byte {
+	return nil
+}
+
+// CalculateDifficulty calculates difficulty from the difficulty 1 target and current target
+// Difficulty 1 is 0x1d00ffff on mainnet and testnet
+// Difficulty 1 is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
+func CalculateDifficulty(target uint64) uint64 {
+	return 0
+}
+
+// ExtractPrevBlockHashLE returns the previous block's hash from a block header
+func ExtractPrevBlockHashLE(bytes []byte) []byte {
+	return nil
+}
+
+// ExtractPrevBlockHashBE returns the previous block's hash from a block header
+func ExtractPrevBlockHashBE(bytes []byte) []byte {
+	return ReverseEndianness(ExtractPrevBlockHashLE(bytes))
 }
