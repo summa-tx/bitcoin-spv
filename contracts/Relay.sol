@@ -108,30 +108,34 @@ contract Relay {
     ) external returns (bool) {
         bytes memory _newPeriodStart = _headers.slice(0, 80);
 
-        uint64 _pastHeight = _findHeight(_oldPeriodStart.hash256());
-        uint64 _currentHeight = _findHeight(_oldPeriodEnd.hash256());
+        require(_oldPeriodStart.length == 80, "Old period start header is the wrong size");
+        require(_oldPeriodEnd.length == 80, "Old period end header is the wrong size");
 
+        /* NB: This comparison looks weird because header nBits encoding truncates targes */
         uint256 _actualTarget = _newPeriodStart.extractTarget();
         uint256 _expectedTarget = BTCUtils.retargetAlgorithm(
             _oldPeriodStart.extractTarget(),
             _oldPeriodStart.extractTimestamp(),
             _oldPeriodEnd.extractTimestamp()
         );
+        require(
+            (_actualTarget & _expectedTarget) == _expectedTarget,
+            "Invalid retarget provided");
 
         /* NB: Redundant check here. It checks the connection to the previ*/
         require(
             _newPeriodStart.extractPrevBlockLE().toBytes32() == _oldPeriodEnd.hash256(),
             "Chain is not an extension of the last header of the period");
-        require(_oldPeriodStart.length == 80, "Past retarget is the wrong size");
+
+        /* NB: retargets should happen at 2016 block intervals */
+        uint64 _startHeight = _findHeight(_oldPeriodStart.hash256());
+        uint64 _endHeight = _findHeight(_oldPeriodEnd.hash256());
         require(
-            _pastHeight % 2016 == 0,
+            _startHeight % 2016 == 0,
             "Must provide the first header of the difficulty period");
         require(
-            _currentHeight == _pastHeight + 2015,
+            _endHeight == _startHeight + 2015,
             "Must provide exactly 1 difficulty period");
-        require(
-            (_actualTarget & _expectedTarget) == _expectedTarget,
-            "Invalid retarget provided");
 
         // Pass all but the first through to be added
         return _addHeaders(_headers);
