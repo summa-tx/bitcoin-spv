@@ -89,7 +89,7 @@ contract Relay {
         bytes memory _header;
         bytes32 _currentDigest;
         bytes32 _previousDigest;
-        uint256 _target;
+        uint256 _target = _headers.slice(0, 80).extractTarget();
 
         require(_headers.length % 80 == 0, "Header array length must be divisible by 80");
         require(_headers.length / 80 >= 5, "Must supply at least 5 headers");
@@ -98,6 +98,11 @@ contract Relay {
             _header = _headers.slice(i, 80);
             _previousDigest = _currentDigest;   /* NB: Does nothing on first loop */
             _currentDigest = _header.hash256();
+
+            // Require that the header has sufficient work
+            require(
+                abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _target,
+                "Header work is insufficient");
 
             if (i == 0) {
                 /*
@@ -108,7 +113,6 @@ contract Relay {
                     previousBlock[_currentDigest] == _header.extractPrevBlockLE().toBytes32(),
                     "First header must be known already");
                 require(blockHeight[_currentDigest] != 0, "First header must be at a known height");
-                _target = _header.extractTarget();
             } else {
                 /*
                 NB: After the first header
@@ -126,10 +130,7 @@ contract Relay {
                 }
             }
         }
-        // Require that the header has sufficient work
-        require(
-            abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _target,
-            "Header work is insufficient");
+
 
         emit Extension(
             _headers.slice(0, 80).hash256(),
