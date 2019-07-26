@@ -1,4 +1,4 @@
-package btcutils
+package utils
 
 import (
 	"errors"
@@ -189,11 +189,34 @@ func CalculateDifficulty(target uint64) uint64 {
 }
 
 // ExtractPrevBlockHashLE returns the previous block's hash from a block header
+// Returns the hash as a little endian []byte
 func ExtractPrevBlockHashLE(bytes []byte) []byte {
 	return nil
 }
 
 // ExtractPrevBlockHashBE returns the previous block's hash from a block header
+// Returns the hash as a big endian []byte
 func ExtractPrevBlockHashBE(bytes []byte) []byte {
 	return ReverseEndianness(ExtractPrevBlockHashLE(bytes))
+}
+
+// ExtractTimestampLE returns the timestamp from a block header
+// It returns the timestamp as a little endian []byte
+// Time is not 100% reliable
+func ExtractTimestampLE(bytes []byte) []byte {
+	return nil
+}
+
+// ExtractTimestamp returns the timestamp from a block header as a uint32
+// Time is not 100% reliable
+func ExtractTimestamp(bytes []byte) uint32 {
+	return uint32(BytesToUint(ReverseEndianness(ExtractTimestampLE(bytes))))
+}
+
+func hash256MerkleStep(a []byte, b []byte) []byte {
+	return nil
+}
+
+func verifyHash256Merkle(a []byte, b []byte) bool {
+	return false
 }
