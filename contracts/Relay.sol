@@ -41,7 +41,7 @@ contract Relay {
         bytes32 _previousDigest;
         uint256 _target;
 
-        require(_headers.length % 80 == 0, "Header array lenght must be divisible by 80");
+        require(_headers.length % 80 == 0, "Header array length must be divisible by 80");
         require(_headers.length / 80 >= 5, "Must supply an even number of headers");
 
         for (uint64 i = 0; i < _headers.length; i += 80) {
@@ -167,7 +167,7 @@ contract Relay {
         return _findHeight(_digest);
     }
 
-    /// @notice         Finds an ancestor for a block by its
+    /// @notice         Finds an ancestor for a block by its digest
     /// @dev            Will fail if the header is unknown
     /// @param _digest  The header digest to search for
     /// @return         The height of the header, or error if unknown
@@ -180,14 +180,13 @@ contract Relay {
         return _current;
     }
 
-    /// @notice         Finds an ancestor for a block by its
+    /// @notice         Finds an ancestor for a block by its digest
     /// @dev            Will fail if the header is unknown
     /// @param _digest  The header digest to search for
     /// @return         The height of the header, or error if unknown
     function findAncestor(bytes32 _digest, uint8 _offset) external view returns (bytes32) {
         return _findAncestor(_digest, _offset);
     }
-
 
     /// @notice             Checks if a digest is an ancestor of the current one
     /// @dev                Limit the amount of lookups (and thus gas usage) with _limit
