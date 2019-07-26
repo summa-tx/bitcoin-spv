@@ -10,9 +10,32 @@ library BTCUtils {
     using BytesLib for bytes;
     using SafeMath for uint256;
 
+    uint256 public constant RETARGET_PERIOD = 2 * 7 * 24 * 60 * 60;  // 2 weeks in seconds
+    uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
+
     /* ***** */
     /* UTILS */
     /* ***** */
+
+    /// @notice         determines the length of a VarInt in bytes
+    /// @dev            a VarInt of >1 byte is prefixed with a flag indicating its length
+    /// @param _flag    the first byte of a VarInt
+    /// @return         the number of non-flag bytes in the VarInt
+    function determineVarIntDataLength(bytes memory _flag) internal pure returns (uint256) {
+        bytes32 _flagHash = keccak256(_flag);
+
+        if (_flagHash == keccak256(hex"ff")) {
+            return 8;  // one-byte flag, 8 bytes data
+        }
+        if (_flagHash == keccak256(hex"fe")) {
+            return 4;  // one-byte flag, 4 bytes data
+        }
+        if (_flagHash == keccak256(hex"fd")) {
+            return 2;  // one-byte flag, 2 bytes data
+        }
+
+        return 0;  // flag is data
+    }
 
     /// @notice          Changes the endianness of a byte array
     /// @dev             Returns a new, backwards, bytes
@@ -447,5 +470,42 @@ library BTCUtils {
             _idx = _idx >> 1;
         }
         return _current == _root;
+    }
+
+    /*
+    NB: https://github.com/bitcoin/bitcoin/blob/78dae8caccd82cfbfd76557f1fb7d7557c7b5edb/src/pow.cpp#L49-L72
+    NB: We get a full-bitlength target from this. For comparison with
+        header-encoded targets we need to mask it with the header target
+        e.g. (full & truncated) == truncated
+    */
+    /// @notice                 performs the bitcoin difficulty retarget
+    /// @dev                    implements the Bitcoin algorithm precisely
+    /// @param _previousTarget  the target of the previous period
+    /// @param _firstTimestamp  the timestamp of the first block in the difficulty period
+    /// @param _secondTimestamp the timestamp of the last block in the difficulty period
+    /// @return                 the new period's target threshold
+    function retargetAlgorithm(
+        uint256 _previousTarget,
+        uint256 _firstTimestamp,
+        uint256 _secondTimestamp
+    ) internal pure returns (uint256) {
+        uint256 _elapsedTime = _secondTimestamp.sub(_firstTimestamp);
+
+        // Normalize ratio to factor of 4 if very long or very short
+        if (_elapsedTime < RETARGET_PERIOD.div(4)) {
+            _elapsedTime = RETARGET_PERIOD.div(4);
+        }
+        if (_elapsedTime > RETARGET_PERIOD.mul(4)) {
+            _elapsedTime = RETARGET_PERIOD.mul(4);
+        }
+
+        /*
+          NB: high targets e.g. ffff0020 can cause overflows here
+              so we divide it by 256**2, then multiply by 256**2 later
+              we know the target is evenly divisible by 256**2, so this isn't an issue
+        */
+
+        uint256 _adjusted = _previousTarget.div(65536).mul(_elapsedTime);
+        return _adjusted.div(RETARGET_PERIOD).mul(65536);
     }
 }

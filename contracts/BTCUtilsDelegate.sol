@@ -344,4 +344,32 @@ contract BTCUtilsDelegate {
     function verifyHash256Merkle(bytes memory _proof, uint _index) public pure returns (bool) {
         return BTCUtils.verifyHash256Merkle(_proof, _index);
     }
+
+    /*
+    NB: https://github.com/bitcoin/bitcoin/blob/78dae8caccd82cfbfd76557f1fb7d7557c7b5edb/src/pow.cpp#L49-L72
+    NB: We get a full-bitlength target from this. For comparison with
+        header-encoded targets we need to mask it with the header target
+        e.g. (full & truncated) == truncated
+    */
+    /// @notice                 performs the bitcoin difficulty retarget
+    /// @dev                    implements the Bitcoin algorithm precisely
+    /// @param _previousTarget  the target of the previous period
+    /// @param _firstTimestamp  the timestamp of the first block in the difficulty period
+    /// @param _secondTimestamp the timestamp of the last block in the difficulty period
+    /// @return                 the new period's target threshold
+    function retargetAlgorithm(
+        uint256 _previousTarget,
+        uint256 _firstTimestamp,
+        uint256 _secondTimestamp
+    ) internal pure returns (uint256) {
+        return BTCUtils.retargetAlgorithm(_previousTarget, _firstTimestamp, _secondTimestamp);
+    }
+
+    /// @notice         determines the length of a VarInt in bytes
+    /// @dev            a VarInt of >1 byte is prefixed with a flag indicating its length
+    /// @param _flag    the first byte of a VarInt
+    /// @return         the number of non-flag bytes in the VarInt
+    function determineVarIntDataLength(bytes memory _flag) public pure returns (uint256) {
+        return BTCUtils.determineVarIntDataLength(_flag);
+    }
 }
