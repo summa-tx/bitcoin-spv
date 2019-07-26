@@ -89,7 +89,7 @@ contract Relay {
         bytes memory _header;
         bytes32 _currentDigest;
         bytes32 _previousDigest;
-        uint256 _target = _headers.slice(0, 80).extractTarget();
+        uint256 _target = _headers.slice(80, 80).extractTarget();
 
         require(_headers.length % 80 == 0, "Header array length must be divisible by 80");
         require(_headers.length / 80 >= 5, "Must supply at least 5 headers");
@@ -98,12 +98,6 @@ contract Relay {
             _header = _headers.slice(i, 80);
             _previousDigest = _currentDigest;   /* NB: Does nothing on first loop */
             _currentDigest = _header.hash256();
-
-            // Require that the header has sufficient work
-            require(
-                abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _target,
-                "Header work is insufficient");
-
             if (i == 0) {
                 /*
                 NB: We build off an existing header
@@ -117,10 +111,13 @@ contract Relay {
                 /*
                 NB: After the first header
                 1. check that headers are in a chain
-                2. check that the target hasn't changed
+                2. check that the header has sufficient work
                 3. Store the block connection
                 4. Store the height
                 */
+                require(
+                    abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _target,
+                    "Header work is insufficient");
                 require(_header.validateHeaderPrevHash(_currentDigest), "Headers not a consistent chain");
                 require(_header.extractTarget() == _target, "Target changed unexpectedly");
                 previousBlock[_currentDigest] = _previousDigest;
@@ -130,7 +127,6 @@ contract Relay {
                 }
             }
         }
-
 
         emit Extension(
             _headers.slice(0, 80).hash256(),
@@ -189,7 +185,7 @@ contract Relay {
             "Must provide exactly 1 difficulty period");
 
         // Pass all but the first through to be added
-        return _addHeaders(_headers);
+        return _addHeaders(abi.encodePacked(_oldPeriodEnd, _headers));
     }
 
     /// @notice         Finds the height of a header by its digest
