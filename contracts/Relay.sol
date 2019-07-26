@@ -13,6 +13,8 @@ contract Relay {
     using BTCUtils for bytes;
     using ValidateSPV for bytes;
 
+    event Extension(bytes32 indexed _first, bytes32 indexed _last);
+
     bytes32 relayGenesis;
     mapping (bytes32 => bytes32) internal previousBlock;
     mapping (bytes32 => uint64) internal blockHeight;
@@ -78,6 +80,10 @@ contract Relay {
             require(
                 abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _target,
                 "Header work is insufficient");
+
+            emit Extension(
+                _headers.slice(0, 80).hash256(),
+                _currentDigest);
         }
     }
 
@@ -92,14 +98,15 @@ contract Relay {
     /// @notice                 Adds headers to storage, performs additional validation of retarget
     /// @dev                    Checks the retarget, the heights, and the linkage
     /// @param  _oldPeriodStart The first header in the difficulty period being closed
+    /// @param  _oldPeriodEnd   The last header in the difficulty period being closed
     /// @param  _headers        A tightly-packed list of 80-byte Bitcoin headers
     /// @return                 True if successfully written, error otherwise
     function addHeadersWithRetarget(
         bytes calldata _oldPeriodStart,
+        bytes calldata _oldPeriodEnd,
         bytes calldata _headers
     ) external returns (bool) {
-        bytes memory _oldPeriodEnd = _headers.slice(0, 80);
-        bytes memory _newPeriodStart = _headers.slice(80, 80);
+        bytes memory _newPeriodStart = _headers.slice(0, 80);
 
         uint64 _pastHeight = _findHeight(_oldPeriodStart.hash256());
         uint64 _currentHeight = _findHeight(_oldPeriodEnd.hash256());
@@ -111,6 +118,7 @@ contract Relay {
             _oldPeriodEnd.extractTimestamp()
         );
 
+        /* NB: Redundant check here. It checks the connection to the previ*/
         require(
             _newPeriodStart.extractPrevBlockLE().toBytes32() == _oldPeriodEnd.hash256(),
             "Chain is not an extension of the last header of the period");
@@ -126,7 +134,7 @@ contract Relay {
             "Invalid retarget provided");
 
         // Pass all but the first through to be added
-        return _addHeaders(_headers.slice(80, _headers.length - 80));
+        return _addHeaders(_headers);
     }
 
     /// @notice         Finds the height of a header by its digest
