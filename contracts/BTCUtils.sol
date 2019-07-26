@@ -10,6 +10,7 @@ library BTCUtils {
     using BytesLib for bytes;
     using SafeMath for uint256;
 
+    uint256 public constant DIFF1_TARGET = 0xffff0000000000000000000000000000000000000000000000000000;
     uint256 public constant RETARGET_PERIOD = 2 * 7 * 24 * 60 * 60;  // 2 weeks in seconds
     uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
 
@@ -433,6 +434,15 @@ library BTCUtils {
     function extractTimestamp(bytes memory _header) internal pure returns (uint32) {
         return uint32(bytesToUint(reverseEndianness(extractTimestampLE(_header))));
     }
+
+    function extractDifficulty(bytes memory _header) internal pure returns (uint256) {
+        return difficultyFromTarget(extractTarget(_header));
+    }
+
+    function difficultyFromTarget(uint256 _target) public pure returns (uint256) {
+        return DIFF1_TARGET.div(_target);
+    }
+
 
     /// @notice          Concatenates and hashes two inputs for merkle proving
     /// @param _a        The first hash
