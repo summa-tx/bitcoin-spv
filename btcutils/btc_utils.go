@@ -57,3 +57,20 @@ func ExtractSequence(bytes []byte) uint64 {
 func ExtractOutpoint(bytes []byte) []byte {
 	return nil
 }
+
+// ExtractInputTxIDLE returns the LE tx input index from the input in a tx
+func ExtractInputTxIDLE(bytes []byte) []byte {
+	return nil
+}
+
+// ExtractTxID returns the input tx id from the input in a tx
+// Returns the tx id as a big-endian []byte
+func ExtractTxID(bytes []byte) []byte {
+	return nil
+}
+
+// ExtractTxIndexLE extracts the LE tx input index from the input in a tx
+// REturns the tx index as a little endian []byte
+func ExtractTxIndexLE(bytes []byte) []byte {
+	return nil
+}
