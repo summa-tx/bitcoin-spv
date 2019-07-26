@@ -79,7 +79,6 @@ contract Relay {
                 abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _target,
                 "Header work is insufficient");
         }
-
     }
 
     /// @notice             Adds headers to storage after validating
@@ -175,5 +174,34 @@ contract Relay {
     /// @return         The height of the header, or error if unknown
     function findAncestor(bytes32 _digest, uint8 _offset) external view returns (bytes32) {
         return _findAncestor(_digest, _offset);
+    }
+
+
+    /// @notice             Checks if a digest is an ancestor of the current one
+    /// @dev                Limit the amount of lookups (and thus gas usage) with _limit
+    /// @param _ancestor    The prospective ancestor
+    /// @param _descendant  The descendant to check
+    /// @param _limit       The maximum number of blocks to check
+    /// @return             true if ancestor is at most limit blocks lower than descendant, otherwise false
+    function _isAncestor(bytes32 _ancestor, bytes32 _descendant, uint64 _limit) internal view returns (bool) {
+        bytes32 _current = _descendant;
+        /* NB: 200 gas/read, so gas is capped at ~200 * limit */
+        for (uint16 i = 0; i < _limit; i += 1) {
+            if (_current == _ancestor) {
+                return true;
+            }
+            _current = previousBlock[_current];
+        }
+        return false;
+    }
+
+    /// @notice             Checks if a digest is an ancestor of the current one
+    /// @dev                Limit the amount of lookups (and thus gas usage) with _limit
+    /// @param _ancestor    The prospective ancestor
+    /// @param _descendant  The descendant to check
+    /// @param _limit       The maximum number of blocks to check
+    /// @return             true if ancestor is at most limit blocks lower than descendant, otherwise false
+    function isAncestor(bytes32 _ancestor, bytes32 _descendant, uint64 _limit) external view returns (bool) {
+        return _isAncestor(_ancestor, _descendant, _limit);
     }
 }
