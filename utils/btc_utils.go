@@ -1,19 +1,20 @@
 package utils
 
-import (
-	"errors"
-)
-
 // ExtractPrefix returns the extracted prefix as a byte array
 // from the given byte array.
-func ExtractPrefix(memory []byte) ([]byte, error) {
-	return nil, errors.New("not impl")
+func ExtractPrefix(memory []byte) []byte {
+	return nil
 }
 
 // ReverseEndianness takes in a byte slice and returns a
 // reversed endian byte slice.
-func ReverseEndianness(memory []byte) []byte {
-	return nil
+func ReverseEndianness(a []byte) []byte {
+	for i := len(a)/2 - 1; i >= 0; i-- {
+		opp := len(a) - 1 - i
+		a[i], a[opp] = a[opp], a[i]
+	}
+
+	return a
 }
 
 // BytesToUint takes a byte slice and then returns a Uint256
