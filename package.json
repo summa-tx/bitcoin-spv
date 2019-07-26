@@ -4,6 +4,7 @@
     "description": "bitcoin SPV proofs in Solidity",
     "scripts": {
         "coverage": "npx solidity-coverage",
+        "lint": "solium -d contracts/ && eslint ./test",
         "test": "truffle test"
     },
     "author": "",

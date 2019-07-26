@@ -63,7 +63,7 @@ library CheckBitcoinSigs {
         bytes32 _r,
         bytes32 _s
     ) internal pure returns (bool) {
-        require(_pubkey.length == 64, 'Requires uncompressed unprefixed pubkey');
+        require(_pubkey.length == 64, "Requires uncompressed unprefixed pubkey");
         address _expected = accountFromPubkey(_pubkey);
         address _actual = ecrecover(_digest, _v, _r, _s);
         return _actual == _expected;
@@ -86,7 +86,7 @@ library CheckBitcoinSigs {
         bytes32 _r,
         bytes32 _s
     ) internal pure returns (bool) {
-        require(_pubkey.length == 64, 'Requires uncompressed unprefixed pubkey');
+        require(_pubkey.length == 64, "Requires uncompressed unprefixed pubkey");
 
         bool _isExpectedSigner = keccak256(p2wpkhFromPubkey(_pubkey)) == keccak256(_p2wpkhOutputScript);  // is it the expected signer?
         if (!_isExpectedSigner) {return false;}
