@@ -15,9 +15,9 @@ contract Relay {
 
     event Extension(bytes32 indexed _first, bytes32 indexed _last);
 
-    bytes32 relayGenesis;
-    bytes32 bestKnownDigest;
-    bytes32 lastReorgCommonAncestor;
+    bytes32 public relayGenesis;
+    bytes32 public bestKnownDigest;
+    bytes32 public lastReorgCommonAncestor;
     mapping (bytes32 => bytes32) internal previousBlock;
     mapping (bytes32 => uint32) internal blockHeight;
 
@@ -83,63 +83,63 @@ contract Relay {
 
     /// @notice             Adds headers to storage after validating
     /// @dev                We check integrity and consistency of the header chain
-    /// @param  _headers    A tightly-packed list of 80-byte Bitcoin headers
+    /// @param  _anchor     The header immediately preceeding the new chain
+    /// @param  _headers    A tightly-packed list of new 80-byte Bitcoin headers to record
+    /// @param  _internal   True if called internally from addHeadersWithRetarget, false otherwise
     /// @return             True if successfully written, error otherwise
-    function _addHeaders(bytes memory _headers) internal returns (bool) {
+    function _addHeaders(bytes memory _anchor, bytes memory _headers, bool _internal) internal returns (bool) {
+        uint32 _height;
         bytes memory _header;
         bytes32 _currentDigest;
-        bytes32 _previousDigest;
-        uint256 _target = _headers.slice(80, 80).extractTarget();
+        bytes32 _previousDigest = _anchor.hash256();
 
+        uint256 _target = _headers.slice(0, 80).extractTarget();
+        uint32 _anchorHeight = _findHeight(_previousDigest);
+
+        require(_anchorHeight != 0, "First header must be at a known height");
+        require(
+            _internal || _anchor.extractTarget() == _target,
+            "Unexpected retarget on external call");
         require(_headers.length % 80 == 0, "Header array length must be divisible by 80");
         require(_headers.length / 80 >= 5, "Must supply at least 5 headers");
 
         for (uint32 i = 0; i < _headers.length; i += 80) {
             _header = _headers.slice(i, 80);
-            _previousDigest = _currentDigest;   /* NB: Does nothing on first loop */
+            _height = _anchorHeight + (i / 80) + 1;
             _currentDigest = _header.hash256();
-            if (i == 0) {
-                /*
-                NB: We build off an existing header
-                    This means that all headers should have the same difficulty
-                */
-                require(
-                    previousBlock[_currentDigest] == _header.extractPrevBlockLE().toBytes32(),
-                    "First header must be known already");
-                require(blockHeight[_currentDigest] != 0, "First header must be at a known height");
-            } else {
-                /*
-                NB: After the first header
-                1. check that headers are in a chain
-                2. check that the header has sufficient work
-                3. Store the block connection
-                4. Store the height
-                */
-                require(
-                    abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _target,
-                    "Header work is insufficient");
-                require(_header.validateHeaderPrevHash(_currentDigest), "Headers not a consistent chain");
-                require(_header.extractTarget() == _target, "Target changed unexpectedly");
-                previousBlock[_currentDigest] = _previousDigest;
-                if (i % 320 == 0) {
-                    /* NB: We store the height only every 4th header to save gas */
-                    blockHeight[_currentDigest] = blockHeight[_previousDigest] + 1;
-                }
+            /*
+            NB: After the first header
+            1. check that headers are in a chain
+            2. check that the header has sufficient work
+            3. Store the block connection
+            4. Store the height
+            */
+            require(
+                abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _target,
+                "Header work is insufficient");
+            require(_header.validateHeaderPrevHash(_currentDigest), "Headers not a consistent chain");
+            require(_header.extractTarget() == _target, "Target changed unexpectedly");
+
+            previousBlock[_currentDigest] = _previousDigest;
+            if (_height % 4 == 0) {
+                /* NB: We store the height only every 4th header to save gas */
+                blockHeight[_currentDigest] =_height;
             }
         }
 
         emit Extension(
-            _headers.slice(0, 80).hash256(),
+            _anchor.hash256(),
             _currentDigest);
         return true;
     }
 
     /// @notice             Adds headers to storage after validating
     /// @dev                We check integrity and consistency of the header chain
+    /// @param  _anchor     The header immediately preceeding the new chain
     /// @param  _headers    A tightly-packed list of 80-byte Bitcoin headers
     /// @return             True if successfully written, error otherwise
-    function addHeaders(bytes calldata _headers) external returns (bool) {
-        return _addHeaders(_headers);
+    function addHeaders(bytes calldata _anchor, bytes calldata _headers) external returns (bool) {
+        return _addHeaders(_anchor, _headers, false);
     }
 
     /// @notice                 Adds headers to storage, performs additional validation of retarget
@@ -185,7 +185,7 @@ contract Relay {
             "Must provide exactly 1 difficulty period");
 
         // Pass all but the first through to be added
-        return _addHeaders(abi.encodePacked(_oldPeriodEnd, _headers));
+        return _addHeaders(_oldPeriodEnd, _headers, true);
     }
 
     /// @notice         Finds the height of a header by its digest
