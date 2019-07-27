@@ -8,13 +8,16 @@ func ExtractPrefix(memory []byte) []byte {
 
 // ReverseEndianness takes in a byte slice and returns a
 // reversed endian byte slice.
-func ReverseEndianness(a []byte) []byte {
-	for i := len(a)/2 - 1; i >= 0; i-- {
-		opp := len(a) - 1 - i
-		a[i], a[opp] = a[opp], a[i]
+func ReverseEndianness(in []byte) []byte {
+	out := make([]byte, len(in), len(in))
+	copy(out, in)
+
+	for i := len(out)/2 - 1; i >= 0; i-- {
+		opp := len(out) - 1 - i
+		out[i], out[opp] = out[opp], out[i]
 	}
 
-	return a
+	return out
 }
 
 // BytesToUint takes a byte slice and then returns a Uint256
