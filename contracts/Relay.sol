@@ -35,52 +35,6 @@ contract Relay {
         blockHeight[_genesisDigest] = _height;
     }
 
-    /// @notice                   Gives a starting point for the relay
-    /// @dev                      We don't check this AT ALL really. Don't use relays with bad genesis
-    /// @param  _ancestor         The digest of the most recent common ancestor
-    /// @param  _currentBest      The 80-byte header referenced by bestKnownDigest
-    /// @param  _newBest          The 80-byte header to mark as the new best
-    /// @param  _limit            Limit the amount of traversal of the chain
-    /// @return                   True if successfully updates bestKnownDigest, error otherwise
-    function _markNewHeaviest(
-        bytes32 _ancestor,
-        bytes memory _currentBest,
-        bytes memory _newBest,
-        uint32 _limit
-    ) internal returns (bool) {
-        require(_currentBest.hash256() == bestKnownDigest, "Passed in best is not best known");
-        bytes32 _newBestDigest = _newBest.hash256();
-        require(
-            previousBlock[_newBestDigest] != bytes32(0),
-            "New best is unknown");
-        require(
-            _isHeaviestCommonAncestor(_ancestor, bestKnownDigest, _newBestDigest, _limit),
-            "Ancestor must be heaviest common ancestor");
-        require(
-            _heaviestFromAncestor(_ancestor, _currentBest, _newBest) == _newBestDigest,
-            "New best hash does not have more work than previous");
-
-        bestKnownDigest = _newBestDigest;
-        lastReorgCommonAncestor = _ancestor;
-        return true;
-    }
-
-    /// @notice                   Gives a starting point for the relay
-    /// @dev                      We don't check this AT ALL really. Don't use relays with bad genesis
-    /// @param  _ancestor         The digest of the most recent common ancestor
-    /// @param  _currentBest      The 80-byte header referenced by bestKnownDigest
-    /// @param  _newBest          The 80-byte header to mark as the new best
-    /// @param  _limit            Limit the amount of traversal of the chain
-    /// @return                   True if successfully updates bestKnownDigest, error otherwise
-    function markNewHeaviest(
-        bytes32 _ancestor,
-        bytes calldata _currentBest,
-        bytes calldata _newBest,
-        uint32 _limit
-    ) external returns (bool) {
-        return _markNewHeaviest(_ancestor, _currentBest, _newBest, _limit);
-    }
-
     /// @notice             Adds headers to storage after validating
     /// @dev                We check integrity and consistency of the header chain
     /// @param  _anchor     The header immediately preceeding the new chain
@@ -106,6 +60,9 @@ contract Relay {
         for (uint32 i = 0; i < _headers.length; i += 80) {
             _header = _headers.slice(i, 80);
             _height = _anchorHeight + (i / 80) + 1;
+            if (i != 0) {
+                _previousDigest = _currentDigest;
+            }
             _currentDigest = _header.hash256();
             /*
             NB: After the first header
@@ -117,13 +74,13 @@ contract Relay {
             require(
                 abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _target,
                 "Header work is insufficient");
-            require(_header.validateHeaderPrevHash(_currentDigest), "Headers not a consistent chain");
             require(_header.extractTarget() == _target, "Target changed unexpectedly");
+            require(_header.validateHeaderPrevHash(_previousDigest), "Headers not a consistent chain");
 
             previousBlock[_currentDigest] = _previousDigest;
             if (_height % 4 == 0) {
                 /* NB: We store the height only every 4th header to save gas */
-                blockHeight[_currentDigest] =_height;
+                blockHeight[_currentDigest] = _height;
             }
         }
 
@@ -263,6 +220,52 @@ contract Relay {
         return _isAncestor(_ancestor, _descendant, _limit);
     }
 
+    /// @notice                   Gives a starting point for the relay
+    /// @dev                      We don't check this AT ALL really. Don't use relays with bad genesis
+    /// @param  _ancestor         The digest of the most recent common ancestor
+    /// @param  _currentBest      The 80-byte header referenced by bestKnownDigest
+    /// @param  _newBest          The 80-byte header to mark as the new best
+    /// @param  _limit            Limit the amount of traversal of the chain
+    /// @return                   True if successfully updates bestKnownDigest, error otherwise
+    function _markNewHeaviest(
+        bytes32 _ancestor,
+        bytes memory _currentBest,
+        bytes memory _newBest,
+        uint32 _limit
+    ) internal returns (bool) {
+        require(_currentBest.hash256() == bestKnownDigest, "Passed in best is not best known");
+        bytes32 _newBestDigest = _newBest.hash256();
+        require(
+            previousBlock[_newBestDigest] != bytes32(0),
+            "New best is unknown");
+        require(
+            _isMostRecentAncestor(_ancestor, bestKnownDigest, _newBestDigest, _limit),
+            "Ancestor must be heaviest common ancestor");
+        require(
+            _heaviestFromAncestor(_ancestor, _currentBest, _newBest) == _newBestDigest,
+            "New best hash does not have more work than previous");
+
+        bestKnownDigest = _newBestDigest;
+        lastReorgCommonAncestor = _ancestor;
+        return true;
+    }
+
+    /// @notice                   Gives a starting point for the relay
+    /// @dev                      We don't check this AT ALL really. Don't use relays with bad genesis
+    /// @param  _ancestor         The digest of the most recent common ancestor
+    /// @param  _currentBest      The 80-byte header referenced by bestKnownDigest
+    /// @param  _newBest          The 80-byte header to mark as the new best
+    /// @param  _limit            Limit the amount of traversal of the chain
+    /// @return                   True if successfully updates bestKnownDigest, error otherwise
+    function markNewHeaviest(
+        bytes32 _ancestor,
+        bytes calldata _currentBest,
+        bytes calldata _newBest,
+        uint32 _limit
+    ) external returns (bool) {
+        return _markNewHeaviest(_ancestor, _currentBest, _newBest, _limit);
+    }
+
     /// @notice             Checks if a digest is an ancestor of the current one
     /// @dev                Limit the amount of lookups (and thus gas usage) with _limit
     /// @param _ancestor    The prospective shared ancestor
@@ -270,7 +273,7 @@ contract Relay {
     /// @param _right       A chain tip
     /// @param _limit       The maximum number of blocks to check
     /// @return             true if it is the most recent common ancestor within _limit, false otherwise
-    function _isHeaviestCommonAncestor(
+    function _isMostRecentAncestor(
         bytes32 _ancestor,
         bytes32 _left,
         bytes32 _right,
@@ -302,13 +305,13 @@ contract Relay {
     /// @param _right       A chain tip
     /// @param _limit       The maximum number of blocks to check
     /// @return             true if it is the most recent common ancestor within _limit, false otherwise
-    function isHeaviestCommonAncestor(
+    function isMostRecentAncestor(
         bytes32 _ancestor,
         bytes32 _left,
         bytes32 _right,
         uint32 _limit
     ) external view returns (bool) {
-        return _isHeaviestCommonAncestor(_ancestor, _left, _right, _limit);
+        return _isMostRecentAncestor(_ancestor, _left, _right, _limit);
     }
 
     /// @notice             Decides which header is heaviest from the ancestor
