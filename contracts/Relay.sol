@@ -3,12 +3,14 @@ pragma solidity ^0.5.10;
 /** @title BitcoinSPV */
 /** @author Summa (https://summa.one) */
 
+import {SafeMath} from "./SafeMath.sol";
 import {BytesLib} from "./BytesLib.sol";
 import {BTCUtils} from "./BTCUtils.sol";
 import {ValidateSPV} from "./ValidateSPV.sol";
 
 
 contract Relay {
+    using SafeMath for uint256;
     using BytesLib for bytes;
     using BTCUtils for bytes;
     using ValidateSPV for bytes;
@@ -19,20 +21,21 @@ contract Relay {
     bytes32 public bestKnownDigest;
     bytes32 public lastReorgCommonAncestor;
     mapping (bytes32 => bytes32) internal previousBlock;
-    mapping (bytes32 => uint32) internal blockHeight;
+    mapping (bytes32 => uint256) internal blockHeight;
 
 
     /// @notice                   Gives a starting point for the relay
     /// @dev                      We don't check this AT ALL really. Don't use relays with bad genesis
     /// @param  _genesisHeader    The starting header
     /// @param  _height           The starting height
-    constructor(bytes memory _genesisHeader, uint32 _height) public {
+    constructor(bytes memory _genesisHeader, uint256 _height, bytes32 _periodStart) public {
         require(_genesisHeader.length == 80, "Stop being dumb");
         bytes32 _genesisDigest = _genesisHeader.hash256();
         relayGenesis = _genesisDigest;
         bestKnownDigest = _genesisDigest;
         lastReorgCommonAncestor = _genesisDigest;
         blockHeight[_genesisDigest] = _height;
+        blockHeight[_periodStart] = _height.sub(_height % 2016);
     }
 
     /// @notice             Adds headers to storage after validating
@@ -42,46 +45,57 @@ contract Relay {
     /// @param  _internal   True if called internally from addHeadersWithRetarget, false otherwise
     /// @return             True if successfully written, error otherwise
     function _addHeaders(bytes memory _anchor, bytes memory _headers, bool _internal) internal returns (bool) {
-        uint32 _height;
+        uint256 _height;
         bytes memory _header;
         bytes32 _currentDigest;
         bytes32 _previousDigest = _anchor.hash256();
 
         uint256 _target = _headers.slice(0, 80).extractTarget();
-        uint32 _anchorHeight = _findHeight(_previousDigest);
+        uint256 _anchorHeight = _findHeight(_previousDigest);  /* NB: errors if unknown */
 
-        require(_anchorHeight != 0, "First header must be at a known height");
         require(
             _internal || _anchor.extractTarget() == _target,
             "Unexpected retarget on external call");
         require(_headers.length % 80 == 0, "Header array length must be divisible by 80");
         require(_headers.length / 80 >= 5, "Must supply at least 5 headers");
 
-        for (uint32 i = 0; i < _headers.length; i += 80) {
-            _header = _headers.slice(i, 80);
-            _height = _anchorHeight + (i / 80) + 1;
-            if (i != 0) {
-                _previousDigest = _currentDigest;
-            }
+        /*
+        NB:
+        1. check that the header has sufficient work
+        2. check that headers are in a coherent chain (no retargets, hash links good)
+        3. Store the block connection
+        4. Store the height
+        */
+        for (uint256 i = 0; i < _headers.length / 80; i = i.add(1)) {
+            _header = _headers.slice(i.mul(80), 80);
+            _height = _anchorHeight.add(i).add(1);
             _currentDigest = _header.hash256();
+
             /*
-            NB: After the first header
-            1. check that headers are in a chain
-            2. check that the header has sufficient work
-            3. Store the block connection
-            4. Store the height
+            NB:
+            if the block is already authenticated, we don't need to a work check
+            Or write it anything to state.
+            This saves gas
             */
-            require(
-                abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _target,
-                "Header work is insufficient");
+            if (previousBlock[_currentDigest] == bytes32(0)) {
+                require(
+                    abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _target,
+                    "Header work is insufficient");
+                previousBlock[_currentDigest] = _previousDigest;
+                if (_height % 4 == 0) {
+                    /*
+                    NB: We store the height only every 4th header to save gas
+                        If you're thinking of increasing n, we advise 2016 % n == 0
+                    */
+                    blockHeight[_currentDigest] = _height;
+                }
+            }
+
+            /* NB: we do still need to make chain level checks tho */
             require(_header.extractTarget() == _target, "Target changed unexpectedly");
             require(_header.validateHeaderPrevHash(_previousDigest), "Headers not a consistent chain");
 
-            previousBlock[_currentDigest] = _previousDigest;
-            if (_height % 4 == 0) {
-                /* NB: We store the height only every 4th header to save gas */
-                blockHeight[_currentDigest] = _height;
-            }
+            _previousDigest = _currentDigest;
         }
 
         emit Extension(
@@ -112,8 +126,17 @@ contract Relay {
     ) external returns (bool) {
         bytes memory _newPeriodStart = _headers.slice(0, 80);
 
-        require(_oldPeriodStart.length == 80, "Old period start header is the wrong size");
-        require(_oldPeriodEnd.length == 80, "Old period end header is the wrong size");
+        /* NB: requires that both blocks are known */
+        uint256 _startHeight = _findHeight(_oldPeriodStart.hash256());
+        uint256 _endHeight = _findHeight(_oldPeriodEnd.hash256());
+
+        /* NB: retargets should happen at 2016 block intervals */
+        require(
+            _endHeight % 2016 == 2015,
+            "Must provide the last header of the closing difficulty period");
+        require(
+            _endHeight == _startHeight.add(2015),
+            "Must provide exactly 1 difficulty period");
 
         /* NB: This comparison looks weird because header nBits encoding truncates targes */
         uint256 _actualTarget = _newPeriodStart.extractTarget();
@@ -123,23 +146,8 @@ contract Relay {
             _oldPeriodEnd.extractTimestamp()
         );
         require(
-            (_actualTarget & _expectedTarget) == _expectedTarget,
+            (_actualTarget & _expectedTarget) == _actualTarget,
             "Invalid retarget provided");
-
-        /* NB: Redundant check here. It checks the connection to the previ*/
-        require(
-            _newPeriodStart.extractPrevBlockLE().toBytes32() == _oldPeriodEnd.hash256(),
-            "Chain is not an extension of the last header of the period");
-
-        /* NB: retargets should happen at 2016 block intervals */
-        uint32 _startHeight = _findHeight(_oldPeriodStart.hash256());
-        uint32 _endHeight = _findHeight(_oldPeriodEnd.hash256());
-        require(
-            _startHeight % 2016 == 0,
-            "Must provide the first header of the difficulty period");
-        require(
-            _endHeight == _startHeight + 2015,
-            "Must provide exactly 1 difficulty period");
 
         // Pass all but the first through to be added
         return _addHeaders(_oldPeriodEnd, _headers, true);
@@ -149,15 +157,15 @@ contract Relay {
     /// @dev            Will fail if the header is unknown
     /// @param _digest  The header digest to search for
     /// @return         The height of the header
-    function _findHeight(bytes32 _digest) internal view returns (uint32) {
-        uint32 _height = 0;
+    function _findHeight(bytes32 _digest) internal view returns (uint256) {
+        uint256 _height = 0;
         bytes32 _current = _digest;
-        for (uint8 i = 0; i < 5; i++) {
+        for (uint256 i = 0; i < 5; i = i.add(1)) {
             _height = blockHeight[_current];
             if (_height == 0) {
                 _current = previousBlock[_current];
             } else {
-                return _height + i;
+                return _height.add(i);
             }
         }
         require(false, "Unknown block");
@@ -167,7 +175,7 @@ contract Relay {
     /// @dev            Will fail if the header is unknown
     /// @param _digest  The header digest to search for
     /// @return         The height of the header, or error if unknown
-    function findHeight(bytes32 _digest) external view returns (uint32) {
+    function findHeight(bytes32 _digest) external view returns (uint256) {
         return _findHeight(_digest);
     }
 
@@ -175,9 +183,9 @@ contract Relay {
     /// @dev            Will fail if the header is unknown
     /// @param _digest  The header digest to search for
     /// @return         The height of the header, or error if unknown
-    function _findAncestor(bytes32 _digest, uint8 _offset) internal view returns (bytes32) {
+    function _findAncestor(bytes32 _digest, uint256 _offset) internal view returns (bytes32) {
         bytes32 _current = _digest;
-        for (uint8 i = 0; i < _offset; i++) {
+        for (uint256 i = 0; i < _offset; i = i.add(1)) {
             _current = previousBlock[_current];
         }
         require(_current != bytes32(0), "Unknown ancestor");
@@ -188,7 +196,7 @@ contract Relay {
     /// @dev            Will fail if the header is unknown
     /// @param _digest  The header digest to search for
     /// @return         The height of the header, or error if unknown
-    function findAncestor(bytes32 _digest, uint8 _offset) external view returns (bytes32) {
+    function findAncestor(bytes32 _digest, uint256 _offset) external view returns (bytes32) {
         return _findAncestor(_digest, _offset);
     }
 
@@ -198,10 +206,10 @@ contract Relay {
     /// @param _descendant  The descendant to check
     /// @param _limit       The maximum number of blocks to check
     /// @return             true if ancestor is at most limit blocks lower than descendant, otherwise false
-    function _isAncestor(bytes32 _ancestor, bytes32 _descendant, uint32 _limit) internal view returns (bool) {
+    function _isAncestor(bytes32 _ancestor, bytes32 _descendant, uint256 _limit) internal view returns (bool) {
         bytes32 _current = _descendant;
         /* NB: 200 gas/read, so gas is capped at ~200 * limit */
-        for (uint16 i = 0; i < _limit; i += 1) {
+        for (uint256 i = 0; i < _limit; i = i.add(1)) {
             if (_current == _ancestor) {
                 return true;
             }
@@ -216,7 +224,7 @@ contract Relay {
     /// @param _descendant  The descendant to check
     /// @param _limit       The maximum number of blocks to check
     /// @return             true if ancestor is at most limit blocks lower than descendant, otherwise false
-    function isAncestor(bytes32 _ancestor, bytes32 _descendant, uint32 _limit) external view returns (bool) {
+    function isAncestor(bytes32 _ancestor, bytes32 _descendant, uint256 _limit) external view returns (bool) {
         return _isAncestor(_ancestor, _descendant, _limit);
     }
 
@@ -231,7 +239,7 @@ contract Relay {
         bytes32 _ancestor,
         bytes memory _currentBest,
         bytes memory _newBest,
-        uint32 _limit
+        uint256 _limit
     ) internal returns (bool) {
         require(_currentBest.hash256() == bestKnownDigest, "Passed in best is not best known");
         bytes32 _newBestDigest = _newBest.hash256();
@@ -261,7 +269,7 @@ contract Relay {
         bytes32 _ancestor,
         bytes calldata _currentBest,
         bytes calldata _newBest,
-        uint32 _limit
+        uint256 _limit
     ) external returns (bool) {
         return _markNewHeaviest(_ancestor, _currentBest, _newBest, _limit);
     }
@@ -277,13 +285,13 @@ contract Relay {
         bytes32 _ancestor,
         bytes32 _left,
         bytes32 _right,
-        uint32 _limit
+        uint256 _limit
     ) internal view returns (bool) {
         bytes32 _leftCurrent = _left;
         bytes32 _rightCurrent = _right;
         bytes32 _leftPrev = previousBlock[_leftCurrent];
         bytes32 _rightPrev = previousBlock[_rightCurrent];
-        for(uint32 i = 0; i < _limit; i++) {
+        for(uint256 i = 0; i < _limit; i = i.add(1)) {
             if (_leftPrev != _ancestor) {
                 _leftCurrent = _leftPrev;  // cheap
                 _leftPrev = previousBlock[_leftPrev];  // expensive
@@ -309,7 +317,7 @@ contract Relay {
         bytes32 _ancestor,
         bytes32 _left,
         bytes32 _right,
-        uint32 _limit
+        uint256 _limit
     ) external view returns (bool) {
         return _isMostRecentAncestor(_ancestor, _left, _right, _limit);
     }
@@ -325,15 +333,15 @@ contract Relay {
         bytes memory _left,
         bytes memory _right
     ) internal view returns (bytes32) {
-        uint32 _ancestorHeight = _findHeight(_ancestor);
-        uint32 _leftHeight = _findHeight(_left.hash256());
-        uint32 _rightHeight = _findHeight(_right.hash256());
+        uint256 _ancestorHeight = _findHeight(_ancestor);
+        uint256 _leftHeight = _findHeight(_left.hash256());
+        uint256 _rightHeight = _findHeight(_right.hash256());
 
         require(
             _leftHeight > _ancestorHeight && _rightHeight > _ancestorHeight,
             "A descendant height is below the ancestor height");
 
-        uint32 _nextPeriodStart = _ancestorHeight + (2016 - _ancestorHeight % 2016);
+        uint256 _nextPeriodStart = _ancestorHeight.add(2016).sub(_ancestorHeight % 2016);
         bool _leftInPeriod = _leftHeight < _nextPeriodStart;
         bool _rightInPeriod = _rightHeight < _nextPeriodStart;
 
@@ -350,8 +358,8 @@ contract Relay {
             return _leftHeight >= _rightHeight ? _left.hash256() : _right.hash256();
         }
         if (!_leftInPeriod && !_rightInPeriod) {
-            if (((_leftHeight % 2016) * _left.extractDifficulty()) <
-                (_rightHeight % 2016 * _right.extractDifficulty())) {
+            if (((_leftHeight % 2016).mul(_left.extractDifficulty())) <
+                (_rightHeight % 2016).mul(_right.extractDifficulty())) {
                 return _right.hash256();
             } else {
                 return _left.hash256();
