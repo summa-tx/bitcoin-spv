@@ -350,4 +350,65 @@ contract('BTCUtils', () => {
     res = await instance.verifyHash256Merkle('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 0);
     assert.isFalse(res);
   });
+
+  it('determines VarInt data lengths correctly', async () => {
+    let res;
+
+    res = await instance.determineVarIntDataLength('0x01');
+    assert(res.eq(new BN(0, 10)));
+    res = await instance.determineVarIntDataLength('0xfd');
+    assert(res.eq(new BN(2, 10)));
+    res = await instance.determineVarIntDataLength('0xfe');
+    assert(res.eq(new BN(4, 10)));
+    res = await instance.determineVarIntDataLength('0xff');
+    assert(res.eq(new BN(8, 10)));
+  });
+
+  it('calculates consensus-correct retargets', async () => {
+    /* eslint-disable no-await-in-loop */
+    let firstTimestamp;
+    let secondTimestamp;
+    let previousTarget;
+    let expectedNewTarget;
+    let res;
+    for (let i = 0; i < constants.RETARGET_TUPLES.length; i += 1) {
+      firstTimestamp = constants.RETARGET_TUPLES[i][0].timestamp;
+      secondTimestamp = constants.RETARGET_TUPLES[i][1].timestamp;
+      previousTarget = await instance.extractTarget.call(`0x${constants.RETARGET_TUPLES[i][1].hex}`);
+      expectedNewTarget = await instance.extractTarget.call(`0x${constants.RETARGET_TUPLES[i][2].hex}`);
+      res = await instance.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
+      // (response & expected) == expected
+      // this converts our full-length target into truncated block target
+      assert(res.uand(expectedNewTarget).eq(expectedNewTarget));
+
+      secondTimestamp = firstTimestamp + 5 * 2016 * 10 * 60; // longer than 4x
+      res = await instance.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
+      assert(res.divn(4).uand(previousTarget).eq(previousTarget));
+
+      secondTimestamp = firstTimestamp + 2016 * 10 * 14; // shorter than 1/4x
+      res = await instance.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
+      assert(res.muln(4).uand(previousTarget).eq(previousTarget));
+    }
+    /* eslint-enable no-await-in-loop */
+  });
+
+  it('extracts difficulty from a header', async () => {
+    let actual;
+    let expected;
+    /* eslint-disable no-await-in-loop */
+    for (let i = 0; i < constants.RETARGET_TUPLES.length; i += 1) {
+      actual = await instance.extractDifficulty(`0x${constants.RETARGET_TUPLES[i][0].hex}`);
+      expected = constants.RETARGET_TUPLES[i][0].difficulty;
+      assert(actual.eq(expected));
+
+      actual = await instance.extractDifficulty(`0x${constants.RETARGET_TUPLES[i][1].hex}`);
+      expected = constants.RETARGET_TUPLES[i][1].difficulty;
+      assert(actual.eq(expected));
+
+      actual = await instance.extractDifficulty(`0x${constants.RETARGET_TUPLES[i][2].hex}`);
+      expected = constants.RETARGET_TUPLES[i][2].difficulty;
+      assert(actual.eq(expected));
+    }
+    /* eslint-enable no-await-in-loop */
+  });
 });

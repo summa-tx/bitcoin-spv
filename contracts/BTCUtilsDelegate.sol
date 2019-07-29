@@ -11,6 +11,14 @@ contract BTCUtilsDelegate {
     /* UTILS */
     /* ***** */
 
+    /// @notice         determines the length of a VarInt in bytes
+    /// @dev            a VarInt of >1 byte is prefixed with a flag indicating its length
+    /// @param _flag    the first byte of a VarInt
+    /// @return         the number of non-flag bytes in the VarInt
+    function determineVarIntDataLength(bytes memory _flag) public pure returns (uint256) {
+        return BTCUtils.determineVarIntDataLength(_flag);
+    }
+
     /// @notice          Changes the endianness of a byte array
     /// @dev             Returns a new, backwards, bytes
     /// @param _b        The bytes to reverse
@@ -328,6 +336,14 @@ contract BTCUtilsDelegate {
         return BTCUtils.extractTimestamp(_header);
     }
 
+    /// @notice          Extracts the expected difficulty from a block header
+    /// @dev             Does NOT verify the work
+    /// @param _header   The header
+    /// @return          The difficulty as an integer
+    function extractDifficulty(bytes memory _header) public pure returns (uint256) {
+        return BTCUtils.extractDifficulty(_header);
+    }
+
     /// @notice          Concatenates and hashes two inputs for merkle proving
     /// @param _a        The first hash
     /// @param _b        The second hash
@@ -343,5 +359,25 @@ contract BTCUtilsDelegate {
     /// @return          true if the proof is valid, else false
     function verifyHash256Merkle(bytes memory _proof, uint _index) public pure returns (bool) {
         return BTCUtils.verifyHash256Merkle(_proof, _index);
+    }
+
+    /*
+    NB: https://github.com/bitcoin/bitcoin/blob/78dae8caccd82cfbfd76557f1fb7d7557c7b5edb/src/pow.cpp#L49-L72
+    NB: We get a full-bitlength target from this. For comparison with
+        header-encoded targets we need to mask it with the header target
+        e.g. (full & truncated) == truncated
+    */
+    /// @notice                 performs the bitcoin difficulty retarget
+    /// @dev                    implements the Bitcoin algorithm precisely
+    /// @param _previousTarget  the target of the previous period
+    /// @param _firstTimestamp  the timestamp of the first block in the difficulty period
+    /// @param _secondTimestamp the timestamp of the last block in the difficulty period
+    /// @return                 the new period's target threshold
+    function retargetAlgorithm(
+        uint256 _previousTarget,
+        uint256 _firstTimestamp,
+        uint256 _secondTimestamp
+    ) public pure returns (uint256) {
+        return BTCUtils.retargetAlgorithm(_previousTarget, _firstTimestamp, _secondTimestamp);
     }
 }
