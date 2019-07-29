@@ -6,7 +6,7 @@ pragma solidity ^0.5.10;
 import {ValidateSPV} from "./ValidateSPV.sol";
 
 
-contract ValidateSPVDelegate {
+library ValidateSPVDelegate {
     /// @notice                 Valides a tx inclusion in the block
     /// @param _txid            The txid (LE)
     /// @param _merkleRoot      The merkle root

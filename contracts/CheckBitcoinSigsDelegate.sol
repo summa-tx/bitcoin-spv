@@ -5,7 +5,7 @@ pragma solidity ^0.5.10;
 
 import {CheckBitcoinSigs} from "./CheckBitcoinSigs.sol";
 
-contract CheckBitcoinSigsDelegate {
+library CheckBitcoinSigsDelegate {
 
     function accountFromPubkey(bytes memory _pubkey) public pure returns (address) {
         return CheckBitcoinSigs.accountFromPubkey(_pubkey);
