@@ -123,7 +123,6 @@ contract Relay is IRelay {
                 if (_height % 4 == 0) {
                     /*
                     NB: We store the height only every 4th header to save gas
-                        If you're thinking of increasing n, we advise 2016 % n == 0
                     */
                     blockHeight[_currentDigest] = _height;
                 }
