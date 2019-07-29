@@ -364,7 +364,7 @@ contract('BTCUtils', () => {
     assert(res.eq(new BN(8, 10)));
   });
 
-  it('calculates consenus-correct retargets', async () => {
+  it('calculates consensus-correct retargets', async () => {
     /* eslint-disable no-await-in-loop */
     let firstTimestamp;
     let secondTimestamp;

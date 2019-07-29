@@ -389,9 +389,9 @@ library BTCUtils {
     /// @return          The target threshold
     function extractTarget(bytes memory _header) internal pure returns (uint256) {
         bytes memory _m = _header.slice(72, 3);
-        bytes memory _e = _header.slice(75, 1);
+        uint8 _e = uint8(_header[75]);
         uint256 _mantissa = bytesToUint(reverseEndianness(_m));
-        uint _exponent = bytesToUint(_e) - 3;
+        uint _exponent = _e - 3;
 
         return _mantissa * (256 ** _exponent);
     }
