@@ -9,13 +9,51 @@ import {BTCUtils} from "./BTCUtils.sol";
 import {ValidateSPV} from "./ValidateSPV.sol";
 
 
-contract Relay {
+interface IRelay {
+    function isMostRecentAncestor(
+        bytes32 _ancestor,
+        bytes32 _left,
+        bytes32 _right,
+        uint256 _limit
+    ) external view returns (bool);
+
+    function findHeight(bytes32 _digest) external view returns (uint256);
+
+    function findAncestor(bytes32 _digest, uint256 _offset) external view returns (bytes32);
+
+    function isAncestor(bytes32 _ancestor, bytes32 _descendant, uint256 _limit) external view returns (bool);
+
+    function heaviestFromAncestor(
+        bytes32 _ancestor,
+        bytes calldata _left,
+        bytes calldata _right
+    ) external view returns (bytes32);
+
+    function addHeaders(bytes calldata _anchor, bytes calldata _headers) external returns (bool);
+
+    function addHeadersWithRetarget(
+        bytes calldata _oldPeriodStart,
+        bytes calldata _oldPeriodEnd,
+        bytes calldata _headers
+    ) external returns (bool);
+
+    function markNewHeaviest(
+        bytes32 _ancestor,
+        bytes calldata _currentBest,
+        bytes calldata _newBest,
+        uint256 _limit
+    ) external returns (bool);
+}
+
+
+contract Relay is IRelay {
     using SafeMath for uint256;
     using BytesLib for bytes;
     using BTCUtils for bytes;
     using ValidateSPV for bytes;
 
     event Extension(bytes32 indexed _first, bytes32 indexed _last);
+    event Reorg(bytes32 indexed _from, bytes32 indexed _to, bytes32 indexed _gcd);
 
     bytes32 public relayGenesis;
     bytes32 public bestKnownDigest;
@@ -168,7 +206,7 @@ contract Relay {
                 return _height.add(i);
             }
         }
-        require(false, "Unknown block");
+        revert("Unknown block");
     }
 
     /// @notice         Finds the height of a header by its digest
@@ -241,8 +279,9 @@ contract Relay {
         bytes memory _newBest,
         uint256 _limit
     ) internal returns (bool) {
-        require(_currentBest.hash256() == bestKnownDigest, "Passed in best is not best known");
         bytes32 _newBestDigest = _newBest.hash256();
+        bytes32 _currentBestDigest = _currentBest.hash256();
+        require(_currentBestDigest == bestKnownDigest, "Passed in best is not best known");
         require(
             previousBlock[_newBestDigest] != bytes32(0),
             "New best is unknown");
@@ -255,6 +294,10 @@ contract Relay {
 
         bestKnownDigest = _newBestDigest;
         lastReorgCommonAncestor = _ancestor;
+        emit Reorg(
+            _currentBestDigest,
+            _newBestDigest,
+            _ancestor);
         return true;
     }
 
@@ -287,10 +330,16 @@ contract Relay {
         bytes32 _right,
         uint256 _limit
     ) internal view returns (bool) {
+        /* NB: sure why not */
+        if (_ancestor == _left && _ancestor == _right) {
+            return true;
+        }
+
         bytes32 _leftCurrent = _left;
         bytes32 _rightCurrent = _right;
-        bytes32 _leftPrev = previousBlock[_leftCurrent];
-        bytes32 _rightPrev = previousBlock[_rightCurrent];
+        bytes32 _leftPrev = _left;
+        bytes32 _rightPrev = _right;
+
         for(uint256 i = 0; i < _limit; i = i.add(1)) {
             if (_leftPrev != _ancestor) {
                 _leftCurrent = _leftPrev;  // cheap
@@ -338,12 +387,13 @@ contract Relay {
         uint256 _rightHeight = _findHeight(_right.hash256());
 
         require(
-            _leftHeight > _ancestorHeight && _rightHeight > _ancestorHeight,
+            _leftHeight >= _ancestorHeight && _rightHeight >= _ancestorHeight,
             "A descendant height is below the ancestor height");
 
-        uint256 _nextPeriodStart = _ancestorHeight.add(2016).sub(_ancestorHeight % 2016);
-        bool _leftInPeriod = _leftHeight < _nextPeriodStart;
-        bool _rightInPeriod = _rightHeight < _nextPeriodStart;
+        /* NB: we can shortcut if one block is in a new difficulty window and the other isn't */
+        uint256 _nextPeriodStartHeight = _ancestorHeight.add(2016).sub(_ancestorHeight % 2016);
+        bool _leftInPeriod = _leftHeight < _nextPeriodStartHeight;
+        bool _rightInPeriod = _rightHeight < _nextPeriodStartHeight;
 
         /*
         NB:
@@ -356,8 +406,7 @@ contract Relay {
         if (_leftInPeriod && !_rightInPeriod) {return _right.hash256();}
         if (_leftInPeriod && _rightInPeriod) {
             return _leftHeight >= _rightHeight ? _left.hash256() : _right.hash256();
-        }
-        if (!_leftInPeriod && !_rightInPeriod) {
+        } else {  // if (!_leftInPeriod && !_rightInPeriod) {
             if (((_leftHeight % 2016).mul(_left.extractDifficulty())) <
                 (_rightHeight % 2016).mul(_right.extractDifficulty())) {
                 return _right.hash256();
