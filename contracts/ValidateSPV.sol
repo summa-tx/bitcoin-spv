@@ -18,10 +18,21 @@ library ValidateSPV {
     enum InputTypes { NONE, LEGACY, COMPATIBILITY, WITNESS }
     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH, NONSTANDARD }
 
-    uint256 public constant ERR_BAD_LENGTH = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-    uint256 public constant ERR_INVALID_CHAIN = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe;
-    uint256 public constant ERR_LOW_WORK = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd;
+    uint256 constant ERR_BAD_LENGTH = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+    uint256 constant ERR_INVALID_CHAIN = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe;
+    uint256 constant ERR_LOW_WORK = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd;
 
+    function getErrBadLength() internal pure returns (uint256) {
+        return ERR_BAD_LENGTH;
+    }
+
+    function getErrInvalidChain() internal pure returns (uint256) {
+        return ERR_INVALID_CHAIN;
+    }
+
+    function getErrLowWork() internal pure returns (uint256) {
+        return ERR_LOW_WORK;
+    }
 
     /// @notice                     Validates a tx inclusion in the block
     /// @param _txid                The txid (LE)

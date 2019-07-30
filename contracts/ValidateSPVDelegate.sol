@@ -7,6 +7,18 @@ import {ValidateSPV} from "./ValidateSPV.sol";
 
 
 library ValidateSPVDelegate {
+    function getErrBadLength() public pure returns (uint256) {
+        return ValidateSPV.getErrBadLength();
+    }
+
+    function getErrInvalidChain() public pure returns (uint256) {
+        return ValidateSPV.getErrInvalidChain();
+    }
+
+    function getErrLowWork() public pure returns (uint256) {
+        return ValidateSPV.getErrLowWork();
+    }
+
     /// @notice                 Valides a tx inclusion in the block
     /// @param _txid            The txid (LE)
     /// @param _merkleRoot      The merkle root
