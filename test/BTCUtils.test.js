@@ -151,9 +151,17 @@ contract('BTCUtils', () => {
     res = await instance.extractHash('0x00000000000000001976a914FFFF');
     assert.isNull(res);
 
+    // good p2pkh
+    res = await instance.extractHash('0x00000000000000001976a914000000000000000000000000000000000000000088ac');
+    assert.equal(res, `0x${'00'.repeat(20)}`);
+
     // malformatted p2sh
     res = await instance.extractHash('0x000000000000000017a914FF');
     assert.isNull(res);
+
+    // good p2sh
+    res = await instance.extractHash('0x000000000000000017a914000000000000000000000000000000000000000087');
+    assert.equal(res, `0x${'00'.repeat(20)}`);
   });
 
   it('extracts the value as LE and int', async () => {

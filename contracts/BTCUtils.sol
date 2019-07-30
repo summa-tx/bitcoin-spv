@@ -339,22 +339,22 @@ library BTCUtils {
             }
             return _output.slice(11, _len);
         } else {
-            bytes32 _tag = keccak256(_output.slice(9, 3));
+            bytes32 _tag = keccak256(_output.slice(8, 3));
             // p2pkh
             if (_tag == keccak256(hex"1976a9")) {
                 // Check for maliciously formatted p2pkh
-                if (uint8(_output.slice(12, 1)[0]) != 14 ||
+                if (uint8(_output.slice(11, 1)[0]) != 0x14 ||
                     keccak256(_output.slice(_output.length - 2, 2)) != keccak256(hex"88ac")) {
                     return hex"";
                 }
-                return _output.slice(13, 20);
+                return _output.slice(12, 20);
             //p2sh
             } else if (_tag == keccak256(hex"17a914")) {
                 // Check for maliciously formatted p2sh
                 if (uint8(_output.slice(_output.length - 1, 1)[0]) != 0x87) {
                     return hex"";
                 }
-                return _output.slice(12, 20);
+                return _output.slice(11, 20);
             }
         }
         return hex"";  /* NB: will trigger on OPRETURN and non-standard that don't overrun */
