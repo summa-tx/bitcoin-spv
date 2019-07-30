@@ -2,7 +2,7 @@
 const BN = require('bn.js');
 const constants = require('./constants');
 
-const BTCUtilsDelegate = artifacts.require('BTCUtilsDelegate');
+const BTCUtilsDelegate = artifacts.require('BTCUtilsTest');
 
 
 const HEADER_170 = '0x0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70';
@@ -138,6 +138,22 @@ contract('BTCUtils', () => {
 
     res = await instance.extractHash(opReturnOutput);
     assert.isNull(res);
+
+    // malformatted witness
+    res = await instance.extractHash('0x0000000000000000220017');
+    assert.isNull(res);
+
+    // malformatted p2pkh
+    res = await instance.extractHash('0x00000000000000001976a912');
+    assert.isNull(res);
+
+    // malformatted p2pkh
+    res = await instance.extractHash('0x00000000000000001976a914FFFF');
+    assert.isNull(res);
+
+    // malformatted p2sh
+    res = await instance.extractHash('0x000000000000000017a914FF');
+    assert.isNull(res);
   });
 
   it('extracts the value as LE and int', async () => {
@@ -194,20 +210,19 @@ contract('BTCUtils', () => {
     assert.equal(res, '0x01ee');
   });
 
-  it('extracts the length of the scriptSig from inputs', async () => {
+  it('extracts the length of the VarInt and scriptSig from inputs', async () => {
     let res;
     res = await instance.extractScriptSigLen(constants.OP_RETURN.INPUTS);
-    assert(res.eq(new BN('0', 10)));
+    assert(res[0].eq(new BN('0', 10)));
+    assert(res[1].eq(new BN('0', 10)));
 
     res = await instance.extractScriptSigLen('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff');
-    assert(res.eq(new BN('1', 10)));
+    assert(res[0].eq(new BN('0', 10)));
+    assert(res[1].eq(new BN('1', 10)));
 
-    try {
-      res = await instance.extractScriptSigLen('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000FFffffffff');
-      assert(false, 'Expected an error');
-    } catch (e) {
-      assert.include(e.message, 'Multi-byte VarInts not supported');
-    }
+    res = await instance.extractScriptSigLen('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000FF0000000000000000ffffffff');
+    assert(res[0].eq(new BN('8', 10)));
+    assert(res[1].eq(new BN('0', 10)));
   });
 
   it('validates vin length based on stated size', async () => {

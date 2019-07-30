@@ -1,7 +1,7 @@
 /* global artifacts contract describe before it assert */
 const constants = require('./constants');
 
-const CheckBitcoinSigs = artifacts.require('CheckBitcoinSigsDelegate');
+const CheckBitcoinSigs = artifacts.require('CheckBitcoinSigsTest');
 
 
 contract('CheckBitcoinSigs', async () => {

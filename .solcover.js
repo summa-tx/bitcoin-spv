@@ -4,5 +4,6 @@ module.exports = {
                 'SafeMath.sol',
                 'BTCUtilsDelegate.sol',
                 'ValidateSPVDelegate.sol',
-                'CheckBitcoinSigsDelegate.sol']
+                'CheckBitcoinSigsDelegate.sol',
+                'test']
 };
