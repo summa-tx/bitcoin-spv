@@ -15,7 +15,24 @@ library ValidateSPV {
     using BytesLib for bytes;
     using SafeMath for uint256;
 
+    uint256 constant ERR_BAD_LENGTH = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+    uint256 constant ERR_INVALID_CHAIN = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe;
+    uint256 constant ERR_LOW_WORK = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd;
+
+
     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH }
+
+    function getErrBadLength() public constant returns (uint256) {
+        return ERR_BAD_LENGTH;
+    }
+
+    function getErrInvalidChain() public constant returns (uint256) {
+        return ERR_INVALID_CHAIN;
+    }
+
+    function getErroLowWork() public constant returns (uint256) {
+        return ERR_LOW_WORK;
+    }
 
     /// @notice                 Valides a tx inclusion in the block
     /// @param _txid            The txid (LE)
@@ -63,7 +80,7 @@ library ValidateSPV {
 
         // Extract prefix and validate, if invalid, bubble up error
         bytes memory _prefix = _tx.extractPrefix();
-        if (!validatePrefix(_prefix)) { 
+        if (!validatePrefix(_prefix)) {
             return (_nInputs, _inputs, _nOutputs, _outputs, _locktime, _txid);
         }
 
@@ -72,13 +89,13 @@ library ValidateSPV {
 
         // Extract number of inputs and inputs, if _nInputs is 0, bubble up error
         (_nInputs, _inputs) = extractAllInputs(_tx);
-        if (keccak256(_nInputs) == keccak256(hex'00')) { 
-            return (_nInputs, _inputs, _nOutputs, _outputs, _locktime, _txid); 
+        if (keccak256(_nInputs) == keccak256(hex'00')) {
+            return (_nInputs, _inputs, _nOutputs, _outputs, _locktime, _txid);
         }
 
         // Extract number of outputs and outputs, if _nOutputs is 0, bubble up error
         (_nOutputs, _outputs) = extractAllOutputs(_tx);
-        if (keccak256(_nOutputs) == keccak256(hex'00')) { 
+        if (keccak256(_nOutputs) == keccak256(hex'00')) {
             return (_nInputs, _inputs, _nOutputs, _outputs, _locktime, _txid);
         }
 
@@ -215,8 +232,8 @@ library ValidateSPV {
         uint32 _nonce
     ) {
         // If header has an invalid length, bubble up error
-        if (_header.length != 80) { 
-            return(_digest, _version, _prevHash, _merkleRoot, _timestamp, _target, _nonce); 
+        if (_header.length != 80) {
+            return(_digest, _version, _prevHash, _merkleRoot, _timestamp, _target, _nonce);
         }
 
         _digest = abi.encodePacked(_header.hash256()).reverseEndianness().toBytes32();
@@ -237,7 +254,7 @@ library ValidateSPV {
     function validateHeaderChain(bytes memory _headers) public pure returns (uint256 _reqDiff) {
 
         // Check header chain length
-        if (_headers.length % 80 != 0) { return 1; }
+        if (_headers.length % 80 != 0) { return ERR_BAD_LENGTH; }
 
         // Initialize header start index
         bytes32 _digest;
@@ -253,7 +270,7 @@ library ValidateSPV {
 
             // After the first header, check that headers are in a chain
             if (i != 0) {
-                if (!validateHeaderPrevHash(_header, _digest)) { return 2; }
+                if (!validateHeaderPrevHash(_header, _digest)) { return ERR_INVALID_CHAIN; }
             }
 
             // ith header target
@@ -262,7 +279,7 @@ library ValidateSPV {
             // Require that the header has sufficient work
             _digest = _header.hash256();
             if(abi.encodePacked(_digest).reverseEndianness().bytesToUint() > _target) {
-                return 3;
+                return ERR_LOW_WORK;
             }
 
             // Add ith header difficulty to difficulty sum
