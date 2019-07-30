@@ -216,6 +216,12 @@ contract('BTCUtils', () => {
 
     res = await instance.extractScriptSig('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff');
     assert.equal(res, '0x01ee');
+
+    res = await instance.extractScriptSig('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff');
+    assert.equal(res, '0xfd0100ee');
+
+    res = await instance.extractScriptSig('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff');
+    assert.equal(res, '0xfe01000000ee');
   });
 
   it('extracts the length of the VarInt and scriptSig from inputs', async () => {
