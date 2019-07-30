@@ -16,7 +16,7 @@ contract('ValidateSPV', () => {
     instance = await ValidateSPV.new();
   });
 
-  describe.only('#error constants', async () => {
+  describe('#error constants', async () => {
     it('tests the constant getters for that sweet sweet coverage', async () => {
       let res = await instance.getErrBadLength.call();
       assert(res.eq(new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)));
