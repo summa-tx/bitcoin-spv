@@ -16,6 +16,19 @@ contract('ValidateSPV', () => {
     instance = await ValidateSPV.new();
   });
 
+  describe.only('#error constants', async () => {
+    it('tests the constant getters for that sweet sweet coverage', async () => {
+      let res = await instance.getErrBadLength.call();
+      assert(res.eq(new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)));
+
+      res = await instance.getErrInvalidChain.call();
+      assert(res.eq(new BN('fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe', 16)));
+
+      res = await instance.getErrLowWork.call();
+      assert(res.eq(new BN('fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd', 16)));
+    });
+  });
+
   describe('#prove', async () => {
     it('returns true if proof is valid', async () => {
       const res = await instance.prove(
