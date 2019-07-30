@@ -219,21 +219,21 @@ contract('ValidateSPV', () => {
       assert(res.eq(new BN('49134394618239', 10)));
     });
 
-    it('returns 1 if header chain is not divisible by 80', async () => {
+    it('returns ERR_BAD_LENGTH if header chain is not divisible by 80', async () => {
       const res = await instance.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_INVALID_LEN);
-      assert(res.eq(new BN('1', 10)));
+      assert(res.eq(new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)));
     });
 
-    it('returns 2 if header chain prevHash is invalid', async () => {
+    it('returns ERR_INVALID_CHAIN if header chain prevHash is invalid', async () => {
       const res = await instance.validateHeaderChain(
         constants.HEADER_ERR.HEADER_CHAIN_INVALID_PREVHASH
       );
-      assert(res.eq(new BN('2', 10)));
+      assert(res.eq(new BN('fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe', 16)));
     });
 
-    it('returns 3 if a header does not meet its target', async () => {
+    it('returns ERR_LOW_WORK if a header does not meet its target', async () => {
       const res = await instance.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_LOW_WORK);
-      assert(res.eq(new BN('3', 10)));
+      assert(res.eq(new BN('fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd', 16)));
     });
   });
 
