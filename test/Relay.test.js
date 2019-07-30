@@ -132,7 +132,7 @@ contract('Relay', async () => {
         await instance.addHeaders(genesis.hex, badHeaders);
         assert(false);
       } catch (e) {
-        assert.include(e.message, 'Headers not a consistent chain');
+        assert.include(e.message, 'Headers do not form a consistent chain');
       }
     });
 

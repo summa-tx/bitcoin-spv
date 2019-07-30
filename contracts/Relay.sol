@@ -32,8 +32,8 @@ interface IRelay {
     function addHeaders(bytes calldata _anchor, bytes calldata _headers) external returns (bool);
 
     function addHeadersWithRetarget(
-        bytes calldata _oldPeriodStart,
-        bytes calldata _oldPeriodEnd,
+        bytes calldata _oldPeriodStartHeader,
+        bytes calldata _oldPeriodEndHeader,
         bytes calldata _headers
     ) external returns (bool);
 
@@ -106,14 +106,13 @@ contract Relay is IRelay {
         */
         for (uint256 i = 0; i < _headers.length / 80; i = i.add(1)) {
             _header = _headers.slice(i.mul(80), 80);
-            _height = _anchorHeight.add(i).add(1);
+            _height = _anchorHeight.add(i + 1);
             _currentDigest = _header.hash256();
 
             /*
             NB:
             if the block is already authenticated, we don't need to a work check
-            Or write it anything to state.
-            This saves gas
+            Or write anything to state. This saves gas
             */
             if (previousBlock[_currentDigest] == bytes32(0)) {
                 require(
@@ -130,7 +129,7 @@ contract Relay is IRelay {
 
             /* NB: we do still need to make chain level checks tho */
             require(_header.extractTarget() == _target, "Target changed unexpectedly");
-            require(_header.validateHeaderPrevHash(_previousDigest), "Headers not a consistent chain");
+            require(_header.validateHeaderPrevHash(_previousDigest), "Headers do not form a consistent chain");
 
             _previousDigest = _currentDigest;
         }
@@ -150,22 +149,22 @@ contract Relay is IRelay {
         return _addHeaders(_anchor, _headers, false);
     }
 
-    /// @notice                 Adds headers to storage, performs additional validation of retarget
-    /// @dev                    Checks the retarget, the heights, and the linkage
-    /// @param  _oldPeriodStart The first header in the difficulty period being closed
-    /// @param  _oldPeriodEnd   The last header in the difficulty period being closed
-    /// @param  _headers        A tightly-packed list of 80-byte Bitcoin headers
-    /// @return                 True if successfully written, error otherwise
+    /// @notice                       Adds headers to storage, performs additional validation of retarget
+    /// @dev                          Checks the retarget, the heights, and the linkage
+    /// @param  _oldPeriodStartHeader The first header in the difficulty period being closed
+    /// @param  _oldPeriodEndHeader   The last header in the difficulty period being closed
+    /// @param  _headers              A tightly-packed list of 80-byte Bitcoin headers
+    /// @return                       True if successfully written, error otherwise
     function addHeadersWithRetarget(
-        bytes calldata _oldPeriodStart,
-        bytes calldata _oldPeriodEnd,
+        bytes calldata _oldPeriodStartHeader,
+        bytes calldata _oldPeriodEndHeader,
         bytes calldata _headers
     ) external returns (bool) {
         bytes memory _newPeriodStart = _headers.slice(0, 80);
 
         /* NB: requires that both blocks are known */
-        uint256 _startHeight = _findHeight(_oldPeriodStart.hash256());
-        uint256 _endHeight = _findHeight(_oldPeriodEnd.hash256());
+        uint256 _startHeight = _findHeight(_oldPeriodStartHeader.hash256());
+        uint256 _endHeight = _findHeight(_oldPeriodEndHeader.hash256());
 
         /* NB: retargets should happen at 2016 block intervals */
         require(
@@ -178,16 +177,16 @@ contract Relay is IRelay {
         /* NB: This comparison looks weird because header nBits encoding truncates targes */
         uint256 _actualTarget = _newPeriodStart.extractTarget();
         uint256 _expectedTarget = BTCUtils.retargetAlgorithm(
-            _oldPeriodStart.extractTarget(),
-            _oldPeriodStart.extractTimestamp(),
-            _oldPeriodEnd.extractTimestamp()
+            _oldPeriodStartHeader.extractTarget(),
+            _oldPeriodStartHeader.extractTimestamp(),
+            _oldPeriodEndHeader.extractTimestamp()
         );
         require(
             (_actualTarget & _expectedTarget) == _actualTarget,
             "Invalid retarget provided");
 
         // Pass all but the first through to be added
-        return _addHeaders(_oldPeriodEnd, _headers, true);
+        return _addHeaders(_oldPeriodEndHeader, _headers, true);
     }
 
     /// @notice         Finds the height of a header by its digest
