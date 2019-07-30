@@ -18,6 +18,10 @@ library ValidateSPV {
     enum InputTypes { NONE, LEGACY, COMPATIBILITY, WITNESS }
     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH, NONSTANDARD }
 
+    uint256 public constant ERR_BAD_LENGTH = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+    uint256 public constant ERR_INVALID_CHAIN = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe;
+    uint256 public constant ERR_LOW_WORK = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd;
+
 
     /// @notice                     Validates a tx inclusion in the block
     /// @param _txid                The txid (LE)
@@ -152,17 +156,17 @@ library ValidateSPV {
     /// @notice             Checks validity of header chain
     /// @notice             Compares the hash of each header to the prevHash in the next header
     /// @param _headers     Raw byte array of header chain
-    /// @return             The total accumulated difficulty of the header chain
-    function validateHeaderChain(bytes memory _headers) internal pure returns (uint256 _reqDiff) {
+    /// @return             The total accumulated difficulty of the header chain, or an error code
+    function validateHeaderChain(bytes memory _headers) internal pure returns (uint256 _totalDifficulty) {
 
         // Check header chain length
-        if (_headers.length % 80 != 0) {return 1;}
+        if (_headers.length % 80 != 0) {return ERR_BAD_LENGTH;}
 
         // Initialize header start index
         bytes32 _digest;
         uint256 _start = 0;
 
-        _reqDiff = 0;
+        _totalDifficulty = 0;
 
         for (uint i = 0; i < _headers.length / 80; i++) {
 
@@ -172,7 +176,7 @@ library ValidateSPV {
 
             // After the first header, check that headers are in a chain
             if (i != 0) {
-                if (!validateHeaderPrevHash(_header, _digest)) {return 2;}
+                if (!validateHeaderPrevHash(_header, _digest)) {return ERR_INVALID_CHAIN;}
             }
 
             // ith header target
@@ -181,11 +185,11 @@ library ValidateSPV {
             // Require that the header has sufficient work
             _digest = _header.hash256();
             if(abi.encodePacked(_digest).reverseEndianness().bytesToUint() > _target) {
-                return 3;
+                return ERR_LOW_WORK;
             }
 
             // Add ith header difficulty to difficulty sum
-            _reqDiff = _reqDiff.add(_target.calculateDifficulty());
+            _totalDifficulty = _totalDifficulty.add(_target.calculateDifficulty());
         }
     }
 
