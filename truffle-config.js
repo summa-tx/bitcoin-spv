@@ -95,7 +95,7 @@ module.exports = {
     reporterOptions : {
       excludeContracts: [],
       currency: 'USD',
-      gasPrice: 21
+      gasPrice: 10
     }
   },
 

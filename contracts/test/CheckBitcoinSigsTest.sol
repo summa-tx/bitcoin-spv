@@ -3,9 +3,9 @@ pragma solidity ^0.5.10;
 /** @title ValidateSPV*/
 /** @author Summa (https://summa.one) */
 
-import {CheckBitcoinSigs} from "./CheckBitcoinSigs.sol";
+import {CheckBitcoinSigs} from "../CheckBitcoinSigs.sol";
 
-library CheckBitcoinSigsDelegate {
+contract CheckBitcoinSigsTest {
 
     /// @notice          Derives an Ethereum Account address from a pubkey
     /// @dev             The address is the last 20 bytes of the keccak256 of the address

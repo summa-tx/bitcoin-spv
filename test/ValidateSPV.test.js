@@ -2,7 +2,7 @@
 /* eslint-disable no-underscore-dangle */
 const BN = require('bn.js');
 
-const ValidateSPV = artifacts.require('ValidateSPVDelegate');
+const ValidateSPV = artifacts.require('ValidateSPVTest');
 const utils = require('./utils');
 const constants = require('./constants');
 

@@ -12,10 +12,10 @@ library CheckBitcoinSigs {
     using BytesLib for bytes;
     using BTCUtils for bytes;
 
-    /// @notice          derives an Ethereum Account address from a pubkey
-    /// @dev             the address is the last 20 bytes of the keccak256 of the address
-    /// @param _pubkey   the public key
-    /// @return          the account address
+    /// @notice          Derives an Ethereum Account address from a pubkey
+    /// @dev             The address is the last 20 bytes of the keccak256 of the address
+    /// @param _pubkey   The public key X & Y. Unprefixed, as a 64-byte array
+    /// @return          The account address
     function accountFromPubkey(bytes memory _pubkey) internal pure returns (address) {
         require(_pubkey.length == 64, "Pubkey must be 64-byte raw, uncompressed key.");
 
@@ -24,27 +24,27 @@ library CheckBitcoinSigs {
         return address(uint160(uint256(_digest)));
     }
 
-    /// @notice          calculates the p2wpkh output script of a pubkey
-    /// @dev             pads uncompressed pubkeys to 65 bytes as required by Bitcoin
-    /// @param _pubkey   the public key
-    /// @return          the p2wkph output script
+    /// @notice          Calculates the p2wpkh output script of a pubkey
+    /// @dev             Compresses keys to 33 bytes as required by Bitcoin
+    /// @param _pubkey   The public key, compressed or uncompressed
+    /// @return          The p2wkph output script
     function p2wpkhFromPubkey(bytes memory _pubkey) internal pure returns (bytes memory) {
-        bytes memory _pub;
+        bytes memory _compressedPubkey;
         uint8 _prefix;
 
         if (_pubkey.length == 64) {
             _prefix = uint8(_pubkey[_pubkey.length - 1]) % 2 == 1 ? 3 : 2;
-            _pub = abi.encodePacked(_prefix, _pubkey.slice(0, 32));
+            _compressedPubkey = abi.encodePacked(_prefix, _pubkey.slice(0, 32));
         } else if (_pubkey.length == 65) {
             _prefix = uint8(_pubkey[_pubkey.length - 1]) % 2 == 1 ? 3 : 2;
-            _pub = abi.encodePacked(_prefix, _pubkey.slice(1, 32));
+            _compressedPubkey = abi.encodePacked(_prefix, _pubkey.slice(1, 32));
         } else {
-            _pub = _pubkey;
+            _compressedPubkey = _pubkey;
         }
 
-        require(_pub.length == 33, "Witness PKH requires compressed keys");
+        require(_compressedPubkey.length == 33, "Witness PKH requires compressed keys");
 
-        bytes memory _pubkeyHash = _pub.hash160();
+        bytes memory _pubkeyHash = _compressedPubkey.hash160();
         return abi.encodePacked(hex"0014", _pubkeyHash);
     }
 
@@ -99,7 +99,7 @@ library CheckBitcoinSigs {
     /// @dev                this is NOT the hash256!  this step is necessary for ECDSA security!
     /// @param _digest      the digest
     /// @param _candidate   the purported preimage
-    /// @return             the p2wkph output script
+    /// @return             true if the preimage matches the digest, else false
     function isSha256Preimage(
         bytes memory _candidate,
         bytes32 _digest
@@ -111,14 +111,13 @@ library CheckBitcoinSigs {
     /// @dev                this step is necessary for ECDSA security!
     /// @param _digest      the digest
     /// @param _candidate   the purported preimage
-    /// @return             the p2wkph output script
+    /// @return             true if the preimage matches the digest, else false
     function isKeccak256Preimage(
         bytes memory _candidate,
         bytes32 _digest
     ) internal pure returns (bool) {
         return keccak256(_candidate) == _digest;
     }
-
 
     /// @notice                 calculates the signature hash of a Bitcoin transaction with the provided details
     /// @dev                    documented in bip143. many values are hardcoded here

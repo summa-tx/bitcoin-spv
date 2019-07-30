@@ -3,9 +3,9 @@ pragma solidity ^0.5.10;
 /** @title BitcoinSPV */
 /** @author Summa (https://summa.one) */
 
-import {BTCUtils} from "./BTCUtils.sol";
+import {BTCUtils} from "../BTCUtils.sol";
 
-library BTCUtilsDelegate {
+contract BTCUtilsTest {
 
     /* ***** */
     /* UTILS */

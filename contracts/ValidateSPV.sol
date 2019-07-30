@@ -21,7 +21,7 @@ library ValidateSPV {
 
     /// @notice                     Validates a tx inclusion in the block
     /// @param _txid                The txid (LE)
-    /// @param _merkleRoot          The merkle root
+    /// @param _merkleRoot          The merkle root (as in the block header)
     /// @param _intermediateNodes   The proof's intermediate nodes (digests between leaf and root)
     /// @param _index               The leaf's index in the tree (0-indexed)
     /// @return                     true if fully valid, false otherwise
@@ -42,7 +42,7 @@ library ValidateSPV {
     }
 
     /// @notice             Hashes transaction to get txid
-    /// @dev                This supports legacy now
+    /// @dev                Supports Legacy and Witness
     /// @param _version     4-bytes version
     /// @param _vin         Raw bytes length-prefixed input vector
     /// @param _vout        Raw bytes length-prefixed output vector
@@ -54,12 +54,12 @@ library ValidateSPV {
         bytes memory _vout,
         bytes memory _locktime
     ) internal pure returns (bytes32) {
-        // Get transaction hash dSha256(version + nIns + inputs + nOuts + outputs + locktime)
+        // Get transaction hash double-Sha256(version + nIns + inputs + nOuts + outputs + locktime)
         return abi.encodePacked(_version, _vin, _vout, _locktime).hash256();
     }
 
     /// @notice         Parses a tx input from raw input bytes
-    /// @dev            Supports Legacy Inputs now too
+    /// @dev            Supports Legacy and Witness inputs
     /// @param _input   Raw bytes tx input
     /// @return         Tx input sequence number, tx hash, and index
     function parseInput(bytes memory _input) internal pure returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {
@@ -84,7 +84,7 @@ library ValidateSPV {
     }
 
     /// @notice         Parses a tx output from raw output bytes
-    /// @dev            Differentiates by output script prefix
+    /// @dev            Differentiates by output script prefix, handles legacy and witness
     /// @param _output  Raw bytes tx output
     /// @return         Tx output value, output type, payload
     function parseOutput(bytes memory _output) internal pure returns (uint64 _value, uint8 _outputType, bytes memory _payload) {
