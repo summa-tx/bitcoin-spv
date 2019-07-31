@@ -10,7 +10,7 @@
         "test": "truffle test"
     },
     "author": "",
-    "license": "NONE",
+    "license": "LGPLv3",
     "dependencies": {
         "bn.js": "^5.0.0",
         "create-hash": "^1.2.0",
