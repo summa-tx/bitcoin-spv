@@ -19,18 +19,17 @@ library ValidateSPV {
     uint256 constant ERR_INVALID_CHAIN = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe;
     uint256 constant ERR_LOW_WORK = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd;
 
-
     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH }
 
-    function getErrBadLength() public constant returns (uint256) {
+    function getErrBadLength() public view returns (uint256) {
         return ERR_BAD_LENGTH;
     }
 
-    function getErrInvalidChain() public constant returns (uint256) {
+    function getErrInvalidChain() public view returns (uint256) {
         return ERR_INVALID_CHAIN;
     }
 
-    function getErroLowWork() public constant returns (uint256) {
+    function getErrLowWork() public view returns (uint256) {
         return ERR_LOW_WORK;
     }
 
