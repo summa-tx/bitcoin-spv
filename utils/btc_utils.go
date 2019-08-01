@@ -1,9 +1,15 @@
 package utils
 
+import "encoding/binary"
+
 // ExtractPrefix returns the extracted prefix as a byte array
 // from the given byte array.
 func ExtractPrefix(memory []byte) []byte {
-	return nil
+	if len(memory) < 6 {
+		return nil
+	}
+
+	return memory[0:6]
 }
 
 // ReverseEndianness takes in a byte slice and returns a
@@ -21,8 +27,8 @@ func ReverseEndianness(in []byte) []byte {
 }
 
 // BytesToUint takes a byte slice and then returns a Uint256
-func BytesToUint(memory []byte) int64 {
-	return 0
+func BytesToUint(a []byte) uint32 {
+	return binary.LittleEndian.Uint32(a)
 }
 
 // LastBytes returns the last num bytes from a byte array
