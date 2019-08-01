@@ -10,6 +10,6 @@ require (
 	github.com/piotrnar/gocoin v0.0.0-20190615084838-fe73140bc44e
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/stretchr/testify v1.3.0
-	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4 // indirect
+	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	gotest.tools v2.2.0+incompatible
 )

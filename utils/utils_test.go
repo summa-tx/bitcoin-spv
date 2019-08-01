@@ -26,3 +26,17 @@ func TestBytesToUint(t *testing.T) {
 	num := BytesToUint(testbytes)
 	assert.Equal(t, num, uint32(4294967295))
 }
+
+func TestLastBytes(t *testing.T) {
+	testbytes := []byte{1, 2, 3, 4}
+	last := LastBytes(testbytes, 1)
+	assert.Equal(t, last, []byte{4})
+}
+
+func TestHash160(t *testing.T) {
+	t.Skip()
+}
+
+func TestHash256(t *testing.T) {
+	t.Skip()
+}
