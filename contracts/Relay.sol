@@ -52,6 +52,10 @@ contract Relay is IRelay {
     using BTCUtils for bytes;
     using ValidateSPV for bytes;
 
+    // How often do we store the height?
+    // A higher number incurs less storage cost, but more lookup cost
+    uint32 public constant HEIGHT_INTERVAL = 4;
+
     event Extension(bytes32 indexed _first, bytes32 indexed _last);
     event Reorg(bytes32 indexed _from, bytes32 indexed _to, bytes32 indexed _gcd);
 
@@ -119,7 +123,7 @@ contract Relay is IRelay {
                     abi.encodePacked(_currentDigest).reverseEndianness().bytesToUint() <= _target,
                     "Header work is insufficient");
                 previousBlock[_currentDigest] = _previousDigest;
-                if (_height % 4 == 0) {
+                if (_height % HEIGHT_INTERVAL == 0) {
                     /*
                     NB: We store the height only every 4th header to save gas
                     */
@@ -196,7 +200,7 @@ contract Relay is IRelay {
     function _findHeight(bytes32 _digest) internal view returns (uint256) {
         uint256 _height = 0;
         bytes32 _current = _digest;
-        for (uint256 i = 0; i < 5; i = i.add(1)) {
+        for (uint256 i = 0; i < HEIGHT_INTERVAL + 1; i = i.add(1)) {
             _height = blockHeight[_current];
             if (_height == 0) {
                 _current = previousBlock[_current];
