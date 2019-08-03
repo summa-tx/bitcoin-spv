@@ -17,10 +17,9 @@
 //         return _b.slice(0, 6);
 //     }
 
-function extractPrefix(_b) {
+function extractPrefix(b) {
     // Not enough bytes to extract a valid prefix
-    if (_b.length < 6) { return ""; }
-    return _b.slice(0, 6);
+    return b;
 }
 
 //     /// @notice          Changes the endianness of a byte array
@@ -42,9 +41,8 @@ function extractPrefix(_b) {
 /// @dev             Returns a new, backwards, bytes
 /// @param _b        The bytes to reverse
 /// @return          The reversed bytes
-function reverseEndianness(_b) {
-
-  return;
+function reverseEndianness(b) {
+  return b;
 }
 
 //     /// @notice          Converts big-endian bytes to a uint
@@ -65,14 +63,8 @@ function reverseEndianness(_b) {
 /// @dev             Traverses the byte array and sums the bytes
 /// @param _b        The big-endian bytes-encoded integer
 /// @return          The integer representation
-function bytesToUint(bytes memory _b) public pure returns (uint256) {
-    uint256 _number;
-
-    for (uint i = 0; i < _b.length; i++) {
-        _number = _number + uint8(_b[i]) * (2 ** (8 * (_b.length - (i + 1))));
-    }
-
-    return _number;
+function bytesToUint(b) {
+    return b;
 }
 
 //     /// @notice          Get the last _num bytes from a byte array
@@ -86,6 +78,15 @@ function bytesToUint(bytes memory _b) public pure returns (uint256) {
 //         return _b.slice(_start, _num);
 //     }
 
+/// @notice          Get the last _num bytes from a byte array
+/// @param _b        The byte array to slice
+/// @param _num      The number of bytes to extract from the end
+/// @return          The last _num bytes of _b
+function lastBytes(b, num) {
+
+  return b;
+}
+
 //     /// @notice          Implements bitcoin"s hash160 (rmd160(sha2()))
 //     /// @dev             abi.encodePacked changes the return to bytes instead of bytes32
 //     /// @param _b        The pre-image
@@ -93,6 +94,14 @@ function bytesToUint(bytes memory _b) public pure returns (uint256) {
 //     function hash160(bytes memory _b) public pure returns (bytes memory) {
 //         return abi.encodePacked(ripemd160(abi.encodePacked(sha256(_b))));
 //     }
+
+/// @notice          Implements bitcoin"s hash160 (rmd160(sha2()))
+/// @dev             abi.encodePacked changes the return to bytes instead of bytes32
+/// @param _b        The pre-image
+/// @return          The digest
+function hash160(b) {
+    return b;
+}
 
 //     /// @notice          Implements bitcoin"s hash256 (double sha2)
 //     /// @dev             abi.encodePacked changes the return to bytes instead of bytes32
@@ -102,12 +111,29 @@ function bytesToUint(bytes memory _b) public pure returns (uint256) {
 //         return abi.encodePacked(sha256(abi.encodePacked(sha256(_b)))).toBytes32();
 //     }
 
+/// @notice          Implements bitcoin"s hash256 (double sha2)
+/// @dev             abi.encodePacked changes the return to bytes instead of bytes32
+/// @param _b        The pre-image
+/// @return          The digest
+function hash256(b) {
+    return b;
+}
+
 //     /* Witness Input */
 //     /// @notice          Extracts the LE sequence bytes from an input
 //     /// @dev             Sequence is used for relative time locks
 //     /// @param _b        The input
 //     /// @return          The sequence bytes (LE uint)
 //     function extractSequenceLE(bytes memory _b) public pure returns (bytes memory) { return _b.slice(37, 4); }
+
+/* Witness Input */
+/// @notice          Extracts the LE sequence bytes from an input
+/// @dev             Sequence is used for relative time locks
+/// @param _b        The input
+/// @return          The sequence bytes (LE uint)
+function extractSequenceLE(b) {
+  return b;
+}
 
 //     /// @notice          Extracts the sequence from the input in a tx
 //     /// @dev             Sequence is a 4-byte little-endian number
@@ -119,17 +145,41 @@ function bytesToUint(bytes memory _b) public pure returns (uint256) {
 //         return uint32(bytesToUint(_beSequence));
 //     }
 
+/// @notice          Extracts the sequence from the input in a tx
+/// @dev             Sequence is a 4-byte little-endian number
+/// @param _b        The input
+/// @return          The sequence number (big-endian uint)
+function extractSequence(b) {
+    return b;
+}
+
 //     /// @notice          Extracts the outpoint from the input in a tx
 //     /// @dev             32 byte tx id with 4 byte index
 //     /// @param _b        The input
 //     /// @return          The outpoint (LE bytes of prev tx hash + LE bytes of prev tx index)
 //     function extractOutpoint(bytes memory _b) public pure returns (bytes memory) { return _b.slice(0, 36); }
 
+/// @notice          Extracts the outpoint from the input in a tx
+/// @dev             32 byte tx id with 4 byte index
+/// @param _b        The input
+/// @return          The outpoint (LE bytes of prev tx hash + LE bytes of prev tx index)
+function extractOutpoint(b) {
+  return b;
+}
+
 //     /// @notice          Extracts the tx input tx id from the input in a tx
 //     /// @dev             32 byte tx id
 //     /// @param _b        The input
 //     /// @return          The tx id (little-endian bytes)
 //     function extractTxIdLE(bytes memory _b) public pure returns (bytes32) { return _b.slice(0, 32).toBytes32(); }
+
+/// @notice          Extracts the tx input tx id from the input in a tx
+/// @dev             32 byte tx id
+/// @param _b        The input
+/// @return          The tx id (little-endian bytes)
+function extractTxIdLE(b) {
+  return b;
+}
 
 //     /// @notice          Extracts the tx input tx id from the input in a tx
 //     /// @dev             32 byte tx id
@@ -141,11 +191,25 @@ function bytesToUint(bytes memory _b) public pure returns (uint256) {
 //         return _beId.toBytes32();
 //     }
 
+/// @notice          Extracts the tx input tx id from the input in a tx
+/// @dev             32 byte tx id
+/// @param _b        The input
+/// @return          The tx id (big-endian bytes)
+function extractTxId(b) {
+    return b;
+}
+
 //     /// @notice          Extracts the LE tx input index from the input in a tx
 //     /// @dev             4 byte tx index
 //     /// @param _b        The input
 //     /// @return          The tx index (little-endian bytes)
 //     function extractTxIndexLE(bytes memory _b) public pure returns (bytes memory) { return _b.slice(32, 4); }
+
+/// @notice          Extracts the LE tx input index from the input in a tx
+/// @dev             4 byte tx index
+/// @param _b        The input
+/// @return          The tx index (little-endian bytes)
+function extractTxIndexLE(b) { return b; }
 
 //     /// @notice          Extracts the tx input index from the input in a tx
 //     /// @dev             4 byte tx index
@@ -157,6 +221,14 @@ function bytesToUint(bytes memory _b) public pure returns (uint256) {
 //         return uint32(bytesToUint(_beIndex));
 //     }
 
+/// @notice          Extracts the tx input index from the input in a tx
+/// @dev             4 byte tx index
+/// @param _b        The input
+/// @return          The tx index (big-endian uint)
+function extractTxIndex(b) {
+    return b;
+}
+
 //     /* Witness Output */
 //     /// @notice          Extracts the output script length
 //     /// @dev             Indexes the length prefix on the pk_script
@@ -164,11 +236,28 @@ function bytesToUint(bytes memory _b) public pure returns (uint256) {
 //     /// @return          The 1 byte length prefix
 //     function extractOutputScriptLen(bytes memory _b) public pure returns (bytes memory) { return _b.slice(8, 1); }
 
+/* Witness Output */
+/// @notice          Extracts the output script length
+/// @dev             Indexes the length prefix on the pk_script
+/// @param _b        The output
+/// @return          The 1 byte length prefix
+function extractOutputScriptLen(b) {
+  return b;
+}
+
 //     /// @notice          Extracts the value bytes from the output in a tx
 //     /// @dev             Value is an 8-byte little-endian number
 //     /// @param _b        The tx
 //     /// @return          The output value as LE bytes
 //     function extractValueLE(bytes memory _b) public pure returns (bytes memory) { return _b.slice(0, 8); }
+
+/// @notice          Extracts the value bytes from the output in a tx
+/// @dev             Value is an 8-byte little-endian number
+/// @param _b        The tx
+/// @return          The output value as LE bytes
+function extractValueLE(b) {
+  return b;
+}
 
 //     /// @notice          Extracts the value from the output in a tx
 //     /// @dev             Value is an 8-byte little-endian number
@@ -180,6 +269,14 @@ function bytesToUint(bytes memory _b) public pure returns (uint256) {
 //         return uint64(bytesToUint(_beValue));
 //     }
 
+/// @notice          Extracts the value from the output in a tx
+/// @dev             Value is an 8-byte little-endian number
+/// @param _b        The tx
+/// @return          The output value
+function extractValue(b) {
+    return b;
+}
+
 //     /// @notice          Extracts the value from the output in a tx
 //     /// @dev             Value is an 8-byte little-endian number
 //     /// @param _b        The tx
@@ -189,6 +286,14 @@ function bytesToUint(bytes memory _b) public pure returns (uint256) {
 //         bytes memory _dataLen = _b.slice(10, 1);
 //         return _b.slice(11, bytesToUint(_dataLen));
 //     }
+
+/// @notice          Extracts the value from the output in a tx
+/// @dev             Value is an 8-byte little-endian number
+/// @param _b        The tx
+/// @return          The output value
+function extractOpReturnData(b) {
+    return b;
+}
 
 //     /// @notice          Extracts the hash from the output script
 //     /// @dev             Determines type by the length prefix
