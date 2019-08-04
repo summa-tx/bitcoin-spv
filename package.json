@@ -1,6 +1,6 @@
 {
     "name": "bitcoin-spv",
-    "version": "2.0.0-rc4",
+    "version": "2.0.0",
     "description": "bitcoin SPV proofs in Solidity",
     "scripts": {
         "compile": "truffle compile",
