@@ -17,6 +17,10 @@ interface IRelay {
         uint256 _limit
     ) external view returns (bool);
 
+    function getRelayGenesis() public view returns (bytes32);
+    function getBestKnownDigest() public view returns (bytes32);
+    function getLastReorgCommonAncestor() public view returns (bytes32);
+
     function findHeight(bytes32 _digest) external view returns (uint256);
 
     function findAncestor(bytes32 _digest, uint256 _offset) external view returns (bytes32);
@@ -59,11 +63,23 @@ contract Relay is IRelay {
     event Extension(bytes32 indexed _first, bytes32 indexed _last);
     event Reorg(bytes32 indexed _from, bytes32 indexed _to, bytes32 indexed _gcd);
 
-    bytes32 public relayGenesis;
-    bytes32 public bestKnownDigest;
-    bytes32 public lastReorgCommonAncestor;
+    bytes32 internal relayGenesis;
+    bytes32 internal bestKnownDigest;
+    bytes32 internal lastReorgCommonAncestor;
     mapping (bytes32 => bytes32) internal previousBlock;
     mapping (bytes32 => uint256) internal blockHeight;
+
+    function getRelayGenesis() public view returns (bytes32) {
+        return relayGenesis;
+    }
+
+    function getBestKnownDigest() public view returns (bytes32) {
+        return bestKnownDigest;
+    }
+
+    function getLastReorgCommonAncestor() public view returns (bytes32) {
+        return lastReorgCommonAncestor;
+    }
 
 
     /// @notice                   Gives a starting point for the relay
@@ -164,6 +180,20 @@ contract Relay is IRelay {
         bytes calldata _oldPeriodEndHeader,
         bytes calldata _headers
     ) external returns (bool) {
+        return _addHeadersWithRetarget(_oldPeriodStartHeader, _oldPeriodEndHeader, _headers);
+    }
+
+    /// @notice                       Adds headers to storage, performs additional validation of retarget
+    /// @dev                          Checks the retarget, the heights, and the linkage
+    /// @param  _oldPeriodStartHeader The first header in the difficulty period being closed
+    /// @param  _oldPeriodEndHeader   The last header in the difficulty period being closed
+    /// @param  _headers              A tightly-packed list of 80-byte Bitcoin headers
+    /// @return                       True if successfully written, error otherwise
+    function _addHeadersWithRetarget(
+        bytes memory _oldPeriodStartHeader,
+        bytes memory _oldPeriodEndHeader,
+        bytes memory _headers
+    ) internal returns (bool) {
         bytes memory _newPeriodStart = _headers.slice(0, 80);
 
         /* NB: requires that both blocks are known */

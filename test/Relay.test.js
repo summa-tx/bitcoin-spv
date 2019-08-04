@@ -35,13 +35,13 @@ contract('Relay', async () => {
     });
 
     it('stores genesis block info', async () => {
-      let res = await instance.relayGenesis.call();
+      let res = await instance.getRelayGenesis.call();
       assert.equal(res, genesis.digest_le);
 
-      res = await instance.bestKnownDigest.call();
+      res = await instance.getBestKnownDigest.call();
       assert.equal(res, genesis.digest_le);
 
-      res = await instance.lastReorgCommonAncestor.call();
+      res = await instance.getLastReorgCommonAncestor.call();
       assert.equal(res, genesis.digest_le);
 
       res = await instance.findAncestor.call(genesis.digest_le, 0);
