@@ -17,9 +17,9 @@ interface IRelay {
         uint256 _limit
     ) external view returns (bool);
 
-    function getRelayGenesis() public view returns (bytes32);
-    function getBestKnownDigest() public view returns (bytes32);
-    function getLastReorgCommonAncestor() public view returns (bytes32);
+    function getRelayGenesis() external view returns (bytes32);
+    function getBestKnownDigest() external view returns (bytes32);
+    function getLastReorgCommonAncestor() external view returns (bytes32);
 
     function findHeight(bytes32 _digest) external view returns (uint256);
 
