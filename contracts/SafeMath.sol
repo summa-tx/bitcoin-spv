@@ -44,7 +44,7 @@ library SafeMath {
         }
 
         c = _a * _b;
-        require(c / _a == _b, 'Overflow during multiplication.');
+        require(c / _a == _b, "Overflow during multiplication.");
         return c;
     }
 
@@ -62,7 +62,7 @@ library SafeMath {
      * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
      */
     function sub(uint256 _a, uint256 _b) internal pure returns (uint256) {
-        require(_b <= _a, 'Underflow during subtraction.');
+        require(_b <= _a, "Underflow during subtraction.");
         return _a - _b;
     }
 
@@ -71,7 +71,7 @@ library SafeMath {
      */
     function add(uint256 _a, uint256 _b) internal pure returns (uint256 c) {
         c = _a + _b;
-        require(c >= _a, 'Overflow during addition.');
+        require(c >= _a, "Overflow during addition.");
         return c;
     }
 }
