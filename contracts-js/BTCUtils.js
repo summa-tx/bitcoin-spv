@@ -75,7 +75,17 @@ const BTCUtils = {
   /// @param _flag    The first byte of a VarInt
   /// @return         The number of non-flag bytes in the VarInt
   determineVarIntDataLength: (flag) => {
-      return 0;  // flag is data
+    if (flag[0] == 0xff) {
+      return 8;  // one-byte flag, 8 bytes data
+    }
+    if (flag[0] == 0xfe) {
+      return 4;  // one-byte flag, 4 bytes data
+    }
+    if (flag[0] == 0xfd) {
+      return 2;  // one-byte flag, 2 bytes data
+    }
+
+    return 0;  // flag is data
   },
 
 //     /// @notice          Changes the endianness of a byte array
@@ -96,8 +106,10 @@ const BTCUtils = {
   /// @dev             Returns a new, backwards, bytes
   /// @param _b        The bytes to reverse
   /// @return          The reversed bytes
-  reverseEndianness: (b) => {
-    return b;
+  reverseEndianness: (bytesString) => {
+    var newBytes = bytesString.slice();  // this copies the array
+    newBytes.reverse();
+    return newBytes;
   },
 
 //     /// @notice          Converts big-endian bytes to a uint
@@ -118,8 +130,14 @@ const BTCUtils = {
   /// @dev             Traverses the byte array and sums the bytes
   /// @param _b        The big-endian bytes-encoded integer
   /// @return          The integer representation
-  bytesToUint: (b) => {
-    return b;
+  bytesToUint: (bytesString) => {
+    var total;
+
+    for (var i = 0; i < bytesString.length; i++) {
+      total = total + bytesString[i] * (2 ** (8 * (bytesString.length - (i + 1))));
+    }
+
+    return total;
   },
 
 //     /// @notice          Get the last _num bytes from a byte array
