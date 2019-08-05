@@ -1,521 +1,290 @@
-const assert = require('assert');
-const ganache = require('ganache-cli');
-const Web3 = require('web3');
-const web3 = new Web3(ganache.provider(), null, { transactionConfirmationBlocks: 1 });
-const compiledValidateSPV = require('../build/ValidateSPV.json');
-const compiledBTCUtils = require('../build/BTCUtils.json');
-const compiledBytes = require('../build/BytesLib.json');
-const linker = require('solc/linker');
+/* global artifacts contract describe before it assert */
+/* eslint-disable no-underscore-dangle */
+const BN = require('bn.js');
+
+const ValidateSPV = artifacts.require('ValidateSPVTest');
 const utils = require('./utils');
 const constants = require('./constants');
 
-// suppress web3 MaxListenersExceededWarning
-// remove when web3 gets its act together
-var listeners = process.listeners('warning');
-listeners.forEach(listener => process.removeListener('warning', listener));
 
-let GAS = 6712388;
-let GAS_PRICE = 100000000000;
+contract('ValidateSPV', () => {
+  const zeroBN = new BN('0', 10);
 
+  let instance;
 
-describe('ValidateSPV', () => {
-    let bc;
-    let vspv;
-    let accounts;
-    let seller;
-    let gas = GAS;
-    let gasPrice = GAS_PRICE;
+  before(async () => {
+    instance = await ValidateSPV.new();
+  });
 
-    before(async () => {
-        accounts = await web3.eth.getAccounts();
-        seller = accounts[1];
+  describe('#error constants', async () => {
+    it('tests the constant getters for that sweet sweet coverage', async () => {
+      let res = await instance.getErrBadLength.call();
+      assert(res.eq(new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)));
 
-        let bytesContract = await new web3.eth.Contract(compiledBytes.abi)
-            .deploy({ data: compiledBytes.evm.bytecode.object })
-            .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE });
+      res = await instance.getErrInvalidChain.call();
+      assert(res.eq(new BN('fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe', 16)));
 
-        assert.ok(bytesContract.options.address);
+      res = await instance.getErrLowWork.call();
+      assert(res.eq(new BN('fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd', 16)));
+    });
+  });
 
-        // Link
-        bc = await linker.linkBytecode(compiledBTCUtils.evm.bytecode.object,
-            { 'BytesLib.sol:BytesLib': bytesContract.options.address });
-
-        let btcUtilsContract = await new web3.eth.Contract(compiledBTCUtils.abi)
-            .deploy({ data: bc })
-            .send({ from: accounts[0], gas: GAS, gasPrice: GAS_PRICE });
-
-        assert.ok(btcUtilsContract.options.address);
-
-        // Link
-        bc = await linker.linkBytecode(compiledValidateSPV.evm.bytecode.object,
-            {
-                'BytesLib.sol:BytesLib': bytesContract.options.address,
-                'BTCUtils.sol:BTCUtils': btcUtilsContract.options.address
-            });
-
+  describe('#prove', async () => {
+    it('returns true if proof is valid', async () => {
+      const res = await instance.prove(
+        constants.OP_RETURN.TXID_LE,
+        constants.OP_RETURN.INDEXED_HEADERS[0].MERKLE_ROOT_LE,
+        constants.OP_RETURN.PROOF,
+        constants.OP_RETURN.PROOF_INDEX
+      );
+      assert.isTrue(res);
     });
 
-    beforeEach(async () =>
-        vspv = await new web3.eth.Contract(compiledValidateSPV.abi)
-            .deploy({ data: bc })
-            .send({ from: accounts[0], gas: gas, gasPrice: gasPrice }));
-
-    it('compiles the ValidateSPV library', async () => assert.ok(vspv.options.address));
-
-    describe('#prove', async () => {
-        let parsedTx;
-        let parsedHeader;
-
-        beforeEach(async () => {
-            await vspv.methods.parseTransaction(constants.OP_RETURN.TX)
-                .send({ from: seller, gas: gas, gasPrice: gasPrice });
-            parsedTx = await vspv.methods.parseTransaction(constants.OP_RETURN.TX)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice });
-            await vspv.methods.parseHeader(
-                constants.OP_RETURN.INDEXED_HEADERS[0].HEADER)
-                .send({from: seller, gas: gas, gasPrice: gasPrice});
-            parsedHeader = await vspv.methods.parseHeader(
-                constants.OP_RETURN.INDEXED_HEADERS[0].HEADER)
-                .call({from: seller, gas: gas, gasPrice: gasPrice});
-        });
-
-        it('returns true if proof is valid', async () => {
-
-            assert.ok(await vspv.methods.prove(
-                parsedTx._txid,
-                parsedHeader._merkleRoot,
-                constants.OP_RETURN.PROOF,
-                constants.OP_RETURN.PROOF_INDEX
-            ).send({from: seller, gas: gas, gasPrice: gasPrice}));
-
-            assert.equal(await vspv.methods.prove(
-                parsedTx._txid,
-                parsedHeader._merkleRoot,
-                constants.OP_RETURN.PROOF,
-                constants.OP_RETURN.PROOF_INDEX
-            ).call({from: seller, gas: gas, gasPrice: gasPrice}), true);
-        });
-
-        it('returns false if txid is invalid', async () => {
-
-            assert.ok(await vspv.methods.prove(
-                constants.OP_RETURN.TXID_BE,
-                parsedHeader._merkleRoot,
-                constants.OP_RETURN.PROOF,
-                constants.OP_RETURN.PROOF_INDEX
-            ).send({from: seller, gas: gas, gasPrice: gasPrice}));
-
-            assert.equal(await vspv.methods.prove(
-                constants.EMPTY,
-                parsedHeader._merkleRoot,
-                constants.OP_RETURN.PROOF,
-                constants.OP_RETURN.PROOF_INDEX
-            ).call({from: seller, gas: gas, gasPrice: gasPrice}), false);
-        });
-
-        it('returns false if first proof hash is not txid', async () => {
-
-            assert.ok(await vspv.methods.prove(
-                parsedTx._txid,
-                parsedHeader._merkleRoot,
-                constants.OP_RETURN.PROOF_ERR.PROOF_FIRST_HASH,
-                constants.OP_RETURN.PROOF_INDEX
-            ).send({from: seller, gas: gas, gasPrice: gasPrice}));
-
-            assert.equal(await vspv.methods.prove(
-                parsedTx._txid,
-                parsedHeader._merkleRoot,
-                constants.OP_RETURN.PROOF_ERR.PROOF_FIRST_HASH,
-                constants.OP_RETURN.PROOF_INDEX
-            ).call({from: seller, gas: gas, gasPrice: gasPrice}), false);
-        });
-
-        it('returns false if last proof hash is not Merkle root', async () => {
-
-            assert.ok(await vspv.methods.prove(
-                parsedTx._txid,
-                parsedHeader._merkleRoot,
-                constants.OP_RETURN.PROOF_ERR.PROOF_LAST_HASH,
-                constants.OP_RETURN.PROOF_INDEX
-            ).send({from: seller, gas: gas, gasPrice: gasPrice}));
-
-            assert.equal(await vspv.methods.prove(
-                parsedTx._txid,
-                parsedHeader._merkleRoot,
-                constants.OP_RETURN.PROOF_ERR.PROOF_LAST_HASH,
-                constants.OP_RETURN.PROOF_INDEX
-            ).call({from: seller, gas: gas, gasPrice: gasPrice}), false);
-        });
-
-        it('returns false if Merkle root is invalid', async () => {
-            assert.ok(await vspv.methods.prove(
-                parsedTx._txid,
-                parsedTx._txid,
-                constants.OP_RETURN.PROOF,
-                constants.OP_RETURN.PROOF_INDEX
-            ).send({from: seller, gas: gas, gasPrice: gasPrice}));
-
-            assert.equal(await vspv.methods.prove(
-                parsedTx._txid,
-                parsedTx._txid,
-                constants.OP_RETURN.PROOF,
-                constants.OP_RETURN.PROOF_INDEX
-            ).call({from: seller, gas: gas, gasPrice: gasPrice}), false);
-        });
+    it('shortcuts the coinbase special case', async () => {
+      const res = await instance.prove(
+        constants.OP_RETURN.TXID_LE,
+        constants.OP_RETURN.TXID_LE,
+        '0x',
+        0
+      );
+      assert.isTrue(res);
     });
 
-    describe('#parseTransaction', async () => {
-        let parsedTx;
+    it('returns false if Merkle root is invalid', async () => {
+      const res = await instance.prove(
+        constants.OP_RETURN.TXID_LE,
+        constants.OP_RETURN.TXID_LE,
+        constants.OP_RETURN.PROOF,
+        constants.OP_RETURN.PROOF_INDEX
+      );
+      assert.isFalse(res);
+    });
+  });
 
-        it('returns the nInputs, inputs, nOutputs, outputs, locktime, and txid', async () => {
-            parsedTx = await vspv.methods.parseTransaction(constants.OP_RETURN.TX)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice });
+  describe('#calculateTxId', async () => {
+    it('returns the transaction hash', async () => {
+      const res = await instance.calculateTxId(
+        constants.OP_RETURN.VERSION,
+        constants.OP_RETURN.VIN,
+        constants.OP_RETURN.VOUT,
+        constants.OP_RETURN.LOCKTIME_LE
+      );
+      assert.equal(res, constants.OP_RETURN.TXID_LE);
+    });
+  });
 
-            assert.equal(constants.OP_RETURN.N_INPUTS_HEX, parsedTx._nInputs);
-            assert.equal(constants.OP_RETURN.INPUTS, parsedTx._inputs);
-            assert.equal(constants.OP_RETURN.N_OUTPUTS_HEX, parsedTx._nOutputs);
-            assert.equal(constants.OP_RETURN.OUTPUTS, parsedTx._outputs);
-            assert.equal(constants.OP_RETURN.LOCKTIME_LE, parsedTx._locktime);
-            assert.equal(constants.OP_RETURN.TXID_LE, parsedTx._txid);
-        });
+  describe('#parseInput', async () => {
+    const input = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff';
+    const legacyInput = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab375000000000101ffffffff';
+    const compatibilityWSHInput = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000220020eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff';
+    const compatibilityWPKHInput = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000160014eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff';
+    const sequence = new BN('ffffffff', 16);
+    const index = zeroBN;
+    const outpointTxId = '0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b';
 
-        it('returns null if prefix version is invalid', async () => {
-            // Incorrect version, 0x01000000 -> 0x03000000
-            parsedTx = await vspv.methods.parseTransaction(constants.OP_RETURN.TX_ERR.TX_VERSION)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice });
+    it('returns the tx input sequence and outpoint', async () => {
+      const txIn = await instance.parseInput(input);
 
-            assert.equal(null, parsedTx._nInputs);
-            assert.equal(null, parsedTx._inputs);
-            assert.equal(null, parsedTx._nOutputs);
-            assert.equal(null, parsedTx._outputs);
-            assert.equal(null, parsedTx._locktime);
-            assert.equal(constants.EMPTY, parsedTx._txid);
-        });
-
-        it('returns null if prefix marker is invalid', async () => {
-            // Incorrect marker, 0x00 -> 0x11
-            parsedTx = await vspv.methods.parseTransaction(constants.OP_RETURN.TX_ERR.TX_MARKER)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice });
-
-            assert.equal(null, parsedTx._nInputs);
-            assert.equal(null, parsedTx._inputs);
-            assert.equal(null, parsedTx._nOutputs);
-            assert.equal(null, parsedTx._outputs);
-            assert.equal(null, parsedTx._locktime);
-            assert.equal(constants.EMPTY, parsedTx._txid);
-        });
-
-        it('returns null if prefix witness flag is invalid', async () => {
-            // Incorrect witness flag, 0x01 -> 0x03
-            parsedTx = await vspv.methods.parseTransaction(
-                constants.OP_RETURN.TX_ERR.TX_WITNESS_FLAG
-            ).call({ from: seller, gas: gas, gasPrice: gasPrice });
-
-            assert.equal(null, parsedTx._nInputs);
-            assert.equal(null, parsedTx._inputs);
-            assert.equal(null, parsedTx._nOutputs);
-            assert.equal(null, parsedTx._outputs);
-            assert.equal(null, parsedTx._locktime);
-            assert.equal(constants.EMPTY, parsedTx._txid);
-        });
-
-        it('returns null if prefix has no marker and witness flag', async () => {
-            // No marker and witness flag
-            parsedTx = await vspv.methods.parseTransaction(
-                constants.OP_RETURN.TX_ERR.TX_NO_MARKER_WITNESS_FLAG
-            ).call({ from: seller, gas: gas, gasPrice: gasPrice });
-
-            assert.equal(null, parsedTx._nInputs);
-            assert.equal(null, parsedTx._inputs);
-            assert.equal(null, parsedTx._nOutputs);
-            assert.equal(null, parsedTx._outputs);
-            assert.equal(null, parsedTx._locktime);
-            assert.equal(constants.EMPTY, parsedTx._txid);
-        });
-
-        it('returns null if number of inputs is 0', async () => {
-            // No marker and witness flag
-            parsedTx = await vspv.methods.parseTransaction(
-                constants.OP_RETURN.TX_ERR.TX_NINPUT_ZERO
-            ).call({ from: seller, gas: gas, gasPrice: gasPrice });
-
-            assert.equal('0x00', parsedTx._nInputs);
-            assert.equal(null, parsedTx._inputs);
-            assert.equal(null, parsedTx._nOutputs);
-            assert.equal(null, parsedTx._outputs);
-            assert.equal(null, parsedTx._locktime);
-            assert.equal(constants.EMPTY, parsedTx._txid);
-        });
-
-        it('returns null if number of outputs is 0', async () => {
-            // No marker and witness flag
-            parsedTx = await vspv.methods.parseTransaction(
-                constants.OP_RETURN.TX_ERR.TX_NOUTPUT_ZERO
-            ).call({ from: seller, gas: gas, gasPrice: gasPrice });
-
-            assert.equal(constants.OP_RETURN.N_INPUTS_HEX, parsedTx._nInputs);
-            assert.ok(parsedTx._inputs);
-            assert.equal('0x00', parsedTx._nOutputs);
-            assert.equal(null, parsedTx._outputs);
-            assert.equal(null, parsedTx._locktime);
-            assert.equal(constants.EMPTY, parsedTx._txid);
-        });
+      assert(txIn._sequence.eq(sequence));
+      assert.equal(txIn._hash, outpointTxId);
+      assert(txIn._index.eq(index));
+      assert(txIn._inputType.eq(new BN(utils.INPUT_TYPES.WITNESS, 10)));
     });
 
-    describe('#extractAllInputs', async () => {
+    it('handles Legacy inputs', async () => {
+      const txIn = await instance.parseInput(legacyInput);
 
-        it('returns the number of inputs and inputs string', async () => {
-            let tx = '0x0100000000010235815cf40015f7b128dc5d86dea441e85721321b10d4d93d76a1bf6070f97fff0000000000feffffff0ad99758ff754b51ef0d72dfa9b9965ae3d510d1e282dfc099b6b3eaea4c30050000000000feffffff03e8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c0000000000000000176a4c1423d81b160cb51f763e7bf9b373a34f5ddb75fcbb7b000000000000001600140be3e4aa1656bb811db32da61d40e9171c8895e20248304502210099525661b53abc1aacc505d8e0919d1ee3210afa4bd40038c46345a9b72d3631022022ee807da4cc4a743c3243063d30174c6752b3e57d02f92d7a083604f73c3e20832102a004b949e4769ed341064829137b18992be884da5932c755e48f9465c1069dc2024830450221008dba80574b4e1852cd1312c3fe2d6d4ad2958895b9bbad82f45820de02b32a4902201c2b807596c3aa603d659a1be4eb09e5d7ab56836722bfe1cdb649de7164ab9f012102ef21caa25eca974d3bdd73c034d6943cbf145a700d493adaa6f496bd87c5b33be26ab25b';
-            let nInputs = '0x02';
-            let inputs = '0x35815cf40015f7b128dc5d86dea441e85721321b10d4d93d76a1bf6070f97fff0000000000feffffff0ad99758ff754b51ef0d72dfa9b9965ae3d510d1e282dfc099b6b3eaea4c30050000000000feffffff';
-
-            let extractedInputs = await vspv.methods.extractAllInputs(tx)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice });
-
-            assert.equal(nInputs, extractedInputs._nInputs);
-            assert.equal(inputs, extractedInputs._inputs);
-        });
+      assert(txIn._sequence.eq(sequence));
+      assert.equal(txIn._hash, outpointTxId);
+      assert(txIn._index.eq(index));
+      assert(txIn._inputType.eq(new BN(utils.INPUT_TYPES.LEGACY, 10)));
     });
 
-    describe('#extractAllOutputs', async () => {
+    it('handles p2wpkh-via-p2sh compatibility inputs', async () => {
+      const txIn = await instance.parseInput(compatibilityWPKHInput);
 
-        it('returns the number of outputs and outputs string', async () => {
-            let tx = '0x0100000000010235815cf40015f7b128dc5d86dea441e85721321b10d4d93d76a1bf6070f97fff0000000000feffffff0ad99758ff754b51ef0d72dfa9b9965ae3d510d1e282dfc099b6b3eaea4c30050000000000feffffff03e8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c0000000000000000176a4c1423d81b160cb51f763e7bf9b373a34f5ddb75fcbb7b000000000000001600140be3e4aa1656bb811db32da61d40e9171c8895e20248304502210099525661b53abc1aacc505d8e0919d1ee3210afa4bd40038c46345a9b72d3631022022ee807da4cc4a743c3243063d30174c6752b3e57d02f92d7a083604f73c3e20832102a004b949e4769ed341064829137b18992be884da5932c755e48f9465c1069dc2024830450221008dba80574b4e1852cd1312c3fe2d6d4ad2958895b9bbad82f45820de02b32a4902201c2b807596c3aa603d659a1be4eb09e5d7ab56836722bfe1cdb649de7164ab9f012102ef21caa25eca974d3bdd73c034d6943cbf145a700d493adaa6f496bd87c5b33be26ab25b';
-            let nOutputs = '0x03';
-            let outputs = '0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c0000000000000000176a4c1423d81b160cb51f763e7bf9b373a34f5ddb75fcbb7b000000000000001600140be3e4aa1656bb811db32da61d40e9171c8895e2';
-
-            let extractedOutputs = await vspv.methods.extractAllOutputs(tx)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice });
-
-            assert.equal(nOutputs, extractedOutputs._nOutputs);
-            assert.equal(outputs, extractedOutputs._outputs);
-        });
+      assert(txIn._sequence.eq(sequence));
+      assert.equal(txIn._hash, outpointTxId);
+      assert(txIn._index.eq(index));
+      assert(txIn._inputType.eq(new BN(utils.INPUT_TYPES.COMPATIBILITY, 10)));
     });
 
-    describe('#transactionHash', async () => {
+    it('handles p2wsh-via-p2sh compatibility inputs', async () => {
+      const txIn = await instance.parseInput(compatibilityWSHInput);
 
-        it('returns the transaction hash', async () =>
-            assert.equal(
-                await vspv.methods.transactionHash(
-                    constants.OP_RETURN.VERSION,
-                    constants.OP_RETURN.N_INPUTS_HEX,
-                    constants.OP_RETURN.INPUTS,
-                    constants.OP_RETURN.N_OUTPUTS_HEX,
-                    constants.OP_RETURN.OUTPUTS,
-                    constants.OP_RETURN.LOCKTIME_LE
-                ).call({ from: seller, gas: gas, gasPrice: gasPrice }),
-                constants.OP_RETURN.TXID_LE));
+      assert(txIn._sequence.eq(sequence));
+      assert.equal(txIn._hash, outpointTxId);
+      assert(txIn._index.eq(index));
+      assert(txIn._inputType.eq(new BN(utils.INPUT_TYPES.COMPATIBILITY, 10)));
+    });
+  });
+
+  describe('#parseOutput', async () => {
+    it('returns the tx output value, output type, and payload for an OP_RETURN output', async () => {
+      const opReturnTxOut = await instance.parseOutput(
+        constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT
+      );
+
+      const value = new BN(String(constants.OP_RETURN.INDEXED_OUTPUTS[1].VALUE), 10);
+
+      assert(opReturnTxOut._value.eq(value));
+      assert(opReturnTxOut._outputType.eq(utils.OUTPUT_TYPES.OP_RETURN));
+      assert.equal(opReturnTxOut._payload, constants.OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD);
     });
 
-    describe('#validatePrefix', async () => {
-        let tx;
-        let prefix;
+    it('returns the tx output value, output type, and payload for an WPKH output', async () => {
+      const output = '0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c';
+      const value = new BN('1000001000', 10);
+      const payload = '0x7849e6bf5e4b1ba7235572d1b0cbc094f0213e6c';
 
-        it('returns true for a valid prefix with version 01', async () => {
-            tx = '0x0100000000010235815cf40015f7b128dc5d86dea441e85721321b10d4d93d76a1bf6070f97fff0000000000feffffff0ad99758ff754b51ef0d72dfa9b9965ae3d510d1e282dfc099b6b3eaea4c30050000000000feffffff03e8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c0000000000000000176a4c1423d81b160cb51f763e7bf9b373a34f5ddb75fcbb7b000000000000001600140be3e4aa1656bb811db32da61d40e9171c8895e20248304502210099525661b53abc1aacc505d8e0919d1ee3210afa4bd40038c46345a9b72d3631022022ee807da4cc4a743c3243063d30174c6752b3e57d02f92d7a083604f73c3e20832102a004b949e4769ed341064829137b18992be884da5932c755e48f9465c1069dc2024830450221008dba80574b4e1852cd1312c3fe2d6d4ad2958895b9bbad82f45820de02b32a4902201c2b807596c3aa603d659a1be4eb09e5d7ab56836722bfe1cdb649de7164ab9f012102ef21caa25eca974d3bdd73c034d6943cbf145a700d493adaa6f496bd87c5b33be26ab25b';
-            assert.equal(await vspv.methods.validatePrefix(tx)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice }), true);
+      const wpkhOutput = await instance.parseOutput(output);
 
-            prefix = '0x010000000001';
-            assert.equal(await vspv.methods.validatePrefix(prefix)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice }), true);
-        });
-
-        it('returns true for a valid prefix with version 02', async () => {
-            tx = '0x0200000000010235815cf40015f7b128dc5d86dea441e85721321b10d4d93d76a1bf6070f97fff0000000000feffffff0ad99758ff754b51ef0d72dfa9b9965ae3d510d1e282dfc099b6b3eaea4c30050000000000feffffff03e8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c0000000000000000176a4c1423d81b160cb51f763e7bf9b373a34f5ddb75fcbb7b000000000000001600140be3e4aa1656bb811db32da61d40e9171c8895e20248304502210099525661b53abc1aacc505d8e0919d1ee3210afa4bd40038c46345a9b72d3631022022ee807da4cc4a743c3243063d30174c6752b3e57d02f92d7a083604f73c3e20832102a004b949e4769ed341064829137b18992be884da5932c755e48f9465c1069dc2024830450221008dba80574b4e1852cd1312c3fe2d6d4ad2958895b9bbad82f45820de02b32a4902201c2b807596c3aa603d659a1be4eb09e5d7ab56836722bfe1cdb649de7164ab9f012102ef21caa25eca974d3bdd73c034d6943cbf145a700d493adaa6f496bd87c5b33be26ab25b';
-            assert.equal(await vspv.methods.validatePrefix(tx)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice }), true);
-
-            prefix = '0x020000000001';
-            assert.equal(await vspv.methods.validatePrefix(prefix)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice }), true);
-        });
-
-        it('returns false if the version is invalid', async () => {
-            prefix = '0x030000000001';
-            assert.equal(await vspv.methods.validatePrefix(prefix)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice }), false);
-        });
-
-        it('returns false if the segwit flag is invalid', async () => {
-            prefix = '0x010000000002';
-            assert.equal(await vspv.methods.validatePrefix(prefix)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice }), false);
-        });
-
-        it('returns false if input string is less than 6 bytes', async () => {
-            prefix = '0x01000000';
-            assert.equal(await vspv.methods.validatePrefix(prefix)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice }), false);
-        });
+      assert(wpkhOutput._value.eq(value));
+      assert(wpkhOutput._outputType.eq(utils.OUTPUT_TYPES.WPKH));
+      assert.equal(wpkhOutput._payload, payload);
     });
 
-    describe('#parseInput', async () => {
-        let input;
-        let sequence;
-        let txid;
-        let index;
+    it('returns the tx output value, output type, and payload for an WSH output', async () => {
+      const output = '0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922';
+      const value = new BN('1000000', 10);
+      const payload = '0xaedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922';
 
-        it('returns the tx input sequence and outpoint', async () => {
-            input = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff';
-            sequence = 4294967295;
-            hash_be = '0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b';
-            index = '0';
+      const wshOutput = await instance.parseOutput(output);
 
-            let txIn = await vspv.methods.parseInput(input)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice });
-
-            assert.equal(txIn._sequence, sequence);
-            assert.equal(txIn._hash, hash_be);
-            assert.equal(txIn._index, index);
-        });
-
-        it('bubble up errors if the input does not have a 00 scriptSig', async () => {
-            // Removed 00 scriptSig from input to create error
-            input = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000ffffffff';
-            let invalidTxIn = await vspv.methods.parseInput(input)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice });
-            assert.equal(0, invalidTxIn._sequence);
-            assert.equal(constants.EMPTY, invalidTxIn._hash);
-            assert.equal(0, invalidTxIn._index);
-        });
-
-        it('bubble up errors if the input length is incorrect', async () => {
-            // Added extra 0xff byte at the end to create and invalid input length of 42 bytes
-            input = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffff';
-            let invalidTxIn = await vspv.methods.parseInput(input)
-                .call({ from: seller, gas: gas, gasPrice: gasPrice })
-            assert.equal(0, invalidTxIn._sequence);
-            assert.equal(constants.EMPTY, invalidTxIn._hash);
-            assert.equal(0, invalidTxIn._index);
-        });
+      assert(wshOutput._value.eq(value));
+      assert(wshOutput._outputType.eq(utils.OUTPUT_TYPES.WSH));
+      assert.equal(wshOutput._payload, payload);
     });
 
-    describe('#parseOutput', async () => {
-        let output;
-        let value;
-        let payload;
+    it('shows non-standard if the tx output type is not identifiable', async () => {
+      // Changes 0x6a (OP_RETURN) to 0x7a to create error
+      const output = '0x0000000000000000167a14edb1b5c2f39af0fec151732585b1049b07895211';
 
-        it('returns the tx output value, output type, and payload for an OP_RETURN output',
-            async () => {
-                let opReturnTxOut = await vspv.methods.parseOutput(
-                    constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT
-                ).call({from: seller, gas: gas, gasPrice: gasPrice})
+      const nonstandardOutput = await instance.parseOutput(output);
 
-                assert.equal(constants.OP_RETURN.INDEXED_OUTPUTS[1].VALUE, opReturnTxOut._value);
-                assert.equal(utils.OUTPUT_TYPES.OP_RETURN, opReturnTxOut._outputType);
-                assert.equal(constants.OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD, opReturnTxOut._payload);
-        });
-
-        it('returns the tx output value, output type, and payload for an WPKH output', async () => {
-            output = '0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c';
-            value = 1000001000;
-            payload = '0x7849e6bf5e4b1ba7235572d1b0cbc094f0213e6c';
-
-            let wpkhOutput = await vspv.methods.parseOutput(output)
-                .call({from: seller, gas: gas, gasPrice: gasPrice})
-
-            assert.equal(wpkhOutput._value, value);
-            assert.equal(wpkhOutput._outputType, utils.OUTPUT_TYPES.WPKH);
-            assert.equal(wpkhOutput._payload, payload);
-        });
-
-        it('returns the tx output value, output type, and payload for an WSH output', async () => {
-            output = '0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922';
-            value = 1000000;
-            payload = '0xaedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922';
-
-            let wshOutput = await vspv.methods.parseOutput(output)
-                .call({from: seller, gas: gas, gasPrice: gasPrice});
-
-            assert.equal(wshOutput._value, value);
-            assert.equal(wshOutput._outputType, utils.OUTPUT_TYPES.WSH);
-            assert.equal(wshOutput._payload, payload);
-        });
-
-        it('bubble up errors if the tx output type is not identifiable', async () => {
-            // Changes 0x6a (OP_RETURN) to 0x7a to create error
-            output = '0x0000000000000000167a14edb1b5c2f39af0fec151732585b1049b07895211';
-
-            let invalidOutput = await vspv.methods.parseOutput(output)
-                .call({from: seller, gas: gas, gasPrice: gasPrice});
-
-            assert.equal(0, invalidOutput._value);
-            assert.equal(0, invalidOutput._outputType);
-            assert.equal(null, invalidOutput._payload);
-        });
-
+      assert(zeroBN.eq(nonstandardOutput._value));
+      assert(nonstandardOutput._outputType.eq(utils.OUTPUT_TYPES.NONSTANDARD));
+      assert.isNull(nonstandardOutput._payload);
     });
 
-    describe('#parseHeader', async () => {
-        it('returns the header digest, version, prevHash, merkleRoot, timestamp, target, and nonce',
-            async () => {
-                let validHeader = await vspv.methods.parseHeader(constants.OP_RETURN.INDEXED_HEADERS[0].HEADER)
-                    .call({from: seller, gas: gas, gasPrice: gasPrice})
+    it('returns the tx output value, output type, and payload for an SH output', async () => {
+      const output = '0xe8df05000000000017a914a654ebafa7a37e04a7ec3f684e34897e48f0496287';
+      const value = new BN('05dfe8', 16);
+      const payload = '0xa654ebafa7a37e04a7ec3f684e34897e48f04962';
 
-                assert.equal(constants.OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE, validHeader._digest);
-                assert.equal(constants.OP_RETURN.INDEXED_HEADERS[0].VERSION, validHeader._version);
-                assert.equal(constants.OP_RETURN.INDEXED_HEADERS[0].PREV_HASH_LE, validHeader._prevHash);
-                assert.equal(constants.OP_RETURN.INDEXED_HEADERS[0].MERKLE_ROOT_LE, validHeader._merkleRoot);
-                assert.equal(constants.OP_RETURN.INDEXED_HEADERS[0].TIMESTAMP, validHeader._timestamp);
-                assert.equal(constants.OP_RETURN.INDEXED_HEADERS[0].TARGET, validHeader._target);
-                assert.equal(constants.OP_RETURN.INDEXED_HEADERS[0].NONCE, validHeader._nonce);
-        });
+      const shOutput = await instance.parseOutput(output);
 
-        it('bubble up errors if input header is not 80 bytes', async () => {
-            // Removed a byte from the header version to create error
-            let invalidHeader = await vspv.methods.parseHeader(
-                constants.HEADER_ERR.HEADER_0_LEN
-            ).call({from: seller, gas: gas, gasPrice: gasPrice})
-
-            assert.equal(constants.EMPTY, invalidHeader._digest);
-            assert.equal(0, invalidHeader._version);
-            assert.equal(constants.EMPTY, invalidHeader._prevHash);
-            assert.equal(constants.EMPTY, invalidHeader._merkleRoot);
-            assert.equal(0, invalidHeader._timestamp);
-            assert.equal(0, invalidHeader._target);
-            assert.equal(0, invalidHeader._nonce);
-        });
+      assert(shOutput._value.eq(value));
+      assert(shOutput._outputType.eq(utils.OUTPUT_TYPES.SH));
+      assert.equal(shOutput._payload, payload);
     });
 
-    describe('#validateHeaderChain', async () => {
-        it('returns true if header chain is valid', async () => {
-            let res = await vspv.methods.validateHeaderChain(constants.OP_RETURN.HEADER_CHAIN).call()
-            assert.equal(res, 49134394618239);
-        });
+    it('returns the tx output value, output type, and payload for an PKH output', async () => {
+      const output = '0x88080000000000001976a9141458514240d7287e5254af48cd292eb876cb07eb88ac';
+      const value = new BN('0888', 16);
+      const payload = '0x1458514240d7287e5254af48cd292eb876cb07eb';
+      const pkhOutput = await instance.parseOutput(output);
 
-        it('returns 1 if header chain is not divisible by 80', async () => {
-            let res = await vspv.methods.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_INVALID_LEN)
-            .call({from: seller, gas: gas, gasPrice: gasPrice});
-            assert.equal(res, 1);
-        });
+      assert(pkhOutput._value.eq(value));
+      assert(pkhOutput._outputType.eq(utils.OUTPUT_TYPES.PKH));
+      assert.equal(pkhOutput._payload, payload);
+    });
+  });
 
-        it('returns 2 if header chain prevHash is invalid', async () => {
-            let res = await vspv.methods.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_INVALID_PREVHASH)
-                .call({from: seller, gas: gas, gasPrice: gasPrice});
-            assert.equal(res, 2);
-        });
+  describe('#parseHeader', async () => {
+    it('returns the header digest, version, prevHash, merkleRoot, timestamp, target, and nonce',
+      async () => {
+        const validHeader = await instance.parseHeader(
+          constants.OP_RETURN.INDEXED_HEADERS[0].HEADER
+        );
 
-        it('returns 3 if a header does not meet its target', async () => {
-            let res = await vspv.methods.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_LOW_WORK)
-                .call({from: seller, gas: gas, gasPrice: gasPrice});
-            assert.equal(res, 3);
-        });
+        assert.equal(validHeader._digest, constants.OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE);
+        assert.equal(validHeader._version, constants.OP_RETURN.INDEXED_HEADERS[0].VERSION);
+        assert.equal(validHeader._prevHash, constants.OP_RETURN.INDEXED_HEADERS[0].PREV_HASH_LE);
+        assert.equal(
+          validHeader._merkleRoot,
+          constants.OP_RETURN.INDEXED_HEADERS[0].MERKLE_ROOT_LE
+        );
+        assert.equal(validHeader._timestamp, constants.OP_RETURN.INDEXED_HEADERS[0].TIMESTAMP);
+        assert.equal(validHeader._target, constants.OP_RETURN.INDEXED_HEADERS[0].TARGET);
+        assert.equal(validHeader._nonce, constants.OP_RETURN.INDEXED_HEADERS[0].NONCE);
+      });
+
+    it('bubble up errors if input header is not 80 bytes', async () => {
+      // Removed a byte from the header version to create error
+      const invalidHeader = await instance.parseHeader(
+        constants.HEADER_ERR.HEADER_0_LEN
+      );
+
+      assert.equal(constants.EMPTY, invalidHeader._digest);
+      assert(zeroBN.eq(invalidHeader._version));
+      assert.equal(constants.EMPTY, invalidHeader._prevHash);
+      assert.equal(constants.EMPTY, invalidHeader._merkleRoot);
+      assert(zeroBN.eq(invalidHeader._timestamp));
+      assert(zeroBN.eq(invalidHeader._target));
+      assert(zeroBN.eq(invalidHeader._nonce));
+    });
+  });
+
+  describe('#validateHeaderChain', async () => {
+    it('returns true if header chain is valid', async () => {
+      const res = await instance.validateHeaderChain(constants.OP_RETURN.HEADER_CHAIN);
+      assert(res.eq(new BN('49134394618239', 10)));
     });
 
-    describe('#validateHeaderPrevHash', async () => {
-
-        it('returns true if header prevHash is valid', async () =>
-            assert.equal(await vspv.methods.validateHeaderPrevHash(
-                constants.OP_RETURN.INDEXED_HEADERS[1].HEADER,
-                constants.OP_RETURN.INDEXED_HEADERS[0].DIGEST_LE
-            ).call(), true));
-
-        it('returns false if header prevHash is invalid', async () =>
-            assert.equal(await vspv.methods.validateHeaderPrevHash(
-                constants.OP_RETURN.INDEXED_HEADERS[1].HEADER,
-                constants.OP_RETURN.INDEXED_HEADERS[1].DIGEST_LE
-            ).call(), false));
+    it('returns ERR_BAD_LENGTH if header chain is not divisible by 80', async () => {
+      const res = await instance.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_INVALID_LEN);
+      assert(res.eq(new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)));
     });
 
+    it('returns ERR_INVALID_CHAIN if header chain prevHash is invalid', async () => {
+      const res = await instance.validateHeaderChain(
+        constants.HEADER_ERR.HEADER_CHAIN_INVALID_PREVHASH
+      );
+      assert(res.eq(new BN('fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe', 16)));
+    });
+
+    it('returns ERR_LOW_WORK if a header does not meet its target', async () => {
+      const res = await instance.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_LOW_WORK);
+      assert(res.eq(new BN('fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd', 16)));
+    });
+  });
+
+  describe('#validateHeaderWork', async () => {
+    it('returns false on an empty digest', async () => {
+      const res = await instance.validateHeaderWork(constants.EMPTY, 0);
+      assert.isFalse(res);
+    });
+
+    it('returns false if the digest has insufficient work', async () => {
+      const res = await instance.validateHeaderWork('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 1);
+      assert.isFalse(res);
+    });
+
+    it('returns true if the digest has sufficient work', async () => {
+      const res = await instance.validateHeaderWork(
+        constants.OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE,
+        new BN('3840827764407250199942201944063224491938810378873470976', 10)
+      );
+      assert.isTrue(res);
+    });
+  });
+
+  describe('#validateHeaderPrevHash', async () => {
+    it('returns true if header prevHash is valid', async () => {
+      const res = await instance.validateHeaderPrevHash(
+        constants.OP_RETURN.INDEXED_HEADERS[1].HEADER,
+        constants.OP_RETURN.INDEXED_HEADERS[0].DIGEST_LE
+      );
+      assert.isTrue(res);
+    });
+
+    it('returns false if header prevHash is invalid', async () => {
+      const res = await instance.validateHeaderPrevHash(
+        constants.OP_RETURN.INDEXED_HEADERS[1].HEADER,
+        constants.OP_RETURN.INDEXED_HEADERS[1].DIGEST_LE
+      );
+      assert.isFalse(res);
+    });
+  });
 });
