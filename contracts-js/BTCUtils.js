@@ -16,9 +16,41 @@ const BTCUtils = {
 //     uint256 public constant RETARGET_PERIOD = 2 * 7 * 24 * 60 * 60;  // 2 weeks in seconds
 //     uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
 
-//     /* ***** */
-//     /* UTILS */
-//     /* ***** */
+  /* ***** */
+  /* UTILS */
+  /* ***** */
+
+  /* ***** */
+  /* CONVERSION FUNCTIONS */
+  /* ***** */
+
+  serializeHex: (uint8arr) => {
+    if (!uint8arr) {
+      return '';
+    }
+
+    var hexStr = '';
+    for (var i = 0; i < uint8arr.length; i++) {
+      var hex = (uint8arr[i] & 0xff).toString(16);
+      hex = (hex.length === 1) ? '0' + hex : hex;
+      hexStr += hex;
+    }
+
+    return hexStr.toUpperCase();
+  },
+
+  deserializeHex: (str) => {
+    if (!str) {
+      return new Uint8Array();
+    }
+
+    var a = [];
+    for (var i = 0, len = str.length; i < len; i+=2) {
+      a.push(parseInt(str.substr(i,2),16));
+    }
+
+    return new Uint8Array(a);
+  },
 
 //     /// @notice         Determines the length of a VarInt in bytes
 //     /// @dev            A VarInt of >1 byte is prefixed with a flag indicating its length
@@ -140,9 +172,9 @@ const BTCUtils = {
     return b;
   },
 
-//     /* ************ */
-//     /* Legacy Input */
-//     /* ************ */
+  /* ************ */
+  /* Legacy Input */
+  /* ************ */
 
 //     /// @notice          Extracts the nth input from the vin (0-indexed)
 //     /// @dev             Iterates over the vin. If you need to extract several, write a custom function
@@ -291,9 +323,9 @@ const BTCUtils = {
   },
 
 
-//     /* ************* */
-//     /* Witness Input */
-//     /* ************* */
+  /* ************* */
+  /* Witness Input */
+  /* ************* */
 
 //     /// @notice          Extracts the LE sequence bytes from an input
 //     /// @dev             Sequence is used for relative time locks
@@ -405,9 +437,9 @@ const BTCUtils = {
 //         return uint32(bytesToUint(_beIndex));
 //     }
 
-//     /* ****** */
-//     /* Output */
-//     /* ****** */
+  /* ****** */
+  /* Output */
+  /* ****** */
 
 //     /// @notice          Determines the length of an output
 //     /// @dev             5 types: WPKH, WSH, PKH, SH, and OP_RETURN
@@ -571,9 +603,9 @@ const BTCUtils = {
     return output;
   },
 
-//     /* ********** */
-//     /* Witness TX */
-//     /* ********** */
+  /* ********** */
+  /* Witness TX */
+  /* ********** */
 
 
 //     /// @notice      Checks that the vin passed up is properly formatted
@@ -650,9 +682,9 @@ const BTCUtils = {
 
 
 
-//     /* ************ */
-//     /* Block Header */
-//     /* ************ */
+  /* ************ */
+  /* Block Header */
+  /* ************ */
 
 //     /// @notice          Extracts the transaction merkle root from a block header
 //     /// @dev             Use verifyHash256Merkle to verify proofs with this root
