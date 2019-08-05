@@ -916,3 +916,5 @@ const BTCUtils = {
     return previousTarget;
   }
 }
+
+export default BTCUtils;
