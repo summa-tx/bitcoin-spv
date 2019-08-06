@@ -22,7 +22,7 @@ module.exports = {
       return new Uint8Array()
     }
 
-    var hex
+    var hex = ''
     if (hexStr.slice(0, 2) === '0x') {
       hex = hexStr.slice(2)
     }
@@ -36,7 +36,7 @@ module.exports = {
   },
 
   sha256: (buf) => {
-    return module.exports.deserializeHex(shaLib(buf))
+    return shaLib(buf)
   },
 
   ripemd160: (buf) => {

@@ -179,8 +179,8 @@ module.exports = {
   /// @return          The digest
   hash160: (bytesString) => {
     var newStr = bytesString.slice(2)
-    // return utils.ripemd160(utils.sha256(newStr))
-    return utils.sha256(newStr)
+    // return utils.serializeHex(utils.ripemd160(utils.sha256(newStr)))
+    return utils.serializeHex(utils.ripemd160(utils.deserializeHex(utils.sha256(newStr))))
   },
 
 //     /// @notice          Implements bitcoin's hash256 (double sha2)
