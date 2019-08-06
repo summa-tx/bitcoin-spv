@@ -14,7 +14,7 @@ require("../utils/sha256")
 // library BTCUtils {
 module.exports = {
 
-//     using BytesLib for bytes;
+  //     using BytesLib for bytes;
 //     using SafeMath for uint256;
 
 //     // The target at minimum Difficulty. Also the target of the genesis block
@@ -70,28 +70,28 @@ module.exports = {
     return a.every((val, i) => val === b[i]);
   },
 
-//     /// @notice         Determines the length of a VarInt in bytes
-//     /// @dev            A VarInt of >1 byte is prefixed with a flag indicating its length
-//     /// @param _flag    The first byte of a VarInt
-//     /// @return         The number of non-flag bytes in the VarInt
-//     function determineVarIntDataLength(bytes memory _flag) internal pure returns (uint8) {
-//         if (uint8(_flag[0]) == 0xff) {
-//             return 8  // one-byte flag, 8 bytes data
-//         }
-//         if (uint8(_flag[0]) == 0xfe) {
-//             return 4  // one-byte flag, 4 bytes data
-//         }
-//         if (uint8(_flag[0]) == 0xfd) {
-//             return 2  // one-byte flag, 2 bytes data
-//         }
+  //     /// @notice         Determines the length of a VarInt in bytes
+  //     /// @dev            A VarInt of >1 byte is prefixed with a flag indicating its length
+  //     /// @param _flag    The first byte of a VarInt
+  //     /// @return         The number of non-flag bytes in the VarInt
+  //     function determineVarIntDataLength(bytes memory _flag) internal pure returns (uint8) {
+  //         if (uint8(_flag[0]) == 0xff) {
+  //             return 8  // one-byte flag, 8 bytes data
+  //         }
+  //         if (uint8(_flag[0]) == 0xfe) {
+  //             return 4  // one-byte flag, 4 bytes data
+  //         }
+  //         if (uint8(_flag[0]) == 0xfd) {
+  //             return 2  // one-byte flag, 2 bytes data
+  //         }
 
-//         return 0  // flag is data
-//     }
+  //         return 0  // flag is data
+  //     }
 
-  /// @notice         Determines the length of a VarInt in bytes
-  /// @dev            A VarInt of >1 byte is prefixed with a flag indicating its length
-  /// @param _flag    The first byte of a VarInt
-  /// @return         The number of non-flag bytes in the VarInt
+  // @notice         Determines the length of a VarInt in bytes
+  // @dev            A VarInt of >1 byte is prefixed with a flag indicating its length
+  // @param _flag    The first byte of a VarInt
+  // @return         The number of non-flag bytes in the VarInt
   determineVarIntDataLength: (flag) => {
     if (flag == 0xff) {
       return 8  // one-byte flag, 8 bytes data
@@ -106,24 +106,24 @@ module.exports = {
     return 0  // flag is data
   },
 
-//     /// @notice          Changes the endianness of a byte array
-//     /// @dev             Returns a new, backwards, bytes
-//     /// @param _b        The bytes to reverse
-//     /// @return          The reversed bytes
-//     function reverseEndianness(bytes memory _b) internal pure returns (bytes memory) {
-//         bytes memory _newValue = new bytes(_b.length);
+  //     /// @notice          Changes the endianness of a byte array
+  //     /// @dev             Returns a new, backwards, bytes
+  //     /// @param _b        The bytes to reverse
+  //     /// @return          The reversed bytes
+  //     function reverseEndianness(bytes memory _b) internal pure returns (bytes memory) {
+  //         bytes memory _newValue = new bytes(_b.length);
 
-//         for (uint i = 0; i < _b.length; i++) {
-//             _newValue[_b.length - i - 1] = _b[i];
-//         }
+  //         for (uint i = 0; i < _b.length; i++) {
+  //             _newValue[_b.length - i - 1] = _b[i];
+  //         }
 
-//         return _newValue;
-//     }
+  //         return _newValue;
+  //     }
 
-  /// @notice          Changes the endianness of a byte array
-  /// @dev             Returns a new, backwards, bytes
-  /// @param _b        The bytes to reverse
-  /// @return          The reversed bytes
+  // @notice          Changes the endianness of a byte array
+  // @dev             Returns a new, backwards, bytes
+  // @param _b        The bytes to reverse
+  // @return          The reversed bytes
   reverseEndianness: (bytesString) => {
     var newString = bytesString.slice(2)  // This copies the array, minus the '0x' prefix.
     var arr = module.exports.deserializeHex(newString) // To access another function in the module, you have to use module.exports.nameOfFunction.  We may change this in the future.
@@ -132,31 +132,31 @@ module.exports = {
     return `0x${newArr}`
   },
 
-//     /// @notice          Converts big-endian bytes to a uint
-//     /// @dev             Traverses the byte array and sums the bytes
-//     /// @param _b        The big-endian bytes-encoded integer
-//     /// @return          The integer representation
-//     function bytesToUint(bytes memory _b) internal pure returns (uint256) {
-//         uint256 _number;
+  //     /// @notice          Converts big-endian bytes to a uint
+  //     /// @dev             Traverses the byte array and sums the bytes
+  //     /// @param _b        The big-endian bytes-encoded integer
+  //     /// @return          The integer representation
+  //     function bytesToUint(bytes memory _b) internal pure returns (uint256) {
+  //         uint256 _number;
 
-//         for (uint i = 0; i < _b.length; i++) {
-//             _number = _number + uint8(_b[i]) * (2 ** (8 * (_b.length - (i + 1))));
-//         }
+  //         for (uint i = 0; i < _b.length; i++) {
+  //             _number = _number + uint8(_b[i]) * (2 ** (8 * (_b.length - (i + 1))));
+  //         }
 
-//         return _number;
-//     }
+  //         return _number;
+  //     }
 
-  /// @notice          Converts big-endian bytes to a uint
-  /// @dev             Traverses the byte array and sums the bytes
-  /// @param _b        The big-endian bytes-encoded integer
-  /// @return          The integer representation
+  // @notice          Converts big-endian bytes to a uint
+  // @dev             Traverses the byte array and sums the bytes
+  // @param _b        The big-endian bytes-encoded integer
+  // @return          The integer representation
   bytesToUint: (bytesString) => {
-    var newString = bytesString.slice(2)  // This copies the array, minus the '0x' prefix.
-    var arr = module.exports.deserializeHex(newString)
+    let newString = bytesString.slice(2)  // This copies the array, minus the '0x' prefix.
+    let arr = module.exports.deserializeHex(newString)
 
-    var total = 0
+    let total = 0
 
-    for (var i = 0; i < arr.length; i++) {
+    for (let i = 0; i < arr.length; i++) {
       total += arr[i]
     }
 
@@ -573,8 +573,7 @@ module.exports = {
 //     /// @return          The output value
 //     function extractValue(bytes memory _output) internal pure returns (uint64) {
 //         bytes memory _leValue = extractValueLE(_output);
-//         bytes memory _beValue = reverseEndianness(_leValue);
-//         return uint64(bytesToUint(_beValue));
+//         bytes memory _beValue = reverseEndianness(_leValue);//         return uint64(bytesToUint(_beValue));
 //     }
 
   /// @notice          Extracts the value from the output in a tx
@@ -780,13 +779,14 @@ module.exports = {
   /// @param _header   The header
   /// @return          The target threshold
   extractTarget: (header) => {
-    let m = header.slice(3, 72)
-    let e = header[75]
+    let d_header = module.exports.deserializeHex(header)
+    let m = d_header.slice(72, 75)
+    let e = d_header[75]
     let mantissa = module.exports.bytesToUint(module.exports.reverseEndianness(m))
     let exponent = e - 3
     // console.log('header: ', header, m , e, mantissa, exponent)
 
-    return BigInt(mantissa * (256 ** exponent))
+    return mantissa * (256 ** exponent)
   },
 
 //     /// @notice          Calculate difficulty from the difficulty 1 target and current target
