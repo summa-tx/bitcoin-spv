@@ -153,13 +153,19 @@ module.exports = {
     var newString = bytesString.slice(2)  // This copies the array, minus the '0x' prefix.
     var arr = module.exports.deserializeHex(newString)
 
-    var total = 0
+    // var total = 0
 
+    // for (var i = 0; i < arr.length; i++) {
+    //   total += arr[i]
+    // }
+
+    var total = BigInt(0)
     for (var i = 0; i < arr.length; i++) {
-      total += arr[i]
+      total += BigInt(arr[i]) << (BigInt(arr.length - i - 1) * BigInt(8))
     }
-
     return total
+
+    // return total
   },
 
 //     /// @notice          Get the last _num bytes from a byte array
@@ -196,7 +202,7 @@ module.exports = {
   /// @param _b        The pre-image
   /// @return          The digest
   hash160: (b) => {
-    return sha256(b)
+    return ripemd160(sha256(b))
     // return ripemd160(b)
   },
 
