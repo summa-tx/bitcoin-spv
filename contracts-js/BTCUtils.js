@@ -22,6 +22,8 @@ module.exports = {
 
 //     uint256 public constant RETARGET_PERIOD = 2 * 7 * 24 * 60 * 60;  // 2 weeks in seconds
 //     uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
+  RETARGET_PERIOD: 1209600,
+  RETARGET_PERIOD_BLOCKS: 2016,
 
   /* ***** */
   /* UTILS */
@@ -778,7 +780,13 @@ module.exports = {
   /// @param _header   The header
   /// @return          The target threshold
   extractTarget: (header) => {
-    return
+    let m = header.slice(3, 72)
+    let e = header[75]
+    let mantissa = module.exports.bytesToUint(module.exports.reverseEndianness(m))
+    let exponent = e - 3
+    // console.log('header: ', header, m , e, mantissa, exponent)
+
+    return BigInt(mantissa * (256 ** exponent))
   },
 
 //     /// @notice          Calculate difficulty from the difficulty 1 target and current target
@@ -987,6 +995,22 @@ module.exports = {
   /// @param _secondTimestamp the timestamp of the last block in the difficulty period
   /// @return                 the new period's target threshold
   retargetAlgorithm: (previousTarget, firstTimestamp, secondTimestamp) => {
-    return
+    let elapsedTime = secondTimestamp - firstTimestamp
+    const rp = module.exports.RETARGET_PERIOD
+    const rp_div4 = rp / 4
+    const rp_mul4 = rp * 4
+    const antiOverflow = 65536
+
+    if (elapsedTime < rp_div4) {
+      elapsedTime = rp_div4
+    }
+    if (elapsedTime > rp_mul4) {
+      elapsedTime = rp_mul4
+    }
+
+    let adjusted = (previousTarget / antiOverflow) * elapsedTime
+    console.log('adjusted: ', adjusted, previousTarget, elapsedTime)
+
+    return BigInt((adjusted / rp) * antiOverflow)
   }
 }
