@@ -36,7 +36,7 @@ module.exports = {
   },
 
   sha256: (buf) => {
-    return shaLib(buf)
+    return module.exports.deserializeHex(shaLib(buf))
   },
 
   ripemd160: (buf) => {
