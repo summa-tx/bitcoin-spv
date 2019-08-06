@@ -8,9 +8,9 @@
 // ripemd160 --> Hold off on this for now
 // keccack256 --> Can just drop this and do an equality test instead, James will find equality test to use
 
-const ripemd160 = require("../utils/ripemd160").default
-const sha256 = require("../utils/sha256")
-// import sha256 from '../utils/sha256'
+// const ripemd160 = require("../utils/ripemd160").default
+// const sha256 = require("../utils/sha256")
+const utils = require('../utils/utils')
 
 // library BTCUtils {
 module.exports = {
@@ -32,42 +32,42 @@ module.exports = {
   /* CONVERSION FUNCTIONS */
   /* ***** */
 
-  serializeHex: (uint8arr) => {
-    if (!uint8arr) {
-      return ''
-    }
+  // serializeHex: (uint8arr) => {
+  //   if (!uint8arr) {
+  //     return ''
+  //   }
 
-    var hexStr = ''
-    for (var i = 0; i < uint8arr.length; i++) {
-      var hex = (uint8arr[i] & 0xff).toString(16)
-      hex = (hex.length === 1) ? '0' + hex : hex
-      hexStr += hex
-    }
+  //   var hexStr = ''
+  //   for (var i = 0; i < uint8arr.length; i++) {
+  //     var hex = (uint8arr[i] & 0xff).toString(16)
+  //     hex = (hex.length === 1) ? '0' + hex : hex
+  //     hexStr += hex
+  //   }
 
-    return hexStr.toLowerCase()
-  },
+  //   return hexStr.toLowerCase()
+  // },
 
-  deserializeHex: (str) => {
-    if (!str) {
-      return new Uint8Array()
-    }
+  // deserializeHex: (str) => {
+  //   if (!str) {
+  //     return new Uint8Array()
+  //   }
 
-    var a = []
-    for (var i = 0, len = str.length; i < len; i+=2) {
-      a.push(parseInt(str.substr(i,2),16))
-    }
+  //   var a = []
+  //   for (var i = 0, len = str.length; i < len; i+=2) {
+  //     a.push(parseInt(str.substr(i,2),16))
+  //   }
 
-    return new Uint8Array(a)
-  },
+  //   return new Uint8Array(a)
+  // },
 
   /* ***** */
   /* COMPARE ARRAYS, USE IN PLACE OF KECCAK256 */
   /* ***** */
 
-  typedArraysAreEqual: (a, b) => {
-    if (a.byteLength !== b.byteLength) return false;
-    return a.every((val, i) => val === b[i]);
-  },
+  // typedArraysAreEqual: (a, b) => {
+  //   if (a.byteLength !== b.byteLength) return false;
+  //   return a.every((val, i) => val === b[i]);
+  // },
 
 //     /// @notice         Determines the length of a VarInt in bytes
 //     /// @dev            A VarInt of >1 byte is prefixed with a flag indicating its length
@@ -124,40 +124,18 @@ module.exports = {
   /// @param _b        The bytes to reverse
   /// @return          The reversed bytes
   reverseEndianness: (bytesString) => {
-    var newString = bytesString.slice(2)  // This copies the array, minus the '0x' prefix.
-    var arr = module.exports.deserializeHex(newString) // To access another function in the module, you have to use module.exports.nameOfFunction.  We may change this in the future.
+    var arr = utils.deserializeHex(bytesString) // To access another function in the module, you have to use module.exports.nameOfFunction.  We may change this in the future.
     arr.reverse()
-    var newArr = module.exports.serializeHex(arr)  // Eventually, I think we are going to return values in arrays of integers.  For now, return things as a hex, so we can check that the tests pass.
-    return `0x${newArr}`
+    var newArr = utils.serializeHex(arr)  // Eventually, I think we are going to return values in arrays of integers.  For now, return things as a hex, so we can check that the tests pass.
+    return newArr
   },
-
-//     /// @notice          Converts big-endian bytes to a uint
-//     /// @dev             Traverses the byte array and sums the bytes
-//     /// @param _b        The big-endian bytes-encoded integer
-//     /// @return          The integer representation
-//     function bytesToUint(bytes memory _b) internal pure returns (uint256) {
-//         uint256 _number;
-
-//         for (uint i = 0; i < _b.length; i++) {
-//             _number = _number + uint8(_b[i]) * (2 ** (8 * (_b.length - (i + 1))));
-//         }
-
-//         return _number;
-//     }
 
   /// @notice          Converts big-endian bytes to a uint
   /// @dev             Traverses the byte array and sums the bytes
   /// @param _b        The big-endian bytes-encoded integer
   /// @return          The integer representation
   bytesToUint: (bytesString) => {
-    var newString = bytesString.slice(2)  // This copies the array, minus the '0x' prefix.
-    var arr = module.exports.deserializeHex(newString)
-
-    // var total = 0
-
-    // for (var i = 0; i < arr.length; i++) {
-    //   total += arr[i]
-    // }
+    var arr = utils.deserializeHex(bytesString)
 
     var total = BigInt(0)
     for (var i = 0; i < arr.length; i++) {
@@ -165,7 +143,6 @@ module.exports = {
     }
     return total
 
-    // return total
   },
 
 //     /// @notice          Get the last _num bytes from a byte array
@@ -183,10 +160,9 @@ module.exports = {
   /// @param _num      The number of bytes to extract from the end
   /// @return          The last _num bytes of _b
   lastBytes: (bytesString, num) => {
-    var str = bytesString.slice(2)
-    var arr = module.exports.deserializeHex(str)
-    var lastBytes = module.exports.serializeHex(arr.slice(arr.length - 2))
-    return `0x${lastBytes}`
+    var arr = utils.deserializeHex(bytesString)
+    var lastBytes = utils.serializeHex(arr.slice(arr.length - 2))
+    return lastBytes
   },
 
 //     /// @notice          Implements bitcoin's hash160 (rmd160(sha2()))
@@ -202,7 +178,7 @@ module.exports = {
   /// @param _b        The pre-image
   /// @return          The digest
   hash160: (b) => {
-    return ripemd160(sha256(b))
+    return utils.serializeHex(utils.ripemd160(utils.sha256(b)))
     // return ripemd160(b)
   },
 
