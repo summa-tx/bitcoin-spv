@@ -79,13 +79,13 @@ module.exports = {
   /// @param _flag    The first byte of a VarInt
   /// @return         The number of non-flag bytes in the VarInt
   determineVarIntDataLength: (flag) => {
-    if (flag[0] == 0xff) {
+    if (flag == 0xff) {
       return 8  // one-byte flag, 8 bytes data
     }
-    if (flag[0] == 0xfe) {
+    if (flag == 0xfe) {
       return 4  // one-byte flag, 4 bytes data
     }
-    if (flag[0] == 0xfd) {
+    if (flag == 0xfd) {
       return 2  // one-byte flag, 2 bytes data
     }
 
@@ -111,10 +111,10 @@ module.exports = {
   /// @param _b        The bytes to reverse
   /// @return          The reversed bytes
   reverseEndianness: (bytesString) => {
-    var newString = bytesString.slice(2)  // this copies the array, minus the 0x prefix
-    var arr = module.exports.deserializeHex(newString)
+    var newString = bytesString.slice(2)  // This copies the array, minus the '0x' prefix.
+    var arr = module.exports.deserializeHex(newString) // To access another function in the module, you have to use module.exports.nameOfFunction.  We may change this in the future.
     arr.reverse()
-    var newArr = module.exports.serializeHex(arr)
+    var newArr = module.exports.serializeHex(arr)  // Eventually, I think we are going to return values in arrays of integers.  For now, return things as a hex, so we can check that the tests pass.
     return `0x${newArr}`
   },
 

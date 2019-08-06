@@ -1,5 +1,5 @@
 /* global artifacts contract before it assert */
-const BN = require('bn.js');
+// const BN = require('bn.js');
 const constants = require('./constants');
 
 const assert = require('chai').assert
@@ -46,30 +46,30 @@ describe('BTCUtils', () => {
 
   it('converts big-endian bytes to integers', async () => {
     let res = await BTCUtilsJs.bytesToUint('0x00');
-    assert(res, new BN('0', 10));
+    assert(res, 0n);
 
     res = await BTCUtilsJs.bytesToUint('0xff');
-    assert(res, new BN('255', 10));
+    assert(res, 255n);
 
     res = await BTCUtilsJs.bytesToUint('0x00ff');
-    assert(res, new BN('255', 10));
+    assert(res, 255n);
 
     res = await BTCUtilsJs.bytesToUint('0xff00');
-    assert(res, new BN('65280', 10));
+    assert(res, 65280n);
 
     res = await BTCUtilsJs.bytesToUint('0x01');
-    assert(res, new BN('1', 10));
+    assert(res, 1n);
 
     res = await BTCUtilsJs.bytesToUint('0x0001');
-    assert(res, new BN('1', 10));
+    assert(res, 1n);
 
     res = await BTCUtilsJs.bytesToUint('0x0100');
-    assert(res, new BN('256', 10));
+    assert(res, 256n);
 
     // max uint256: (2^256)-1
     res = await BTCUtilsJs.bytesToUint('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
     assert(
-      res, new BN('115792089237316195423570985008687907853269984665640564039457584007913129639935', 10)
+      res, 115792089237316195423570985008687907853269984665640564039457584007913129639935n
     );
   });
 
@@ -94,8 +94,8 @@ describe('BTCUtils', () => {
     let res;
     res = await BTCUtilsJs.extractSequenceLEWitness(input);
     assert.equal(res, '0xffffffff');
-    res = await BTCUtilsJs.extractSequenceWitness(input);
-    assert(res.eq(new BN('ffffffff', 16)));
+    res = BTCUtilsJs.extractSequenceWitness(input);
+    assert.equal(res, 0xffffffffn)
   });
 
   it('extracts a sequence from a legacy input as LE and int', async () => {
@@ -104,7 +104,7 @@ describe('BTCUtils', () => {
     res = await BTCUtilsJs.extractSequenceLELegacy(input);
     assert.equal(res, '0xffffffff');
     res = await BTCUtilsJs.extractSequenceLegacy(input);
-    assert(res.eq(new BN('ffffffff', 16)));
+    assert.equal(res, 0xffffffffn);
   });
 
   it('extracts an outpoint as bytes', async () => {
@@ -165,13 +165,13 @@ describe('BTCUtils', () => {
     res = await BTCUtilsJs.extractValueLE(output);
     assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[0].VALUE_LE);
     res = await BTCUtilsJs.extractValue(output);
-    assert(res.eq(new BN('079748', 16)));
+    assert.equal(res, 0x079748n);
 
     const opReturnOutput = constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
     res = await BTCUtilsJs.extractValueLE(opReturnOutput);
     assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[1].VALUE_LE);
     res = await BTCUtilsJs.extractValue(opReturnOutput);
-    assert(res.eq(new BN('00', 16)));
+    assert.equal(res, 0x00n);
   });
 
   it('extracts op_return data blobs', async () => {
@@ -221,16 +221,16 @@ describe('BTCUtils', () => {
   it('extracts the length of the VarInt and scriptSig from inputs', async () => {
     let res;
     res = await BTCUtilsJs.extractScriptSigLen(constants.OP_RETURN.INPUTS);
-    assert(res[0].eq(new BN('0', 10)));
-    assert(res[1].eq(new BN('0', 10)));
+    assert.equal(res[0], 0n);
+    assert.equal(res[1], 0n);
 
     res = await BTCUtilsJs.extractScriptSigLen('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff');
-    assert(res[0].eq(new BN('0', 10)));
-    assert(res[1].eq(new BN('1', 10)));
+    assert.equal(res[0], 0n);
+    assert.equal(res[1], 1n);
 
     res = await BTCUtilsJs.extractScriptSigLen('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000FF0000000000000000ffffffff');
-    assert(res[0].eq(new BN('8', 10)));
-    assert(res[1].eq(new BN('0', 10)));
+    assert.equal(res[0], 8n);
+    assert.equal(res[1], 0n);
   });
 
   it('validates vin length based on stated size', async () => {
@@ -284,17 +284,23 @@ describe('BTCUtils', () => {
   it('determines output length properly', async () => {
     let res;
     res = await BTCUtilsJs.determineOutputLength('0x00000000000000002200');
-    assert(res.eq(new BN('43', 10)));
+    assert.equal(res, 43n);
+
     res = await BTCUtilsJs.determineOutputLength('0x00000000000000001600');
-    assert(res.eq(new BN('31', 10)));
+    assert.equal(res, 31n);
+
     res = await BTCUtilsJs.determineOutputLength('0x0000000000000000206a');
-    assert(res.eq(new BN('41', 10)));
+    assert.equal(res, 41n);
+
     res = await BTCUtilsJs.determineOutputLength('0x000000000000000002');
-    assert(res.eq(new BN('11', 10)));
+    assert.equal(res, 11n);
+
     res = await BTCUtilsJs.determineOutputLength('0x000000000000000000');
-    assert(res.eq(new BN('9', 10)));
+    assert.equal(res, 9n);
+
     res = await BTCUtilsJs.determineOutputLength('0x000000000000000088');
-    assert(res.eq(new BN('145', 10)));
+    assert.equal(res, 145n);
+
     try {
       res = await BTCUtilsJs.determineOutputLength('0x0000000000000000FF00');
       assert(false, 'Expected an error');
@@ -322,7 +328,7 @@ describe('BTCUtils', () => {
 
   it('extracts the target from a header', async () => {
     const res = await BTCUtilsJs.extractTarget(HEADER_170);
-    assert(res.eq(new BN('26959535291011309493156476344723991336010898738574164086137773096960', 10)));
+    assert.equal(res, 26959535291011309493156476344723991336010898738574164086137773096960n);
   });
 
   it('extracts the prev block hash', async () => {
@@ -332,7 +338,8 @@ describe('BTCUtils', () => {
 
   it('extracts a timestamp from a header', async () => {
     const res = await BTCUtilsJs.extractTimestamp(HEADER_170);
-    assert(res.eq(new BN('1231731025', 10)));
+    // assert(res.eq(new BN('1231731025', 10)));
+    assert.equal(res, 1231731025n);
   });
 
   it('verifies a bitcoin merkle root', async () => {
@@ -378,13 +385,13 @@ describe('BTCUtils', () => {
     let res;
 
     res = await BTCUtilsJs.determineVarIntDataLength('0x01');
-    assert(res.eq(new BN(0, 10)));
+    assert.equal(res, 0);
     res = await BTCUtilsJs.determineVarIntDataLength('0xfd');
-    assert(res.eq(new BN(2, 10)));
+    assert.equal(res, 2);
     res = await BTCUtilsJs.determineVarIntDataLength('0xfe');
-    assert(res.eq(new BN(4, 10)));
+    assert.equal(res, 4);
     res = await BTCUtilsJs.determineVarIntDataLength('0xff');
-    assert(res.eq(new BN(8, 10)));
+    assert.equal(res, 8);
   });
 
   it('calculates consensus-correct retargets', async () => {
@@ -422,15 +429,15 @@ describe('BTCUtils', () => {
     for (let i = 0; i < constants.RETARGET_TUPLES.length; i += 1) {
       actual = await BTCUtilsJs.extractDifficulty(`0x${constants.RETARGET_TUPLES[i][0].hex}`);
       expected = constants.RETARGET_TUPLES[i][0].difficulty;
-      assert(actual.eq(expected));
+      assert.equal(actual, expected);
 
       actual = await BTCUtilsJs.extractDifficulty(`0x${constants.RETARGET_TUPLES[i][1].hex}`);
       expected = constants.RETARGET_TUPLES[i][1].difficulty;
-      assert(actual.eq(expected));
+      assert.equal(actual, expected);
 
       actual = await BTCUtilsJs.extractDifficulty(`0x${constants.RETARGET_TUPLES[i][2].hex}`);
       expected = constants.RETARGET_TUPLES[i][2].difficulty;
-      assert(actual.eq(expected));
+      assert.equal(actual, expected);
     }
     /* eslint-enable no-await-in-loop */
   });
