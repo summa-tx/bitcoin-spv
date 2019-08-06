@@ -4,12 +4,12 @@
 // import {BytesLib} from "./BytesLib.sol";
 // import {SafeMath} from "./SafeMath.sol";
 
-// sha265 --> Hold off on this for now
-// ridemd250 --> Hold off on this for now
+// sha256 --> Hold off on this for now
+// ripemd160 --> Hold off on this for now
 // keccack256 --> Can just drop this and do an equality test instead, James will find equality test to use
 
 // library BTCUtils {
-const BTCUtils = {
+module.exports = {
 
 //     using BytesLib for bytes;
 //     using SafeMath for uint256;
@@ -970,5 +970,3 @@ const BTCUtils = {
     return previousTarget;
   }
 }
-
-export default BTCUtils;
