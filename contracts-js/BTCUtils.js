@@ -8,8 +8,9 @@
 // ripemd160 --> Hold off on this for now
 // keccack256 --> Can just drop this and do an equality test instead, James will find equality test to use
 
-require("../utils/ripemd160")
-require("../utils/sha256")
+const ripemd160 = require("../utils/ripemd160").default
+const sha256 = require("../utils/sha256")
+// import sha256 from '../utils/sha256'
 
 // library BTCUtils {
 module.exports = {
@@ -195,7 +196,8 @@ module.exports = {
   /// @param _b        The pre-image
   /// @return          The digest
   hash160: (b) => {
-    return
+    return sha256(b)
+    // return ripemd160(b)
   },
 
 //     /// @notice          Implements bitcoin's hash256 (double sha2)
