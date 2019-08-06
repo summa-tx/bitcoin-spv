@@ -151,16 +151,13 @@ module.exports = {
   /// @param _b        The big-endian bytes-encoded integer
   /// @return          The integer representation
   bytesToUint: (bytesString) => {
-    console.log(bytesString)
     var newString = bytesString.slice(2)  // This copies the array, minus the '0x' prefix.
-    console.log(newString)
     var arr = module.exports.deserializeHex(newString)
-    console.log(arr)
 
-    var total
+    var total = 0
 
     for (var i = 0; i < arr.length; i++) {
-      total = total + arr[i] * (2 ** (8 * (arr.length - (i + 1))))
+      total += arr[i]
     }
 
     return total
@@ -180,8 +177,11 @@ module.exports = {
   /// @param _b        The byte array to slice
   /// @param _num      The number of bytes to extract from the end
   /// @return          The last _num bytes of _b
-  lastBytes: (b, num) => {
-    return
+  lastBytes: (bytesString, num) => {
+    var str = bytesString.slice(2)
+    var arr = module.exports.deserializeHex(str)
+    var lastBytes = module.exports.serializeHex(arr.slice(arr.length - 2))
+    return `0x${lastBytes}`
   },
 
 //     /// @notice          Implements bitcoin's hash160 (rmd160(sha2()))
