@@ -159,7 +159,7 @@ module.exports = {
   /// @param _num      The number of bytes to extract from the end
   /// @return          The last _num bytes of _b
   lastBytes: (b, num) => {
-    return b;
+    return;
   },
 
 //     /// @notice          Implements bitcoin's hash160 (rmd160(sha2()))
@@ -175,7 +175,7 @@ module.exports = {
   /// @param _b        The pre-image
   /// @return          The digest
   hash160: (b) => {
-    return b;
+    return;
   },
 
 //     /// @notice          Implements bitcoin's hash256 (double sha2)
@@ -191,7 +191,7 @@ module.exports = {
   /// @param _b        The pre-image
   /// @return          The digest
   hash256: (b) => {
-    return b;
+    return;
   },
 
   /* ************ */
@@ -226,7 +226,7 @@ module.exports = {
   /// @param _index    The 0-indexed location of the input to extract
   /// @return          The input as a byte array
   extractInputAtIndex: (vin, index) => {
-    return vin;
+    return;
   },
 
 //     /// @notice          Determines whether an input is legacy
@@ -242,7 +242,7 @@ module.exports = {
   /// @param _input    The input
   /// @return          True for legacy, False for witness
   isLegacyInput: (input) => {
-    return input;
+    return;
   },
 
 //     /// @notice          Determines the length of an input from its scriptsig
@@ -261,7 +261,7 @@ module.exports = {
   /// @param _input    The input
   /// @return          The length of the input in bytes
   determineInputLength: (input) => {
-    return input;
+    return;
   },
 
 //     /// @notice          Extracts the LE sequence bytes from an input
@@ -280,7 +280,7 @@ module.exports = {
   /// @param _input    The LEGACY input
   /// @return          The sequence bytes (LE uint)
   extractSequenceLELegacy: (input) => {
-      return input;
+    return;
   },
 
 //     /// @notice          Extracts the sequence from the input
@@ -298,7 +298,7 @@ module.exports = {
   /// @param _input    The LEGACY input
   /// @return          The sequence number (big-endian uint)
   extractSequenceLegacy: (input) => {
-    return input;
+    return;
   },
 
 //     /// @notice          Extracts the VarInt-prepended scriptSig from the input in a tx
@@ -317,7 +317,7 @@ module.exports = {
   /// @param _input    The LEGACY input
   /// @return          The length-prepended script sig
   extractScriptSig: (input) => {
-    return input;
+    return;
   },
 
 //     /// @notice          Determines the length of a scriptSig in an input
@@ -341,7 +341,7 @@ module.exports = {
   /// @param _input    The LEGACY input
   /// @return          The length of the script sig
   extractScriptSigLen: (input) => {
-    return input;
+    return;
   },
 
 
@@ -362,7 +362,7 @@ module.exports = {
   /// @param _input    The WITNESS input
   /// @return          The sequence bytes (LE uint)
   extractSequenceLEWitness: (input) => {
-    return input;
+    return;
   },
 
 //     /// @notice          Extracts the sequence from the input in a tx
@@ -380,7 +380,7 @@ module.exports = {
   /// @param _input    The WITNESS input
   /// @return          The sequence number (big-endian uint)
   extractSequenceWitness: (input) => {
-    return input;
+    return;
   },
 
 //     /// @notice          Extracts the outpoint from the input in a tx
@@ -396,7 +396,7 @@ module.exports = {
   /// @param _input    The input
   /// @return          The outpoint (LE bytes of prev tx hash + LE bytes of prev tx index)
   extractOutpoint: (input) => {
-    return input;
+    return;
   },
 
 //     /// @notice          Extracts the outpoint tx id from an input
@@ -412,7 +412,7 @@ module.exports = {
   /// @param _input    The input
   /// @return          The tx id (little-endian bytes)
   extractInputTxIdLE: (input) => {
-    return input;
+    return;
   },
 
 //     /// @notice          Extracts the outpoint index from an input
@@ -430,7 +430,7 @@ module.exports = {
   /// @param _input    The input
   /// @return          The tx id (big-endian bytes)
   extractInputTxId: (input) => {
-    return input;
+    return;
   },
 
 //     /// @notice          Extracts the LE tx input index from the input in a tx
@@ -446,7 +446,7 @@ module.exports = {
   /// @param _input    The input
   /// @return          The tx index (little-endian bytes)
   extractTxIndexLE: (input) => {
-    return input;
+    return;
   },
 
 //     /// @notice          Extracts the tx input index from the input in a tx
@@ -479,7 +479,7 @@ module.exports = {
   /// @param _output   The output
   /// @return          The length indicated by the prefix, error if invalid length
   determineOutputLength: (output) => {
-    return output;
+    return;
   },
 
 //     /// @notice          Extracts the output at a given index in the TxIns vector
@@ -510,7 +510,7 @@ module.exports = {
   /// @param _index    The 0-indexed location of the output to extract
   /// @return          The specified output
   extractOutputAtIndex: (vout, index) => {
-    return vout;
+    return;
   },
 
 //     /// @notice          Extracts the output script length
@@ -526,7 +526,7 @@ module.exports = {
   /// @param _output   The output
   /// @return          The 1 byte length prefix
   extractOutputScriptLen: (output) => {
-    return output;
+    return;
   },
 
 //     /// @notice          Extracts the value bytes from the output in a tx
@@ -542,7 +542,7 @@ module.exports = {
   /// @param _output   The output
   /// @return          The output value as LE bytes
   extractValueLE: (output) => {
-    return output;
+    return;
   },
 
 //     /// @notice          Extracts the value from the output in a tx
@@ -560,7 +560,7 @@ module.exports = {
   /// @param _output   The output
   /// @return          The output value
   extractValue: (output) => {
-    return output;
+    return;
   },
 
 //     /// @notice          Extracts the data from an op return output
@@ -580,7 +580,7 @@ module.exports = {
   /// @param _output   The output
   /// @return          Any data contained in the opreturn output, null if not an op return
   extractOpReturnData: (output) => {
-    return output;
+    return;
   },
 
 //     /// @notice          Extracts the hash from the output script
@@ -622,7 +622,7 @@ module.exports = {
   /// @param _output   The output
   /// @return          The hash committed to by the pk_script, or null for errors
   extractHash: (output) => {
-    return output;
+    return;
   },
 
   /* ********** */
@@ -663,7 +663,7 @@ module.exports = {
   /// @param _vin  Raw bytes length-prefixed input vector
   /// @return      True if it represents a validly formatted vin
   validateVin: (vin) => {
-    return vin;
+    return;
   },
 
 //     /// @notice      Checks that the vin passed up is properly formatted
@@ -699,7 +699,7 @@ module.exports = {
   /// @param _vout Raw bytes length-prefixed output vector
   /// @return      True if it represents a validly formatted bout
   validateVout: (vout) => {
-    return vout;
+    return;
   },
 
 
@@ -721,7 +721,7 @@ module.exports = {
   /// @param _header   The header
   /// @return          The merkle root (little-endian)
   extractMerkleRootLE: (header) => {
-    return header;
+    return;
   },
 
 //     /// @notice          Extracts the transaction merkle root from a block header
@@ -737,7 +737,7 @@ module.exports = {
   /// @param _header   The header
   /// @return          The merkle root (big-endian)
   extractMerkleRootBE: (header) => {
-    return header;
+    return;
   },
 
 //     /// @notice          Extracts the target from a block header
@@ -758,7 +758,7 @@ module.exports = {
   /// @param _header   The header
   /// @return          The target threshold
   extractTarget: (header) => {
-    return header;
+    return;
   },
 
 //     /// @notice          Calculate difficulty from the difficulty 1 target and current target
@@ -778,7 +778,7 @@ module.exports = {
   /// @param _target   The current target
   /// @return          The block difficulty (bdiff)
   calculateDifficulty: (target) => {
-    return target;
+    return;
   },
 
 //     /// @notice          Extracts the previous block's hash from a block header
@@ -794,7 +794,7 @@ module.exports = {
   /// @param _header   The header
   /// @return          The previous block's hash (little-endian)
   extractPrevBlockLE: (header) => {
-    return header;
+    return;
   },
 
 //     /// @notice          Extracts the previous block's hash from a block header
@@ -810,7 +810,7 @@ module.exports = {
   /// @param _header   The header
   /// @return          The previous block's hash (big-endian)
   extractPrevBlockBE: (header) => {
-    return header;
+    return;
   },
 
 //     /// @notice          Extracts the timestamp from a block header
@@ -826,7 +826,7 @@ module.exports = {
   /// @param _header   The header
   /// @return          The timestamp (little-endian bytes)
   extractTimestampLE: (header) => {
-    return header;
+    return;
   },
 
 //     /// @notice          Extracts the timestamp from a block header
@@ -842,7 +842,7 @@ module.exports = {
   /// @param _header   The header
   /// @return          The timestamp (uint)
   extractTimestamp: (header) => {
-    return header;
+    return;
   },
 
 //     /// @notice          Extracts the expected difficulty from a block header
@@ -858,7 +858,7 @@ module.exports = {
   /// @param _header   The header
   /// @return          The difficulty as an integer
   extractDifficulty: (header) => {
-    return header;
+    return;
   },
 
 //     /// @notice          Concatenates and hashes two inputs for merkle proving
@@ -874,7 +874,7 @@ module.exports = {
   /// @param _b        The second hash
   /// @return          The double-sha256 of the concatenated hashes
   hash256MerkleStep: (a, b) => {
-      return a;
+      return;
   },
 
 //     /// @notice          Verifies a Bitcoin-style merkle tree
@@ -919,7 +919,7 @@ module.exports = {
   /// @param _index    The index of the leaf
   /// @return          true if the proof is valid, else false
   verifyHash256Merkle: (proof, index) => {
-    return proof;
+    return;
   },
 
 //     /*
@@ -967,6 +967,6 @@ module.exports = {
   /// @param _secondTimestamp the timestamp of the last block in the difficulty period
   /// @return                 the new period's target threshold
   retargetAlgorithm: (previousTarget, firstTimestamp, secondTimestamp) => {
-    return previousTarget;
+    return;
   }
 }
