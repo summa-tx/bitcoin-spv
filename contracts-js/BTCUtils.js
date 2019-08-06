@@ -8,6 +8,9 @@
 // ripemd160 --> Hold off on this for now
 // keccack256 --> Can just drop this and do an equality test instead, James will find equality test to use
 
+require("../utils/ripemd160")
+require("../utils/sha256")
+
 // library BTCUtils {
 module.exports = {
 
@@ -54,6 +57,15 @@ module.exports = {
     }
 
     return new Uint8Array(a)
+  },
+
+  /* ***** */
+  /* COMPARE ARRAYS, USE IN PLACE OF KECCAK256 */
+  /* ***** */
+
+  typedArraysAreEqual: (a, b) => {
+    if (a.byteLength !== b.byteLength) return false;
+    return a.every((val, i) => val === b[i]);
   },
 
 //     /// @notice         Determines the length of a VarInt in bytes
@@ -137,10 +149,16 @@ module.exports = {
   /// @param _b        The big-endian bytes-encoded integer
   /// @return          The integer representation
   bytesToUint: (bytesString) => {
+    console.log(bytesString)
+    var newString = bytesString.slice(2)  // This copies the array, minus the '0x' prefix.
+    console.log(newString)
+    var arr = module.exports.deserializeHex(newString)
+    console.log(arr)
+
     var total
 
-    for (var i = 0; i < bytesString.length; i++) {
-      total = total + bytesString[i] * (2 ** (8 * (bytesString.length - (i + 1))))
+    for (var i = 0; i < arr.length; i++) {
+      total = total + arr[i] * (2 ** (8 * (arr.length - (i + 1))))
     }
 
     return total
