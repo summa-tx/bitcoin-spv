@@ -157,27 +157,27 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the nth input from the vin (0-indexed)
+   * @dev Iterates over the vin. If you need to extract several, write a custom function
+   * @param {Uint8Array} vinArr The vin as a tightly-packed uint8array
+   * @param index The 0-indexed location of the input to extract
+   * @returns {Uint8Array} The input as a u8a
    */
-  extractInputAtIndex: (vin, index) => {
-    // TODO: Finish function once determinInputLength is finished
+  extractInputAtIndex: (vinArr, index) => {
+    // Note: this won't pass until determineInputLength is written, but I'm fairly confident that once that is written it will pass
     var len
-    var remaining;
+    var remaining
+    var offset = 1
 
-    const offset = 1;
-
-    for (var i = 0; i < index; i++) {
-      remaining = vin.slice(offset, vin.length - offset);
-      len = determineInputLength(remaining);
-      offset = offset + len;
+    for (var i = 0; i <= index; i++) {
+      remaining = vinArr.slice(offset, vinArr.length - offset)
+      len = determineInputLength(remaining)
+      if (i !== index) {
+        offset = offset + len
+      }
     }
 
-    remaining = vin.slice(offset, vin.length - offset);
-    len = determineInputLength(remaining);
-    return vin.slice(offset, len);
+    return serializeHex(vinArr.slice(offset, offset + len))
   },
 
 //     /// @notice          Determines whether an input is legacy

@@ -189,7 +189,6 @@ describe('BTCUtils', () => {
     res = await BTCUtilsJs.extractInputAtIndex(constants.OP_RETURN.VIN, 0);
     assert.equal(res, constants.OP_RETURN.INPUTS);
     res = await BTCUtilsJs.extractInputAtIndex(TWO_IN_TX_VIN, 0);
-    // '0x027bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff'
     assert.equal(res, '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff');
     res = await BTCUtilsJs.extractInputAtIndex(TWO_IN_TX_VIN, 1);
     assert.equal(res, '0xaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff');
