@@ -256,10 +256,10 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the VarInt-prepended scriptSig from the input in a tx
+   * @dev Will return hex"00" if passed a witness input
+   * @param {Uint8Array} input The LEGACY input
+   * @returns {Uint8Array} The length-prepended script sig
    */
   extractScriptSig: (input) => {
     var res = module.exports.extractScriptSigLen(input)
