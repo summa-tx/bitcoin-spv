@@ -60,5 +60,12 @@ module.exports = {
       total += BigInt(uint8Arr[i]) << (BigInt(uint8Arr.length - i - 1) * BigInt(8))
     }
     return total
+  },
+
+  safeSlice: (buf, start, end) => {
+    if (end > buf.length) { throw new Error('Tried to slice past end of array') }
+    if (start < 0 || end < 0) { throw new Error('Slice must not use negative indexes') }
+    if (start >= end) { throw new Error('Slice must not have 0 length') }
+    return buf.slice(start, end)
   }
 }
