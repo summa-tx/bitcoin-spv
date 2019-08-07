@@ -262,10 +262,11 @@ module.exports = {
    * @returns {}
    */
   extractScriptSig: (input) => {
-    var res = extractScriptSigLen(input)
+    var res = module.exports.extractScriptSigLen(input)
     var varIntDataLen = res.dataLen
     var scriptSigLen = res.scriptSigLen
-    return input.slice(36, 1 + varIntDataLen + scriptSigLen);
+    var length = 1 + Number(varIntDataLen) + Number(scriptSigLen)
+    return input.slice(36, 36 + length)
   },
 
 //     /// @notice          Determines the length of a scriptSig in an input

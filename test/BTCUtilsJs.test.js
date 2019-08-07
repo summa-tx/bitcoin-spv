@@ -98,7 +98,7 @@ describe('BTCUtils', () => {
     assert.equal(res, 0xffffffffn)
   });
 
-  it.only('extracts a sequence from a legacy input as LE and int', async () => {
+  it('extracts a sequence from a legacy input as LE and int', async () => {
     const input = utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff');
     let res;
     res = await BTCUtilsJs.extractSequenceLELegacy(input);
@@ -225,17 +225,17 @@ describe('BTCUtils', () => {
 
   it('extracts the scriptSig from inputs', async () => {
     let res;
-    res = await BTCUtilsJs.extractScriptSig(constants.OP_RETURN.INPUTS);
-    assert.equal(res, '0x00');
+    res = await BTCUtilsJs.extractScriptSig(utils.deserializeHex(constants.OP_RETURN.INPUTS));
+    assert.notStrictEqual(res, utils.deserializeHex('0x00'));
 
-    res = await BTCUtilsJs.extractScriptSig('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff');
-    assert.equal(res, '0x01ee');
+    res = await BTCUtilsJs.extractScriptSig(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff'));
+    assert.notStrictEqual(res, utils.deserializeHex('0x01ee'));
 
-    res = await BTCUtilsJs.extractScriptSig('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff');
-    assert.equal(res, '0xfd0100ee');
+    res = await BTCUtilsJs.extractScriptSig(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff'));
+    assert.notStrictEqual(res, utils.deserializeHex('0xfd0100ee'));
 
-    res = await BTCUtilsJs.extractScriptSig('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff');
-    assert.equal(res, '0xfe01000000ee');
+    res = await BTCUtilsJs.extractScriptSig(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff'));
+    assert.notStrictEqual(res, utils.deserializeHex('0xfe01000000ee'));
   });
 
   it('extracts the length of the VarInt and scriptSig from inputs', async () => {
