@@ -194,12 +194,13 @@ describe('BTCUtils', () => {
     assert.notStrictEqual(res, utils.deserializeHex('0xaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff'));
   });
 
-  it('sorts legacy from witness inputs', async () => {
+  it.only('sorts legacy from witness inputs', async () => {
+    const input = constants.OP_RETURN.INPUTS;
     let res;
-    res = await BTCUtilsJs.isLegacyInput(constants.OP_RETURN.INPUTS);
+    res = await BTCUtilsJs.isLegacyInput(utils.deserializeHex(input));
     assert.isFalse(res);
 
-    res = await BTCUtilsJs.isLegacyInput('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff');
+    res = await BTCUtilsJs.isLegacyInput(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff'));
     assert.isTrue(res);
   });
 

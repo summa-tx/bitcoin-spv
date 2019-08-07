@@ -134,28 +134,6 @@ module.exports = {
   /* Legacy Input */
   /* ************ */
 
-//     /// @notice          Extracts the nth input from the vin (0-indexed)
-//     /// @dev             Iterates over the vin. If you need to extract several, write a custom function
-//     /// @param _vin      The vin as a tightly-packed byte array
-//     /// @param _index    The 0-indexed location of the input to extract
-//     /// @return          The input as a byte array
-//     function extractInputAtIndex(bytes memory _vin, uint8 _index) internal pure returns (bytes memory) {
-//         uint256 _len;
-//         bytes memory _remaining;
-
-//         uint256 _offset = 1;
-
-//         for (uint8 _i = 0; _i < _index; _i ++) {
-//             _remaining = _vin.slice(_offset, _vin.length - _offset);
-//             _len = determineInputLength(_remaining);
-//             _offset = _offset + _len;
-//         }
-
-//         _remaining = _vin.slice(_offset, _vin.length - _offset);
-//         _len = determineInputLength(_remaining);
-//         return _vin.slice(_offset, _len);
-//     }
-
   /**
    * @notice Extracts the nth input from the vin (0-indexed)
    * @dev Iterates over the vin. If you need to extract several, write a custom function
@@ -188,13 +166,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Determines whether an input is legacy
+   * @dev False if no scriptSig, otherwise True
+   * @param {} nameOfParam The input
+   * @returns {} True for legacy, False for witness
    */
   isLegacyInput: (input) => {
-    return
+    return !utils.typedArraysAreEqual(input.slice(36, 37), new Uint8Array([0]))
   },
 
 //     /// @notice          Determines the length of an input from its scriptsig
