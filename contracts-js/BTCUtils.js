@@ -26,10 +26,12 @@ module.exports = {
   RETARGET_PERIOD: 1209600n,
   RETARGET_PERIOD_BLOCKS: 2016n,
 
-  /// @notice         Determines the length of a VarInt in bytes
-  /// @dev            A VarInt of >1 byte is prefixed with a flag indicating its length
-  /// @param _flag    The first byte of a VarInt
-  /// @return         The number of non-flag bytes in the VarInt
+  /**
+   * @notice Determines the length of a VarInt in bytes
+   * @dev A VarInt of >1 byte is prefixed with a flag indicating its length
+   * @param {string} flag The first byte of a VarInt
+   * @returns {number} The number of non-flag bytes in the VarInt
+   */
   determineVarIntDataLength: (flag) => {
     if (flag == 0xff) {
       return 8  // one-byte flag, 8 bytes data
@@ -44,21 +46,28 @@ module.exports = {
     return 0  // flag is data
   },
 
-// TODO: Convert this to take in an array and return an array
-
   // @notice          Changes the endianness of a byte array
   // @dev             Returns a new, backwards, bytes
   // @param _b        The bytes to reverse
   // @return          The reversed bytes
+
+  /**
+   * @notice Changes the endianness of a byte array
+   * @dev Returns a new, backwards, byte array
+   * @param {Uint8Array} uint8Arr The array to reverse
+   * @returns {Uint8Array} The reversed array
+   */
   reverseEndianness: (uint8Arr) => {
     let newArr = uint8Arr.slice()
     return new Uint8Array(newArr.reverse())
   },
 
-  /// @notice          Converts big-endian bytes to a uint
-  /// @dev             Traverses the byte array and sums the bytes
-  /// @param _b        The big-endian bytes-encoded integer
-  /// @return          The integer representation
+  /**
+   * @notice Converts big-endian array to a uint
+   * @dev Traverses the byte array and sums the bytes
+   * @param {Uint8Array} uint8Arr The big-endian array-encoded integer
+   * @returns {BigInt} The integer representation
+   */
   bytesToUint: (uint8Arr) => {
     var total = BigInt(0)
     for (var i = 0; i < uint8Arr.length; i++) {
@@ -72,10 +81,15 @@ module.exports = {
   /// @param _b        The byte array to slice
   /// @param _num      The number of bytes to extract from the end
   /// @return          The last _num bytes of _b
-  lastBytes: (bytesString, num) => {
-    var arr = utils.deserializeHex(bytesString)
-    var lastBytes = utils.serializeHex(arr.slice(arr.length - 2))
-    return lastBytes
+
+  /**
+   * @notice Get the last _num bytes from a byte array
+   * @dev The byte array to slice
+   * @param {Uint8Array} uint8Arr The big-endian array-encoded integer
+   * @returns {BigInt} The integer representation
+   */
+  lastBytes: (arr, num) => {
+    return arr.slice(arr.length - num)
   },
 
 //     /// @notice          Implements bitcoin's hash160 (rmd160(sha2()))
@@ -86,10 +100,12 @@ module.exports = {
 //         return abi.encodePacked(ripemd160(abi.encodePacked(sha256(_b))));
 //     }
 
-  /// @notice          Implements bitcoin's hash160 (rmd160(sha2()))
-  /// @dev             abi.encodePacked changes the return to bytes instead of bytes32
-  /// @param _b        The pre-image
-  /// @return          The digest
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   hash160: (bytesString) => {
     var newStr = bytesString.slice(2)
     // return utils.serializeHex(utils.ripemd160(utils.sha256(newStr)))
@@ -104,10 +120,12 @@ module.exports = {
 //         return abi.encodePacked(sha256(abi.encodePacked(sha256(_b)))).toBytes32();
 //     }
 
-  /// @notice          Implements bitcoin's hash256 (double sha2)
-  /// @dev             abi.encodePacked changes the return to bytes instead of bytes32
-  /// @param _b        The pre-image
-  /// @return          The digest
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   hash256: (b) => {
     return utils.sha256(utils.sha256(b))
   },
@@ -138,11 +156,12 @@ module.exports = {
 //         return _vin.slice(_offset, _len);
 //     }
 
-  /// @notice          Extracts the nth input from the vin (0-indexed)
-  /// @dev             Iterates over the vin. If you need to extract several, write a custom function
-  /// @param _vin      The vin as a tightly-packed byte array
-  /// @param _index    The 0-indexed location of the input to extract
-  /// @return          The input as a byte array
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractInputAtIndex: (vin, index) => {
     // TODO: Finish function once determinInputLength is finished
     var len
@@ -169,10 +188,12 @@ module.exports = {
 //         return keccak256(_input.slice(36, 1)) != keccak256(hex"00");
 //     }
 
-  /// @notice          Determines whether an input is legacy
-  /// @dev             False if no scriptSig, otherwise True
-  /// @param _input    The input
-  /// @return          True for legacy, False for witness
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   isLegacyInput: (input) => {
     return
   },
@@ -188,12 +209,16 @@ module.exports = {
 //         return 36 + 1 + _varIntDataLen + _scriptSigLen + 4;
 //     }
 
-  /// @notice          Determines the length of an input from its scriptsig
-  /// @dev             36 for outpoint, 1 for scriptsig length, 4 for sequence
-  /// @param _input    The input
-  /// @return          The length of the input in bytes
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   determineInputLength: (input) => {
-    return
+    let varIntDataLen = extractScriptSigLen(input);
+    let scriptSigLen = extractScriptSigLen(input);
+    return 36 + 1 + varIntDataLen + scriptSigLen + 4;
   },
 
 //     /// @notice          Extracts the LE sequence bytes from an input
@@ -207,10 +232,12 @@ module.exports = {
 //         return _input.slice(36 + 1 + _varIntDataLen + _scriptSigLen, 4);
 //     }
 
-  /// @notice          Extracts the LE sequence bytes from an input
-  /// @dev             Sequence is used for relative time locks
-  /// @param _input    The LEGACY input
-  /// @return          The sequence bytes (LE uint)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractSequenceLELegacy: (input) => {
     return
   },
@@ -225,10 +252,12 @@ module.exports = {
 //         return uint32(bytesToUint(_beSequence));
 //     }
 
-  /// @notice          Extracts the sequence from the input
-  /// @dev             Sequence is a 4-byte little-endian number
-  /// @param _input    The LEGACY input
-  /// @return          The sequence number (big-endian uint)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractSequenceLegacy: (input) => {
     return
   },
@@ -244,10 +273,12 @@ module.exports = {
 //         return _input.slice(36, 1 + _varIntDataLen + _scriptSigLen);
 //     }
 
-  /// @notice          Extracts the VarInt-prepended scriptSig from the input in a tx
-  /// @dev             Will return hex"00" if passed a witness input
-  /// @param _input    The LEGACY input
-  /// @return          The length-prepended script sig
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractScriptSig: (input) => {
     // var varIntDataLen;
     // var scriptSigLen;
@@ -271,10 +302,12 @@ module.exports = {
 //         return (_varIntDataLen, _len);
 //     }
 
-  /// @notice          Determines the length of a scriptSig in an input
-  /// @dev             Will return 0 if passed a witness input
-  /// @param _input    The LEGACY input
-  /// @return          The length of the script sig
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractScriptSigLen: (input) => {
     var arr = utils.deserializeHex(input)
     var varIntTag = arr.slice(36, 37);
@@ -301,10 +334,12 @@ module.exports = {
 //         return _input.slice(37, 4);
 //     }
 
-  /// @notice          Extracts the LE sequence bytes from an input
-  /// @dev             Sequence is used for relative time locks
-  /// @param _input    The WITNESS input
-  /// @return          The sequence bytes (LE uint)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractSequenceLEWitness: (input) => {
     return
   },
@@ -319,10 +354,12 @@ module.exports = {
 //         return uint32(bytesToUint(_inputeSequence));
 //     }
 
-  /// @notice          Extracts the sequence from the input in a tx
-  /// @dev             Sequence is a 4-byte little-endian number
-  /// @param _input    The WITNESS input
-  /// @return          The sequence number (big-endian uint)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractSequenceWitness: (input) => {
     return
   },
@@ -335,10 +372,12 @@ module.exports = {
 //         return _input.slice(0, 36);
 //     }
 
-  /// @notice          Extracts the outpoint from the input in a tx
-  /// @dev             32 byte tx id with 4 byte index
-  /// @param _input    The input
-  /// @return          The outpoint (LE bytes of prev tx hash + LE bytes of prev tx index)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractOutpoint: (input) => {
     return
   },
@@ -351,10 +390,12 @@ module.exports = {
 //         return _input.slice(0, 32).toBytes32();
 //     }
 
-  /// @notice          Extracts the outpoint tx id from an input
-  /// @dev             32 byte tx id
-  /// @param _input    The input
-  /// @return          The tx id (little-endian bytes)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractInputTxIdLE: (input) => {
     return
   },
@@ -369,10 +410,12 @@ module.exports = {
 //         return _beId.toBytes32();
 //     }
 
-  /// @notice          Extracts the outpoint index from an input
-  /// @dev             32 byte tx id
-  /// @param _input    The input
-  /// @return          The tx id (big-endian bytes)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractInputTxId: (input) => {
     return
   },
@@ -385,10 +428,12 @@ module.exports = {
 //         return _input.slice(32, 4);
 //     }
 
-  /// @notice          Extracts the LE tx input index from the input in a tx
-  /// @dev             4 byte tx index
-  /// @param _input    The input
-  /// @return          The tx index (little-endian bytes)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractTxIndexLE: (input) => {
     return
   },
@@ -418,10 +463,12 @@ module.exports = {
 //         return _len + 8 + 1; // 8 byte value, 1 byte for _len itself
 //     }
 
-  /// @notice          Determines the length of an output
-  /// @dev             5 types: WPKH, WSH, PKH, SH, and OP_RETURN
-  /// @param _output   The output
-  /// @return          The length indicated by the prefix, error if invalid length
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   determineOutputLength: (output) => {
     return
   },
@@ -448,11 +495,12 @@ module.exports = {
 //         return _vout.slice(_offset, _len);
 //     }
 
-  /// @notice          Extracts the output at a given index in the TxIns vector
-  /// @dev             Iterates over the vout. If you need to extract multiple, write a custom function
-  /// @param _vout     The _vout to extract from
-  /// @param _index    The 0-indexed location of the output to extract
-  /// @return          The specified output
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractOutputAtIndex: (vout, index) => {
     return
   },
@@ -465,10 +513,12 @@ module.exports = {
 //         return _output.slice(8, 1);
 //     }
 
-  /// @notice          Extracts the output script length
-  /// @dev             Indexes the length prefix on the pk_script
-  /// @param _output   The output
-  /// @return          The 1 byte length prefix
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractOutputScriptLen: (output) => {
     return
   },
@@ -481,10 +531,12 @@ module.exports = {
 //         return _output.slice(0, 8);
 //     }
 
-  /// @notice          Extracts the value bytes from the output in a tx
-  /// @dev             Value is an 8-byte little-endian number
-  /// @param _output   The output
-  /// @return          The output value as LE bytes
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractValueLE: (output) => {
     return
   },
@@ -498,10 +550,12 @@ module.exports = {
 //         bytes memory _beValue = reverseEndianness(_leValue);//         return uint64(bytesToUint(_beValue));
 //     }
 
-  /// @notice          Extracts the value from the output in a tx
-  /// @dev             Value is an 8-byte little-endian number
-  /// @param _output   The output
-  /// @return          The output value
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractValue: (output) => {
     return
   },
@@ -518,10 +572,12 @@ module.exports = {
 //         return _output.slice(11, bytesToUint(_dataLen));
 //     }
 
-  /// @notice          Extracts the data from an op return output
-  /// @dev             Returns hex"" if no data or not an op return
-  /// @param _output   The output
-  /// @return          Any data contained in the opreturn output, null if not an op return
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractOpReturnData: (output) => {
     return
   },
@@ -560,10 +616,12 @@ module.exports = {
 //         return hex"";  /* NB: will trigger on OPRETURN and non-standard that don't overrun */
 //     }
 
-  /// @notice          Extracts the hash from the output script
-  /// @dev             Determines type by the length prefix and validates format
-  /// @param _output   The output
-  /// @return          The hash committed to by the pk_script, or null for errors
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractHash: (output) => {
     return
   },
@@ -601,10 +659,12 @@ module.exports = {
 //         return _offset == _vin.length;
 //     }
 
-  /// @notice      Checks that the vin passed up is properly formatted
-  /// @dev         Consider a vin with a valid vout in its scriptsig
-  /// @param _vin  Raw bytes length-prefixed input vector
-  /// @return      True if it represents a validly formatted vin
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   validateVin: (vin) => {
     return
   },
@@ -637,10 +697,12 @@ module.exports = {
 //         return _offset == _vout.length;
 //     }
 
-  /// @notice      Checks that the vin passed up is properly formatted
-  /// @dev         Consider a vin with a valid vout in its scriptsig
-  /// @param _vout Raw bytes length-prefixed output vector
-  /// @return      True if it represents a validly formatted bout
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   validateVout: (vout) => {
     return
   },
@@ -659,10 +721,12 @@ module.exports = {
 //         return _header.slice(36, 32);
 //     }
 
-  /// @notice          Extracts the transaction merkle root from a block header
-  /// @dev             Use verifyHash256Merkle to verify proofs with this root
-  /// @param _header   The header
-  /// @return          The merkle root (little-endian)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractMerkleRootLE: (header) => {
     return
   },
@@ -675,10 +739,12 @@ module.exports = {
 //         return reverseEndianness(extractMerkleRootLE(_header));
 //     }
 
-  /// @notice          Extracts the transaction merkle root from a block header
-  /// @dev             Use verifyHash256Merkle to verify proofs with this root
-  /// @param _header   The header
-  /// @return          The merkle root (big-endian)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractMerkleRootBE: (header) => {
     return
   },
@@ -696,10 +762,12 @@ module.exports = {
 //         return _mantissa * (256 ** _exponent);
 //     }
 
-  /// @notice          Extracts the target from a block header
-  /// @dev             Target is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
-  /// @param _header   The header
-  /// @return          The target threshold
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractTarget: (header) => {
     let m = header.slice(72, 75).reverse() // reverse endianness on a partial u8a
 
@@ -732,11 +800,12 @@ module.exports = {
 //     }
 
 
-  /// @notice          Calculate difficulty from the difficulty 1 target and current target
-  /// @dev             Difficulty 1 is 0x1d00ffff on mainnet and testnet
-  /// @dev             Difficulty 1 is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
-  /// @param _target   The current target
-  /// @return          The block difficulty (bdiff)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   calculateDifficulty: (target) => {
     return
   },
@@ -749,10 +818,12 @@ module.exports = {
 //         return _header.slice(4, 32);
 //     }
 
-  /// @notice          Extracts the previous block's hash from a block header
-  /// @dev             Block headers do NOT include block number :(
-  /// @param _header   The header
-  /// @return          The previous block's hash (little-endian)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractPrevBlockLE: (header) => {
     return
   },
@@ -765,10 +836,12 @@ module.exports = {
 //         return reverseEndianness(extractPrevBlockLE(_header));
 //     }
 
-  /// @notice          Extracts the previous block's hash from a block header
-  /// @dev             Block headers do NOT include block number :(
-  /// @param _header   The header
-  /// @return          The previous block's hash (big-endian)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractPrevBlockBE: (header) => {
     return
   },
@@ -781,10 +854,12 @@ module.exports = {
 //         return _header.slice(68, 4);
 //     }
 
-  /// @notice          Extracts the timestamp from a block header
-  /// @dev             Time is not 100% reliable
-  /// @param _header   The header
-  /// @return          The timestamp (little-endian bytes)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractTimestampLE: (header) => {
     return
   },
@@ -797,10 +872,12 @@ module.exports = {
 //         return uint32(bytesToUint(reverseEndianness(extractTimestampLE(_header))));
 //     }
 
-  /// @notice          Extracts the timestamp from a block header
-  /// @dev             Time is not 100% reliable
-  /// @param _header   The header
-  /// @return          The timestamp (uint)
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractTimestamp: (header) => {
     return
   },
@@ -813,10 +890,12 @@ module.exports = {
 //         return calculateDifficulty(extractTarget(_header));
 //     }
 
-  /// @notice          Extracts the expected difficulty from a block header
-  /// @dev             Does NOT verify the work
-  /// @param _header   The header
-  /// @return          The difficulty as an integer
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   extractDifficulty: (header) => {
     return
   },
@@ -829,10 +908,12 @@ module.exports = {
 //         return hash256(abi.encodePacked(_a, _b));
 //     }
 
-  /// @notice          Concatenates and hashes two inputs for merkle proving
-  /// @param _a        The first hash
-  /// @param _b        The second hash
-  /// @return          The double-sha256 of the concatenated hashes
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   hash256MerkleStep: (a, b) => {
       return
   },
@@ -873,11 +954,12 @@ module.exports = {
 //         return _current == _root;
 //     }
 
-  /// @notice          Verifies a Bitcoin-style merkle tree
-  /// @dev             Leaves are 1-indexed.
-  /// @param _proof    The proof. Tightly packed LE sha256 hashes. The last hash is the root
-  /// @param _index    The index of the leaf
-  /// @return          true if the proof is valid, else false
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   verifyHash256Merkle: (proof, index) => {
     return
   },
@@ -920,12 +1002,12 @@ module.exports = {
 //         return _adjusted.div(RETARGET_PERIOD).mul(65536);
 //     }
 
-  /// @notice                 performs the bitcoin difficulty retarget
-  /// @dev                    implements the Bitcoin algorithm precisely
-  /// @param _previousTarget  the target of the previous period
-  /// @param _firstTimestamp  the timestamp of the first block in the difficulty period
-  /// @param _secondTimestamp the timestamp of the last block in the difficulty period
-  /// @return                 the new period's target threshold
+  /**
+   * @notice
+   * @dev
+   * @param {} nameOfParam
+   * @returns {}
+   */
   retargetAlgorithm: (previousTarget, firstTimestamp, secondTimestamp) => {
     // I think this works, but I can't pass the test unless extractTarget works, which won't work until node recognizes BigInt
     let elapsedTime = secondTimestamp - firstTimestamp

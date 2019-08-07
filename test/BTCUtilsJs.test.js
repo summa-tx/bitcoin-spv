@@ -26,13 +26,13 @@ const BTCUtilsJs = require('../contracts-js/BTCUtils');
 
 describe('BTCUtils', () => {
   it('gets the last bytes correctly', async () => {
-    const res = await BTCUtilsJs.lastBytes('0x00112233', 2);
-    assert.equal(res, '0x2233');
+    const res = await BTCUtilsJs.lastBytes(utils.deserializeHex('0x00112233'));
+    assert.notStrictEqual(res, utils.deserializeHex('0x2233'), 2);
   });
 
   it('errors if slice is larger than the bytearray', async () => {
     try {
-      await BTCUtilsJs.lastBytes('0x00', 2);
+      await BTCUtilsJs.lastBytes(utils.deserializeHex('0x00'), 2);
       assert(false, 'expected an errror');
     } catch (e) {
       assert.include(e.message, 'Underflow during subtraction.');
