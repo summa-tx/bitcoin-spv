@@ -206,19 +206,19 @@ describe('BTCUtils', () => {
   it('determines input length', async () => {
     let res;
     res = await BTCUtilsJs.determineInputLength(utils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff'));
-    assert.equal(res.toLocaleString(), '41');
+    assert.equal(res, 41n);
 
     res = await BTCUtilsJs.determineInputLength(utils.deserializeHex('0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000000000000'));
-    assert.equal(res.toLocaleString(), '41');
+    assert.equal(res, 41n);
 
     res = await BTCUtilsJs.determineInputLength(utils.deserializeHex('0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0400000002000000000000'));
-    assert.equal(res.toLocaleString(), '43');
+    assert.equal(res, 43n);
 
     res = await BTCUtilsJs.determineInputLength(utils.deserializeHex('0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000900000000000000000000000000'));
-    assert.equal(res.toLocaleString(), '50');
+    assert.equal(res, 50n);
 
     res = await BTCUtilsJs.determineInputLength(utils.deserializeHex('0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000'));
-    assert.equal(res.toLocaleString(), '298');
+    assert.equal(res, 298n);
   });
 
   it('extracts the scriptSig from inputs', async () => {
