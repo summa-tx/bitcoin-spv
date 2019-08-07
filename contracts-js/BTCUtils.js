@@ -706,24 +706,24 @@ module.exports = {
   /// @param _header   The header
   /// @return          The target threshold
   extractTarget: (header) => {
-    let d_header = utils.deserializeHex(header)
+    // let d_header = utils.deserializeHex(header)
 
-    // Hacky way of reversing endianness of a partial serialized number
-    let m = header.slice(72, 75).split().reverse().join('')
-    let hex_m = `0x${m}`
+    // // Hacky way of reversing endianness of a partial serialized number
+    // let m = header.slice(72, 75).split().reverse().join('')
+    // let hex_m = `0x${m}`
 
-    let e = d_header[75] - 3
-    let exponent = BigInt(256 ** (e - 3)) // FIX: throws an unsafe number error
-    let mantissa = utils.bytesToUint(hex_m)
+    // let e = d_header[75] - 3
+    // let exponent = BigInt(256 ** (e - 3)) // FIX: throws an unsafe number error
+    // let mantissa = utils.bytesToUint(hex_m)
 
-    console.log('mantissa: ', mantissa)
-    // console.log('e: ', e)
-    // console.log('m: ', m)
-    // let exponent = BigInt(256 ** (e-3))
-    // console.log('exponent: ', exponent)
-    // let exponent = 256 ** (e - 3)
+    // console.log('mantissa: ', mantissa)
+    // // console.log('e: ', e)
+    // // console.log('m: ', m)
+    // // let exponent = BigInt(256 ** (e-3))
+    // // console.log('exponent: ', exponent)
+    // // let exponent = 256 ** (e - 3)
 
-    return mantissa * exponent
+    // return mantissa * exponent
   },
 
 //     /// @notice          Calculate difficulty from the difficulty 1 target and current target
