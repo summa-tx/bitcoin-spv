@@ -58,7 +58,7 @@ module.exports = {
    * @returns {Uint8Array} The reversed array
    */
   reverseEndianness: (uint8Arr) => {
-    let newArr = uint8Arr.slice()
+    let newArr = utils.safeSlice(uint8Arr)
     return new Uint8Array(newArr.reverse())
   },
 
@@ -89,7 +89,7 @@ module.exports = {
    * @returns {BigInt} The integer representation
    */
   lastBytes: (arr, num) => {
-    return arr.slice(arr.length - num)
+    return utils.safeSlice(arr, arr.length - num)
   },
 
 //     /// @notice          Implements bitcoin's hash160 (rmd160(sha2()))
@@ -107,7 +107,7 @@ module.exports = {
    * @returns {}
    */
   hash160: (bytesString) => {
-    var newStr = bytesString.slice(2)
+    var newStr = utils.safeSlice(bytesString, 2)
     // return utils.serializeHex(utils.ripemd160(utils.sha256(newStr)))
     return utils.serializeHex(utils.ripemd160(utils.sha256(newStr)))
   },
@@ -172,7 +172,7 @@ module.exports = {
    * @returns {boolean} True for legacy, False for witness
    */
   isLegacyInput: (input) => {
-    return !utils.typedArraysAreEqual(input.slice(36, 37), new Uint8Array([0]))
+    return !utils.typedArraysAreEqual(utils.safeSlice(input, 36, 37), new Uint8Array([0]))
   },
 
 //     /// @notice          Determines the length of an input from its scriptsig
@@ -221,7 +221,7 @@ module.exports = {
     var varIntDataLen = res.dataLen
     var scriptSigLen = res.scriptSigLen
     var length = 36 + 1 + Number(varIntDataLen) + Number(scriptSigLen)
-    return input.slice(length, length + 4)
+    return utils.safeSlice(input, length, length + 4)
   },
 
 //     /// @notice          Extracts the sequence from the input
@@ -268,7 +268,7 @@ module.exports = {
     var varIntDataLen = res.dataLen
     var scriptSigLen = res.scriptSigLen
     var length = 1 + Number(varIntDataLen) + Number(scriptSigLen)
-    return input.slice(36, 36 + length)
+    return utils.safeSlice(input, 36, 36 + length)
   },
 
 //     /// @notice          Determines the length of a scriptSig in an input
@@ -294,13 +294,13 @@ module.exports = {
    * @returns {object} The length of the script sig in object form
    */
   extractScriptSigLen: (arr) => {
-    var varIntTag = arr.slice(36, 37)
+    var varIntTag = utils.safeSlice(arr, 36, 37)
     var varIntDataLen = module.exports.determineVarIntDataLength(varIntTag[0])
     var len = 0
     if (varIntDataLen == 0) {
       len = varIntTag[0]
     } else {
-      len = utils.bytesToUint(module.exports.reverseEndianness(arr.slice(37, 37 + varIntDataLen)))
+      len = utils.bytesToUint(module.exports.reverseEndianness(utils.safeSlice(arr, 37, 37 + varIntDataLen)))
     }
     return { dataLen: BigInt(varIntDataLen), scriptSigLen: BigInt(len)}
   },
@@ -325,7 +325,7 @@ module.exports = {
    * @returns {Uint8Array} The sequence bytes (LE uint)
    */
   extractSequenceLEWitness: (input) => {
-    return input.slice(37, 41)
+    return utils.safeSlice(input, 37, 41)
   },
 
 //     /// @notice          Extracts the sequence from the input in a tx
@@ -755,7 +755,7 @@ module.exports = {
    * @returns {}
    */
   extractTarget: (header) => {
-    let m = header.slice(72, 75).reverse() // reverse endianness on a partial u8a
+    let m = utils.safeSlice(header, 72, 75).reverse() // reverse endianness on a partial u8a
 
     let e = BigInt(header[75] - 3)
 
