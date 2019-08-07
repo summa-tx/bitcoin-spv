@@ -69,23 +69,12 @@ contract Relay is IRelay {
     mapping (bytes32 => bytes32) internal previousBlock;
     mapping (bytes32 => uint256) internal blockHeight;
 
-    function getRelayGenesis() public view returns (bytes32) {
-        return relayGenesis;
-    }
-
-    function getBestKnownDigest() public view returns (bytes32) {
-        return bestKnownDigest;
-    }
-
-    function getLastReorgCommonAncestor() public view returns (bytes32) {
-        return lastReorgCommonAncestor;
-    }
-
 
     /// @notice                   Gives a starting point for the relay
     /// @dev                      We don't check this AT ALL really. Don't use relays with bad genesis
     /// @param  _genesisHeader    The starting header
     /// @param  _height           The starting height
+    /// @param  _periodStart      The hash of the first header in the genesis epoch
     constructor(bytes memory _genesisHeader, uint256 _height, bytes32 _periodStart) public {
         require(_genesisHeader.length == 80, "Stop being dumb");
         bytes32 _genesisDigest = _genesisHeader.hash256();
@@ -460,5 +449,26 @@ contract Relay is IRelay {
         bytes calldata _right
     ) external view returns (bytes32) {
         return _heaviestFromAncestor(_ancestor, _left, _right);
+    }
+
+    /// @notice     Getter for relayGenesis
+    /// @dev        This is an initialization paramter
+    /// @return     The hash of the first block of the relay
+    function getRelayGenesis() public view returns (bytes32) {
+        return relayGenesis;
+    }
+
+    /// @notice     Getter for bestKnownDigest
+    /// @dev        This updated only by calling markNewHeaviest
+    /// @return     The hash of the best marked chain tip
+    function getBestKnownDigest() public view returns (bytes32) {
+        return bestKnownDigest;
+    }
+
+    /// @notice     Getter for relayGenesis
+    /// @dev        This is updated only by calling markNewHeaviest
+    /// @return     The hash of the shared ancestor of the most recent fork
+    function getLastReorgCommonAncestor() public view returns (bytes32) {
+        return lastReorgCommonAncestor;
     }
 }
