@@ -721,13 +721,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
+   * @notice                Extracts the transaction merkle root from a block header
    * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @param {Uint8Array}    header
+   * @returns {Uint8Array}   The merkle root (little-endian)
    */
   extractMerkleRootLE: (header) => {
-    return
+    return utils.safeSlice(header, 36, 68)
   },
 
 //     /// @notice          Extracts the transaction merkle root from a block header
@@ -739,13 +739,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice                Extracts the transaction merkle root from a block header
+   * @dev                   Use verifyHash256Merkle to verify proofs with this root
+   * @param {Uint8Array}    header
+   * @returns {number}      The merkle root (big-endian)
    */
   extractMerkleRootBE: (header) => {
-    return
+    return utils.serializeHex(module.exports.reverseEndianness(module.exports.extractMerkleRootLE(header)))
   },
 
 //     /// @notice          Extracts the target from a block header
