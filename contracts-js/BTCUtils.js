@@ -706,16 +706,13 @@ module.exports = {
   /// @param _header   The header
   /// @return          The target threshold
   extractTarget: (header) => {
-    // let d_header = utils.deserializeHex(header)
+    let m = header.slice(72, 75).reverse() // reverse endianness
 
-    let m = d_header.slice(72, 75).reverse() // reverse endianness
+    let e = BigInt(header[75] - 3)
 
-    let e = BigInt(d_header[75] - 3)
-    // let exponent = BigInt(256 ** (e - 3)) // FIX: throws an unsafe number error
     let mantissa = utils.bytesToUint(m)
 
     // console.log('header: ', header)
-    // console.log("d_header: ", d_header)
     // console.log('m: ', m) // Uint8Array [ 0, 255, 255 ]
     // console.log('e: ', e) // returns 26
     // console.log('mantissa: ', mantissa) // returns 65535
