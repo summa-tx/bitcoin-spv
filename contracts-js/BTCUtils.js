@@ -23,8 +23,8 @@ module.exports = {
 
 //     uint256 public constant RETARGET_PERIOD = 2 * 7 * 24 * 60 * 60;  // 2 weeks in seconds
 //     uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
-  RETARGET_PERIOD: 1209600,
-  RETARGET_PERIOD_BLOCKS: 2016,
+  RETARGET_PERIOD: 1209600n,
+  RETARGET_PERIOD_BLOCKS: 2016n,
 
   /// @notice         Determines the length of a VarInt in bytes
   /// @dev            A VarInt of >1 byte is prefixed with a flag indicating its length
@@ -701,24 +701,20 @@ module.exports = {
   /// @param _header   The header
   /// @return          The target threshold
   extractTarget: (header) => {
-    // let d_header = utils.deserializeHex(header)
+    let m = header.slice(72, 75).reverse() // reverse endianness
 
-    // // Hacky way of reversing endianness of a partial serialized number
-    // let m = header.slice(72, 75).split().reverse().join('')
-    // let hex_m = `0x${m}`
+    let e = BigInt(header[75] - 3)
 
-    // let e = d_header[75] - 3
-    // let exponent = BigInt(256 ** (e - 3)) // FIX: throws an unsafe number error
-    // let mantissa = utils.bytesToUint(hex_m)
+    let mantissa = utils.bytesToUint(m)
 
-    // console.log('mantissa: ', mantissa)
-    // // console.log('e: ', e)
-    // // console.log('m: ', m)
-    // // let exponent = BigInt(256 ** (e-3))
-    // // console.log('exponent: ', exponent)
-    // // let exponent = 256 ** (e - 3)
+    // console.log('header: ', header)
+    // console.log('m: ', m) // Uint8Array [ 0, 255, 255 ]
+    // console.log('e: ', e) // returns 26
+    // console.log('mantissa: ', mantissa) // returns 65535
+    let exponent = e - 3n
+    // console.log('exponent: ', exponent) // returns 4.113761393303015e+62, but this is considered an "unsafe" number, it should be 411376139330301510538742295639337626245683966408394965837152256n but js won't let me convert super large numbers to BigInt
 
-    // return mantissa * exponent
+    return mantissa * 256n ** exponent
   },
 
 //     /// @notice          Calculate difficulty from the difficulty 1 target and current target
