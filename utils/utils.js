@@ -22,7 +22,11 @@ module.exports = {
       return new Uint8Array()
     }
 
+<<<<<<< HEAD
     let hex = ''
+=======
+    var hex = ''
+>>>>>>> a448057236f7aac49f767fe904a6b9b1fe0d15d7
     if (hexStr.slice(0, 2) === '0x') {
       hex = hexStr.slice(2)
     }

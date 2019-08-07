@@ -180,9 +180,10 @@ module.exports = {
   /// @dev             abi.encodePacked changes the return to bytes instead of bytes32
   /// @param _b        The pre-image
   /// @return          The digest
-  hash160: (b) => {
-    return utils.serializeHex(utils.ripemd160(utils.sha256(b)))
-    // return ripemd160(b)
+  hash160: (bytesString) => {
+    var newStr = bytesString.slice(2)
+    // return utils.serializeHex(utils.ripemd160(utils.sha256(newStr)))
+    return utils.serializeHex(utils.ripemd160(utils.sha256(newStr)))
   },
 
 //     /// @notice          Implements bitcoin's hash256 (double sha2)
