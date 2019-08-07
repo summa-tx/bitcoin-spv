@@ -25,6 +25,8 @@ module.exports = {
     var hex = ''
     if (hexStr.slice(0, 2) === '0x') {
       hex = hexStr.slice(2)
+    } else {
+      hex = hexStr
     }
 
     let a = []

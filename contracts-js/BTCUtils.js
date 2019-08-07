@@ -219,7 +219,7 @@ module.exports = {
     let res = module.exports.extractScriptSigLen(input)
     let varIntDataLen = res.dataLen;
     let scriptSigLen = res.len;
-    return 36 + 1 + varIntDataLen + scriptSigLen + 4;
+    return BigInt(41) + varIntDataLen + scriptSigLen;
   },
 
 //     /// @notice          Extracts the LE sequence bytes from an input
@@ -318,7 +318,7 @@ module.exports = {
     } else {
       len = utils.bytesToUint(module.exports.reverseEndianness(arr.slice(37, 37 + varIntDataLen)));
     }
-    return { dataLen: varIntDataLen, len};
+    return { dataLen: BigInt(varIntDataLen), len: BigInt(len)};
   },
 
 
