@@ -165,20 +165,19 @@ module.exports = {
    * @returns {Uint8Array} The input as a u8a
    */
   extractInputAtIndex: (vinArr, index) => {
-    // Note: this won't pass until determineInputLength is written, but I'm fairly confident that once that is written it will pass
-    var len
-    var remaining
-    var offset = 1
+    var len = 0
+    var remaining = 0
+    var offset = 1n
 
     for (var i = 0; i <= index; i++) {
-      remaining = vinArr.slice(offset, vinArr.length - 1)
+      remaining = utils.safeSlice(vinArr, Number(offset), vinArr.length - 1)
       len = module.exports.determineInputLength(remaining)
       if (i !== index) {
         offset += len
       }
     }
 
-    return serializeHex(vinArr.slice(offset, offset + len))
+    return utils.safeSlice(vinArr, Number(offset), Number(offset) + Number(len))
   },
 
 //     /// @notice          Determines whether an input is legacy
@@ -211,13 +210,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Determines the length of an input from its scriptsig
+   * @dev 36 for outpoint, 1 for scriptsig length, 4 for sequence
+   * @param {Uint8Array} arr The input as a u8a
+   * @returns {BigInt} The length of the input in bytes
    */
-  determineInputLength: (input) => {
-    let res = module.exports.extractScriptSigLen(input)
+  determineInputLength: (arr) => {
+    let res = module.exports.extractScriptSigLen(arr)
     let varIntDataLen = res.dataLen;
     let scriptSigLen = res.len;
     return BigInt(41) + varIntDataLen + scriptSigLen;
