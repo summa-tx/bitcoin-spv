@@ -22,11 +22,7 @@ module.exports = {
       return new Uint8Array()
     }
 
-<<<<<<< HEAD
-    let hex = ''
-=======
     var hex = ''
->>>>>>> a448057236f7aac49f767fe904a6b9b1fe0d15d7
     if (hexStr.slice(0, 2) === '0x') {
       hex = hexStr.slice(2)
     }
@@ -59,9 +55,14 @@ module.exports = {
   bytesToUint: (bytesString) => {
     // const newString = bytesString.slice(2) // This copies the array, minus the '0x' prefix.
     // console.log('newString: ', newString, typeof newString, module.exports.deserializeHex(newString))
+
+    // QUESTION: why would you deserialize something that has just had the '0x' prefix removed? deserializeHex() already does that. So isn't newString redundant?
     // const arr = BigInt(module.exports.deserializeHex(newString))
-    const arr = module.exports.deserializeHex(bytesString)
-    console.log('bytesString: ', bytesString, typeof bytesString, module.exports.deserializeHex(bytesString), typeof BigInt([arr[0]]))
+    const arr = bytesString
+
+    // QUESTION (cont): shouldn't you just deserialize the original bytesString:
+    // const arr = module.exports.deserializeHex(bytesString)
+    // console.log('bytesString: ', bytesString, typeof bytesString, module.exports.deserializeHex(bytesString), typeof BigInt([arr[0]]))
 
     let total = BigInt(0)
     for (var i = 0; i < arr.length; i++) {

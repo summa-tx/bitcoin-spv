@@ -766,21 +766,21 @@ module.exports = {
   /// @return          The target threshold
   extractTarget: (header) => {
     let d_header = utils.deserializeHex(header)
+    // console.log("d_header: ", d_header)
 
-    // Hacky way of reversing endianness of a partial serialized number
-    let m = header.slice(72, 75).split().reverse().join('')
-    let hex_m = `0x${m}`
+    let m = d_header.slice(72, 75).reverse() // reverse endianness
 
     let e = d_header[75] - 3
-    let exponent = BigInt(256 ** (e - 3)) // FIX: throws an unsafe number error
-    let mantissa = utils.bytesToUint(hex_m)
+    // let exponent = BigInt(256 ** (e - 3)) // FIX: throws an unsafe number error
+    let mantissa = utils.bytesToUint(m)
 
-    console.log('mantissa: ', mantissa)
-    // console.log('e: ', e)
-    // console.log('m: ', m)
+    // console.log('header: ', header) // returns 0x0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70
+    console.log('m: ', m) // Uint8Array [ 0, 255, 255 ]
+    // console.log('e: ', e) // returns 26
+    console.log('mantissa: ', mantissa) // returns 65535
     // let exponent = BigInt(256 ** (e-3))
-    // console.log('exponent: ', exponent)
-    // let exponent = 256 ** (e - 3)
+    let exponent = 256 ** (e - 3)
+    // console.log('exponent: ', exponent) // returns 2.4519928653854222e+55, but this is considered an "unsafe" number, it should be 24519928653854221733733552434404946937899825954937634816n but js won't let me convert super large numbers to BigInt
 
     return mantissa * exponent
   },
