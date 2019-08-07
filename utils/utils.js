@@ -52,10 +52,10 @@ module.exports = {
   /// @dev             Traverses the byte array and sums the bytes
   /// @param _b        The big-endian bytes-encoded integer
   /// @return          The integer representation
-  bytesToUint: (uint8arr) => {
+  bytesToUint: (u8a) => {
     let total = BigInt(0)
-    for (var i = 0; i < uint8arr.length; i++) {
-      total += BigInt(uint8arr[i]) << (BigInt(uint8arr.length - i - 1) * BigInt(8))
+    for (var i = 0; i < u8a.length; i++) {
+      total += BigInt(u8a[i]) << (BigInt(u8a.length - i - 1) * BigInt(8))
     }
     return total
 

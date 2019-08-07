@@ -710,10 +710,12 @@ module.exports = {
 
     let e = BigInt(header[75] - 3)
 
+    let r = utils.bytesToUint('string here')
+
     let mantissa = utils.bytesToUint(m)
 
     // console.log('header: ', header)
-    // console.log('m: ', m) // Uint8Array [ 0, 255, 255 ]
+    // console.log('m: ', m) // returns Uint8Array [ 0, 255, 255 ]
     // console.log('e: ', e) // returns 26
     // console.log('mantissa: ', mantissa) // returns 65535
     let exponent = e - 3n
