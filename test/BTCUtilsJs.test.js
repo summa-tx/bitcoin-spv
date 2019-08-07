@@ -423,8 +423,8 @@ describe('BTCUtils', () => {
     for (let i = 0; i < constants.RETARGET_TUPLES.length; i += 1) {
       firstTimestamp = constants.RETARGET_TUPLES[i][0].timestamp;
       secondTimestamp = constants.RETARGET_TUPLES[i][1].timestamp;
-      previousTarget = await BTCUtilsJs.extractTarget.call(`0x${constants.RETARGET_TUPLES[i][1].hex}`);
-      expectedNewTarget = await BTCUtilsJs.extractTarget.call(`0x${constants.RETARGET_TUPLES[i][2].hex}`);
+      previousTarget = await BTCUtilsJs.extractTarget.call(utils.deserializeHex(`0x${constants.RETARGET_TUPLES[i][1].hex}`));
+      expectedNewTarget = await BTCUtilsJs.extractTarget.call(utils.deserializeHex(`0x${constants.RETARGET_TUPLES[i][2].hex}`));
       res = await BTCUtilsJs.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
       // (response & expected) == expected
       // this converts our full-length target into truncated block target
