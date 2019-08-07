@@ -157,27 +157,27 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the nth input from the vin (0-indexed)
+   * @dev Iterates over the vin. If you need to extract several, write a custom function
+   * @param {Uint8Array} vinArr The vin as a tightly-packed uint8array
+   * @param index The 0-indexed location of the input to extract
+   * @returns {Uint8Array} The input as a u8a
    */
-  extractInputAtIndex: (vin, index) => {
-    // TODO: Finish function once determinInputLength is finished
+  extractInputAtIndex: (vinArr, index) => {
+    // Note: this won't pass until determineInputLength is written, but I'm fairly confident that once that is written it will pass
     var len
-    var remaining;
+    var remaining
+    var offset = 1
 
-    const offset = 1;
-
-    for (var i = 0; i < index; i++) {
-      remaining = vin.slice(offset, vin.length - offset);
-      len = determineInputLength(remaining);
-      offset = offset + len;
+    for (var i = 0; i <= index; i++) {
+      remaining = vinArr.slice(offset, vinArr.length - 1)
+      len = module.exports.determineInputLength(remaining)
+      if (i !== index) {
+        offset += len
+      }
     }
 
-    remaining = vin.slice(offset, vin.length - offset);
-    len = determineInputLength(remaining);
-    return vin.slice(offset, len);
+    return serializeHex(vinArr.slice(offset, offset + len))
   },
 
 //     /// @notice          Determines whether an input is legacy
@@ -216,9 +216,10 @@ module.exports = {
    * @returns {}
    */
   determineInputLength: (input) => {
-    let varIntDataLen = extractScriptSigLen(input);
-    let scriptSigLen = extractScriptSigLen(input);
-    return 36 + 1 + varIntDataLen + scriptSigLen + 4;
+    let res = module.exports.extractScriptSigLen(input)
+    let varIntDataLen = res.dataLen;
+    let scriptSigLen = res.len;
+    return BigInt(41) + varIntDataLen + scriptSigLen;
   },
 
 //     /// @notice          Extracts the LE sequence bytes from an input
@@ -303,13 +304,12 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Determines the length of a scriptSig in an input
+   * @dev Will return 0 if passed a witness input
+   * @param {Uint8Array} arr The LEGACY input
+   * @returns {object} The length of the script sig in object form
    */
-  extractScriptSigLen: (input) => {
-    var arr = utils.deserializeHex(input)
+  extractScriptSigLen: (arr) => {
     var varIntTag = arr.slice(36, 37);
     var varIntDataLen = module.exports.determineVarIntDataLength(varIntTag[0]);
     var len = 0;
