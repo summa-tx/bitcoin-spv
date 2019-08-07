@@ -25,6 +25,7 @@ module.exports = {
 //     uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
   RETARGET_PERIOD: 1209600n,
   RETARGET_PERIOD_BLOCKS: 2016n,
+  DIFF1_TARGET: 0xffff0000000000000000000000000000000000000000000000000000n
 
   /**
    * @notice Determines the length of a VarInt in bytes
@@ -723,9 +724,9 @@ module.exports = {
 
   /**
    * @notice                Extracts the transaction merkle root from a block header
-   * @dev
+   * @dev                   Returns a the merkle root from a block header as a Uint8Array.
    * @param {Uint8Array}    header
-   * @returns {Uint8Array}   The merkle root (little-endian)
+   * @returns {Uint8Array}  The merkle root (little-endian)
    */
   extractMerkleRootLE: (header) => {
     return utils.safeSlice(header, 36, 68)
@@ -743,7 +744,7 @@ module.exports = {
    * @notice                Extracts the transaction merkle root from a block header
    * @dev                   Use verifyHash256Merkle to verify proofs with this root
    * @param {Uint8Array}    header
-   * @returns {number}      The merkle root (big-endian)
+   * @returns {number}      The serialized merkle root (big-endian)
    */
   extractMerkleRootBE: (header) => {
     return utils.serializeHex(module.exports.reverseEndianness(module.exports.extractMerkleRootLE(header)))
@@ -763,10 +764,10 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice                 Extracts the target from a block header
+   * @dev                    Target is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
+   * @param {Uint8Array}     header
+   * @returns {BigInt}       The target threshold
    */
   extractTarget: (header) => {
     let m = header.slice(72, 75).reverse() // reverse endianness on a partial u8a
@@ -801,13 +802,18 @@ module.exports = {
 
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice                Calculate difficulty from the difficulty 1 target and current target
+   * @dev                   Difficulty 1 is 0x1d00ffff on mainnet and testnet
+   * @dev                   Difficulty 1 is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
+   * @param {BigInt/number} target
+   * @returns {BigInt}      The block difficulty (bdiff)
    */
   calculateDifficulty: (target) => {
-    return
+    if (typeof target !== 'bigint') {
+      let bigTarget = BigInt(target)
+      return module.exports.DIFF1_TARGET / bigTarget
+    }
+    return module.exports.DIFF1_TARGET / target
   },
 
 //     /// @notice          Extracts the previous block's hash from a block header
