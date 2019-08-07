@@ -194,9 +194,9 @@ module.exports = {
    */
   determineInputLength: (arr) => {
     let res = module.exports.extractScriptSigLen(arr)
-    let varIntDataLen = res.dataLen;
-    let scriptSigLen = res.len;
-    return BigInt(41) + varIntDataLen + scriptSigLen;
+    let varIntDataLen = res.dataLen
+    let scriptSigLen = res.scriptSigLen
+    return BigInt(41) + varIntDataLen + scriptSigLen
   },
 
 //     /// @notice          Extracts the LE sequence bytes from an input
@@ -211,13 +211,17 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the LE sequence bytes from an input
+   * @dev Sequence is used for relative time locks
+   * @param {Uint8Array} input The LEGACY input
+   * @returns {Uint8Array} The sequence bytes (LE uint)
    */
   extractSequenceLELegacy: (input) => {
-    return
+    var res = module.exports.extractScriptSigLen(input)
+    var varIntDataLen = res.dataLen
+    var scriptSigLen = res.scriptSigLen
+    var length = 36 + 1 + Number(varIntDataLen) + Number(scriptSigLen)
+    return input.slice(length, length + 4)
   },
 
 //     /// @notice          Extracts the sequence from the input
@@ -258,10 +262,10 @@ module.exports = {
    * @returns {}
    */
   extractScriptSig: (input) => {
-    // var varIntDataLen;
-    // var scriptSigLen;
-    // (_varIntDataLen, _scriptSigLen) = extractScriptSigLen(_input);
-    // return _input.slice(36, 1 + _varIntDataLen + _scriptSigLen);
+    var res = extractScriptSigLen(input)
+    var varIntDataLen = res.dataLen
+    var scriptSigLen = res.scriptSigLen
+    return input.slice(36, 1 + varIntDataLen + scriptSigLen);
   },
 
 //     /// @notice          Determines the length of a scriptSig in an input
@@ -288,14 +292,14 @@ module.exports = {
    */
   extractScriptSigLen: (arr) => {
     var varIntTag = arr.slice(36, 37);
-    var varIntDataLen = module.exports.determineVarIntDataLength(varIntTag[0]);
-    var len = 0;
+    var varIntDataLen = module.exports.determineVarIntDataLength(varIntTag[0])
+    var len = 0
     if (varIntDataLen == 0) {
-      len = varIntTag[0];
+      len = varIntTag[0]
     } else {
-      len = utils.bytesToUint(module.exports.reverseEndianness(arr.slice(37, 37 + varIntDataLen)));
+      len = utils.bytesToUint(module.exports.reverseEndianness(arr.slice(37, 37 + varIntDataLen)))
     }
-    return { dataLen: BigInt(varIntDataLen), len: BigInt(len)};
+    return { dataLen: BigInt(varIntDataLen), scriptSigLen: BigInt(len)}
   },
 
 
