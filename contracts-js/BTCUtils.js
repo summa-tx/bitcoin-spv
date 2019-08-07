@@ -23,8 +23,8 @@ module.exports = {
 
 //     uint256 public constant RETARGET_PERIOD = 2 * 7 * 24 * 60 * 60;  // 2 weeks in seconds
 //     uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
-  RETARGET_PERIOD: 1209600,
-  RETARGET_PERIOD_BLOCKS: 2016,
+  RETARGET_PERIOD: 1209600n,
+  RETARGET_PERIOD_BLOCKS: 2016n,
 
   /// @notice         Determines the length of a VarInt in bytes
   /// @dev            A VarInt of >1 byte is prefixed with a flag indicating its length
