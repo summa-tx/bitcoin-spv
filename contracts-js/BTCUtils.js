@@ -164,20 +164,19 @@ module.exports = {
    * @returns {Uint8Array} The input as a u8a
    */
   extractInputAtIndex: (vinArr, index) => {
-    // Note: this won't pass until determineInputLength is written, but I'm fairly confident that once that is written it will pass
-    var len
-    var remaining
-    var offset = 1
+    var len = 0
+    var remaining = 0
+    var offset = 1n
 
     for (var i = 0; i <= index; i++) {
-      remaining = vinArr.slice(offset, vinArr.length - 1)
+      remaining = utils.safeSlice(vinArr, Number(offset), vinArr.length - 1)
       len = module.exports.determineInputLength(remaining)
       if (i !== index) {
         offset += len
       }
     }
 
-    return serializeHex(vinArr.slice(offset, offset + len))
+    return utils.safeSlice(vinArr, Number(offset), Number(offset) + Number(len))
   },
 
 //     /// @notice          Determines whether an input is legacy
