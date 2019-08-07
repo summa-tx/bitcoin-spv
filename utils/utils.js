@@ -52,21 +52,10 @@ module.exports = {
   /// @dev             Traverses the byte array and sums the bytes
   /// @param _b        The big-endian bytes-encoded integer
   /// @return          The integer representation
-  bytesToUint: (bytesString) => {
-    // const newString = bytesString.slice(2) // This copies the array, minus the '0x' prefix.
-    // console.log('newString: ', newString, typeof newString, module.exports.deserializeHex(newString))
-
-    // QUESTION: why would you deserialize something that has just had the '0x' prefix removed? deserializeHex() already does that. So isn't newString redundant?
-    // const arr = BigInt(module.exports.deserializeHex(newString))
-    const arr = bytesString
-
-    // QUESTION (cont): shouldn't you just deserialize the original bytesString:
-    // const arr = module.exports.deserializeHex(bytesString)
-    // console.log('bytesString: ', bytesString, typeof bytesString, module.exports.deserializeHex(bytesString), typeof BigInt([arr[0]]))
-
+  bytesToUint: (uint8arr) => {
     let total = BigInt(0)
-    for (var i = 0; i < arr.length; i++) {
-      total += BigInt(arr[i]) << (BigInt(arr.length - i - 1) * BigInt(8))
+    for (var i = 0; i < uint8arr.length; i++) {
+      total += BigInt(uint8arr[i]) << (BigInt(uint8arr.length - i - 1) * BigInt(8))
     }
     return total
 

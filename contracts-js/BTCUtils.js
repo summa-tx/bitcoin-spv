@@ -766,23 +766,22 @@ module.exports = {
   /// @return          The target threshold
   extractTarget: (header) => {
     let d_header = utils.deserializeHex(header)
-    // console.log("d_header: ", d_header)
 
     let m = d_header.slice(72, 75).reverse() // reverse endianness
 
-    let e = d_header[75] - 3
+    let e = BigInt(d_header[75] - 3)
     // let exponent = BigInt(256 ** (e - 3)) // FIX: throws an unsafe number error
     let mantissa = utils.bytesToUint(m)
 
-    // console.log('header: ', header) // returns 0x0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70
-    console.log('m: ', m) // Uint8Array [ 0, 255, 255 ]
+    // console.log('header: ', header)
+    // console.log("d_header: ", d_header)
+    // console.log('m: ', m) // Uint8Array [ 0, 255, 255 ]
     // console.log('e: ', e) // returns 26
-    console.log('mantissa: ', mantissa) // returns 65535
-    // let exponent = BigInt(256 ** (e-3))
-    let exponent = 256 ** (e - 3)
-    // console.log('exponent: ', exponent) // returns 2.4519928653854222e+55, but this is considered an "unsafe" number, it should be 24519928653854221733733552434404946937899825954937634816n but js won't let me convert super large numbers to BigInt
+    // console.log('mantissa: ', mantissa) // returns 65535
+    let exponent = e - 3n
+    // console.log('exponent: ', exponent) // returns 4.113761393303015e+62, but this is considered an "unsafe" number, it should be 411376139330301510538742295639337626245683966408394965837152256n but js won't let me convert super large numbers to BigInt
 
-    return mantissa * exponent
+    return mantissa * 256n ** exponent
   },
 
 //     /// @notice          Calculate difficulty from the difficulty 1 target and current target
