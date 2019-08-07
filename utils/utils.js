@@ -22,12 +22,16 @@ module.exports = {
       return new Uint8Array()
     }
 
+<<<<<<< HEAD
+    let hex = ''
+=======
     var hex = ''
+>>>>>>> a448057236f7aac49f767fe904a6b9b1fe0d15d7
     if (hexStr.slice(0, 2) === '0x') {
       hex = hexStr.slice(2)
     }
 
-    var a = []
+    let a = []
     for (var i = 0; i < hex.length; i+=2) {
       a.push(parseInt(hex.substr(i,2),16))
     }
@@ -53,10 +57,13 @@ module.exports = {
   /// @param _b        The big-endian bytes-encoded integer
   /// @return          The integer representation
   bytesToUint: (bytesString) => {
-    var newString = bytesString.slice(2)  // This copies the array, minus the '0x' prefix.
-    var arr = module.exports.deserializeHex(newString)
+    // const newString = bytesString.slice(2) // This copies the array, minus the '0x' prefix.
+    // console.log('newString: ', newString, typeof newString, module.exports.deserializeHex(newString))
+    // const arr = BigInt(module.exports.deserializeHex(newString))
+    const arr = module.exports.deserializeHex(bytesString)
+    console.log('bytesString: ', bytesString, typeof bytesString, module.exports.deserializeHex(bytesString), typeof BigInt([arr[0]]))
 
-    var total = BigInt(0)
+    let total = BigInt(0)
     for (var i = 0; i < arr.length; i++) {
       total += BigInt(arr[i]) << (BigInt(arr.length - i - 1) * BigInt(8))
     }

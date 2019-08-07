@@ -15,7 +15,7 @@ const utils = require('../utils/utils')
 // library BTCUtils {
 module.exports = {
 
-//     using BytesLib for bytes;
+  //     using BytesLib for bytes;
 //     using SafeMath for uint256;
 
 //     // The target at minimum Difficulty. Also the target of the genesis block
@@ -23,6 +23,8 @@ module.exports = {
 
 //     uint256 public constant RETARGET_PERIOD = 2 * 7 * 24 * 60 * 60;  // 2 weeks in seconds
 //     uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
+  RETARGET_PERIOD: 1209600,
+  RETARGET_PERIOD_BLOCKS: 2016,
 
   /// @notice         Determines the length of a VarInt in bytes
   /// @dev            A VarInt of >1 byte is prefixed with a flag indicating its length
@@ -44,12 +46,13 @@ module.exports = {
 
 // TODO: Convert this to take in an array and return an array
 
-  /// @notice          Changes the endianness of a byte array
-  /// @dev             Returns a new, backwards, bytes
-  /// @param _b        The bytes to reverse
-  /// @return          The reversed bytes
+  // @notice          Changes the endianness of a byte array
+  // @dev             Returns a new, backwards, bytes
+  // @param _b        The bytes to reverse
+  // @return          The reversed bytes
   reverseEndianness: (bytesString) => {
-    var arr = utils.deserializeHex(bytesString) // To access another function in the module, you have to use module.exports.nameOfFunction.  We may change this in the future.
+    let arr
+    arr = utils.deserializeHex(bytesString) // To access another function in the module, you have to use module.exports.nameOfFunction.  We may change this in the future.
     arr.reverse()
     var newArr = utils.serializeHex(arr)  // Eventually, I think we are going to return values in arrays of integers.  For now, return things as a hex, so we can check that the tests pass.
     return newArr
@@ -497,8 +500,7 @@ module.exports = {
 //     /// @return          The output value
 //     function extractValue(bytes memory _output) internal pure returns (uint64) {
 //         bytes memory _leValue = extractValueLE(_output);
-//         bytes memory _beValue = reverseEndianness(_leValue);
-//         return uint64(bytesToUint(_beValue));
+//         bytes memory _beValue = reverseEndianness(_leValue);//         return uint64(bytesToUint(_beValue));
 //     }
 
   /// @notice          Extracts the value from the output in a tx
@@ -704,7 +706,24 @@ module.exports = {
   /// @param _header   The header
   /// @return          The target threshold
   extractTarget: (header) => {
-    return
+    let d_header = utils.deserializeHex(header)
+
+    // Hacky way of reversing endianness of a partial serialized number
+    let m = header.slice(72, 75).split().reverse().join('')
+    let hex_m = `0x${m}`
+
+    let e = d_header[75] - 3
+    let exponent = BigInt(256 ** (e - 3)) // FIX: throws an unsafe number error
+    let mantissa = utils.bytesToUint(hex_m)
+
+    console.log('mantissa: ', mantissa)
+    // console.log('e: ', e)
+    // console.log('m: ', m)
+    // let exponent = BigInt(256 ** (e-3))
+    // console.log('exponent: ', exponent)
+    // let exponent = 256 ** (e - 3)
+
+    return mantissa * exponent
   },
 
 //     /// @notice          Calculate difficulty from the difficulty 1 target and current target
@@ -913,6 +932,22 @@ module.exports = {
   /// @param _secondTimestamp the timestamp of the last block in the difficulty period
   /// @return                 the new period's target threshold
   retargetAlgorithm: (previousTarget, firstTimestamp, secondTimestamp) => {
-    return
+    let elapsedTime = secondTimestamp - firstTimestamp
+    const rp = module.exports.RETARGET_PERIOD
+    const rp_div4 = rp / 4
+    const rp_mul4 = rp * 4
+    const antiOverflow = 65536
+
+    if (elapsedTime < rp_div4) {
+      elapsedTime = rp_div4
+    }
+    if (elapsedTime > rp_mul4) {
+      elapsedTime = rp_mul4
+    }
+
+    let adjusted = (previousTarget / antiOverflow) * elapsedTime
+    console.log('adjusted: ', adjusted, previousTarget, elapsedTime)
+
+    return BigInt((adjusted / rp) * antiOverflow)
   }
 }
