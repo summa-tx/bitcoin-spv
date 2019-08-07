@@ -294,7 +294,7 @@ module.exports = {
    * @returns {object} The length of the script sig in object form
    */
   extractScriptSigLen: (arr) => {
-    var varIntTag = arr.slice(36, 37);
+    var varIntTag = arr.slice(36, 37)
     var varIntDataLen = module.exports.determineVarIntDataLength(varIntTag[0])
     var len = 0
     if (varIntDataLen == 0) {
@@ -319,13 +319,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the LE sequence bytes from an input
+   * @dev Sequence is used for relative time locks
+   * @param {Uint8Array} input The WITNESS input
+   * @returns {Uint8Array} The sequence bytes (LE uint)
    */
   extractSequenceLEWitness: (input) => {
-    return
+    return input.slice(37, 41)
   },
 
 //     /// @notice          Extracts the sequence from the input in a tx
@@ -339,13 +339,15 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the sequence from the input in a tx
+   * @dev Sequence is a 4-byte little-endian number
+   * @param {Uint8Array} input The WITNESS input
+   * @returns {Uint8Array} The sequence number (big-endian u8a)
    */
   extractSequenceWitness: (input) => {
-    return
+    var leSeqence = module.exports.extractSequenceLEWitness(input)
+    var inputeSequence = module.exports.reverseEndianness(leSeqence)
+    return utils.bytesToUint(inputeSequence)
   },
 
 //     /// @notice          Extracts the outpoint from the input in a tx

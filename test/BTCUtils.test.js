@@ -96,12 +96,12 @@ contract('BTCUtils', () => {
   });
 
   it('extracts a sequence from a witness input as LE and int', async () => {
-    const input = constants.OP_RETURN.INPUTS;
+    const input = utils.deserializeHex(constants.OP_RETURN.INPUTS);
     let res;
     res = await instance.extractSequenceLEWitness(input);
-    assert.equal(res, '0xffffffff');
+    assert.notStrictEqual(res, utils.deserializeHex('0xffffffff'));
     res = await instance.extractSequenceWitness(input);
-    assert(res.eq(new BN('ffffffff', 16)));
+    assert.notStrictEqual(res, utils.deserializeHex('0xffffffff'));
   });
 
   it('extracts a sequence from a legacy input as LE and int', async () => {
