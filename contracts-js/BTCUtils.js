@@ -24,69 +24,6 @@ module.exports = {
 //     uint256 public constant RETARGET_PERIOD = 2 * 7 * 24 * 60 * 60;  // 2 weeks in seconds
 //     uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
 
-  /* ***** */
-  /* UTILS */
-  /* ***** */
-
-  /* ***** */
-  /* CONVERSION FUNCTIONS */
-  /* ***** */
-
-  // serializeHex: (uint8arr) => {
-  //   if (!uint8arr) {
-  //     return ''
-  //   }
-
-  //   var hexStr = ''
-  //   for (var i = 0; i < uint8arr.length; i++) {
-  //     var hex = (uint8arr[i] & 0xff).toString(16)
-  //     hex = (hex.length === 1) ? '0' + hex : hex
-  //     hexStr += hex
-  //   }
-
-  //   return hexStr.toLowerCase()
-  // },
-
-  // deserializeHex: (str) => {
-  //   if (!str) {
-  //     return new Uint8Array()
-  //   }
-
-  //   var a = []
-  //   for (var i = 0, len = str.length; i < len; i+=2) {
-  //     a.push(parseInt(str.substr(i,2),16))
-  //   }
-
-  //   return new Uint8Array(a)
-  // },
-
-  /* ***** */
-  /* COMPARE ARRAYS, USE IN PLACE OF KECCAK256 */
-  /* ***** */
-
-  // typedArraysAreEqual: (a, b) => {
-  //   if (a.byteLength !== b.byteLength) return false;
-  //   return a.every((val, i) => val === b[i]);
-  // },
-
-//     /// @notice         Determines the length of a VarInt in bytes
-//     /// @dev            A VarInt of >1 byte is prefixed with a flag indicating its length
-//     /// @param _flag    The first byte of a VarInt
-//     /// @return         The number of non-flag bytes in the VarInt
-//     function determineVarIntDataLength(bytes memory _flag) internal pure returns (uint8) {
-//         if (uint8(_flag[0]) == 0xff) {
-//             return 8  // one-byte flag, 8 bytes data
-//         }
-//         if (uint8(_flag[0]) == 0xfe) {
-//             return 4  // one-byte flag, 4 bytes data
-//         }
-//         if (uint8(_flag[0]) == 0xfd) {
-//             return 2  // one-byte flag, 2 bytes data
-//         }
-
-//         return 0  // flag is data
-//     }
-
   /// @notice         Determines the length of a VarInt in bytes
   /// @dev            A VarInt of >1 byte is prefixed with a flag indicating its length
   /// @param _flag    The first byte of a VarInt
@@ -105,19 +42,7 @@ module.exports = {
     return 0  // flag is data
   },
 
-//     /// @notice          Changes the endianness of a byte array
-//     /// @dev             Returns a new, backwards, bytes
-//     /// @param _b        The bytes to reverse
-//     /// @return          The reversed bytes
-//     function reverseEndianness(bytes memory _b) internal pure returns (bytes memory) {
-//         bytes memory _newValue = new bytes(_b.length);
-
-//         for (uint i = 0; i < _b.length; i++) {
-//             _newValue[_b.length - i - 1] = _b[i];
-//         }
-
-//         return _newValue;
-//     }
+// TODO: Convert this to take in an array and return an array
 
   /// @notice          Changes the endianness of a byte array
   /// @dev             Returns a new, backwards, bytes
@@ -144,16 +69,6 @@ module.exports = {
     return total
 
   },
-
-//     /// @notice          Get the last _num bytes from a byte array
-//     /// @param _b        The byte array to slice
-//     /// @param _num      The number of bytes to extract from the end
-//     /// @return          The last _num bytes of _b
-//     function lastBytes(bytes memory _b, uint256 _num) internal pure returns (bytes memory) {
-//         uint256 _start = _b.length.sub(_num);
-
-//         return _b.slice(_start, _num);
-//     }
 
   /// @notice          Get the last _num bytes from a byte array
   /// @param _b        The byte array to slice
@@ -196,7 +111,7 @@ module.exports = {
   /// @param _b        The pre-image
   /// @return          The digest
   hash256: (b) => {
-    return
+    return utils.sha256(utils.sha256(b))
   },
 
   /* ************ */
@@ -231,7 +146,21 @@ module.exports = {
   /// @param _index    The 0-indexed location of the input to extract
   /// @return          The input as a byte array
   extractInputAtIndex: (vin, index) => {
-    return
+    // TODO: Finish function once determinInputLength is finished
+    var len
+    var remaining;
+
+    const offset = 1;
+
+    for (var i = 0; i < index; i++) {
+      remaining = vin.slice(offset, vin.length - offset);
+      len = determineInputLength(remaining);
+      offset = offset + len;
+    }
+
+    remaining = vin.slice(offset, vin.length - offset);
+    len = determineInputLength(remaining);
+    return vin.slice(offset, len);
   },
 
 //     /// @notice          Determines whether an input is legacy
@@ -322,7 +251,10 @@ module.exports = {
   /// @param _input    The LEGACY input
   /// @return          The length-prepended script sig
   extractScriptSig: (input) => {
-    return
+    // var varIntDataLen;
+    // var scriptSigLen;
+    // (_varIntDataLen, _scriptSigLen) = extractScriptSigLen(_input);
+    // return _input.slice(36, 1 + _varIntDataLen + _scriptSigLen);
   },
 
 //     /// @notice          Determines the length of a scriptSig in an input
@@ -346,7 +278,16 @@ module.exports = {
   /// @param _input    The LEGACY input
   /// @return          The length of the script sig
   extractScriptSigLen: (input) => {
-    return
+    var arr = utils.deserializeHex(input)
+    var varIntTag = arr.slice(36, 37);
+    var varIntDataLen = module.exports.determineVarIntDataLength(varIntTag[0]);
+    var len = 0;
+    if (varIntDataLen == 0) {
+      len = varIntTag[0];
+    } else {
+      len = utils.bytesToUint(module.exports.reverseEndianness(input.slice(37, 37 + varIntDataLen)));
+    }
+    return { dataLen: BigInt(varIntDataLen), len: BigInt(len)};
   },
 
 
