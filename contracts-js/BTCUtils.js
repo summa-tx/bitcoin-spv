@@ -168,8 +168,8 @@ module.exports = {
   /**
    * @notice Determines whether an input is legacy
    * @dev False if no scriptSig, otherwise True
-   * @param {} nameOfParam The input
-   * @returns {} True for legacy, False for witness
+   * @param {Uint8Array} input The input
+   * @returns {boolean} True for legacy, False for witness
    */
   isLegacyInput: (input) => {
     return !utils.typedArraysAreEqual(input.slice(36, 37), new Uint8Array([0]))

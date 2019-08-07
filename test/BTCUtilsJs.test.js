@@ -194,7 +194,7 @@ describe('BTCUtils', () => {
     assert.notStrictEqual(res, utils.deserializeHex('0xaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff'));
   });
 
-  it.only('sorts legacy from witness inputs', async () => {
+  it('sorts legacy from witness inputs', async () => {
     const input = constants.OP_RETURN.INPUTS;
     let res;
     res = await BTCUtilsJs.isLegacyInput(utils.deserializeHex(input));
