@@ -434,15 +434,15 @@ describe('BTCUtils', () => {
     let expected;
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i < constants.RETARGET_TUPLES.length; i += 1) {
-      actual = await BTCUtilsJs.extractDifficulty(`0x${constants.RETARGET_TUPLES[i][0].hex}`);
+      actual = await BTCUtilsJs.extractDifficulty(utils.deserializeHex(`0x${constants.RETARGET_TUPLES[i][0].hex}`));
       expected = constants.RETARGET_TUPLES[i][0].difficulty;
       assert.equal(actual, expected);
 
-      actual = await BTCUtilsJs.extractDifficulty(`0x${constants.RETARGET_TUPLES[i][1].hex}`);
+      actual = await BTCUtilsJs.extractDifficulty(utils.deserializeHex(`0x${constants.RETARGET_TUPLES[i][1].hex}`));
       expected = constants.RETARGET_TUPLES[i][1].difficulty;
       assert.equal(actual, expected);
 
-      actual = await BTCUtilsJs.extractDifficulty(`0x${constants.RETARGET_TUPLES[i][2].hex}`);
+      actual = await BTCUtilsJs.extractDifficulty(utils.deserializeHex(`0x${constants.RETARGET_TUPLES[i][2].hex}`));
       expected = constants.RETARGET_TUPLES[i][2].difficulty;
       assert.equal(actual, expected);
     }
