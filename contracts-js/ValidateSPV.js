@@ -19,34 +19,6 @@ const ValidateSPV = {
 //     enum InputTypes { NONE, LEGACY, COMPATIBILITY, WITNESS }
 //     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH, NONSTANDARD }
 
-  ERR_BAD_LENGTH: 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff,
-  ERR_INVALID_CHAIN: 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe,
-  ERR_LOW_WORK: 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd,
-
-//     function getErrBadLength() internal pure returns (uint256) {
-//         return ERR_BAD_LENGTH;
-//     }
-
-  getErrBadLength: () => {
-    return ERR_BAD_LENGTH;
-  },
-
-//     function getErrInvalidChain() internal pure returns (uint256) {
-//         return ERR_INVALID_CHAIN;
-//     }
-
-  getErrInvalidChain: () => {
-    return ERR_INVALID_CHAIN;
-  },
-
-//     function getErrLowWork() internal pure returns (uint256) {
-//         return ERR_LOW_WORK;
-//     }
-
-  getErrLowWork: () => {
-    return ERR_LOW_WORK;
-  },
-
 //     /// @notice                     Validates a tx inclusion in the block
 //     /// @param _txid                The txid (LE)
 //     /// @param _merkleRoot          The merkle root (as in the block header)

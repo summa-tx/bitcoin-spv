@@ -50,24 +50,19 @@ module.exports = {
   // @dev             Returns a new, backwards, bytes
   // @param _b        The bytes to reverse
   // @return          The reversed bytes
-  reverseEndianness: (bytesString) => {
-    let arr
-    arr = utils.deserializeHex(bytesString) // To access another function in the module, you have to use module.exports.nameOfFunction.  We may change this in the future.
-    arr.reverse()
-    var newArr = utils.serializeHex(arr)  // Eventually, I think we are going to return values in arrays of integers.  For now, return things as a hex, so we can check that the tests pass.
-    return newArr
+  reverseEndianness: (uint8Arr) => {
+    let newArr = uint8Arr.slice()
+    return new Uint8Array(newArr.reverse())
   },
 
   /// @notice          Converts big-endian bytes to a uint
   /// @dev             Traverses the byte array and sums the bytes
   /// @param _b        The big-endian bytes-encoded integer
   /// @return          The integer representation
-  bytesToUint: (bytesString) => {
-    var arr = utils.deserializeHex(bytesString)
-
+  bytesToUint: (uint8Arr) => {
     var total = BigInt(0)
-    for (var i = 0; i < arr.length; i++) {
-      total += BigInt(arr[i]) << (BigInt(arr.length - i - 1) * BigInt(8))
+    for (var i = 0; i < uint8Arr.length; i++) {
+      total += BigInt(uint8Arr[i]) << (BigInt(uint8Arr.length - i - 1) * BigInt(8))
     }
     return total
 
@@ -288,7 +283,7 @@ module.exports = {
     if (varIntDataLen == 0) {
       len = varIntTag[0];
     } else {
-      len = utils.bytesToUint(module.exports.reverseEndianness(input.slice(37, 37 + varIntDataLen)));
+      len = utils.bytesToUint(module.exports.reverseEndianness(arr.slice(37, 37 + varIntDataLen)));
     }
     return { dataLen: BigInt(varIntDataLen), len: BigInt(len)};
   },
@@ -706,7 +701,7 @@ module.exports = {
   /// @param _header   The header
   /// @return          The target threshold
   extractTarget: (header) => {
-    let m = header.slice(72, 75).reverse() // reverse endianness
+    let m = header.slice(72, 75).reverse() // reverse endianness on a partial u8a
 
     let e = BigInt(header[75] - 3)
 
@@ -714,14 +709,16 @@ module.exports = {
 
     let mantissa = utils.bytesToUint(m)
 
+    let exponent = e - 3n
+
+    // All the console.logs!!!
     // console.log('header: ', header)
     // console.log('m: ', m) // returns Uint8Array [ 0, 255, 255 ]
     // console.log('e: ', e) // returns 26
     // console.log('mantissa: ', mantissa) // returns 65535
-    let exponent = e - 3n
     // console.log('exponent: ', exponent) // returns 4.113761393303015e+62, but this is considered an "unsafe" number, it should be 411376139330301510538742295639337626245683966408394965837152256n but js won't let me convert super large numbers to BigInt
 
-    return mantissa * 256n ** exponent
+    return mantissa * 256n ** exponent // node won't let this work.
   },
 
 //     /// @notice          Calculate difficulty from the difficulty 1 target and current target
@@ -930,6 +927,7 @@ module.exports = {
   /// @param _secondTimestamp the timestamp of the last block in the difficulty period
   /// @return                 the new period's target threshold
   retargetAlgorithm: (previousTarget, firstTimestamp, secondTimestamp) => {
+    // I think this works, but I can't pass the test unless extractTarget works, which won't work until node recognizes BigInt
     let elapsedTime = secondTimestamp - firstTimestamp
     const rp = module.exports.RETARGET_PERIOD
     const rp_div4 = rp / 4
@@ -944,7 +942,7 @@ module.exports = {
     }
 
     let adjusted = (previousTarget / antiOverflow) * elapsedTime
-    console.log('adjusted: ', adjusted, previousTarget, elapsedTime)
+    // console.log('adjusted: ', adjusted, previousTarget, elapsedTime)
 
     return BigInt((adjusted / rp) * antiOverflow)
   }

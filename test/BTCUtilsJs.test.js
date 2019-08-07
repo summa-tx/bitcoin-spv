@@ -2,6 +2,8 @@
 // const BN = require('bn.js');
 const constants = require('./constants');
 
+const utils = require('../utils/utils');
+
 const assert = require('chai').assert
 
 const utils = require('../utils/utils.js')
@@ -40,36 +42,36 @@ describe('BTCUtils', () => {
   });
 
   it('reverses endianness', async () => {
-    let res = await BTCUtilsJs.reverseEndianness('0x00112233');
-    assert.equal(res, '0x33221100');
-    res = await BTCUtilsJs.reverseEndianness('0x0123456789abcdef');
-    assert.equal(res, '0xefcdab8967452301');
+    let res = await BTCUtilsJs.reverseEndianness(utils.deserializeHex('0x00112233'));
+    assert.notStrictEqual(res, utils.deserializeHex('0x33221100'));
+    res = await BTCUtilsJs.reverseEndianness(utils.deserializeHex('0x0123456789abcdef'));
+    assert.notStrictEqual(res, utils.deserializeHex('0xefcdab8967452301'));
   });
 
   it('converts big-endian bytes to integers', async () => {
-    let res = await BTCUtilsJs.bytesToUint('0x00');
+    let res = await BTCUtilsJs.bytesToUint(utils.deserializeHex('0x00'));
     assert.equal(res, 0n);
 
-    res = await BTCUtilsJs.bytesToUint('0xff');
+    res = await BTCUtilsJs.bytesToUint(utils.deserializeHex('0xff'));
     assert.equal(res, 255n);
 
-    res = await BTCUtilsJs.bytesToUint('0x00ff');
+    res = await BTCUtilsJs.bytesToUint(utils.deserializeHex('0x00ff'));
     assert.equal(res, 255n);
 
-    res = await BTCUtilsJs.bytesToUint('0xff00');
+    res = await BTCUtilsJs.bytesToUint(utils.deserializeHex('0xff00'));
     assert.equal(res, 65280n);
 
-    res = await BTCUtilsJs.bytesToUint('0x01');
+    res = await BTCUtilsJs.bytesToUint(utils.deserializeHex('0x01'));
     assert.equal(res, 1n);
 
-    res = await BTCUtilsJs.bytesToUint('0x0001');
+    res = await BTCUtilsJs.bytesToUint(utils.deserializeHex('0x0001'));
     assert.equal(res, 1n);
 
-    res = await BTCUtilsJs.bytesToUint('0x0100');
+    res = await BTCUtilsJs.bytesToUint(utils.deserializeHex('0x0100'));
     assert.equal(res, 256n);
 
     // max uint256: (2^256)-1
-    res = await BTCUtilsJs.bytesToUint('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+    res = await BTCUtilsJs.bytesToUint(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'));
     assert.equal(res, 115792089237316195423570985008687907853269984665640564039457584007913129639935n);
   });
 
