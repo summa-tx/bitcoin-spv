@@ -50,24 +50,19 @@ module.exports = {
   // @dev             Returns a new, backwards, bytes
   // @param _b        The bytes to reverse
   // @return          The reversed bytes
-  reverseEndianness: (bytesString) => {
-    let arr
-    arr = utils.deserializeHex(bytesString) // To access another function in the module, you have to use module.exports.nameOfFunction.  We may change this in the future.
-    arr.reverse()
-    var newArr = utils.serializeHex(arr)  // Eventually, I think we are going to return values in arrays of integers.  For now, return things as a hex, so we can check that the tests pass.
-    return newArr
+  reverseEndianness: (uint8Arr) => {
+    let newArr = uint8Arr.slice()
+    return new Uint8Array(newArr.reverse())
   },
 
   /// @notice          Converts big-endian bytes to a uint
   /// @dev             Traverses the byte array and sums the bytes
   /// @param _b        The big-endian bytes-encoded integer
   /// @return          The integer representation
-  bytesToUint: (bytesString) => {
-    var arr = utils.deserializeHex(bytesString)
-
+  bytesToUint: (uint8Arr) => {
     var total = BigInt(0)
-    for (var i = 0; i < arr.length; i++) {
-      total += BigInt(arr[i]) << (BigInt(arr.length - i - 1) * BigInt(8))
+    for (var i = 0; i < uint8Arr.length; i++) {
+      total += BigInt(uint8Arr[i]) << (BigInt(uint8Arr.length - i - 1) * BigInt(8))
     }
     return total
 
@@ -288,7 +283,7 @@ module.exports = {
     if (varIntDataLen == 0) {
       len = varIntTag[0];
     } else {
-      len = utils.bytesToUint(module.exports.reverseEndianness(input.slice(37, 37 + varIntDataLen)));
+      len = utils.bytesToUint(module.exports.reverseEndianness(arr.slice(37, 37 + varIntDataLen)));
     }
     return { dataLen: BigInt(varIntDataLen), len: BigInt(len)};
   },
