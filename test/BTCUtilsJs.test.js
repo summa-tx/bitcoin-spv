@@ -98,14 +98,13 @@ describe('BTCUtils', () => {
     assert.equal(res, 0xffffffffn)
   });
 
-  it('extracts a sequence from a legacy input as LE and int', async () => {
+  it.only('extracts a sequence from a legacy input as LE and int', async () => {
     const input = utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff');
     let res;
     res = await BTCUtilsJs.extractSequenceLELegacy(input);
     assert.notStrictEqual(res, utils.deserializeHex('0xffffffff'));
-    // The following test won't be needed because this function will only take in a u8a
-    // res = await BTCUtilsJs.extractSequenceLegacy(input);
-    // assert.notStrictEqual(res, utils.deserializeHex(0xffffffffn));
+    res = await BTCUtilsJs.extractSequenceLegacy(input);
+    assert.notStrictEqual(res, utils.deserializeHex('0xffffffff'));
   });
 
   it('extracts an outpoint as bytes', async () => {

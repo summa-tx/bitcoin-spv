@@ -235,13 +235,15 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the sequence from the input
+   * @dev Sequence is a 4-byte little-endian number
+   * @param {Uint8Array} input The LEGACY input
+   * @returns {Uint8Array} The sequence number (big-endian uint array)
    */
   extractSequenceLegacy: (input) => {
-    return
+    var leSeqence = module.exports.extractSequenceLELegacy(input)
+    var beSequence = module.exports.reverseEndianness(leSeqence)
+    return utils.bytesToUint(beSequence)
   },
 
 //     /// @notice          Extracts the VarInt-prepended scriptSig from the input in a tx
