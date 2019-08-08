@@ -486,20 +486,21 @@ describe('BTCUtils', () => {
     for (let i = 0; i < constants.RETARGET_TUPLES.length; i += 1) {
       firstTimestamp = constants.RETARGET_TUPLES[i][0].timestamp;
       secondTimestamp = constants.RETARGET_TUPLES[i][1].timestamp;
-      previousTarget = await BTCUtilsJs.extractTarget.call(utils.deserializeHex(`0x${constants.RETARGET_TUPLES[i][1].hex}`));
-      expectedNewTarget = await BTCUtilsJs.extractTarget.call(utils.deserializeHex(`0x${constants.RETARGET_TUPLES[i][2].hex}`));
+      previousTarget = await BTCUtilsJs.extractTarget(utils.deserializeHex(constants.RETARGET_TUPLES[i][1].hex));
+      expectedNewTarget = await BTCUtilsJs.extractTarget(utils.deserializeHex(constants.RETARGET_TUPLES[i][2].hex));
       res = await BTCUtilsJs.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
       // (response & expected) == expected
       // this converts our full-length target into truncated block target
-      assert(res.uand(expectedNewTarget).eq(expectedNewTarget));
+      assert.equal(res & expectedNewTarget, expectedNewTarget);
 
       secondTimestamp = firstTimestamp + 5 * 2016 * 10 * 60; // longer than 4x
       res = await BTCUtilsJs.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-      assert(res.divn(4).uand(previousTarget).eq(previousTarget));
+      // assert(res.divn(4).uand(previousTarget).eq(previousTarget));
+      assert.equal(res / 4n & previousTarget, previousTarget);
 
       secondTimestamp = firstTimestamp + 2016 * 10 * 14; // shorter than 1/4x
       res = await BTCUtilsJs.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-      assert(res.muln(4).uand(previousTarget).eq(previousTarget));
+      assert.equal(res * 4n & previousTarget, previousTarget);
     }
     /* eslint-enable no-await-in-loop */
   });
@@ -509,15 +510,15 @@ describe('BTCUtils', () => {
     let expected;
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i < constants.RETARGET_TUPLES.length; i += 1) {
-      actual = await BTCUtilsJs.extractDifficulty(utils.deserializeHex(`0x${constants.RETARGET_TUPLES[i][0].hex}`));
+      actual = await BTCUtilsJs.extractDifficulty(utils.deserializeHex(constants.RETARGET_TUPLES[i][0].hex));
       expected = constants.RETARGET_TUPLES[i][0].difficulty;
       assert.equal(actual, expected);
 
-      actual = await BTCUtilsJs.extractDifficulty(utils.deserializeHex(`0x${constants.RETARGET_TUPLES[i][1].hex}`));
+      actual = await BTCUtilsJs.extractDifficulty(utils.deserializeHex(constants.RETARGET_TUPLES[i][1].hex));
       expected = constants.RETARGET_TUPLES[i][1].difficulty;
       assert.equal(actual, expected);
 
-      actual = await BTCUtilsJs.extractDifficulty(utils.deserializeHex(`0x${constants.RETARGET_TUPLES[i][2].hex}`));
+      actual = await BTCUtilsJs.extractDifficulty(utils.deserializeHex(constants.RETARGET_TUPLES[i][2].hex));
       expected = constants.RETARGET_TUPLES[i][2].difficulty;
       assert.equal(actual, expected);
     }

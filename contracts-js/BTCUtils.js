@@ -939,23 +939,26 @@ module.exports = {
    * @returns {BigInt}      the new period's target threshold
    */
   retargetAlgorithm: (previousTarget, firstTimestamp, secondTimestamp) => {
-    // I think this works, but I can't pass the test unless extractTarget works, which won't work until node recognizes BigInt
-    let elapsedTime = secondTimestamp - firstTimestamp
+    let elapsedTime = BigInt(secondTimestamp - firstTimestamp);
     const rp = module.exports.RETARGET_PERIOD
-    const rp_div4 = rp / 4
-    const rp_mul4 = rp * 4
-    const antiOverflow = 65536
+    const div = rp / 4n
+    const mult = rp * 4n
 
-    if (elapsedTime < rp_div4) {
-      elapsedTime = rp_div4
+    // Normalize ratio to factor of 4 if very long or very short
+    if (elapsedTime < div) {
+      elapsedTime = div
     }
-    if (elapsedTime > rp_mul4) {
-      elapsedTime = rp_mul4
+    if (elapsedTime > mult) {
+      elapsedTime = mult
     }
 
-    let adjusted = (previousTarget / antiOverflow) * elapsedTime
-    // console.log('adjusted: ', adjusted, previousTarget, elapsedTime)
+    /*
+      NB: high targets e.g. ffff0020 can cause overflows here
+          so we divide it by 256**2, then multiply by 256**2 later
+          we know the target is evenly divisible by 256**2, so this isn't an issue
+    */
 
-    return BigInt((adjusted / rp) * antiOverflow)
+    let adjusted = (previousTarget / 65536n) * elapsedTime;
+    return (adjusted / module.exports.RETARGET_PERIOD) * 65536n;
   }
 }
