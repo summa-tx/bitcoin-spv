@@ -376,13 +376,14 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice                Extracts the outpoint tx id from an input
+   * @dev                   32 byte tx id
+   * @param {Uint8Array}    input The input
+   * @returns {Uint8Array}  The tx id (little-endian bytes)
    */
+  // TODO: no test, check against function that uses this
   extractInputTxIdLE: (input) => {
-    return
+    return utils.safeSlice(input, 0, 32)
   },
 
 //     /// @notice          Extracts the outpoint index from an input
@@ -396,13 +397,15 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice                Extracts the outpoint index from an input
+   * @dev                   32 byte tx id
+   * @param {Uint8Array}    input The input
+   * @returns {Uint8Array}  The tx id (big-endian bytes)
    */
+  // TODO: no test, check against function that uses this
   extractInputTxId: (input) => {
-    return
+    let leId = module.exports.extractInputTxId(input)
+    return module.exports.reverseEndianness(leId)
   },
 
 //     /// @notice          Extracts the LE tx input index from the input in a tx
@@ -414,13 +417,14 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice                Extracts the LE tx input index from the input in a tx
+   * @dev                   4 byte tx index
+   * @param {Uint8Array}    input The input
+   * @returns {Uint8Array}  The tx index (little-endian bytes)
    */
+  // TODO: no test, check against function that uses this
   extractTxIndexLE: (input) => {
-    return
+    return utils.safeSlice(input, 32, 36)
   },
 
 //     /// @notice          Extracts the tx input index from the input in a tx
@@ -432,6 +436,19 @@ module.exports = {
 //         bytes memory _beIndex = reverseEndianness(_leIndex);
 //         return uint32(bytesToUint(_beIndex));
 //     }
+
+  /**
+   * @notice                Extracts the LE tx input index from the input in a tx
+   * @dev                   4 byte tx index
+   * @param {Uint8Array}    input The input
+   * @returns {BigInt}      The tx index (big-endian uint)
+   */
+  // TODO: no test, check against function that uses this
+  extractTxIndex: (input) => {
+    let leIndex = module.exports.extractTxIndexLE(input)
+    let beIndex = module.exports.reverseEndianness(leIndex)
+    return BigInt(utils.bytesToUint(beIndex))
+  },
 
   /* ****** */
   /* Output */
