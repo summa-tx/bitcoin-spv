@@ -378,7 +378,9 @@ describe('BTCUtils', () => {
 
   it('extracts the prev block hash', async () => {
     const res = await BTCUtilsJs.extractPrevBlockBE(HEADER_170);
-    assert.equal(res, '0x000000002a22cfee1f2c846adbd12b3e183d4f97683f85dad08a79780a84bd55');
+    let u8aValue = utils.deserializeHex('0x000000002a22cfee1f2c846adbd12b3e183d4f97683f85dad08a79780a84bd55')
+    var arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue)
+    assert.isTrue(arraysAreEqual)
   });
 
   it('extracts a timestamp from a header', async () => {

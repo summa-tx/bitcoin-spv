@@ -835,9 +835,7 @@ module.exports = {
    * @returns {???}  The previous block's hash (big-endian)
    */
   extractPrevBlockBE: (header) => {
-    // TODO: figure out if the return value is a u8a or hex value. Also, this has no test.
-    // return utils.deserializeHex(module.exports.reverseEndianness(extractPrevBlockLE(header)))
-    return module.exports.reverseEndianness(extractPrevBlockLE(header))
+    return module.exports.reverseEndianness(module.exports.extractPrevBlockLE(header))
   },
 
 //     /// @notice          Extracts the timestamp from a block header
