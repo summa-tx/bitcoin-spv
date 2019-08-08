@@ -345,7 +345,7 @@ module.exports = {
    * @returns {Uint8Array} The 1 byte length prefix
    */
   extractOutputScriptLen: (output) => {
-    return output.slice(8, 9);
+    return utils.safeSlice(output, 8, 9);
   },
 
 //     /// @notice          Extracts the value bytes from the output in a tx
@@ -363,7 +363,7 @@ module.exports = {
    * @returns {Uint8Array} The output value as LE bytes
    */
   extractValueLE: (output) => {
-    return output.slice(0, 8);
+    return utils.safeSlice(output, 0, 8);
   },
 
 //     /// @notice          Extracts the value from the output in a tx
@@ -407,11 +407,11 @@ module.exports = {
    * @returns {Uint8Array} Any data contained in the opreturn output, null if not an op return
    */
   extractOpReturnData: (output) => {
-    if (!utils.typedArraysAreEqual(output.slice(9,10), new Uint8Array([106]))) {
+    if (!utils.typedArraysAreEqual(utils.safeSlice(output, 9, 10), new Uint8Array([106]))) {
       return null
     }
-    let dataLen = output.slice(10, 11);
-    return output.slice(11, 11 + Number(utils.bytesToUint(dataLen)));
+    let dataLen = utils.safeSlice(output, 10, 11);
+    return utils.safeSlice(output, 11, 11 + Number(utils.bytesToUint(dataLen)));
   },
 
 //     /// @notice          Extracts the hash from the output script
@@ -455,29 +455,29 @@ module.exports = {
    * @returns {Uint8Array} The hash committed to by the pk_script, or null for errors
    */
   extractHash: (output) => {
-    if (output.slice(9, 10)[0] == 0) {
+    if (utils.safeSlice(output, 9, 10)[0] == 0) {
       let len = module.exports.extractOutputScriptLen(output)[0] - 2;
       // Check for maliciously formatted witness outputs
-      if (output.slice(10, 11)[0] != len) {
+      if (utils.safeSlice(output, 10, 11)[0] != len) {
         return null;
       }
-      return output.slice(11, 11 + len);
+      return utils.safeSlice(output, 11, 11 + len);
     } else {
-      let tag = output.slice(8, 11);
+      let tag = utils.safeSlice(output, 8, 11);
       // p2pkh
       if (utils.typedArraysAreEqual(tag, utils.deserializeHex('0x1976a9'))) {
         // Check for maliciously formatted p2pkh
-        if (output.slice(11, 12)[0] != 0x14 || !utils.typedArraysAreEqual(output.slice(output.length - 2, output.length), utils.deserializeHex('0x88ac'))) {
+        if (utils.safeSlice(output, 11, 12)[0] != 0x14 || !utils.typedArraysAreEqual(utils.safeSlice(output, output.length - 2, output.length), utils.deserializeHex('0x88ac'))) {
           return null;
         }
-        return output.slice(12, 32);
+        return utils.safeSlice(output, 12, 32);
       //p2sh
       } else if (utils.typedArraysAreEqual(tag, utils.deserializeHex('0x17a914'))) {
         // Check for maliciously formatted p2sh
-        if (output.slice(output.length - 1, output.length)[0] != 0x87) {
+        if (utils.safeSlice(output, output.length - 1, output.length)[0] != 0x87) {
           return null;
         }
-        return output.slice(11, 31);
+        return utils.safeSlice(output, 11, 31);
       }
     }
     return null;  /* NB: will trigger on OPRETURN and non-standard that don't overrun */

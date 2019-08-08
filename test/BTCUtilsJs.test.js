@@ -146,7 +146,7 @@ describe('BTCUtils', () => {
     assert.isTrue(arraysAreEqual);
   });
 
-  it.only('extracts the hash from an output', async () => {
+  it('extracts the hash from an output', async () => {
     let res;
     let arraysAreEqual;
 
