@@ -671,24 +671,26 @@ module.exports = {
    * @returns {BigInt}       The target threshold
    */
   extractTarget: (header) => {
-    let m = utils.safeSlice(header, 72, 75).reverse() // reverse endianness on a partial u8a
+    // let m = utils.safeSlice(header, 72, 75).reverse() // reverse endianness on a partial u8a
 
-    let e = BigInt(header[75] - 3)
+    // let e = BigInt(header[75] - 3)
 
-    let r = utils.bytesToUint('string here')
+    // // let r = utils.bytesToUint('string here')
 
-    let mantissa = utils.bytesToUint(m)
+    // let mantissa = utils.bytesToUint(m)
+
+    // let exponent = e - 3n
+
+    // return mantissa * 256n ** exponent
+
+    let m = utils.safeSlice(header, 72, 75)
+    let e = BigInt(header[75])
+
+    let mantissa = utils.bytesToUint(module.exports.reverseEndianness(m))
 
     let exponent = e - 3n
 
-    // All the console.logs!!!
-    // console.log('header: ', header)
-    // console.log('m: ', m) // returns Uint8Array [ 0, 255, 255 ]
-    // console.log('e: ', e) // returns 26
-    // console.log('mantissa: ', mantissa) // returns 65535
-    // console.log('exponent: ', exponent) // returns 4.113761393303015e+62, but this is considered an "unsafe" number, it should be 411376139330301510538742295639337626245683966408394965837152256n but js won't let me convert super large numbers to BigInt
-
-    return mantissa * 256n ** exponent // node won't let this work.
+    return mantissa * 256n ** exponent
   },
 
 //     /// @notice          Calculate difficulty from the difficulty 1 target and current target
