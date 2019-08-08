@@ -132,7 +132,7 @@ describe('BTCUtils', () => {
   });
 
   /* Witness Output */
-  it.only('extracts the length of the output script', async () => {
+  it('extracts the length of the output script', async () => {
     let res;
     let arraysAreEqual;
 
@@ -182,20 +182,29 @@ describe('BTCUtils', () => {
     assert.equal(res, `0x${'00'.repeat(20)}`);
   });
 
-  it('extracts the value as LE and int', async () => {
+  it.only('extracts the value as LE and int', async () => {
     let res;
+    let arraysAreEqual;
 
-    const output = constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
+    const output = utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT);
+    const outputLERes = utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[0].VALUE_LE);
+
     res = await BTCUtilsJs.extractValueLE(output);
-    assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[0].VALUE_LE);
-    res = await BTCUtilsJs.extractValue(output);
-    assert.equal(res, 0x079748n);
+    arraysAreEqual = utils.typedArraysAreEqual(res, outputLERes);
+    assert.isTrue(arraysAreEqual);
 
-    const opReturnOutput = constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
+    // res = await BTCUtilsJs.extractValue(output);
+    // assert.equal(res, 0x079748n);
+
+    const opReturnOutput = utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT);
+    const opReturnLERes = utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[1].VALUE_LE);
+
     res = await BTCUtilsJs.extractValueLE(opReturnOutput);
-    assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[1].VALUE_LE);
-    res = await BTCUtilsJs.extractValue(opReturnOutput);
-    assert.equal(res, 0x00n);
+    arraysAreEqual = utils.typedArraysAreEqual(res, opReturnLERes);
+    assert.isTrue(arraysAreEqual);
+
+    // res = await BTCUtilsJs.extractValue(opReturnOutput);
+    // assert.equal(res, 0x00n);
   });
 
   it('extracts op_return data blobs', async () => {

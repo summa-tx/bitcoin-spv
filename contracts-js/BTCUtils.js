@@ -357,13 +357,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the value bytes from the output in a tx
+   * @dev Value is an 8-byte little-endian number
+   * @param {Uint8Array} output The output
+   * @returns {Uint8Array} The output value as LE bytes
    */
   extractValueLE: (output) => {
-    return
+    return output.slice(0, 8);
   },
 
 //     /// @notice          Extracts the value from the output in a tx
