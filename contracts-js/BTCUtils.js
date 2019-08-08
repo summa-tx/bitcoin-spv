@@ -488,13 +488,34 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice                  Checks that the vin passed up is properly formatted
+   * @dev                     Consider a vin with a valid vout in its scriptsig
+   * @param {Uint8Array}      vin Raw bytes length-prefixed input vector
+   * @returns {Boolean}       True if it represents a validly formatted vin
    */
   validateVin: (vin) => {
-    return
+    let offset = 1n
+    let vLength = BigInt(vin.length)
+    nIns = utils.safeSlice(vin, 0, 1)[0]
+
+    // Not valid if it says there are too many or no inputs
+    if (nIns >= 0xfd || nIns === 0) {
+      return false
+    }
+
+    for (let i = 0; i < nIns; i++) {
+      // Grab the next input and determine its length.
+      // Increase the offset by that much
+      offset += module.exports.determineInputLength(utils.safeSlice(vin, Number(offset)))
+
+      // Returns false if we jump past the end
+      if (offset > vLength) {
+        return false
+      }
+    }
+
+    // Returns false if we're not exactly at the end
+    return offset == vLength
   },
 
 //     /// @notice      Checks that the vin passed up is properly formatted
@@ -526,13 +547,34 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @noticeChecks            Checks that the vout passed up is properly formatted
+   * @dev                     Consider a vin with a valid vout in its scriptsig
+   * @param {Uint8Array}      vout Raw bytes length-prefixed output vector
+   * @returns {Boolean}       True if it represents a validly formatted bout
    */
   validateVout: (vout) => {
-    return
+    offset = 1n
+    let vLength = BigInt(vout.length)
+    nOuts = utils.safeSlice(vout, 0, 1)[0]
+
+    // Not valid if it says there are too many or no inputs
+    if (nOuts >= 0xfd || nOuts === 0) {
+      return false
+    }
+
+    for (let i = 0; i < nOuts; i++) {
+      // Grab the next input and determine its length.
+      // Increase the offset by that much
+      offset += module.exports.determineOutputLength(utils.safeSlice(vout, Number(offset)))
+    }
+
+    // Returns false if we jump past the end
+    if (offset > vLength) {
+      return false
+    }
+
+    // Returns false if we're not exactly at the end
+    return offset == vLength
   },
 
 

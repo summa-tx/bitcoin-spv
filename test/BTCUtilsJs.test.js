@@ -298,23 +298,23 @@ describe('BTCUtils', () => {
     let res;
 
     // valid
-    res = await BTCUtilsJs.validateVin(constants.OP_RETURN.VIN);
+    res = await BTCUtilsJs.validateVin(utils.deserializeHex(constants.OP_RETURN.VIN));
     assert.isTrue(res);
 
     // too many inputs stated
-    res = await BTCUtilsJs.validateVin('0xFF1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff');
+    res = await BTCUtilsJs.validateVin(utils.deserializeHex('0xFF1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff'));
     assert.isFalse(res);
 
     // no inputs stated
-    res = await BTCUtilsJs.validateVin('0x001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff');
+    res = await BTCUtilsJs.validateVin(utils.deserializeHex('0x001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff'));
     assert.isFalse(res);
 
     // fewer bytes in vin than stated
-    res = await BTCUtilsJs.validateVin('0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffff');
+    res = await BTCUtilsJs.validateVin(utils.deserializeHex('0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffff'));
     assert.isFalse(res);
 
     // more bytes in vin than stated
-    res = await BTCUtilsJs.validateVin('0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffffEEEEE');
+    res = await BTCUtilsJs.validateVin(utils.deserializeHex('0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffffEEEEE'));
     assert.isFalse(res);
   });
 
@@ -322,23 +322,23 @@ describe('BTCUtils', () => {
     let res;
 
     // valid
-    res = await BTCUtilsJs.validateVout(constants.OP_RETURN.VOUT);
+    res = await BTCUtilsJs.validateVout(utils.deserializeHex(constants.OP_RETURN.VOUT));
     assert.isTrue(res);
 
     // too many outputs stated
-    res = await BTCUtilsJs.validateVout('0xFF4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211');
+    res = await BTCUtilsJs.validateVout(utils.deserializeHex('0xFF4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211'));
     assert.isFalse(res);
 
     // no outputs stated
-    res = await BTCUtilsJs.validateVout('0x004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211');
+    res = await BTCUtilsJs.validateVout(utils.deserializeHex('0x004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211'));
     assert.isFalse(res);
 
     // fewer bytes in vout than stated
-    res = await BTCUtilsJs.validateVout('0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952');
+    res = await BTCUtilsJs.validateVout(utils.deserializeHex('0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952'));
     assert.isFalse(res);
 
     // more bytes in vout than stated
-    res = await BTCUtilsJs.validateVout('0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952111111111111111');
+    res = await BTCUtilsJs.validateVout(utils.deserializeHex('0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952111111111111111'));
     assert.isFalse(res);
   });
 
