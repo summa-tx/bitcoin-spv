@@ -292,7 +292,7 @@ module.exports = {
   extractTxIndex: (input) => {
     let leIndex = module.exports.extractTxIndexLE(input)
     let beIndex = module.exports.reverseEndianness(leIndex)
-    return BigInt(utils.bytesToUint(beIndex))
+    return utils.bytesToUint(beIndex)
   },
 
   /* ****** */
@@ -385,7 +385,6 @@ module.exports = {
   extractValue: (output) => {
     let leValue = module.exports.extractValueLE(output);
     let beValue = module.exports.reverseEndianness(leValue);
-    // return beValue;
     return utils.bytesToUint(beValue);
   },
 
@@ -713,7 +712,7 @@ module.exports = {
    * @returns {BigInt/number}   The timestamp (uint)
    */
   extractTimestamp: (header) => {
-    return module.exports.bytesToUint(module.exports.reverseEndianness(module.exports.extractTimestampLE(header)))
+    return utils.bytesToUint(module.exports.reverseEndianness(module.exports.extractTimestampLE(header)))
   },
 
 //     /// @notice          Extracts the expected difficulty from a block header
