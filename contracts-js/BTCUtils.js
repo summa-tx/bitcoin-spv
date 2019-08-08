@@ -466,13 +466,19 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Determines the length of an output
+   * @dev 5 types: WPKH, WSH, PKH, SH, and OP_RETURN
+   * @param {Uint8Array} output The output
+   * @returns {number} The length indicated by the prefix, error if invalid length
    */
   determineOutputLength: (output) => {
-    return
+    var len = utils.safeSlice(output, 8, 9)[0]
+
+    if (len > 0xfd) {
+      throw new Error("Multi-byte VarInts not supported")
+    }
+
+    return len + 8 + 1 // 8 byte value, 1 byte for _en itself
   },
 
 //     /// @notice          Extracts the output at a given index in the TxIns vector

@@ -329,28 +329,28 @@ describe('BTCUtils', () => {
     assert.isFalse(res);
   });
 
-  it('determines output length properly', async () => {
+  it.only('determines output length properly', async () => {
     let res;
-    res = await BTCUtilsJs.determineOutputLength('0x00000000000000002200');
+    res = await BTCUtilsJs.determineOutputLength(utils.deserializeHex('0x00000000000000002200'));
     assert.equal(res, 43n);
 
-    res = await BTCUtilsJs.determineOutputLength('0x00000000000000001600');
+    res = await BTCUtilsJs.determineOutputLength(utils.deserializeHex('0x00000000000000001600'));
     assert.equal(res, 31n);
 
-    res = await BTCUtilsJs.determineOutputLength('0x0000000000000000206a');
+    res = await BTCUtilsJs.determineOutputLength(utils.deserializeHex('0x0000000000000000206a'));
     assert.equal(res, 41n);
 
-    res = await BTCUtilsJs.determineOutputLength('0x000000000000000002');
+    res = await BTCUtilsJs.determineOutputLength(utils.deserializeHex('0x000000000000000002'));
     assert.equal(res, 11n);
 
-    res = await BTCUtilsJs.determineOutputLength('0x000000000000000000');
+    res = await BTCUtilsJs.determineOutputLength(utils.deserializeHex('0x000000000000000000'));
     assert.equal(res, 9n);
 
-    res = await BTCUtilsJs.determineOutputLength('0x000000000000000088');
+    res = await BTCUtilsJs.determineOutputLength(utils.deserializeHex('0x000000000000000088'));
     assert.equal(res, 145n);
 
     try {
-      res = await BTCUtilsJs.determineOutputLength('0x0000000000000000FF00');
+      res = await BTCUtilsJs.determineOutputLength(utils.deserializeHex('0x0000000000000000FF00'));
       assert(false, 'Expected an error');
     } catch (e) {
       assert.include(e.message, 'Multi-byte VarInts not supported');
