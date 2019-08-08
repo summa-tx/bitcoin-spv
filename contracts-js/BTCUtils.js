@@ -478,7 +478,7 @@ module.exports = {
       throw new Error("Multi-byte VarInts not supported")
     }
 
-    return len + 8 + 1 // 8 byte value, 1 byte for _en itself
+    return BigInt(len) + 8n + 1n // 8 byte value, 1 byte for len itself
   },
 
 //     /// @notice          Extracts the output at a given index in the TxIns vector
@@ -504,13 +504,26 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the output at a given index in the TxIns vector
+   * @dev Iterates over the vout. If you need to extract multiple, write a custom function
+   * @param {Uint8Array} vout The _vout to extract from
+   * @param {number} index The 0-indexed location of the output to extract
+   * @returns {Uint8Array} The specified output
    */
   extractOutputAtIndex: (vout, index) => {
-    return
+    var len
+    var remaining
+    var offset = 1n
+
+    for (let i = 0; i <= index; i++) {
+      remaining = utils.safeSlice(vout, Number(offset), vout.length - 1)
+      len = module.exports.determineOutputLength(remaining)
+      if (i !== index) {
+        offset += len
+      }
+    }
+
+    return utils.safeSlice(vout, Number(offset), Number(offset) + Number(len))
   },
 
 //     /// @notice          Extracts the output script length

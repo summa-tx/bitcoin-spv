@@ -329,7 +329,7 @@ describe('BTCUtils', () => {
     assert.isFalse(res);
   });
 
-  it.only('determines output length properly', async () => {
+  it('determines output length properly', async () => {
     let res;
     res = await BTCUtilsJs.determineOutputLength(utils.deserializeHex('0x00000000000000002200'));
     assert.equal(res, 43n);
@@ -357,16 +357,22 @@ describe('BTCUtils', () => {
     }
   });
 
-  it('extracts outputs at specified indices', async () => {
+  it.only('extracts outputs at specified indices', async () => {
     let res;
-    res = await BTCUtilsJs.extractOutputAtIndex(constants.OP_RETURN.VOUT, 0);
-    assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT);
-    res = await BTCUtilsJs.extractOutputAtIndex(constants.OP_RETURN.VOUT, 1);
-    assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT);
+    let arraysAreEqual;
+    res = await BTCUtilsJs.extractOutputAtIndex(utils.deserializeHex(constants.OP_RETURN.VOUT), 0);
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT));
+    assert.isTrue(arraysAreEqual);
+
+    res = await BTCUtilsJs.extractOutputAtIndex(utils.deserializeHex(constants.OP_RETURN.VOUT), 1);
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT));
+    assert.isTrue(arraysAreEqual);
+
     res = await BTCUtilsJs.extractOutputAtIndex(TWO_IN_TX_VOUT, 0);
-    assert.equal(res, '0x4db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f0');
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x4db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f0'));
+
     res = await BTCUtilsJs.extractOutputAtIndex(TWO_IN_TX_VOUT, 1);
-    assert.equal(res, '0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922');
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922'));
   });
 
   it('extracts a root from a header', async () => {
