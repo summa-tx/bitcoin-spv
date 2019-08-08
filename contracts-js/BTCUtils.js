@@ -671,18 +671,6 @@ module.exports = {
    * @returns {BigInt}       The target threshold
    */
   extractTarget: (header) => {
-    // let m = utils.safeSlice(header, 72, 75).reverse() // reverse endianness on a partial u8a
-
-    // let e = BigInt(header[75] - 3)
-
-    // // let r = utils.bytesToUint('string here')
-
-    // let mantissa = utils.bytesToUint(m)
-
-    // let exponent = e - 3n
-
-    // return mantissa * 256n ** exponent
-
     let m = utils.safeSlice(header, 72, 75)
     let e = BigInt(header[75])
 
