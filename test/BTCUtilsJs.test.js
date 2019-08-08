@@ -132,14 +132,20 @@ describe('BTCUtils', () => {
   });
 
   /* Witness Output */
-  it('extracts the length of the output script', async () => {
+  it.only('extracts the length of the output script', async () => {
     let res;
-    const output = constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
-    const opReturnOutput = constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
+    let arraysAreEqual;
+
+    const output = utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT);
+    const opReturnOutput = utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT);
+
     res = await BTCUtilsJs.extractOutputScriptLen(output);
-    assert.equal(res, '0x22');
+    arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([34]));
+    assert.isTrue(arraysAreEqual);
+
     res = await BTCUtilsJs.extractOutputScriptLen(opReturnOutput);
-    assert.equal(res, '0x16');
+    arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([22]));
+    assert.isTrue(arraysAreEqual);
   });
 
   it('extracts the hash from an output', async () => {
@@ -357,7 +363,7 @@ describe('BTCUtils', () => {
     }
   });
 
-  it.only('extracts outputs at specified indices', async () => {
+  it('extracts outputs at specified indices', async () => {
     let res;
     let arraysAreEqual;
     res = await BTCUtilsJs.extractOutputAtIndex(utils.deserializeHex(constants.OP_RETURN.VOUT), 0);

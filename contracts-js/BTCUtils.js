@@ -535,13 +535,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the output script length
+   * @dev Indexes the length prefix on the pk_script
+   * @param {Uint8Array} output The output
+   * @returns {Uint8Array} The 1 byte length prefix
    */
   extractOutputScriptLen: (output) => {
-    return
+    return output.slice(8, 9);
   },
 
 //     /// @notice          Extracts the value bytes from the output in a tx
