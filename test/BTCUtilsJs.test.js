@@ -146,12 +146,16 @@ describe('BTCUtils', () => {
     assert.isTrue(arraysAreEqual);
   });
 
-  it('extracts the hash from an output', async () => {
+  it.only('extracts the hash from an output', async () => {
+    let res;
+    let arraysAreEqual;
+
     const output = constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
     const opReturnOutput = constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
 
-    let res = await BTCUtilsJs.extractHash(utils.deserializeHex(output));
-    assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[0].PAYLOAD);
+    res = await BTCUtilsJs.extractHash(utils.deserializeHex(output));
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[0].PAYLOAD))
+    assert.isTrue(arraysAreEqual);
 
     res = await BTCUtilsJs.extractHash(utils.deserializeHex(opReturnOutput));
     assert.isNull(res);
@@ -170,7 +174,8 @@ describe('BTCUtils', () => {
 
     // good p2pkh
     res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x00000000000000001976a914000000000000000000000000000000000000000088ac'));
-    assert.equal(res, `0x${'00'.repeat(20)}`);
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(`0x${'00'.repeat(20)}`));
+    assert.isTrue(arraysAreEqual);
 
     // malformatted p2sh
     res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x000000000000000017a914FF'));
@@ -178,7 +183,8 @@ describe('BTCUtils', () => {
 
     // good p2sh
     res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x000000000000000017a914000000000000000000000000000000000000000087'));
-    assert.equal(res, `0x${'00'.repeat(20)}`);
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(`0x${'00'.repeat(20)}`));
+    assert.isTrue(arraysAreEqual);
   });
 
   it('extracts the value as LE and int', async () => {

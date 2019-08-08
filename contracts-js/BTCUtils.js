@@ -465,22 +465,22 @@ module.exports = {
     } else {
       let tag = output.slice(8, 11);
       // p2pkh
-      if (tag == 0x1976a9) {
+      if (utils.typedArraysAreEqual(tag, utils.deserializeHex('0x1976a9'))) {
         // Check for maliciously formatted p2pkh
         if (output.slice(11, 12)[0] != 0x14 || !utils.typedArraysAreEqual(output.slice(output.length - 2, output.length), utils.deserializeHex('0x88ac'))) {
           return null;
         }
         return output.slice(12, 32);
       //p2sh
-      } else if (tag == 0x17a914) {
+      } else if (utils.typedArraysAreEqual(tag, utils.deserializeHex('0x17a914'))) {
         // Check for maliciously formatted p2sh
         if (output.slice(output.length - 1, output.length)[0] != 0x87) {
           return null;
         }
-        return output.slice(11, 32);
+        return output.slice(11, 31);
       }
     }
-  return null;  /* NB: will trigger on OPRETURN and non-standard that don't overrun */
+    return null;  /* NB: will trigger on OPRETURN and non-standard that don't overrun */
   },
 
   /* ********** */
