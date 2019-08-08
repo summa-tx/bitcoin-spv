@@ -59,7 +59,7 @@ module.exports = {
    * @returns {Uint8Array} The reversed array
    */
   reverseEndianness: (uint8Arr) => {
-    let newArr = uint8Arr.slice()
+    let newArr = utils.safeSlice(uint8Arr)
     return new Uint8Array(newArr.reverse())
   },
 
@@ -90,7 +90,7 @@ module.exports = {
    * @returns {BigInt} The integer representation
    */
   lastBytes: (arr, num) => {
-    return arr.slice(arr.length - num)
+    return utils.safeSlice(arr, arr.length - num)
   },
 
 //     /// @notice          Implements bitcoin's hash160 (rmd160(sha2()))
@@ -108,7 +108,7 @@ module.exports = {
    * @returns {}
    */
   hash160: (bytesString) => {
-    var newStr = bytesString.slice(2)
+    var newStr = utils.safeSlice(bytesString, 2)
     // return utils.serializeHex(utils.ripemd160(utils.sha256(newStr)))
     return utils.serializeHex(utils.ripemd160(utils.sha256(newStr)))
   },
@@ -134,28 +134,6 @@ module.exports = {
   /* ************ */
   /* Legacy Input */
   /* ************ */
-
-//     /// @notice          Extracts the nth input from the vin (0-indexed)
-//     /// @dev             Iterates over the vin. If you need to extract several, write a custom function
-//     /// @param _vin      The vin as a tightly-packed byte array
-//     /// @param _index    The 0-indexed location of the input to extract
-//     /// @return          The input as a byte array
-//     function extractInputAtIndex(bytes memory _vin, uint8 _index) internal pure returns (bytes memory) {
-//         uint256 _len;
-//         bytes memory _remaining;
-
-//         uint256 _offset = 1;
-
-//         for (uint8 _i = 0; _i < _index; _i ++) {
-//             _remaining = _vin.slice(_offset, _vin.length - _offset);
-//             _len = determineInputLength(_remaining);
-//             _offset = _offset + _len;
-//         }
-
-//         _remaining = _vin.slice(_offset, _vin.length - _offset);
-//         _len = determineInputLength(_remaining);
-//         return _vin.slice(_offset, _len);
-//     }
 
   /**
    * @notice Extracts the nth input from the vin (0-indexed)
@@ -189,13 +167,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Determines whether an input is legacy
+   * @dev False if no scriptSig, otherwise True
+   * @param {Uint8Array} input The input
+   * @returns {boolean} True for legacy, False for witness
    */
   isLegacyInput: (input) => {
-    return
+    return !utils.typedArraysAreEqual(utils.safeSlice(input, 36, 37), new Uint8Array([0]))
   },
 
 //     /// @notice          Determines the length of an input from its scriptsig
@@ -217,9 +195,9 @@ module.exports = {
    */
   determineInputLength: (arr) => {
     let res = module.exports.extractScriptSigLen(arr)
-    let varIntDataLen = res.dataLen;
-    let scriptSigLen = res.len;
-    return BigInt(41) + varIntDataLen + scriptSigLen;
+    let varIntDataLen = res.dataLen
+    let scriptSigLen = res.scriptSigLen
+    return BigInt(41) + varIntDataLen + scriptSigLen
   },
 
 //     /// @notice          Extracts the LE sequence bytes from an input
@@ -234,13 +212,17 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the LE sequence bytes from an input
+   * @dev Sequence is used for relative time locks
+   * @param {Uint8Array} input The LEGACY input
+   * @returns {Uint8Array} The sequence bytes (LE uint)
    */
   extractSequenceLELegacy: (input) => {
-    return
+    var res = module.exports.extractScriptSigLen(input)
+    var varIntDataLen = res.dataLen
+    var scriptSigLen = res.scriptSigLen
+    var length = 36 + 1 + Number(varIntDataLen) + Number(scriptSigLen)
+    return utils.safeSlice(input, length, length + 4)
   },
 
 //     /// @notice          Extracts the sequence from the input
@@ -254,13 +236,15 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the sequence from the input
+   * @dev Sequence is a 4-byte little-endian number
+   * @param {Uint8Array} input The LEGACY input
+   * @returns {Uint8Array} The sequence number (big-endian uint array)
    */
   extractSequenceLegacy: (input) => {
-    return
+    var leSeqence = module.exports.extractSequenceLELegacy(input)
+    var beSequence = module.exports.reverseEndianness(leSeqence)
+    return beSequence
   },
 
 //     /// @notice          Extracts the VarInt-prepended scriptSig from the input in a tx
@@ -275,16 +259,17 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the VarInt-prepended scriptSig from the input in a tx
+   * @dev Will return hex"00" if passed a witness input
+   * @param {Uint8Array} input The LEGACY input
+   * @returns {Uint8Array} The length-prepended script sig
    */
   extractScriptSig: (input) => {
-    // var varIntDataLen;
-    // var scriptSigLen;
-    // (_varIntDataLen, _scriptSigLen) = extractScriptSigLen(_input);
-    // return _input.slice(36, 1 + _varIntDataLen + _scriptSigLen);
+    var res = module.exports.extractScriptSigLen(input)
+    var varIntDataLen = res.dataLen
+    var scriptSigLen = res.scriptSigLen
+    var length = 1 + Number(varIntDataLen) + Number(scriptSigLen)
+    return utils.safeSlice(input, 36, 36 + length)
   },
 
 //     /// @notice          Determines the length of a scriptSig in an input
@@ -310,15 +295,15 @@ module.exports = {
    * @returns {object} The length of the script sig in object form
    */
   extractScriptSigLen: (arr) => {
-    var varIntTag = arr.slice(36, 37);
-    var varIntDataLen = module.exports.determineVarIntDataLength(varIntTag[0]);
-    var len = 0;
+    var varIntTag = utils.safeSlice(arr, 36, 37)
+    var varIntDataLen = module.exports.determineVarIntDataLength(varIntTag[0])
+    var len = 0
     if (varIntDataLen == 0) {
-      len = varIntTag[0];
+      len = varIntTag[0]
     } else {
-      len = utils.bytesToUint(module.exports.reverseEndianness(arr.slice(37, 37 + varIntDataLen)));
+      len = utils.bytesToUint(module.exports.reverseEndianness(utils.safeSlice(arr, 37, 37 + varIntDataLen)))
     }
-    return { dataLen: BigInt(varIntDataLen), len: BigInt(len)};
+    return { dataLen: BigInt(varIntDataLen), scriptSigLen: BigInt(len)}
   },
 
 
@@ -335,13 +320,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the LE sequence bytes from an input
+   * @dev Sequence is used for relative time locks
+   * @param {Uint8Array} input The WITNESS input
+   * @returns {Uint8Array} The sequence bytes (LE uint)
    */
   extractSequenceLEWitness: (input) => {
-    return
+    return utils.safeSlice(input, 37, 41)
   },
 
 //     /// @notice          Extracts the sequence from the input in a tx
@@ -355,13 +340,15 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the sequence from the input in a tx
+   * @dev Sequence is a 4-byte little-endian number
+   * @param {Uint8Array} input The WITNESS input
+   * @returns {Uint8Array} The sequence number (big-endian u8a)
    */
   extractSequenceWitness: (input) => {
-    return
+    var leSeqence = module.exports.extractSequenceLEWitness(input)
+    var inputSequence = module.exports.reverseEndianness(leSeqence)
+    return inputSequence
   },
 
 //     /// @notice          Extracts the outpoint from the input in a tx
@@ -769,7 +756,7 @@ module.exports = {
    * @returns {BigInt}       The target threshold
    */
   extractTarget: (header) => {
-    let m = header.slice(72, 75).reverse() // reverse endianness on a partial u8a
+    let m = utils.safeSlice(header, 72, 75).reverse() // reverse endianness on a partial u8a
 
     let e = BigInt(header[75] - 3)
 
