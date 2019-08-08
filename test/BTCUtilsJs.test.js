@@ -27,8 +27,8 @@ const BTCUtilsJs = require('../contracts-js/BTCUtils');
 describe('BTCUtils', () => {
   it('gets the last bytes correctly', async () => {
     const res = await BTCUtilsJs.lastBytes(utils.deserializeHex('0x00112233'), 2);
-    var result = utils.typedArraysAreEqual(res, utils.deserializeHex('0x2233'))
-    assert.isTrue(result);
+    var arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x2233'))
+    assert.isTrue(arraysAreEqual);
   });
 
   it('errors if slice is larger than the bytearray', async () => {
@@ -41,10 +41,15 @@ describe('BTCUtils', () => {
   });
 
   it('reverses endianness', async () => {
-    let res = await BTCUtilsJs.reverseEndianness(utils.deserializeHex('0x00112233'));
-    assert.notStrictEqual(res, utils.deserializeHex('0x33221100'));
+    let res;
+    let arraysAreEqual;
+    res = await BTCUtilsJs.reverseEndianness(utils.deserializeHex('0x00112233'));
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x33221100'));
+    assert.isTrue(arraysAreEqual);
+
     res = await BTCUtilsJs.reverseEndianness(utils.deserializeHex('0x0123456789abcdef'));
-    assert.notStrictEqual(res, utils.deserializeHex('0xefcdab8967452301'));
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xefcdab8967452301'));
+    assert.isTrue(arraysAreEqual);
   });
 
   it('converts big-endian bytes to integers', async () => {
@@ -93,19 +98,26 @@ describe('BTCUtils', () => {
   it('extracts a sequence from a witness input as LE and int', async () => {
     const input = utils.deserializeHex(constants.OP_RETURN.INPUTS);
     let res;
+    let arraysAreEqual;
     res = await BTCUtilsJs.extractSequenceLEWitness(input);
-    assert.notStrictEqual(res, utils.deserializeHex('0xffffffff'));
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xffffffff'));
+    assert.isTrue(arraysAreEqual);
+
     res = BTCUtilsJs.extractSequenceWitness(input);
-    assert.notStrictEqual(res, utils.deserializeHex('0xffffffff'))
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xffffffff'))
+    assert.isTrue(arraysAreEqual);
   });
 
   it('extracts a sequence from a legacy input as LE and int', async () => {
     const input = utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff');
     let res;
+    let arraysAreEqual;
     res = await BTCUtilsJs.extractSequenceLELegacy(input);
-    assert.notStrictEqual(res, utils.deserializeHex('0xffffffff'));
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xffffffff'));
+    assert.isTrue(arraysAreEqual);
     res = await BTCUtilsJs.extractSequenceLegacy(input);
-    assert.notStrictEqual(res, utils.deserializeHex('0xffffffff'));
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xffffffff'));
+    assert.isTrue(arraysAreEqual);
   });
 
   it('extracts an outpoint as bytes', async () => {
@@ -187,12 +199,18 @@ describe('BTCUtils', () => {
 
   it('extracts inputs at specified indices', async () => {
     let res;
+    let arraysAreEqual;
     res = await BTCUtilsJs.extractInputAtIndex(utils.deserializeHex(constants.OP_RETURN.VIN), 0);
-    assert.notStrictEqual(res, utils.deserializeHex(constants.OP_RETURN.INPUTS));
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(constants.OP_RETURN.INPUTS));
+    assert.isTrue(arraysAreEqual);
+
     res = await BTCUtilsJs.extractInputAtIndex(TWO_IN_TX_VIN, 0);
-    assert.notStrictEqual(res, utils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff'));
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff'));
+    assert.isTrue(arraysAreEqual);
+
     res = await BTCUtilsJs.extractInputAtIndex(TWO_IN_TX_VIN, 1);
-    assert.notStrictEqual(res, utils.deserializeHex('0xaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff'));
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff'));
+    assert.isTrue(arraysAreEqual);
   });
 
   it('sorts legacy from witness inputs', async () => {
@@ -225,17 +243,22 @@ describe('BTCUtils', () => {
 
   it('extracts the scriptSig from inputs', async () => {
     let res;
+    let arraysAreEqual;
     res = await BTCUtilsJs.extractScriptSig(utils.deserializeHex(constants.OP_RETURN.INPUTS));
-    assert.notStrictEqual(res, utils.deserializeHex('0x00'));
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x00'));
+    assert.isTrue(arraysAreEqual);
 
     res = await BTCUtilsJs.extractScriptSig(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff'));
-    assert.notStrictEqual(res, utils.deserializeHex('0x01ee'));
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x01ee'));
+    assert.isTrue(arraysAreEqual);
 
     res = await BTCUtilsJs.extractScriptSig(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff'));
-    assert.notStrictEqual(res, utils.deserializeHex('0xfd0100ee'));
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xfd0100ee'));
+    assert.isTrue(arraysAreEqual);
 
     res = await BTCUtilsJs.extractScriptSig(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff'));
-    assert.notStrictEqual(res, utils.deserializeHex('0xfe01000000ee'));
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xfe01000000ee'));
+    assert.isTrue(arraysAreEqual);
   });
 
   it('extracts the length of the VarInt and scriptSig from inputs', async () => {

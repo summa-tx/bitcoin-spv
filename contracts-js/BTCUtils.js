@@ -243,7 +243,7 @@ module.exports = {
   extractSequenceLegacy: (input) => {
     var leSeqence = module.exports.extractSequenceLELegacy(input)
     var beSequence = module.exports.reverseEndianness(leSeqence)
-    return utils.bytesToUint(beSequence)
+    return beSequence
   },
 
 //     /// @notice          Extracts the VarInt-prepended scriptSig from the input in a tx
@@ -346,8 +346,8 @@ module.exports = {
    */
   extractSequenceWitness: (input) => {
     var leSeqence = module.exports.extractSequenceLEWitness(input)
-    var inputeSequence = module.exports.reverseEndianness(leSeqence)
-    return utils.bytesToUint(inputeSequence)
+    var inputSequence = module.exports.reverseEndianness(leSeqence)
+    return inputSequence
   },
 
 //     /// @notice          Extracts the outpoint from the input in a tx
