@@ -149,34 +149,35 @@ describe('BTCUtils', () => {
   it('extracts the hash from an output', async () => {
     const output = constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
     const opReturnOutput = constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
-    let res = await BTCUtilsJs.extractHash(output);
+
+    let res = await BTCUtilsJs.extractHash(utils.deserializeHex(output));
     assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[0].PAYLOAD);
 
-    res = await BTCUtilsJs.extractHash(opReturnOutput);
+    res = await BTCUtilsJs.extractHash(utils.deserializeHex(opReturnOutput));
     assert.isNull(res);
 
     // malformatted witness
-    res = await BTCUtilsJs.extractHash('0x0000000000000000220017');
+    res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x0000000000000000220017'));
     assert.isNull(res);
 
     // malformatted p2pkh
-    res = await BTCUtilsJs.extractHash('0x00000000000000001976a912');
+    res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x00000000000000001976a912'));
     assert.isNull(res);
 
     // malformatted p2pkh
-    res = await BTCUtilsJs.extractHash('0x00000000000000001976a914FFFF');
+    res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x00000000000000001976a914FFFF'));
     assert.isNull(res);
 
     // good p2pkh
-    res = await BTCUtilsJs.extractHash('0x00000000000000001976a914000000000000000000000000000000000000000088ac');
+    res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x00000000000000001976a914000000000000000000000000000000000000000088ac'));
     assert.equal(res, `0x${'00'.repeat(20)}`);
 
     // malformatted p2sh
-    res = await BTCUtilsJs.extractHash('0x000000000000000017a914FF');
+    res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x000000000000000017a914FF'));
     assert.isNull(res);
 
     // good p2sh
-    res = await BTCUtilsJs.extractHash('0x000000000000000017a914000000000000000000000000000000000000000087');
+    res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x000000000000000017a914000000000000000000000000000000000000000087'));
     assert.equal(res, `0x${'00'.repeat(20)}`);
   });
 
@@ -205,7 +206,7 @@ describe('BTCUtils', () => {
     assert.equal(res, 0n)
   });
 
-  it.only('extracts op_return data blobs', async () => {
+  it('extracts op_return data blobs', async () => {
     let res;
     let arraysAreEqual;
 

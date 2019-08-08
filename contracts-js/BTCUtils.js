@@ -449,13 +449,38 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the hash from the output script
+   * @dev Determines type by the length prefix and validates format
+   * @param {Uint8Array} output The output
+   * @returns {Uint8Array} The hash committed to by the pk_script, or null for errors
    */
   extractHash: (output) => {
-    return
+    if (output.slice(9, 10)[0] == 0) {
+      let len = module.exports.extractOutputScriptLen(output)[0] - 2;
+      // Check for maliciously formatted witness outputs
+      if (output.slice(10, 11)[0] != len) {
+        return null;
+      }
+      return output.slice(11, 11 + len);
+    } else {
+      let tag = output.slice(8, 11);
+      // p2pkh
+      if (tag == 0x1976a9) {
+        // Check for maliciously formatted p2pkh
+        if (output.slice(11, 12)[0] != 0x14 || !utils.typedArraysAreEqual(output.slice(output.length - 2, output.length), utils.deserializeHex('0x88ac'))) {
+          return null;
+        }
+        return output.slice(12, 32);
+      //p2sh
+      } else if (tag == 0x17a914) {
+        // Check for maliciously formatted p2sh
+        if (output.slice(output.length - 1, output.length)[0] != 0x87) {
+          return null;
+        }
+        return output.slice(11, 32);
+      }
+    }
+  return null;  /* NB: will trigger on OPRETURN and non-standard that don't overrun */
   },
 
   /* ********** */
