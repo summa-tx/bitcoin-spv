@@ -70,8 +70,8 @@ module.exports = {
    * @returns {BigInt} The integer representation
    */
   bytesToUint: (uint8Arr) => {
-    var total = BigInt(0)
-    for (var i = 0; i < uint8Arr.length; i++) {
+    let total = BigInt(0)
+    for (let i = 0; i < uint8Arr.length; i++) {
       total += BigInt(uint8Arr[i]) << (BigInt(uint8Arr.length - i - 1) * BigInt(8))
     }
     return total
@@ -141,9 +141,9 @@ module.exports = {
    * @returns {Uint8Array} The input as a u8a
    */
   extractInputAtIndex: (vinArr, index) => {
-    var len = 0
-    var remaining = 0
-    var offset = 1n
+    let len = 0
+    let remaining = 0
+    let offset = 1n
 
     for (var i = 0; i <= index; i++) {
       remaining = utils.safeSlice(vinArr, Number(offset), vinArr.length - 1)
@@ -216,10 +216,10 @@ module.exports = {
    * @returns {Uint8Array} The sequence bytes (LE uint)
    */
   extractSequenceLELegacy: (input) => {
-    var res = module.exports.extractScriptSigLen(input)
-    var varIntDataLen = res.dataLen
-    var scriptSigLen = res.scriptSigLen
-    var length = 36 + 1 + Number(varIntDataLen) + Number(scriptSigLen)
+    let res = module.exports.extractScriptSigLen(input)
+    let varIntDataLen = res.dataLen
+    let scriptSigLen = res.scriptSigLen
+    let length = 36 + 1 + Number(varIntDataLen) + Number(scriptSigLen)
     return utils.safeSlice(input, length, length + 4)
   },
 
@@ -240,8 +240,8 @@ module.exports = {
    * @returns {Uint8Array} The sequence number (big-endian uint array)
    */
   extractSequenceLegacy: (input) => {
-    var leSeqence = module.exports.extractSequenceLELegacy(input)
-    var beSequence = module.exports.reverseEndianness(leSeqence)
+    let leSeqence = module.exports.extractSequenceLELegacy(input)
+    let beSequence = module.exports.reverseEndianness(leSeqence)
     return beSequence
   },
 
@@ -263,10 +263,10 @@ module.exports = {
    * @returns {Uint8Array} The length-prepended script sig
    */
   extractScriptSig: (input) => {
-    var res = module.exports.extractScriptSigLen(input)
-    var varIntDataLen = res.dataLen
-    var scriptSigLen = res.scriptSigLen
-    var length = 1 + Number(varIntDataLen) + Number(scriptSigLen)
+    let res = module.exports.extractScriptSigLen(input)
+    let varIntDataLen = res.dataLen
+    let scriptSigLen = res.scriptSigLen
+    let length = 1 + Number(varIntDataLen) + Number(scriptSigLen)
     return utils.safeSlice(input, 36, 36 + length)
   },
 
@@ -293,9 +293,9 @@ module.exports = {
    * @returns {object} The length of the script sig in object form
    */
   extractScriptSigLen: (arr) => {
-    var varIntTag = utils.safeSlice(arr, 36, 37)
-    var varIntDataLen = module.exports.determineVarIntDataLength(varIntTag[0])
-    var len = 0
+    let varIntTag = utils.safeSlice(arr, 36, 37)
+    let varIntDataLen = module.exports.determineVarIntDataLength(varIntTag[0])
+    let len = 0
     if (varIntDataLen == 0) {
       len = varIntTag[0]
     } else {
@@ -344,8 +344,8 @@ module.exports = {
    * @returns {Uint8Array} The sequence number (big-endian u8a)
    */
   extractSequenceWitness: (input) => {
-    var leSeqence = module.exports.extractSequenceLEWitness(input)
-    var inputSequence = module.exports.reverseEndianness(leSeqence)
+    let leSeqence = module.exports.extractSequenceLEWitness(input)
+    let inputSequence = module.exports.reverseEndianness(leSeqence)
     return inputSequence
   },
 
@@ -472,7 +472,7 @@ module.exports = {
    * @returns {number} The length indicated by the prefix, error if invalid length
    */
   determineOutputLength: (output) => {
-    var len = utils.safeSlice(output, 8, 9)[0]
+    let len = utils.safeSlice(output, 8, 9)[0]
 
     if (len > 0xfd) {
       throw new Error("Multi-byte VarInts not supported")
@@ -511,9 +511,9 @@ module.exports = {
    * @returns {Uint8Array} The specified output
    */
   extractOutputAtIndex: (vout, index) => {
-    var len
-    var remaining
-    var offset = 1n
+    let len
+    let remaining
+    let offset = 1n
 
     for (let i = 0; i <= index; i++) {
       remaining = utils.safeSlice(vout, Number(offset), vout.length - 1)
