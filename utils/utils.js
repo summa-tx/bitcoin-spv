@@ -69,6 +69,13 @@ module.exports = {
     return buf.slice(start, end)
   },
 
+  /**
+   * @notice               JS version of abi.encodePacked when trying to concatenate 2 values
+   * @dev                  Use when you see abi.encodePacked take 2 values
+   * @param {Uint8Array}   a The big-endian bytes-encoded integer
+   * @param {Uint8Array}   b The big-endian bytes-encoded integer
+   * @return               The integer representation
+  */
   concatUint8Arrays: (a, b) => {
     let c = new Uint8Array(a.length + b.length)
     c.set(a)

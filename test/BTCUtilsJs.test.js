@@ -81,14 +81,10 @@ describe('BTCUtils', () => {
 
   it('implements bitcoin\'s hash160', async () => {
     let res;
-    // res = await BTCUtilsJs.hash160('0x1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111');
-    // assert.equal(res, '0xe723a0f62396b8b03dbd9e48e9b9efe2eb704aab');
-    res = await BTCUtilsJs.hash160('0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000');
-    // res = await BTCUtilsJs.hash160(utils.deserializeHex('0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'));
-    // let u8aValue = utils.deserializeHex('0x1b60c31dba9403c74d81af255f0c300bfed5faa3')
-    // var arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue)
-    // assert.isTrue(arraysAreEqual)
-    assert.equal(res, '0x1b60c31dba9403c74d81af255f0c300bfed5faa3')
+    res = await BTCUtilsJs.hash160(utils.deserializeHex('0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'));
+    let u8aValue = utils.deserializeHex('0x1b60c31dba9403c74d81af255f0c300bfed5faa3')
+    var arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue)
+    assert.isTrue(arraysAreEqual)
   });
 
   it('implements bitcoin\'s hash256', async () => {

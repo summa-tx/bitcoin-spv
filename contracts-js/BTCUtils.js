@@ -108,10 +108,7 @@ module.exports = {
    * @returns {}
    */
   hash160: (bytesString) => {
-    var newStr = utils.safeSlice(bytesString, 2)
-    // return utils.serializeHex(utils.ripemd160(utils.sha256(newStr)))
-    // console.log(utils.ripemd160(utils.sha256(newStr)))
-    return utils.ripemd160(utils.sha256(newStr))
+    return utils.ripemd160(utils.sha256(bytesString))
   },
 
 //     /// @notice          Implements bitcoin's hash256 (double sha2)
