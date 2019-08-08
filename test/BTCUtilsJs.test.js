@@ -107,8 +107,7 @@ describe('BTCUtils', () => {
     assert.isTrue(arraysAreEqual);
 
     res = BTCUtilsJs.extractSequenceWitness(input);
-    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xffffffff'))
-    assert.isTrue(arraysAreEqual);
+    assert.equal(res, 4294967295n)
   });
 
   it('extracts a sequence from a legacy input as LE and int', async () => {
@@ -119,8 +118,7 @@ describe('BTCUtils', () => {
     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xffffffff'));
     assert.isTrue(arraysAreEqual);
     res = await BTCUtilsJs.extractSequenceLegacy(input);
-    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xffffffff'));
-    assert.isTrue(arraysAreEqual);
+    assert.equal(res, 4294967295n)
   });
 
   it('extracts an outpoint as bytes', async () => {
@@ -182,7 +180,7 @@ describe('BTCUtils', () => {
     assert.equal(res, `0x${'00'.repeat(20)}`);
   });
 
-  it.only('extracts the value as LE and int', async () => {
+  it('extracts the value as LE and int', async () => {
     let res;
     let arraysAreEqual;
 
@@ -193,8 +191,8 @@ describe('BTCUtils', () => {
     arraysAreEqual = utils.typedArraysAreEqual(res, outputLERes);
     assert.isTrue(arraysAreEqual);
 
-    // res = await BTCUtilsJs.extractValue(output);
-    // assert.equal(res, 0x079748n);
+    res = await BTCUtilsJs.extractValue(output);
+    assert.equal(res, 497480n)
 
     const opReturnOutput = utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT);
     const opReturnLERes = utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[1].VALUE_LE);
@@ -203,8 +201,8 @@ describe('BTCUtils', () => {
     arraysAreEqual = utils.typedArraysAreEqual(res, opReturnLERes);
     assert.isTrue(arraysAreEqual);
 
-    // res = await BTCUtilsJs.extractValue(opReturnOutput);
-    // assert.equal(res, 0x00n);
+    res = await BTCUtilsJs.extractValue(opReturnOutput);
+    assert.equal(res, 0n)
   });
 
   it('extracts op_return data blobs', async () => {

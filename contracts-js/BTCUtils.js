@@ -176,7 +176,7 @@ module.exports = {
   extractSequenceLegacy: (input) => {
     let leSeqence = module.exports.extractSequenceLELegacy(input)
     let beSequence = module.exports.reverseEndianness(leSeqence)
-    return beSequence
+    return utils.bytesToUint(beSequence)
   },
 
   /**
@@ -235,7 +235,7 @@ module.exports = {
   extractSequenceWitness: (input) => {
     let leSeqence = module.exports.extractSequenceLEWitness(input)
     let inputSequence = module.exports.reverseEndianness(leSeqence)
-    return inputSequence
+    return utils.bytesToUint(inputSequence)
   },
 
   /**
@@ -372,7 +372,8 @@ module.exports = {
 //     /// @return          The output value
 //     function extractValue(bytes memory _output) internal pure returns (uint64) {
 //         bytes memory _leValue = extractValueLE(_output);
-//         bytes memory _beValue = reverseEndianness(_leValue);//         return uint64(bytesToUint(_beValue));
+//         bytes memory _beValue = reverseEndianness(_leValue);
+//         return uint64(bytesToUint(_beValue));
 //     }
 
   /**
@@ -382,7 +383,10 @@ module.exports = {
    * @returns {}
    */
   extractValue: (output) => {
-    return
+    let leValue = module.exports.extractValueLE(output);
+    let beValue = module.exports.reverseEndianness(leValue);
+    // return beValue;
+    return utils.bytesToUint(beValue);
   },
 
 //     /// @notice          Extracts the data from an op return output
