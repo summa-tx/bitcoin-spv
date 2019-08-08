@@ -205,11 +205,16 @@ describe('BTCUtils', () => {
     assert.equal(res, 0n)
   });
 
-  it('extracts op_return data blobs', async () => {
-    const output = constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
-    const opReturnOutput = constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
-    let res = await BTCUtilsJs.extractOpReturnData(opReturnOutput);
-    assert.equal(res, constants.OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD);
+  it.only('extracts op_return data blobs', async () => {
+    let res;
+    let arraysAreEqual;
+
+    const output = utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT);
+    const opReturnOutput = utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT);
+
+    res = await BTCUtilsJs.extractOpReturnData(opReturnOutput);
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD));
+    assert.isTrue(arraysAreEqual);
 
     res = await BTCUtilsJs.extractOpReturnData(output);
     assert.isNull(res);

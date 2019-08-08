@@ -377,10 +377,10 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the value from the output in a tx
+   * @dev Value is an 8-byte little-endian number
+   * @param {Uint8Array} output The output
+   * @returns {Uint8Array} The output value
    */
   extractValue: (output) => {
     let leValue = module.exports.extractValueLE(output);
@@ -401,13 +401,17 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice Extracts the data from an op return output
+   * @dev Returns empty Uint8Array if no data or not an op return
+   * @param {Uint8Array} output The output
+   * @returns {Uint8Array} Any data contained in the opreturn output, null if not an op return
    */
   extractOpReturnData: (output) => {
-    return
+    if (!utils.typedArraysAreEqual(output.slice(9,10), new Uint8Array([106]))) {
+      return null
+    }
+    let dataLen = output.slice(10, 11);
+    return output.slice(11, 11 + Number(utils.bytesToUint(dataLen)));
   },
 
 //     /// @notice          Extracts the hash from the output script
