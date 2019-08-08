@@ -80,6 +80,9 @@ module.exports = {
    * @returns {BigInt}       The integer representation
    */
   lastBytes: (arr, num) => {
+    if (num >= arr.length) {
+      throw new Error('Underflow during subtraction.')
+    }
     return utils.safeSlice(arr, arr.length - num)
   },
 
