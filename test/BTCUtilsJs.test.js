@@ -26,8 +26,9 @@ const BTCUtilsJs = require('../contracts-js/BTCUtils');
 
 describe('BTCUtils', () => {
   it('gets the last bytes correctly', async () => {
-    const res = await BTCUtilsJs.lastBytes(utils.deserializeHex('0x00112233'));
-    assert.notStrictEqual(res, utils.deserializeHex('0x2233'), 2);
+    const res = await BTCUtilsJs.lastBytes(utils.deserializeHex('0x00112233'), 2);
+    var result = utils.typedArraysAreEqual(res, utils.deserializeHex('0x2233'))
+    assert.isTrue(result);
   });
 
   it('errors if slice is larger than the bytearray', async () => {
@@ -94,8 +95,8 @@ describe('BTCUtils', () => {
     let res;
     res = await BTCUtilsJs.extractSequenceLEWitness(input);
     assert.notStrictEqual(res, utils.deserializeHex('0xffffffff'));
-    // res = BTCUtilsJs.extractSequenceWitness(input);
-    // assert.equal(res, 0xffffffffn)
+    res = BTCUtilsJs.extractSequenceWitness(input);
+    assert.notStrictEqual(res, utils.deserializeHex('0xffffffff'))
   });
 
   it('extracts a sequence from a legacy input as LE and int', async () => {
