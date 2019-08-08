@@ -47,11 +47,6 @@ module.exports = {
     return 0  // flag is data
   },
 
-  // @notice          Changes the endianness of a byte array
-  // @dev             Returns a new, backwards, bytes
-  // @param _b        The bytes to reverse
-  // @return          The reversed bytes
-
   /**
    * @notice Changes the endianness of a byte array
    * @dev Returns a new, backwards, byte array
@@ -78,11 +73,6 @@ module.exports = {
 
   },
 
-  /// @notice          Get the last _num bytes from a byte array
-  /// @param _b        The byte array to slice
-  /// @param _num      The number of bytes to extract from the end
-  /// @return          The last _num bytes of _b
-
   /**
    * @notice                 Get the last _num bytes from a byte array
    * @dev                    The byte array to slice
@@ -93,14 +83,6 @@ module.exports = {
     return utils.safeSlice(arr, arr.length - num)
   },
 
-//     /// @notice          Implements bitcoin's hash160 (rmd160(sha2()))
-//     /// @dev             abi.encodePacked changes the return to bytes instead of bytes32
-//     /// @param _b        The pre-image
-//     /// @return          The digest
-//     function hash160(bytes memory _b) internal pure returns (bytes memory) {
-//         return abi.encodePacked(ripemd160(abi.encodePacked(sha256(_b))));
-//     }
-
   /**
    * @notice                Implements bitcoin's hash160 (rmd160(sha2()))
    * @dev
@@ -110,14 +92,6 @@ module.exports = {
   hash160: (preImage) => {
     return utils.ripemd160(utils.sha256(preImage))
   },
-
-//     /// @notice          Implements bitcoin's hash256 (double sha2)
-//     /// @dev             abi.encodePacked changes the return to bytes instead of bytes32
-//     /// @param _b        The pre-image
-//     /// @return          The digest
-//     function hash256(bytes memory _b) internal pure returns (bytes32) {
-//         return abi.encodePacked(sha256(abi.encodePacked(sha256(_b)))).toBytes32();
-//     }
 
 /**
  * @notice                Implements bitcoin's hash256 (double sha2)
@@ -156,14 +130,6 @@ module.exports = {
     return utils.safeSlice(vinArr, Number(offset), Number(offset) + Number(len))
   },
 
-//     /// @notice          Determines whether an input is legacy
-//     /// @dev             False if no scriptSig, otherwise True
-//     /// @param _input    The input
-//     /// @return          True for legacy, False for witness
-//     function isLegacyInput(bytes memory _input) internal pure returns (bool) {
-//         return keccak256(_input.slice(36, 1)) != keccak256(hex"00");
-//     }
-
   /**
    * @notice Determines whether an input is legacy
    * @dev False if no scriptSig, otherwise True
@@ -173,17 +139,6 @@ module.exports = {
   isLegacyInput: (input) => {
     return !utils.typedArraysAreEqual(utils.safeSlice(input, 36, 37), new Uint8Array([0]))
   },
-
-//     /// @notice          Determines the length of an input from its scriptsig
-//     /// @dev             36 for outpoint, 1 for scriptsig length, 4 for sequence
-//     /// @param _input    The input
-//     /// @return          The length of the input in bytes
-//     function determineInputLength(bytes memory _input) internal pure returns (uint256) {
-//         uint8 _varIntDataLen;
-//         uint256 _scriptSigLen;
-//         (_varIntDataLen, _scriptSigLen) = extractScriptSigLen(_input);
-//         return 36 + 1 + _varIntDataLen + _scriptSigLen + 4;
-//     }
 
   /**
    * @notice Determines the length of an input from its scriptsig
@@ -197,17 +152,6 @@ module.exports = {
     let scriptSigLen = res.scriptSigLen
     return BigInt(41) + varIntDataLen + scriptSigLen
   },
-
-//     /// @notice          Extracts the LE sequence bytes from an input
-//     /// @dev             Sequence is used for relative time locks
-//     /// @param _input    The LEGACY input
-//     /// @return          The sequence bytes (LE uint)
-//     function extractSequenceLELegacy(bytes memory _input) internal pure returns (bytes memory) {
-//         uint8 _varIntDataLen;
-//         uint256 _scriptSigLen;
-//         (_varIntDataLen, _scriptSigLen) = extractScriptSigLen(_input);
-//         return _input.slice(36 + 1 + _varIntDataLen + _scriptSigLen, 4);
-//     }
 
   /**
    * @notice Extracts the LE sequence bytes from an input
@@ -223,16 +167,6 @@ module.exports = {
     return utils.safeSlice(input, length, length + 4)
   },
 
-//     /// @notice          Extracts the sequence from the input
-//     /// @dev             Sequence is a 4-byte little-endian number
-//     /// @param _input    The LEGACY input
-//     /// @return          The sequence number (big-endian uint)
-//     function extractSequenceLegacy(bytes memory _input) internal pure returns (uint32) {
-//         bytes memory _leSeqence = extractSequenceLELegacy(_input);
-//         bytes memory _beSequence = reverseEndianness(_leSeqence);
-//         return uint32(bytesToUint(_beSequence));
-//     }
-
   /**
    * @notice Extracts the sequence from the input
    * @dev Sequence is a 4-byte little-endian number
@@ -244,17 +178,6 @@ module.exports = {
     let beSequence = module.exports.reverseEndianness(leSeqence)
     return beSequence
   },
-
-//     /// @notice          Extracts the VarInt-prepended scriptSig from the input in a tx
-//     /// @dev             Will return hex"00" if passed a witness input
-//     /// @param _input    The LEGACY input
-//     /// @return          The length-prepended script sig
-//     function extractScriptSig(bytes memory _input) internal pure returns (bytes memory) {
-//         uint8 _varIntDataLen;
-//         uint256 _scriptSigLen;
-//         (_varIntDataLen, _scriptSigLen) = extractScriptSigLen(_input);
-//         return _input.slice(36, 1 + _varIntDataLen + _scriptSigLen);
-//     }
 
   /**
    * @notice Extracts the VarInt-prepended scriptSig from the input in a tx
@@ -269,22 +192,6 @@ module.exports = {
     let length = 1 + Number(varIntDataLen) + Number(scriptSigLen)
     return utils.safeSlice(input, 36, 36 + length)
   },
-
-//     /// @notice          Determines the length of a scriptSig in an input
-//     /// @dev             Will return 0 if passed a witness input
-//     /// @param _input    The LEGACY input
-//     /// @return          The length of the script sig
-//     function extractScriptSigLen(bytes memory _input) internal pure returns (uint8, uint256) {
-//         bytes memory _varIntTag = _input.slice(36, 1);
-//         uint8 _varIntDataLen = determineVarIntDataLength(_varIntTag);
-//         uint256 _len;
-//         if (_varIntDataLen == 0) {
-//             _len = uint8(_varIntTag[0]);
-//         } else {
-//             _len = bytesToUint(reverseEndianness(_input.slice(36 + 1, _varIntDataLen)));
-//         }
-//         return (_varIntDataLen, _len);
-//     }
 
   /**
    * @notice Determines the length of a scriptSig in an input
@@ -309,14 +216,6 @@ module.exports = {
   /* Witness Input */
   /* ************* */
 
-//     /// @notice          Extracts the LE sequence bytes from an input
-//     /// @dev             Sequence is used for relative time locks
-//     /// @param _input    The WITNESS input
-//     /// @return          The sequence bytes (LE uint)
-//     function extractSequenceLEWitness(bytes memory _input) internal pure returns (bytes memory) {
-//         return _input.slice(37, 4);
-//     }
-
   /**
    * @notice Extracts the LE sequence bytes from an input
    * @dev Sequence is used for relative time locks
@@ -326,16 +225,6 @@ module.exports = {
   extractSequenceLEWitness: (input) => {
     return utils.safeSlice(input, 37, 41)
   },
-
-//     /// @notice          Extracts the sequence from the input in a tx
-//     /// @dev             Sequence is a 4-byte little-endian number
-//     /// @param _input    The WITNESS input
-//     /// @return          The sequence number (big-endian uint)
-//     function extractSequenceWitness(bytes memory _input) internal pure returns (uint32) {
-//         bytes memory _leSeqence = extractSequenceLEWitness(_input);
-//         bytes memory _inputeSequence = reverseEndianness(_leSeqence);
-//         return uint32(bytesToUint(_inputeSequence));
-//     }
 
   /**
    * @notice Extracts the sequence from the input in a tx
@@ -349,14 +238,6 @@ module.exports = {
     return inputSequence
   },
 
-//     /// @notice          Extracts the outpoint from the input in a tx
-//     /// @dev             32 byte tx id with 4 byte index
-//     /// @param _input    The input
-//     /// @return          The outpoint (LE bytes of prev tx hash + LE bytes of prev tx index)
-//     function extractOutpoint(bytes memory _input) internal pure returns (bytes memory) {
-//         return _input.slice(0, 36);
-//     }
-
   /**
    * @notice                Extracts the outpoint from the input in a tx
    * @dev                   32 byte tx id with 4 byte index
@@ -366,14 +247,6 @@ module.exports = {
   extractOutpoint: (input) => {
     return utils.safeSlice(input, 0, 36)
   },
-
-//     /// @notice          Extracts the outpoint tx id from an input
-//     /// @dev             32 byte tx id
-//     /// @param _input    The input
-//     /// @return          The tx id (little-endian bytes)
-//     function extractInputTxIdLE(bytes memory _input) internal pure returns (bytes32) {
-//         return _input.slice(0, 32).toBytes32();
-//     }
 
   /**
    * @notice                Extracts the outpoint tx id from an input
@@ -385,16 +258,6 @@ module.exports = {
   extractInputTxIdLE: (input) => {
     return utils.safeSlice(input, 0, 32)
   },
-
-//     /// @notice          Extracts the outpoint index from an input
-//     /// @dev             32 byte tx id
-//     /// @param _input    The input
-//     /// @return          The tx id (big-endian bytes)
-//     function extractInputTxId(bytes memory _input) internal pure returns (bytes32) {
-//         bytes memory _leId = abi.encodePacked(extractInputTxIdLE(_input));
-//         bytes memory _beId = reverseEndianness(_leId);
-//         return _beId.toBytes32();
-//     }
 
   /**
    * @notice                Extracts the outpoint index from an input
@@ -408,14 +271,6 @@ module.exports = {
     return module.exports.reverseEndianness(leId)
   },
 
-//     /// @notice          Extracts the LE tx input index from the input in a tx
-//     /// @dev             4 byte tx index
-//     /// @param _input    The input
-//     /// @return          The tx index (little-endian bytes)
-//     function extractTxIndexLE(bytes memory _input) internal pure returns (bytes memory) {
-//         return _input.slice(32, 4);
-//     }
-
   /**
    * @notice                Extracts the LE tx input index from the input in a tx
    * @dev                   4 byte tx index
@@ -426,16 +281,6 @@ module.exports = {
   extractTxIndexLE: (input) => {
     return utils.safeSlice(input, 32, 36)
   },
-
-//     /// @notice          Extracts the tx input index from the input in a tx
-//     /// @dev             4 byte tx index
-//     /// @param _input    The input
-//     /// @return          The tx index (big-endian uint)
-//     function extractTxIndex(bytes memory _input) internal pure returns (uint32) {
-//         bytes memory _leIndex = extractTxIndexLE(_input);
-//         bytes memory _beIndex = reverseEndianness(_leIndex);
-//         return uint32(bytesToUint(_beIndex));
-//     }
 
   /**
    * @notice                Extracts the LE tx input index from the input in a tx
@@ -454,17 +299,6 @@ module.exports = {
   /* Output */
   /* ****** */
 
-//     /// @notice          Determines the length of an output
-//     /// @dev             5 types: WPKH, WSH, PKH, SH, and OP_RETURN
-//     /// @param _output   The output
-//     /// @return          The length indicated by the prefix, error if invalid length
-//     function determineOutputLength(bytes memory _output) internal pure returns (uint256) {
-//         uint8 _len = uint8(_output.slice(8, 1)[0]);
-//         require(_len < 0xfd, "Multi-byte VarInts not supported");
-
-//         return _len + 8 + 1; // 8 byte value, 1 byte for _len itself
-//     }
-
   /**
    * @notice Determines the length of an output
    * @dev 5 types: WPKH, WSH, PKH, SH, and OP_RETURN
@@ -480,28 +314,6 @@ module.exports = {
 
     return BigInt(len) + 8n + 1n // 8 byte value, 1 byte for len itself
   },
-
-//     /// @notice          Extracts the output at a given index in the TxIns vector
-//     /// @dev             Iterates over the vout. If you need to extract multiple, write a custom function
-//     /// @param _vout     The _vout to extract from
-//     /// @param _index    The 0-indexed location of the output to extract
-//     /// @return          The specified output
-//     function extractOutputAtIndex(bytes memory _vout, uint8 _index) internal pure returns (bytes memory) {
-//         uint256 _len;
-//         bytes memory _remaining;
-
-//         uint256 _offset = 1;
-
-//         for (uint8 _i = 0; _i < _index; _i ++) {
-//             _remaining = _vout.slice(_offset, _vout.length - _offset);
-//             _len = determineOutputLength(_remaining);
-//             _offset = _offset + _len;
-//         }
-
-//         _remaining = _vout.slice(_offset, _vout.length - _offset);
-//         _len = determineOutputLength(_remaining);
-//         return _vout.slice(_offset, _len);
-//     }
 
   /**
    * @notice Extracts the output at a given index in the TxIns vector
@@ -525,14 +337,6 @@ module.exports = {
 
     return utils.safeSlice(vout, Number(offset), Number(offset) + Number(len))
   },
-
-//     /// @notice          Extracts the output script length
-//     /// @dev             Indexes the length prefix on the pk_script
-//     /// @param _output   The output
-//     /// @return          The 1 byte length prefix
-//     function extractOutputScriptLen(bytes memory _output) internal pure returns (bytes memory) {
-//         return _output.slice(8, 1);
-//     }
 
   /**
    * @notice Extracts the output script length
