@@ -102,13 +102,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
+   * @notice                Implements bitcoin's hash160 (rmd160(sha2()))
    * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @param {Uint8Array}    preImage
+   * @returns {Uint8Array}  The digest
    */
-  hash160: (bytesString) => {
-    return utils.ripemd160(utils.sha256(bytesString))
+  hash160: (preImage) => {
+    return utils.ripemd160(utils.sha256(preImage))
   },
 
 //     /// @notice          Implements bitcoin's hash256 (double sha2)
@@ -119,12 +119,12 @@ module.exports = {
 //         return abi.encodePacked(sha256(abi.encodePacked(sha256(_b)))).toBytes32();
 //     }
 
-  /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
-   */
+/**
+ * @notice                Implements bitcoin's hash256 (double sha2)
+ * @dev
+ * @param {Uint8Array}    preImage
+ * @returns {Uint8Array}  The digest
+ */
   hash256: (b) => {
     return utils.sha256(utils.sha256(b))
   },
@@ -830,7 +830,7 @@ module.exports = {
    *  @notice                Extracts the previous block's hash from a block header
    * @dev                   Block headers do NOT include block number :(
    * @param {Uint8Array}    header
-   * @returns {???}  The previous block's hash (big-endian)
+   * @returns {Uint8Array}  The previous block's hash (big-endian)
    */
   extractPrevBlockBE: (header) => {
     return module.exports.reverseEndianness(module.exports.extractPrevBlockLE(header))
@@ -903,7 +903,7 @@ module.exports = {
    * @dev
    * @param {Uint8Array}    a The first hash
    * @param {Uint8Array}    b The second hash
-   * @returns {}            The double-sha256 of the concatenated hashes
+   * @returns {Uint8Array}  The double-sha256 of the concatenated hashes
    */
   hash256MerkleStep: (a, b) => {
     return module.exports.hash256(utils.concatUint8Arrays(a, b))
