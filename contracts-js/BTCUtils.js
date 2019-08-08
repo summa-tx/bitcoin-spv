@@ -84,10 +84,10 @@ module.exports = {
   /// @return          The last _num bytes of _b
 
   /**
-   * @notice Get the last _num bytes from a byte array
-   * @dev The byte array to slice
-   * @param {Uint8Array} uint8Arr The big-endian array-encoded integer
-   * @returns {BigInt} The integer representation
+   * @notice                 Get the last _num bytes from a byte array
+   * @dev                    The byte array to slice
+   * @param {Uint8Array}     uint8Arr The big-endian array-encoded integer
+   * @returns {BigInt}       The integer representation
    */
   lastBytes: (arr, num) => {
     return utils.safeSlice(arr, arr.length - num)
@@ -358,13 +358,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice                Extracts the outpoint from the input in a tx
+   * @dev                   32 byte tx id with 4 byte index
+   * @param {Uint8Array}    input The input
+   * @returns {Uint8Array}  The outpoint (LE bytes of prev tx hash + LE bytes of prev tx index)
    */
   extractOutpoint: (input) => {
-    return
+    return utils.safeSlice(input, 0, 36)
   },
 
 //     /// @notice          Extracts the outpoint tx id from an input

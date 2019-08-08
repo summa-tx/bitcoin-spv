@@ -125,8 +125,10 @@ describe('BTCUtils', () => {
 
   it('extracts an outpoint as bytes', async () => {
     const input = constants.OP_RETURN.INPUTS;
-    const res = await BTCUtilsJs.extractOutpoint(input);
-    assert.equal(res, '0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000');
+    const res = await BTCUtilsJs.extractOutpoint(utils.deserializeHex(input));
+    let u8aValue = utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000')
+    let arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue)
+    assert.isTrue(arraysAreEqual)
   });
 
   /* Witness Output */
