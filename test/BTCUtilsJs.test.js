@@ -366,7 +366,9 @@ describe('BTCUtils', () => {
 
   it('extracts a root from a header', async () => {
     const res = await BTCUtilsJs.extractMerkleRootBE(HEADER_170);
-    assert.equal(res, '0x7dac2c5666815c17a3b36427de37bb9d2e2c5ccec3f8633eb91a4205cb4c10ff');
+    const u8aValue = utils.deserializeHex('0x7dac2c5666815c17a3b36427de37bb9d2e2c5ccec3f8633eb91a4205cb4c10ff')
+    var arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue)
+    assert.isTrue(arraysAreEqual);
   });
 
   it('extracts the target from a header', async () => {
@@ -381,7 +383,6 @@ describe('BTCUtils', () => {
 
   it('extracts a timestamp from a header', async () => {
     const res = await BTCUtilsJs.extractTimestamp(HEADER_170);
-    // assert(res.eq(new BN('1231731025', 10)));
     assert.equal(res, 1231731025n);
   });
 

@@ -25,7 +25,7 @@ module.exports = {
 //     uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
   RETARGET_PERIOD: 1209600n,
   RETARGET_PERIOD_BLOCKS: 2016n,
-  DIFF1_TARGET: 0xffff0000000000000000000000000000000000000000000000000000n
+  DIFF1_TARGET: 0xffff0000000000000000000000000000000000000000000000000000n,
 
   /**
    * @notice Determines the length of a VarInt in bytes
@@ -733,7 +733,7 @@ module.exports = {
    * @returns {number}      The serialized merkle root (big-endian)
    */
   extractMerkleRootBE: (header) => {
-    return utils.serializeHex(module.exports.reverseEndianness(module.exports.extractMerkleRootLE(header)))
+    return module.exports.reverseEndianness(module.exports.extractMerkleRootLE(header))
   },
 
 //     /// @notice          Extracts the target from a block header
@@ -817,7 +817,7 @@ module.exports = {
    * @returns {Uint8Array}  The previous block's hash (little-endian)
    */
   extractPrevBlockLE: (header) => {
-    return header.slice(4, 36)
+    return utils.safeSlice(header, 4, 36)
   },
 
 //     /// @notice          Extracts the previous block's hash from a block header
@@ -849,13 +849,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice                Extracts the timestamp from a block header
+   * @dev                   Time is not 100% reliable
+   * @param {Uint8Array}    header
+   * @returns {Uint8Array}  The timestamp (little-endian bytes)
    */
   extractTimestampLE: (header) => {
-    return
+    return utils.safeSlice(header, 68, 72)
   },
 
 //     /// @notice          Extracts the timestamp from a block header
@@ -867,13 +867,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice                    Extracts the timestamp from a block header
+   * @dev                       Time is not 100% reliable
+   * @param {Uint8Array}        header
+   * @returns {BigInt/number}   The timestamp (uint)
    */
   extractTimestamp: (header) => {
-    return
+    return module.exports.bytesToUint(module.exports.reverseEndianness(module.exports.extractTimestampLE(header)))
   },
 
 //     /// @notice          Extracts the expected difficulty from a block header
