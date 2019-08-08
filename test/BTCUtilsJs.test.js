@@ -495,7 +495,6 @@ describe('BTCUtils', () => {
 
       secondTimestamp = firstTimestamp + 5 * 2016 * 10 * 60; // longer than 4x
       res = await BTCUtilsJs.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-      // assert(res.divn(4).uand(previousTarget).eq(previousTarget));
       assert.equal(res / 4n & previousTarget, previousTarget);
 
       secondTimestamp = firstTimestamp + 2016 * 10 * 14; // shorter than 1/4x

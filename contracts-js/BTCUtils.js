@@ -1,28 +1,10 @@
-// /** @title BitcoinSPV */
-// /** @author Summa (https://summa.one) */
+/** @title BitcoinSPV */
+/** @author Summa (https://summa.one) */
 
-// import {BytesLib} from "./BytesLib.sol";
-// import {SafeMath} from "./SafeMath.sol";
-
-// sha256 --> Hold off on this for now
-// ripemd160 --> Hold off on this for now
-// keccack256 --> Can just drop this and do an equality test instead, James will find equality test to use
-
-// const ripemd160 = require("../utils/ripemd160").default
-// const sha256 = require("../utils/sha256")
 const utils = require('../utils/utils')
 
-// library BTCUtils {
 module.exports = {
 
-  //     using BytesLib for bytes;
-//     using SafeMath for uint256;
-
-//     // The target at minimum Difficulty. Also the target of the genesis block
-//     uint256 public constant DIFF1_TARGET = 0xffff0000000000000000000000000000000000000000000000000000;
-
-//     uint256 public constant RETARGET_PERIOD = 2 * 7 * 24 * 60 * 60;  // 2 weeks in seconds
-//     uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
   RETARGET_PERIOD: 1209600n,
   RETARGET_PERIOD_BLOCKS: 2016n,
   DIFF1_TARGET: 0xffff0000000000000000000000000000000000000000000000000000n,
@@ -351,14 +333,6 @@ module.exports = {
     return utils.safeSlice(output, 8, 9);
   },
 
-//     /// @notice          Extracts the value bytes from the output in a tx
-//     /// @dev             Value is an 8-byte little-endian number
-//     /// @param _output   The output
-//     /// @return          The output value as LE bytes
-//     function extractValueLE(bytes memory _output) internal pure returns (bytes memory) {
-//         return _output.slice(0, 8);
-//     }
-
   /**
    * @notice Extracts the value bytes from the output in a tx
    * @dev Value is an 8-byte little-endian number
@@ -368,16 +342,6 @@ module.exports = {
   extractValueLE: (output) => {
     return utils.safeSlice(output, 0, 8);
   },
-
-//     /// @notice          Extracts the value from the output in a tx
-//     /// @dev             Value is an 8-byte little-endian number
-//     /// @param _output   The output
-//     /// @return          The output value
-//     function extractValue(bytes memory _output) internal pure returns (uint64) {
-//         bytes memory _leValue = extractValueLE(_output);
-//         bytes memory _beValue = reverseEndianness(_leValue);
-//         return uint64(bytesToUint(_beValue));
-//     }
 
   /**
    * @notice Extracts the value from the output in a tx
@@ -390,18 +354,6 @@ module.exports = {
     let beValue = module.exports.reverseEndianness(leValue);
     return utils.bytesToUint(beValue);
   },
-
-//     /// @notice          Extracts the data from an op return output
-//     /// @dev             Returns hex"" if no data or not an op return
-//     /// @param _output   The output
-//     /// @return          Any data contained in the opreturn output, null if not an op return
-//     function extractOpReturnData(bytes memory _output) internal pure returns (bytes memory) {
-//         if (keccak256(_output.slice(9, 1)) != keccak256(hex"6a")) {
-//             return hex"";
-//         }
-//         bytes memory _dataLen = _output.slice(10, 1);
-//         return _output.slice(11, bytesToUint(_dataLen));
-//     }
 
   /**
    * @notice Extracts the data from an op return output
@@ -416,40 +368,6 @@ module.exports = {
     let dataLen = utils.safeSlice(output, 10, 11);
     return utils.safeSlice(output, 11, 11 + Number(utils.bytesToUint(dataLen)));
   },
-
-//     /// @notice          Extracts the hash from the output script
-//     /// @dev             Determines type by the length prefix and validates format
-//     /// @param _output   The output
-//     /// @return          The hash committed to by the pk_script, or null for errors
-//     function extractHash(bytes memory _output) internal pure returns (bytes memory) {
-//         if (uint8(_output.slice(9, 1)[0]) == 0) {
-//             uint256 _len = uint8(extractOutputScriptLen(_output)[0]) - 2;
-//             // Check for maliciously formatted witness outputs
-//             if (uint8(_output.slice(10, 1)[0]) != uint8(_len)) {
-//                 return hex"";
-//             }
-//             return _output.slice(11, _len);
-//         } else {
-//             bytes32 _tag = keccak256(_output.slice(8, 3));
-//             // p2pkh
-//             if (_tag == keccak256(hex"1976a9")) {
-//                 // Check for maliciously formatted p2pkh
-//                 if (uint8(_output.slice(11, 1)[0]) != 0x14 ||
-//                     keccak256(_output.slice(_output.length - 2, 2)) != keccak256(hex"88ac")) {
-//                     return hex"";
-//                 }
-//                 return _output.slice(12, 20);
-//             //p2sh
-//             } else if (_tag == keccak256(hex"17a914")) {
-//                 // Check for maliciously formatted p2sh
-//                 if (uint8(_output.slice(_output.length - 1, 1)[0]) != 0x87) {
-//                     return hex"";
-//                 }
-//                 return _output.slice(11, 20);
-//             }
-//         }
-//         return hex"";  /* NB: will trigger on OPRETURN and non-standard that don't overrun */
-//     }
 
   /**
    * @notice Extracts the hash from the output script
@@ -490,35 +408,6 @@ module.exports = {
   /* Witness TX */
   /* ********** */
 
-
-//     /// @notice      Checks that the vin passed up is properly formatted
-//     /// @dev         Consider a vin with a valid vout in its scriptsig
-//     /// @param _vin  Raw bytes length-prefixed input vector
-//     /// @return      True if it represents a validly formatted vin
-//     function validateVin(bytes memory _vin) internal pure returns (bool) {
-//         uint256 _offset = 1;
-//         uint8 _nIns = uint8(_vin.slice(0, 1)[0]);
-
-//         // Not valid if it says there are too many or no inputs
-//         if (_nIns >= 0xfd || _nIns == 0) {
-//             return false;
-//         }
-
-//         for (uint8 i = 0; i < _nIns; i++) {
-//             // Grab the next input and determine its length.
-//             // Increase the offset by that much
-//             _offset += determineInputLength(_vin.slice(_offset, _vin.length - _offset));
-
-//             // Returns false we jump past the end
-//             if (_offset > _vin.length) {
-//                 return false;
-//             }
-//         }
-
-//         // Returns false if we're not exactly at the end
-//         return _offset == _vin.length;
-//     }
-
   /**
    * @notice                  Checks that the vin passed up is properly formatted
    * @dev                     Consider a vin with a valid vout in its scriptsig
@@ -549,34 +438,6 @@ module.exports = {
     // Returns false if we're not exactly at the end
     return offset == vLength
   },
-
-//     /// @notice      Checks that the vin passed up is properly formatted
-//     /// @dev         Consider a vin with a valid vout in its scriptsig
-//     /// @param _vout Raw bytes length-prefixed output vector
-//     /// @return      True if it represents a validly formatted bout
-//     function validateVout(bytes memory _vout) internal pure returns (bool) {
-//         uint256 _offset = 1;
-//         uint8 _nOuts = uint8(_vout.slice(0, 1)[0]);
-
-//         // Not valid if it says there are too many or no inputs
-//         if (_nOuts >= 0xfd || _nOuts == 0) {
-//             return false;
-//         }
-
-//         for (uint8 i = 0; i < _nOuts; i++) {
-//             // Grab the next input and determine its length.
-//             // Increase the offset by that much
-//             _offset += determineOutputLength(_vout.slice(_offset, _vout.length - _offset));
-
-//             // Returns false we jump past the end
-//             if (_offset > _vout.length) {
-//                 return false;
-//             }
-//         }
-
-//         // Returns false if we're not exactly at the end
-//         return _offset == _vout.length;
-//     }
 
   /**
    * @noticeChecks            Checks that the vout passed up is properly formatted
@@ -615,14 +476,6 @@ module.exports = {
   /* Block Header */
   /* ************ */
 
-//     /// @notice          Extracts the transaction merkle root from a block header
-//     /// @dev             Use verifyHash256Merkle to verify proofs with this root
-//     /// @param _header   The header
-//     /// @return          The merkle root (little-endian)
-//     function extractMerkleRootLE(bytes memory _header) internal pure returns (bytes memory) {
-//         return _header.slice(36, 32);
-//     }
-
   /**
    * @notice                Extracts the transaction merkle root from a block header
    * @dev                   Returns a the merkle root from a block header as a Uint8Array.
@@ -633,14 +486,6 @@ module.exports = {
     return utils.safeSlice(header, 36, 68)
   },
 
-//     /// @notice          Extracts the transaction merkle root from a block header
-//     /// @dev             Use verifyHash256Merkle to verify proofs with this root
-//     /// @param _header   The header
-//     /// @return          The merkle root (big-endian)
-//     function extractMerkleRootBE(bytes memory _header) internal pure returns (bytes memory) {
-//         return reverseEndianness(extractMerkleRootLE(_header));
-//     }
-
   /**
    * @notice                Extracts the transaction merkle root from a block header
    * @dev                   Use verifyHash256Merkle to verify proofs with this root
@@ -650,19 +495,6 @@ module.exports = {
   extractMerkleRootBE: (header) => {
     return module.exports.reverseEndianness(module.exports.extractMerkleRootLE(header))
   },
-
-//     /// @notice          Extracts the target from a block header
-//     /// @dev             Target is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
-//     /// @param _header   The header
-//     /// @return          The target threshold
-//     function extractTarget(bytes memory _header) internal pure returns (uint256) {
-//         bytes memory _m = _header.slice(72, 3);
-//         uint8 _e = uint8(_header[75]);
-//         uint256 _mantissa = bytesToUint(reverseEndianness(_m));
-//         uint _exponent = _e - 3;
-
-//         return _mantissa * (256 ** _exponent);
-//     }
 
   /**
    * @notice                 Extracts the target from a block header
@@ -681,17 +513,6 @@ module.exports = {
     return mantissa * 256n ** exponent
   },
 
-//     /// @notice          Calculate difficulty from the difficulty 1 target and current target
-//     /// @dev             Difficulty 1 is 0x1d00ffff on mainnet and testnet
-//     /// @dev             Difficulty 1 is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
-//     /// @param _target   The current target
-//     /// @return          The block difficulty (bdiff)
-//     function calculateDifficulty(uint256 _target) internal pure returns (uint256) {
-//         // Difficulty 1 calculated from 0x1d00ffff
-//         return DIFF1_TARGET.div(_target);
-//     }
-
-
   /**
    * @notice                Calculate difficulty from the difficulty 1 target and current target
    * @dev                   Difficulty 1 is 0x1d00ffff on mainnet and testnet
@@ -707,14 +528,6 @@ module.exports = {
     return module.exports.DIFF1_TARGET / target
   },
 
-//     /// @notice          Extracts the previous block's hash from a block header
-//     /// @dev             Block headers do NOT include block number :(
-//     /// @param _header   The header
-//     /// @return          The previous block's hash (little-endian)
-//     function extractPrevBlockLE(bytes memory _header) internal pure returns (bytes memory) {
-//         return _header.slice(4, 32);
-//     }
-
   /**
    * @notice                Extracts the previous block's hash from a block header
    * @dev                   Block headers do NOT include block number :(
@@ -724,14 +537,6 @@ module.exports = {
   extractPrevBlockLE: (header) => {
     return utils.safeSlice(header, 4, 36)
   },
-
-//     /// @notice          Extracts the previous block's hash from a block header
-//     /// @dev             Block headers do NOT include block number :(
-//     /// @param _header   The header
-//     /// @return          The previous block's hash (big-endian)
-//     function extractPrevBlockBE(bytes memory _header) internal pure returns (bytes memory) {
-//         return reverseEndianness(extractPrevBlockLE(_header));
-//     }
 
   /**
    *  @notice                Extracts the previous block's hash from a block header
@@ -743,14 +548,6 @@ module.exports = {
     return module.exports.reverseEndianness(module.exports.extractPrevBlockLE(header))
   },
 
-//     /// @notice          Extracts the timestamp from a block header
-//     /// @dev             Time is not 100% reliable
-//     /// @param _header   The header
-//     /// @return          The timestamp (little-endian bytes)
-//     function extractTimestampLE(bytes memory _header) internal pure returns (bytes memory) {
-//         return _header.slice(68, 4);
-//     }
-
   /**
    * @notice                Extracts the timestamp from a block header
    * @dev                   Time is not 100% reliable
@@ -760,14 +557,6 @@ module.exports = {
   extractTimestampLE: (header) => {
     return utils.safeSlice(header, 68, 72)
   },
-
-//     /// @notice          Extracts the timestamp from a block header
-//     /// @dev             Time is not 100% reliable
-//     /// @param _header   The header
-//     /// @return          The timestamp (uint)
-//     function extractTimestamp(bytes memory _header) internal pure returns (uint32) {
-//         return uint32(bytesToUint(reverseEndianness(extractTimestampLE(_header))));
-//     }
 
   /**
    * @notice                    Extracts the timestamp from a block header
@@ -779,14 +568,6 @@ module.exports = {
     return utils.bytesToUint(module.exports.reverseEndianness(module.exports.extractTimestampLE(header)))
   },
 
-//     /// @notice          Extracts the expected difficulty from a block header
-//     /// @dev             Does NOT verify the work
-//     /// @param _header   The header
-//     /// @return          The difficulty as an integer
-//     function extractDifficulty(bytes memory _header) internal pure returns (uint256) {
-//         return calculateDifficulty(extractTarget(_header));
-//     }
-
   /**
    * @notice                Extracts the expected difficulty from a block header
    * @dev                   Does NOT verify the work
@@ -796,14 +577,6 @@ module.exports = {
   extractDifficulty: (header) => {
     return module.exports.calculateDifficulty(module.exports.extractTarget(header))
   },
-
-//     /// @notice          Concatenates and hashes two inputs for merkle proving
-//     /// @param _a        The first hash
-//     /// @param _b        The second hash
-//     /// @return          The double-sha256 of the concatenated hashes
-//     function _hash256MerkleStep(bytes memory _a, bytes memory _b) internal pure returns (bytes32) {
-//         return hash256(abi.encodePacked(_a, _b));
-//     }
 
   /**
    * @notice                Concatenates and hashes two inputs for merkle proving
@@ -815,42 +588,6 @@ module.exports = {
   hash256MerkleStep: (a, b) => {
     return module.exports.hash256(utils.concatUint8Arrays(a, b))
   },
-
-//     /// @notice          Verifies a Bitcoin-style merkle tree
-//     /// @dev             Leaves are 1-indexed.
-//     /// @param _proof    The proof. Tightly packed LE sha256 hashes. The last hash is the root
-//     /// @param _index    The index of the leaf
-//     /// @return          true if the proof is valid, else false
-//     function verifyHash256Merkle(bytes memory _proof, uint _index) internal pure returns (bool) {
-//         // Not an even number of hashes
-//         if (_proof.length % 32 != 0) {
-//             return false;
-//         }
-
-//         // Special case for coinbase-only blocks
-//         if (_proof.length == 32) {
-//             return true;
-//         }
-
-//         // Should never occur
-//         if (_proof.length == 64) {
-//             return false;
-//         }
-
-//         uint _idx = _index;
-//         bytes32 _root = _proof.slice(_proof.length - 32, 32).toBytes32();
-//         bytes32 _current = _proof.slice(0, 32).toBytes32();
-
-//         for (uint i = 1; i < (_proof.length.div(32)) - 1; i++) {
-//             if (_idx % 2 == 1) {
-//                 _current = _hash256MerkleStep(_proof.slice(i * 32, 32), abi.encodePacked(_current));
-//             } else {
-//                 _current = _hash256MerkleStep(abi.encodePacked(_current), _proof.slice(i * 32, 32));
-//             }
-//             _idx = _idx >> 1;
-//         }
-//         return _current == _root;
-//     }
 
   /**
    * @notice                  Verifies a Bitcoin-style merkle tree
@@ -891,44 +628,6 @@ module.exports = {
     }
     return utils.typedArraysAreEqual(current, root)
   },
-
-//     /*
-//     NB: https://github.com/bitcoin/bitcoin/blob/78dae8caccd82cfbfd76557f1fb7d7557c7b5edb/src/pow.cpp#L49-L72
-//     NB: We get a full-bitlength target from this. For comparison with
-//         header-encoded targets we need to mask it with the header target
-//         e.g. (full & truncated) == truncated
-//     */
-
-//     /// @notice                 performs the bitcoin difficulty retarget
-//     /// @dev                    implements the Bitcoin algorithm precisely
-//     /// @param _previousTarget  the target of the previous period
-//     /// @param _firstTimestamp  the timestamp of the first block in the difficulty period
-//     /// @param _secondTimestamp the timestamp of the last block in the difficulty period
-//     /// @return                 the new period's target threshold
-//     function retargetAlgorithm(
-//         uint256 _previousTarget,
-//         uint256 _firstTimestamp,
-//         uint256 _secondTimestamp
-//     ) internal pure returns (uint256) {
-//         uint256 _elapsedTime = _secondTimestamp.sub(_firstTimestamp);
-
-//         // Normalize ratio to factor of 4 if very long or very short
-//         if (_elapsedTime < RETARGET_PERIOD.div(4)) {
-//             _elapsedTime = RETARGET_PERIOD.div(4);
-//         }
-//         if (_elapsedTime > RETARGET_PERIOD.mul(4)) {
-//             _elapsedTime = RETARGET_PERIOD.mul(4);
-//         }
-
-//         /*
-//           NB: high targets e.g. ffff0020 can cause overflows here
-//               so we divide it by 256**2, then multiply by 256**2 later
-//               we know the target is evenly divisible by 256**2, so this isn't an issue
-//         */
-
-//         uint256 _adjusted = _previousTarget.div(65536).mul(_elapsedTime);
-//         return _adjusted.div(RETARGET_PERIOD).mul(65536);
-//     }
 
   /**
    * @notice                performs the bitcoin difficulty retarget
