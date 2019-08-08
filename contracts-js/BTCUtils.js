@@ -824,13 +824,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice                Extracts the previous block's hash from a block header
+   * @dev                   Block headers do NOT include block number :(
+   * @param {Uint8Array}    header
+   * @returns {Uint8Array}  The previous block's hash (little-endian)
    */
   extractPrevBlockLE: (header) => {
-    return
+    return header.slice(4, 36)
   },
 
 //     /// @notice          Extracts the previous block's hash from a block header
@@ -842,13 +842,15 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   *  @notice                Extracts the previous block's hash from a block header
+   * @dev                   Block headers do NOT include block number :(
+   * @param {Uint8Array}    header
+   * @returns {???}  The previous block's hash (big-endian)
    */
   extractPrevBlockBE: (header) => {
-    return
+    // TODO: figure out if the return value is a u8a or hex value. Also, this has no test.
+    // return utils.deserializeHex(module.exports.reverseEndianness(extractPrevBlockLE(header)))
+    return module.exports.reverseEndianness(extractPrevBlockLE(header))
   },
 
 //     /// @notice          Extracts the timestamp from a block header
