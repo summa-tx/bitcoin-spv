@@ -110,7 +110,8 @@ module.exports = {
   hash160: (bytesString) => {
     var newStr = utils.safeSlice(bytesString, 2)
     // return utils.serializeHex(utils.ripemd160(utils.sha256(newStr)))
-    return utils.serializeHex(utils.ripemd160(utils.sha256(newStr)))
+    // console.log(utils.ripemd160(utils.sha256(newStr)))
+    return utils.ripemd160(utils.sha256(newStr))
   },
 
 //     /// @notice          Implements bitcoin's hash256 (double sha2)
@@ -883,13 +884,13 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice                Extracts the expected difficulty from a block header
+   * @dev                   Does NOT verify the work
+   * @param {Uint8Array}    header
+   * @returns {BigInt}      The difficulty as an integer
    */
   extractDifficulty: (header) => {
-    return
+    return module.exports.calculateDifficulty(module.exports.extractTarget(header))
   },
 
 //     /// @notice          Concatenates and hashes two inputs for merkle proving
@@ -901,13 +902,14 @@ module.exports = {
 //     }
 
   /**
-   * @notice
+   * @notice                Concatenates and hashes two inputs for merkle proving
    * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @param {Uint8Array}    a The first hash
+   * @param {Uint8Array}    b The second hash
+   * @returns {}            The double-sha256 of the concatenated hashes
    */
   hash256MerkleStep: (a, b) => {
-      return
+    return module.exports.hash256(utils.concatUint8Arrays(a, b))
   },
 
 //     /// @notice          Verifies a Bitcoin-style merkle tree
@@ -947,13 +949,43 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice                  Verifies a Bitcoin-style merkle tree
+   * @dev                     Leaves are 1-indexed.
+   * @param {Uin8Array}       proof The proof. Tightly packed LE sha256 hashes. The last hash is the root
+   * @param {Number}          index The index of the leaf
+   * @returns {Boolean}       true if the proof is value, else false
    */
   verifyHash256Merkle: (proof, index) => {
-    return
+    const proofLength = proof.length
+
+    // Not an even number of hashes
+    if (proofLength % 32 !== 0) {
+      return false
+    }
+
+    // Special case for coinbase-only blocks
+    if (proofLength === 32) {
+      return true
+    }
+
+    // Should never occur
+    if (proofLength === 64) {
+      return false
+    }
+
+    let idx = BigInt(index)
+    let root = utils.safeSlice(proof, (proofLength - 32), proofLength)
+    let current = utils.safeSlice(proof, 0, 32)
+
+    for (let i = 1; i < ((proofLength / 32) - 1); i++) {
+      if (idx % 2n === 1n) {
+        current = module.exports.hash256MerkleStep(utils.safeSlice(proof, (i * 32), ((i * 32) + 32)), current)
+      } else {
+        current = module.exports.hash256MerkleStep(current, utils.safeSlice(proof, (i * 32), ((i * 32) + 32)))
+      }
+      idx = idx >> 1n
+    }
+    return utils.typedArraysAreEqual(current, root)
   },
 
 //     /*
@@ -995,10 +1027,12 @@ module.exports = {
 //     }
 
   /**
-   * @notice
-   * @dev
-   * @param {} nameOfParam
-   * @returns {}
+   * @notice                performs the bitcoin difficulty retarget
+   * @dev                   implements the Bitcoin algorithm precisely
+   * @param {number}        previousTarget, could be BigInt
+   * @param {number}        firstTimestamp
+   * @param {number}        secondTimestamp
+   * @returns {BigInt}      the new period's target threshold
    */
   retargetAlgorithm: (previousTarget, firstTimestamp, secondTimestamp) => {
     // I think this works, but I can't pass the test unless extractTarget works, which won't work until node recognizes BigInt

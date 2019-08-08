@@ -84,15 +84,22 @@ describe('BTCUtils', () => {
     // res = await BTCUtilsJs.hash160('0x1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111');
     // assert.equal(res, '0xe723a0f62396b8b03dbd9e48e9b9efe2eb704aab');
     res = await BTCUtilsJs.hash160('0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000');
-    assert.equal(res, '0x1b60c31dba9403c74d81af255f0c300bfed5faa3');
+    // res = await BTCUtilsJs.hash160(utils.deserializeHex('0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'));
+    // let u8aValue = utils.deserializeHex('0x1b60c31dba9403c74d81af255f0c300bfed5faa3')
+    // var arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue)
+    // assert.isTrue(arraysAreEqual)
+    assert.equal(res, '0x1b60c31dba9403c74d81af255f0c300bfed5faa3')
   });
 
   it('implements bitcoin\'s hash256', async () => {
     let res;
-    res = await BTCUtilsJs.hash256('0x00');
-    assert.equal(res, '0x1406e05881e299367766d313e26c05564ec91bf721d31726bd6e46e60689539a');
-    res = await BTCUtilsJs.hash256('0x616263'); // 'abc' in utf-8
-    assert.equal(res, '0x4f8b42c22dd3729b519ba6f68d2da7cc5b2d606d05daed5ad5128cc03e6c6358');
+    res = await BTCUtilsJs.hash256(utils.deserializeHex('0x00'));
+    var arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x1406e05881e299367766d313e26c05564ec91bf721d31726bd6e46e60689539a'))
+    assert.isTrue(arraysAreEqual)
+
+    res = await BTCUtilsJs.hash256(utils.deserializeHex('0x616263')); //'abc' in utf - 8
+    var arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x4f8b42c22dd3729b519ba6f68d2da7cc5b2d606d05daed5ad5128cc03e6c6358'))
+    assert.isTrue(arraysAreEqual)
   });
 
   it('extracts a sequence from a witness input as LE and int', async () => {
@@ -391,19 +398,19 @@ describe('BTCUtils', () => {
   it('verifies a bitcoin merkle root', async () => {
     let res;
     res = await BTCUtilsJs.verifyHash256Merkle(
-      '0x82501c1178fa0b222c1f3d474ec726b832013f0a532b44bb620cce8624a5feb1169e1e83e930853391bc6f35f605c6754cfead57cf8387639d3b4096c54f18f4ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d',
+      utils.deserializeHex('0x82501c1178fa0b222c1f3d474ec726b832013f0a532b44bb620cce8624a5feb1169e1e83e930853391bc6f35f605c6754cfead57cf8387639d3b4096c54f18f4ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d'),
       0 // 0-indexed
     );
     assert.isTrue(res);
 
     res = await BTCUtilsJs.verifyHash256Merkle(
-      '0x169e1e83e930853391bc6f35f605c6754cfead57cf8387639d3b4096c54f18f482501c1178fa0b222c1f3d474ec726b832013f0a532b44bb620cce8624a5feb1ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d',
+      utils.deserializeHex('0x169e1e83e930853391bc6f35f605c6754cfead57cf8387639d3b4096c54f18f482501c1178fa0b222c1f3d474ec726b832013f0a532b44bb620cce8624a5feb1ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d'),
       1 // 0-indexed
     );
     assert.isTrue(res);
 
     res = await BTCUtilsJs.verifyHash256Merkle(
-      '0x6c1320f4552ba68f3dbdd91f9422405f779b779e21678448e8035c21c1e2edd67a6190a846e318878be71565841d90a78e9e617b2d859d5e0767c13de427be4a2a6a6d55b17316d45ac11c4e613c38b293db606bace5062470d783471cc66c180455e6472ce92d32179994c3d44b75dd9834e1e7438cf9ab5be1ef6edf1e4a8d361dda470aca6e97c3b4056d4b329beba9ffd6a26c86a2a3f8f9ad31826b69ee49693027a439b3149853907afe87031f3bcf484b8bdd2e047d579d2ee2569c16769a33473b652d1d365886f9f9fba64fdea23ab16306ae1484ed632dcd381e5132c401084bc783478306202844b9cf34aff6ab24182206caa6eebc3e016fa373986d08ac9ae256ddda2deedc6662fd8f8a300ecdd38db2c5d6d2765a7515531e7f96f0310f9493cf79be3e60f63d8a6fa0c62ea59312731fd5b71b261abd99f5b908b3166d53532c9557a0f6ce9bc18f7b7619b2257043052a7ff2e5030e838f2e9edcc0f7273fa273a6b3ce2112dbd686f060b5f61deb1abc7247edf1bd6cd7ca4a6c5cfaedbc5905ef4f0511b143a0672ce4fa2dc1ed8852e077e0184febca',
+      utils.deserializeHex('0x6c1320f4552ba68f3dbdd91f9422405f779b779e21678448e8035c21c1e2edd67a6190a846e318878be71565841d90a78e9e617b2d859d5e0767c13de427be4a2a6a6d55b17316d45ac11c4e613c38b293db606bace5062470d783471cc66c180455e6472ce92d32179994c3d44b75dd9834e1e7438cf9ab5be1ef6edf1e4a8d361dda470aca6e97c3b4056d4b329beba9ffd6a26c86a2a3f8f9ad31826b69ee49693027a439b3149853907afe87031f3bcf484b8bdd2e047d579d2ee2569c16769a33473b652d1d365886f9f9fba64fdea23ab16306ae1484ed632dcd381e5132c401084bc783478306202844b9cf34aff6ab24182206caa6eebc3e016fa373986d08ac9ae256ddda2deedc6662fd8f8a300ecdd38db2c5d6d2765a7515531e7f96f0310f9493cf79be3e60f63d8a6fa0c62ea59312731fd5b71b261abd99f5b908b3166d53532c9557a0f6ce9bc18f7b7619b2257043052a7ff2e5030e838f2e9edcc0f7273fa273a6b3ce2112dbd686f060b5f61deb1abc7247edf1bd6cd7ca4a6c5cfaedbc5905ef4f0511b143a0672ce4fa2dc1ed8852e077e0184febca'),
       4 // 0-indexed
     );
     assert.isTrue(res);
@@ -415,15 +422,15 @@ describe('BTCUtils', () => {
     assert.isTrue(res);
 
     // not evenly divisible by 32
-    res = await BTCUtilsJs.verifyHash256Merkle('0x00', 0);
+    res = await BTCUtilsJs.verifyHash256Merkle(utils.deserializeHex('0x00'), 0);
     assert.isFalse(res);
 
     // 1-hash special case
-    res = await BTCUtilsJs.verifyHash256Merkle('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 0);
+    res = await BTCUtilsJs.verifyHash256Merkle(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'), 0);
     assert.isTrue(res);
 
     // 2-hash special case
-    res = await BTCUtilsJs.verifyHash256Merkle('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 0);
+    res = await BTCUtilsJs.verifyHash256Merkle(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'), 0);
     assert.isFalse(res);
   });
 
