@@ -111,10 +111,10 @@ describe('ValidateSPV', () => {
     it('handles p2wsh-via-p2sh compatibility inputs', async () => {
       const txIn = await ValidateSPV.parseInput(compatibilityWSHInput);
 
-      assert.equal(txIn._sequence, sequence);
-      assert.equal(txIn._hash, outpointTxId);
-      assert.equal(txIn._index, index);
-      assert.equal(txIn._inputType, BigInt(utils.INPUT_TYPES.COMPATIBILITY, 10));
+      assert.equal(txIn.sequence, sequence);
+      assert.equal(txIn.hash, outpointTxId);
+      assert.equal(txIn.index, index);
+      assert.equal(txIn.inputType, BigInt(utils.INPUT_TYPES.COMPATIBILITY, 10));
     });
   });
 
