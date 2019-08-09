@@ -18,6 +18,16 @@ const INPUT_TYPES = {
   WITNESS: 3
 }
 
+const OUTPUT_TYPES = {
+  NONE: 0,
+  WPKH: 1,
+  WSH: 2,
+  OP_RETURN: 3,
+  PKH: 4,
+  SH: 5,
+  NONSTANDARD: 6
+}
+
 describe('ValidateSPV', () => {
   describe('#error constants', async () => {
     it('tests the constant getters for that sweet sweet coverage', async () => {
