@@ -9,7 +9,7 @@
 
 
 // library ValidateSPV {
-const ValidateSPV = {
+module.exports = {
 
 //     using BTCUtils for bytes;
 //     using BTCUtils for uint256;
@@ -48,7 +48,14 @@ const ValidateSPV = {
   /// @param _index               The leaf's index in the tree (0-indexed)
   /// @return                     true if fully valid, false otherwise
   prove: (txid, merkleRoot, intermediateNodes, index) => {
-    return txid;
+    // Shortcut the empty-block case
+    if (txid == merkleRoot && index == 0 && intermediateNodes.length == 0) {
+      return true;
+    }
+
+    let proof = txid + ntermediateNodes + merkleRoot;
+    // If the Merkle proof failed, bubble up error
+    return proof.verifyHash256Merkle(index);
   },
 
 //     /// @notice             Hashes transaction to get txid
@@ -283,5 +290,3 @@ const ValidateSPV = {
     return header;
   }
 }
-
-export default ValidateSPV;
