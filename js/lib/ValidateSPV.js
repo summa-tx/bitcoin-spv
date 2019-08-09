@@ -1,16 +1,25 @@
-// import { S_IFBLK } from 'constants';
-
-// pragma solidity ^0.5.10;
-
 // /** @title ValidateSPV*/
 // /** @author Summa (https://summa.one) */
 
-// import {BytesLib} from "./BytesLib.sol";
-// import {SafeMath} from "./SafeMath.sol";
-// import {BTCUtils} from "./BTCUtils.sol";
-
 const btcUtils = require("./BTCUtils");
-const utils = require("../../utils/utils");
+const utils = require("../utils/utils");
+
+const INPUT_TYPES = {
+  NONE: 0,
+  LEGACY: 1,
+  COMPATIBILITY: 2,
+  WITNESS: 3
+}
+
+const OUTPUT_TYPES = {
+  NONE: 0,
+  WPKH: 1,
+  WSH: 2,
+  OP_RETURN: 3,
+  PKH: 4,
+  SH: 5,
+  NONSTANDARD: 6
+}
 
 // library ValidateSPV {
 module.exports = {
@@ -47,40 +56,38 @@ module.exports = {
     return btcUtils.hash256(utils.concatUint8Arrays([version, vin, vout, locktime]));
   },
 
-//     function parseInput(bytes memory _input) internal pure returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {
-//         // NB: If the scriptsig is exactly 00, we are witness.
-//         //     Otherwise we are compatibility
-//         if (keccak256(_input.slice(36, 1)) != keccak256(hex"00")) {
-//             _sequence = _input.extractSequenceLegacy();
-//             bytes32 _witnessTag = keccak256(_input.slice(36, 3));
-
-//             if (_witnessTag == keccak256(hex"220020") || _witnessTag == keccak256(hex"160014")) {
-//                 _inputType = uint8(InputTypes.COMPATIBILITY);
-//             } else {
-//                 _inputType = uint8(InputTypes.LEGACY);
-//             }
-
-//         } else {
-//             _sequence = _input.extractSequenceWitness();
-//             _inputType = uint8(InputTypes.WITNESS);
-//         }
-
-//         return (_sequence, _input.extractInputTxId(), _input.extractTxIndex(), _inputType);
-//     }
-
-  /// @notice         Parses a tx input from raw input bytes
-  /// @dev            Supports Legacy and Witness inputs
-  /// @param _input   Raw bytes tx input
-  /// @return         Tx input sequence number, tx hash, and index
   /**
-   * @notice
-   * @dev
-   * @param {}
-   * @param {}
-   * @returns {}
+   * @notice Parses a tx input from raw input bytes
+   * @dev Supports Legacy and Witness inputs
+   * @param {Uint8Array} input bytes tx input
+   * @returns {object} Tx input, sequence number, tx hash, and index
    */
   parseInput: (input) => {
-    return input;
+    // NB: If the scriptsig is exactly 00, we are witness.
+    // Otherwise we are compatibility
+    let sequence;
+    let witnessTag;
+    let inputType;
+
+    if (!utils.typedArraysAreEqual(input.slice(36, 37), new Uint8Array([0]))) {
+      sequence = btcUtils.extractSequenceLegacy(input);
+      witnessTag = input.slice(36, 39);
+    
+      if (utils.typedArraysAreEqual(witnessTag, utils.deserializeHex('220020')) || utils.typedArraysAreEqual(witnessTag, utils.deserializeHex('160014'))) {
+        inputType = INPUT_TYPES.COMPATIBILITY;
+      } else {
+        inputType = INPUT_TYPES.LEGACY;
+      }
+
+    } else {
+      sequence = btcUtils.extractSequenceWitness(input);
+      inputType = INPUT_TYPES.WITNESS;
+    }
+
+    let inputId = btcUtils.extractInputTxId(input)
+    let inputIndex = btcUtils.extractTxIndex(input)
+
+    return {sequence, inputId, inputIndex, inputType};
   },
 
 //     function parseOutput(bytes memory _output) internal pure returns (uint64 _value, uint8 _outputType, bytes memory _payload) {
@@ -129,7 +136,36 @@ module.exports = {
    * @returns {}
    */
   parseOutput: (output) => {
-    return output;
+    let value = output.extractValue();
+
+    if (btcUtils.typedArraysAreEqual(output.slice(9, 10), new Uint8Array([106]))) {
+      // OP_RETURN
+      outputType = OUTPUT_TYPES.OP_RETURN;
+      payload = btcUtils.extractOpReturnData(output);
+    } else {
+        let prefixHash = output.slice(8, 10);
+        if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([34, 0]))) {
+          // P2WSH
+          outputType = OUTPUT_TYPES.WSH;
+          payload = output.slice(11, 43);
+        } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([22, 0]))) {
+          // P2WPKH
+          outputType = OUTPUT_TYPES.WPKH;
+          payload = output.slice(11, 31);
+        } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([25, 118]))) {
+          // PKH
+          outputType = OUTPUT_TYPES.PKH;
+          payload = output.slice(12, 32);
+        } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([23, 169]))) {
+          // SH
+          outputType = OUTPUT_TYPES.SH;
+          payload = output.slice(11, 31);
+        } else {
+          outputType = OUTPUT_TYPES.NONSTANDARD;
+        }
+    }
+
+    return (value, outputType, payload);
   },
 
 //     /// @notice             Parses a block header struct from a bytestring

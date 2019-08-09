@@ -35,7 +35,6 @@ describe('ValidateSPV', () => {
         OP_RETURN.PROOF_INDEX
       );
       assert.isTrue(res);
-      // assert.equal(res, [0,0,0])
     });
 
     it('shortcuts the coinbase special case', async () => {
@@ -69,7 +68,6 @@ describe('ValidateSPV', () => {
       );
       let arraysAreEqual = btcUtils.typedArraysAreEqual(res, btcUtils.deserializeHex(OP_RETURN.TXID_LE))
       assert.isTrue(arraysAreEqual);
-      // assert.equal(res, btcUtils.deserializeHex(OP_RETURN.TXID_LE))
     });
   });
 
@@ -78,7 +76,7 @@ describe('ValidateSPV', () => {
     const legacyInput = btcUtils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab375000000000101ffffffff');
     const compatibilityWSHInput = btcUtils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000220020eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff');
     const compatibilityWPKHInput = btcUtils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000160014eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff');
-    const sequence = BigInt('0xffffffff', 16);
+    const sequence = 4294967295n;
     const index = 0n;
     const outpointTxId = btcUtils.deserializeHex('0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b');
 
@@ -86,36 +84,37 @@ describe('ValidateSPV', () => {
       const txIn = await ValidateSPV.parseInput(input);
 
       assert.equal(txIn.sequence, sequence);
-      assert.equal(txIn._hash, outpointTxId);
-      assert.equal(txIn.index, index);
-      assert.equal(txIn.inputType, BigInt(utils.INPUT_TYPES.WITNESS, 10));
+      assert.isTrue(btcUtils.typedArraysAreEqual(txIn.inputId, outpointTxId));
+      assert.equal(txIn.inputIndex, index);
+      assert.equal(txIn.inputType, INPUT_TYPES.WITNESS);
     });
 
     it('handles Legacy inputs', async () => {
       const txIn = await ValidateSPV.parseInput(legacyInput);
 
       assert.equal(txIn.sequence, sequence);
-      assert.equal(txIn.hash, outpointTxId);
-      assert.equal(txIn.index, index);
-      assert.equal(txIn.inputType, new BN(utils.INPUT_TYPES.LEGACY, 10));
+      assert.isTrue(btcUtils.typedArraysAreEqual(txIn.inputId, outpointTxId));
+      assert.equal(txIn.inputIndex, index);
+      assert.equal(txIn.inputType, INPUT_TYPES.LEGACY);
     });
 
     it('handles p2wpkh-via-p2sh compatibility inputs', async () => {
       const txIn = await ValidateSPV.parseInput(compatibilityWPKHInput);
 
       assert.equal(txIn.sequence, sequence);
-      assert.equal(txIn.hash, outpointTxId);
-      assert.equal(txIn.index, index);
-      assert.equal(txIn.inputType, BigInt(utils.INPUT_TYPES.COMPATIBILITY, 10));
+      // assert.equal(txIn.hash, outpointTxId);
+      assert.isTrue(btcUtils.typedArraysAreEqual(txIn.inputId, outpointTxId));
+      assert.equal(txIn.inputIndex, index);
+      assert.equal(txIn.inputType, INPUT_TYPES.COMPATIBILITY);
     });
 
     it('handles p2wsh-via-p2sh compatibility inputs', async () => {
       const txIn = await ValidateSPV.parseInput(compatibilityWSHInput);
 
       assert.equal(txIn.sequence, sequence);
-      assert.equal(txIn.hash, outpointTxId);
-      assert.equal(txIn.index, index);
-      assert.equal(txIn.inputType, BigInt(utils.INPUT_TYPES.COMPATIBILITY, 10));
+      assert.isTrue(btcUtils.typedArraysAreEqual(txIn.inputId, outpointTxId));
+      assert.equal(txIn.inputIndex, index);
+      assert.equal(txIn.inputType, INPUT_TYPES.COMPATIBILITY);
     });
   });
 

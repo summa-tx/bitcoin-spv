@@ -51,7 +51,6 @@ describe('ValidateSPV', () => {
         OP_RETURN.PROOF_INDEX
       );
       assert.isTrue(res);
-      // assert.equal(res, [0,0,0])
     });
 
     it('shortcuts the coinbase special case', async () => {
