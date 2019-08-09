@@ -69,9 +69,9 @@ module.exports = {
     let witnessTag;
     let inputType;
 
-    if (!utils.typedArraysAreEqual(input.slice(36, 37), new Uint8Array([0]))) {
+    if (!utils.typedArraysAreEqual(utils.safeSlice(input, 36, 37), new Uint8Array([0]))) {
       sequence = btcUtils.extractSequenceLegacy(input);
-      witnessTag = input.slice(36, 39);
+      witnessTag = utils.safeSlice(input, 36, 39);
     
       if (utils.typedArraysAreEqual(witnessTag, utils.deserializeHex('220020')) || utils.typedArraysAreEqual(witnessTag, utils.deserializeHex('160014'))) {
         inputType = INPUT_TYPES.COMPATIBILITY;
@@ -99,28 +99,28 @@ module.exports = {
   parseOutput: (output) => {
     let value = btcUtils.extractValue(output);
 
-    if (utils.typedArraysAreEqual(output.slice(9, 10), new Uint8Array([106]))) {
+    if (utils.typedArraysAreEqual(utils.safeSlice(output, 9, 10), new Uint8Array([106]))) {
       // OP_RETURN
       outputType = OUTPUT_TYPES.OP_RETURN;
       payload = btcUtils.extractOpReturnData(output);
     } else {
-        let prefixHash = output.slice(8, 10);
+        let prefixHash = utils.safeSlice(output, 8, 10);
         if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([34, 0]))) {
           // P2WSH
           outputType = OUTPUT_TYPES.WSH;
-          payload = output.slice(11, 43);
+          payload = utils.safeSlice(output, 11, 43);
         } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([22, 0]))) {
           // P2WPKH
           outputType = OUTPUT_TYPES.WPKH;
-          payload = output.slice(11, 31);
+          payload = utils.safeSlice(output, 11, 31);
         } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([25, 118]))) {
           // PKH
           outputType = OUTPUT_TYPES.PKH;
-          payload = output.slice(12, 32);
+          payload = utils.safeSlice(output, 12, 32);
         } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([23, 169]))) {
           // SH
           outputType = OUTPUT_TYPES.SH;
-          payload = output.slice(11, 31);
+          payload = utils.safeSlice(output, 11, 31);
         } else {
           outputType = OUTPUT_TYPES.NONSTANDARD;
           payload = null
