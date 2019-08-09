@@ -2,7 +2,7 @@
 // /** @author Summa (https://summa.one) */
 
 const btcUtils = require("./BTCUtils");
-const utils = require("../utils/utils");
+const utils = require("../../utils/utils");
 
 const INPUT_TYPES = {
   NONE: 0,
