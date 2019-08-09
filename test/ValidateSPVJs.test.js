@@ -41,7 +41,7 @@ describe('ValidateSPV', () => {
       const res = await ValidateSPV.prove(
         btcUtils.deserializeHex(OP_RETURN.TXID_LE),
         btcUtils.deserializeHex(OP_RETURN.TXID_LE),
-        '0x',
+        new Uint8Array(),
         0
       );
       assert.isTrue(res);

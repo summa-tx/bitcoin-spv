@@ -10,7 +10,6 @@
 const btcUtils = require("./BTCUtils")
 const utils = require("../utils/utils")
 
-
 // library ValidateSPV {
 module.exports = {
 
@@ -54,8 +53,9 @@ module.exports = {
    */
   prove: (txid, merkleRoot, intermediateNodes, index) => {
     // Shortcut the empty-block case
+    // return intermediateNodes
     console.log('id', txid, 'merkleRoot', merkleRoot, 'nodes', intermediateNodes, 'index', index)
-    if (txid == merkleRoot && index == 0 && intermediateNodes.length == 0) {
+    if (utils.typedArraysAreEqual(txid, merkleRoot) && index == 0 && intermediateNodes.length == 0) {
       return true;
     }
 
@@ -89,7 +89,7 @@ module.exports = {
    * @returns {}
    */
   calculateTxId: (version, vin, vout, locktime) => {
-    return version;
+    return btcUtils.hash256(utils.concatUint8Arrays(version, vin, vout, locktime));
   },
 
 //     function parseInput(bytes memory _input) internal pure returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {
