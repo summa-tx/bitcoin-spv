@@ -105,14 +105,14 @@ module.exports = {
     let offset = 1n
 
     for (var i = 0; i <= index; i++) {
-      remaining = utils.safeSlice(vinArr, Number(offset), vinArr.length - 1)
+      remaining = utils.safeSlice(vinArr, offset, vinArr.length - 1)
       len = module.exports.determineInputLength(remaining)
       if (i !== index) {
         offset += len
       }
     }
 
-    return utils.safeSlice(vinArr, Number(offset), Number(offset) + Number(len))
+    return utils.safeSlice(vinArr, offset, offset + len)
   },
 
   /**
@@ -313,14 +313,14 @@ module.exports = {
     let offset = 1n
 
     for (let i = 0; i <= index; i++) {
-      remaining = utils.safeSlice(vout, Number(offset), vout.length - 1)
+      remaining = utils.safeSlice(vout, offset, vout.length - 1)
       len = module.exports.determineOutputLength(remaining)
       if (i !== index) {
         offset += len
       }
     }
 
-    return utils.safeSlice(vout, Number(offset), Number(offset) + Number(len))
+    return utils.safeSlice(vout, offset, offset + len)
   },
 
   /**
@@ -427,7 +427,7 @@ module.exports = {
     for (let i = 0; i < nIns; i++) {
       // Grab the next input and determine its length.
       // Increase the offset by that much
-      offset += module.exports.determineInputLength(utils.safeSlice(vin, Number(offset)))
+      offset += module.exports.determineInputLength(utils.safeSlice(vin, offset))
 
       // Returns false if we jump past the end
       if (offset > vLength) {
@@ -458,7 +458,7 @@ module.exports = {
     for (let i = 0; i < nOuts; i++) {
       // Grab the next input and determine its length.
       // Increase the offset by that much
-      offset += module.exports.determineOutputLength(utils.safeSlice(vout, Number(offset)))
+      offset += module.exports.determineOutputLength(utils.safeSlice(vout, offset))
     }
 
     // Returns false if we jump past the end
