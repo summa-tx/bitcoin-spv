@@ -26,7 +26,7 @@ describe('ValidateSPV', () => {
     });
   });
 
-  describe.only('#prove', async () => {
+  describe('#prove', async () => {
     it('returns true if proof is valid', async () => {
       const res = await ValidateSPV.prove(
         btcUtils.deserializeHex(OP_RETURN.TXID_LE),
@@ -67,7 +67,8 @@ describe('ValidateSPV', () => {
         btcUtils.deserializeHex(OP_RETURN.VOUT),
         btcUtils.deserializeHex(OP_RETURN.LOCKTIME_LE)
       );
-      assert.equal(res, btcUtils.deserializeHex(OP_RETURN.TXID_LE));
+      let arraysAreEqual = btcUtils.typedArraysAreEqual(res, btcUtils.deserializeHex(OP_RETURN.TXID_LE))
+      assert.isTrue(arraysAreEqual);
     });
   });
 

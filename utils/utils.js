@@ -76,6 +76,7 @@ module.exports = {
    * @param {Uint8Array}   b The big-endian bytes-encoded integer
    * @return               The integer representation
   */
+//  TODO: Can we make this so it takes in more than 2 arrays?
   concatUint8Arrays: (a, b) => {
     let c = new Uint8Array(a.length + b.length)
     c.set(a)
