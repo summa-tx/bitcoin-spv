@@ -34,29 +34,14 @@ module.exports = {
     return btcUtils.verifyHash256Merkle(proof, index);
   },
 
-//     function calculateTxId(
-//         bytes memory _version,
-//         bytes memory _vin,
-//         bytes memory _vout,
-//         bytes memory _locktime
-//     ) internal pure returns (bytes32) {
-//         // Get transaction hash double-Sha256(version + nIns + inputs + nOuts + outputs + locktime)
-//         return abi.encodePacked(_version, _vin, _vout, _locktime).hash256();
-//     }
-
-  /// @notice             Hashes transaction to get txid
-  /// @dev                Supports Legacy and Witness
-  /// @param _version     4-bytes version
-  /// @param _vin         Raw bytes length-prefixed input vector
-  /// @param _vout        Raw bytes length-prefixed output vector
-  /// @ param _locktime   4-byte tx locktime
-  /// @return             32-byte transaction id, little endian
   /**
-   * @notice
-   * @dev
-   * @param {}
-   * @param {}
-   * @returns {}
+   * @notice Hashes transaction to get txid
+   * @dev Supports Legacy and Witness
+   * @param {Uint8Array} version 4-bytes version
+   * @param {Uint8Array} vin Raw bytes length-prefixed input vector
+   * @param {Uint8Array} vout Raw bytes length-prefixed output vector
+   * @param {Uint8Array} locktime 4-byte tx locktime
+   * @returns {Uint8Array} 32-byte transaction id, little endian
    */
   calculateTxId: (version, vin, vout, locktime) => {
     // concatUint8Arrays only takes in two arguments
