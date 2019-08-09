@@ -12,6 +12,23 @@
 const btcUtils = require("./BTCUtils");
 const utils = require("../utils/utils");
 
+const INPUT_TYPES = {
+  NONE: 0,
+  LEGACY: 1,
+  COMPATIBILITY: 2,
+  WITNESS: 3
+}
+
+const OUTPUT_TYPES = {
+  NONE: 0,
+  WPKH: 1,
+  WSH: 2,
+  OP_RETURN: 3,
+  PKH: 4,
+  SH: 5,
+  NONSTANDARD: 6
+}
+
 // library ValidateSPV {
 module.exports = {
 
@@ -86,22 +103,25 @@ module.exports = {
     let witnessTag;
     let inputType;
 
-    if (utils.typedArraysAreEqual(input.slice(36, 37), new Uint8Array([0]))) {
+    if (!utils.typedArraysAreEqual(input.slice(36, 37), new Uint8Array([0]))) {
       sequence = btcUtils.extractSequenceLegacy(input);
       witnessTag = input.slice(36, 39);
-
-      if (utils.typedArraysAreEqual(witnessTag == utils.deserializeHex('220020')) || utils.typedArraysAreEqual(witnessTag == utils.deserializeHex('160014'))) {
-        inputType = InputTypes.COMPATIBILITY;
+    
+      if (utils.typedArraysAreEqual(witnessTag, utils.deserializeHex('220020')) || utils.typedArraysAreEqual(witnessTag, utils.deserializeHex('160014'))) {
+        inputType = INPUT_TYPES.COMPATIBILITY;
       } else {
-        inputType = InputTypes.LEGACY;
+        inputType = INPUT_TYPES.LEGACY;
       }
 
     } else {
-        _sequence = _input.extractSequenceWitness();
-        _inputType = uint8(InputTypes.WITNESS);
+      sequence = btcUtils.extractSequenceWitness(input);
+      inputType = INPUT_TYPES.WITNESS;
     }
 
-    return (_sequence, _input.extractInputTxId(), _input.extractTxIndex(), _inputType);
+    let inputId = btcUtils.extractInputTxId(input)
+    let inputIndex = btcUtils.extractTxIndex(input)
+
+    return {sequence, inputId, inputIndex, inputType};
   },
 
 //     function parseOutput(bytes memory _output) internal pure returns (uint64 _value, uint8 _outputType, bytes memory _payload) {

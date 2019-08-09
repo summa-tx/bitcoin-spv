@@ -11,6 +11,12 @@ const constants = require('./constants');
 const OP_RETURN = constants.OP_RETURN;
 const HEADER_ERR = constants.HEADER_ERR;
 
+const INPUT_TYPES = {
+  NONE: 0,
+  LEGACY: 1,
+  COMPATIBILITY: 2,
+  WITNESS: 3
+}
 
 describe('ValidateSPV', () => {
   describe('#error constants', async () => {
@@ -69,16 +75,15 @@ describe('ValidateSPV', () => {
       );
       let arraysAreEqual = btcUtils.typedArraysAreEqual(res, btcUtils.deserializeHex(OP_RETURN.TXID_LE))
       assert.isTrue(arraysAreEqual);
-      // assert.equal(res, btcUtils.deserializeHex(OP_RETURN.TXID_LE))
     });
   });
 
-  describe('#parseInput', async () => {
+  describe.only('#parseInput', async () => {
     const input = btcUtils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff');
     const legacyInput = btcUtils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab375000000000101ffffffff');
     const compatibilityWSHInput = btcUtils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000220020eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff');
     const compatibilityWPKHInput = btcUtils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000160014eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff');
-    const sequence = BigInt('0xffffffff', 16);
+    const sequence = 4294967295n;
     const index = 0n;
     const outpointTxId = btcUtils.deserializeHex('0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b');
 
@@ -86,9 +91,9 @@ describe('ValidateSPV', () => {
       const txIn = await ValidateSPV.parseInput(input);
 
       assert.equal(txIn.sequence, sequence);
-      assert.equal(txIn._hash, outpointTxId);
-      assert.equal(txIn.index, index);
-      assert.equal(txIn.inputType, BigInt(utils.INPUT_TYPES.WITNESS, 10));
+      assert.isTrue(btcUtils.typedArraysAreEqual(txIn.inputId, outpointTxId));
+      assert.equal(txIn.inputIndex, index);
+      assert.equal(txIn.inputType, INPUT_TYPES.WITNESS);
     });
 
     it('handles Legacy inputs', async () => {
