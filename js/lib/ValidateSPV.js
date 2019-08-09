@@ -90,50 +90,11 @@ module.exports = {
     return {sequence, inputId, inputIndex, inputType};
   },
 
-//     function parseOutput(bytes memory _output) internal pure returns (uint64 _value, uint8 _outputType, bytes memory _payload) {
-
-//         _value = _output.extractValue();
-
-//         if (keccak256(_output.slice(9, 1)) == keccak256(hex"6a")) {
-//             // OP_RETURN
-//             _outputType = uint8(OutputTypes.OP_RETURN);
-//             _payload = _output.extractOpReturnData();
-//         } else {
-//             bytes32 _prefixHash = keccak256(_output.slice(8, 2));
-//             if (_prefixHash == keccak256(hex"2200")) {
-//                 // P2WSH
-//                 _outputType = uint8(OutputTypes.WSH);
-//                 _payload = _output.slice(11, 32);
-//             } else if (_prefixHash == keccak256(hex"1600")) {
-//                 // P2WPKH
-//                 _outputType = uint8(OutputTypes.WPKH);
-//                 _payload = _output.slice(11, 20);
-//             } else if (_prefixHash == keccak256(hex"1976")) {
-//                 // PKH
-//                 _outputType = uint8(OutputTypes.PKH);
-//                 _payload = _output.slice(12, 20);
-//             } else if (_prefixHash == keccak256(hex"17a9")) {
-//                 // SH
-//                 _outputType = uint8(OutputTypes.SH);
-//                 _payload = _output.slice(11, 20);
-//             } else {
-//                 _outputType = uint8(OutputTypes.NONSTANDARD);
-//             }
-//         }
-
-//         return (_value, _outputType, _payload);
-//     }
-
-  /// @notice         Parses a tx output from raw output bytes
-  /// @dev            Differentiates by output script prefix, handles legacy and witness
-  /// @param _output  Raw bytes tx output
-  /// @return         Tx output value, output type, payload
   /**
-   * @notice
-   * @dev
-   * @param {}
-   * @param {}
-   * @returns {}
+   * @notice Parses a tx output from raw output bytes
+   * @dev Differentiates by output script prefix, handles legacy and witness
+   * @param {Uint8Array} output bytes tx output
+   * @returns {object} Tx output value, output type, payload
    */
   parseOutput: (output) => {
     let value = output.extractValue();
@@ -165,7 +126,7 @@ module.exports = {
         }
     }
 
-    return (value, outputType, payload);
+    return { value, outputType, payload };
   },
 
 //     /// @notice             Parses a block header struct from a bytestring
@@ -199,8 +160,27 @@ module.exports = {
   /// @notice             Parses a block header struct from a bytestring
   /// @dev                Block headers are always 80 bytes, see Bitcoin docs
   /// @return             Header digest, version, previous block header hash, merkle root, timestamp, target, nonce
+  /**
+   * @notice Parses a block header struct from a bytestring
+   * @dev Block headers are always 80 bytes, see Bitcoin docs
+   * @param {Uint8Array} header Header
+   * @returns {object} Header digest, version, previous block header hash, merkle root, timestamp, target, nonce
+   */
   parseHeader: (header) => {
-    return header;
+    // If header has an invalid length, bubble up error
+    if (header.length != 80) {
+      return { digest, version, prevHash, merkleRoot, timestamp, target, nonce };
+    }
+
+    let digest = btcUtils.reverseEndianness(btcUtils.hash256(header));
+    let version = utils.bytesToUint(btcUtils.reverseEndianness(utils.safeSlice(header, 0, 4)));
+    let prevHash = btcUtils.extractPrevBlockLE(header);
+    let merkleRoot = btcUtils.extractMerkleRootLE(header);
+    let timestamp = btcUtils.extractTimestamp(header);
+    let target = btcUtils.extractTarget(header);
+    let nonce = utils.bytesToUint(btcUtils.reverseEndianness(utils.safeSlice(header, 76, 80)));
+
+    return { digest, version, prevHash, merkleRoot, timestamp, target, nonce };
   },
 
 //     function validateHeaderChain(bytes memory _headers) internal pure returns (uint256 _totalDifficulty) {
@@ -286,15 +266,6 @@ module.exports = {
     return totalDifficulty;
   },
 
-//     function validateHeaderWork(bytes32 _digest, uint256 _target) internal pure returns (bool) {
-//         if (_digest == bytes32(0)) {return false;}
-//         return (abi.encodePacked(_digest).bytesToUint() < _target);
-//     }
-
-  /// @notice             Checks validity of header work
-  /// @param _digest      Header digest
-  /// @param _target      The target threshold
-  /// @return             true if header work is valid, false otherwise
   /**
    * @notice              Checks validity of header work
    * @param {Uint8Array}  digest Header digest
@@ -307,24 +278,6 @@ module.exports = {
     }
     return utils.bytesToUint(digest) < target;
   },
-
-//      function validateHeaderPrevHash(bytes memory _header, bytes32 _prevHeaderDigest) internal pure returns (bool) {
-
-//        // Extract prevHash of current header
-//        bytes32 _prevHash = _header.extractPrevBlockLE().toBytes32();
-
-//        // Compare prevHash of current header to previous header's digest
-//        if (_prevHash != _prevHeaderDigest) {return false;}
-
-//        return true;
-//      }
-
-
-//     /// @notice                     Checks validity of header chain
-//     /// @dev                        Compares current header prevHash to previous header's digest
-//     /// @param _header              The raw bytes header
-//     /// @param _prevHeaderDigest    The previous header's digest
-//     /// @return                     true if header chain is valid, false otherwise
 
   /**
    * @notice              Checks validity of header chain
