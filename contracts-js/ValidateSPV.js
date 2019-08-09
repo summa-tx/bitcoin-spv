@@ -90,11 +90,10 @@ module.exports = {
   /// @param _input   Raw bytes tx input
   /// @return         Tx input sequence number, tx hash, and index
   /**
-   * @notice
-   * @dev
-   * @param {}
-   * @param {}
-   * @returns {}
+   * @notice Parses a tx input from raw input bytes
+   * @dev Supports Legacy and Witness inputs
+   * @param {Uint8Array} input bytes tx input
+   * @returns {object} Tx input, sequence number, tx hash, and index
    */
   parseInput: (input) => {
     // NB: If the scriptsig is exactly 00, we are witness.
