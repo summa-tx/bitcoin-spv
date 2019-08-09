@@ -342,13 +342,18 @@ module.exports = {
 //     /// @return                     true if header chain is valid, false otherwise
 
   /**
-   * @notice
-   * @dev
-   * @param {}
-   * @param {}
-   * @returns {}
+   * @notice              Checks validity of header chain
+   * @dev                 Compares current header prevHash to previous header's digest
+   * @param {Uint8Array}  header The raw bytes header
+   * @param {Uint8Array}  prevHeaderDigest The previous header's digest
+   * @returns {Boolean}   true if header chain is valid, false otherwise
    */
   validateHeaderPrevHash: (header, prevHeaderDigest) => {
+    // Extract prevHash of current header
+    let prevHash = btcUtils.extractPrevBlockLE(header)
+
+    // Compare prevHash of current header to previous header's digest
+
     return header;
   }
 }
