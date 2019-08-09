@@ -71,16 +71,29 @@ module.exports = {
 
   /**
    * @notice               JS version of abi.encodePacked when trying to concatenate 2 values
-   * @dev                  Use when you see abi.encodePacked take 2 values
-   * @param {Uint8Array}   a The big-endian bytes-encoded integer
-   * @param {Uint8Array}   b The big-endian bytes-encoded integer
-   * @return               The integer representation
+   * @dev                  Use when you see abi.encodePacked
+   * @param {array}        a An array of Uint8Arrays
+   * @return {Uint8Array}  A Uint8Array that is a concatenation of all the arrays
   */
 //  TODO: Can we make this so it takes in more than 2 arrays?
-  concatUint8Arrays: (a, b) => {
-    let c = new Uint8Array(a.length + b.length)
-    c.set(a)
-    c.set(b, a.length)
-    return c
+  concatUint8Arrays: (arrays) => {
+    var length = 0;
+    arrays.forEach(arr => {
+      if (arr instanceof Uint8Array) {
+        length += arr.length
+      } else {
+        throw new Error('Arrays must be of type Uint8Array')
+      }
+    })
+    
+    let concatArray = new Uint8Array(length)
+    let offset = 0
+
+    arrays.forEach(arr => {
+      concatArray.set(arr, offset)
+      offset += arr.length
+    })
+
+    return concatArray
   }
 }

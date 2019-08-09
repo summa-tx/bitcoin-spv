@@ -27,9 +27,7 @@ module.exports = {
       return true;
     }
 
-    // concatUint8Arrays only takes in two arguments
-    let partialProof = utils.concatUint8Arrays(txid, intermediateNodes)
-    let proof = utils.concatUint8Arrays(partialProof, merkleRoot)
+    let proof = utils.concatUint8Arrays([txid, intermediateNodes, merkleRoot])
     // If the Merkle proof failed, bubble up error
     return btcUtils.verifyHash256Merkle(proof, index);
   },
@@ -44,10 +42,7 @@ module.exports = {
    * @returns {Uint8Array} 32-byte transaction id, little endian
    */
   calculateTxId: (version, vin, vout, locktime) => {
-    // concatUint8Arrays only takes in two arguments
-    let versionVin = utils.concatUint8Arrays(version, vin)
-    let voutLocktime = utils.concatUint8Arrays(vout,locktime)
-    return btcUtils.hash256(utils.concatUint8Arrays(versionVin, voutLocktime));
+    return btcUtils.hash256(utils.concatUint8Arrays([version, vin, vout, locktime]));
   },
 
 //     function parseInput(bytes memory _input) internal pure returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {

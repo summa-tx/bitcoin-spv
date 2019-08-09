@@ -586,7 +586,7 @@ module.exports = {
    * @returns {Uint8Array}  The double-sha256 of the concatenated hashes
    */
   hash256MerkleStep: (a, b) => {
-    return module.exports.hash256(utils.concatUint8Arrays(a, b))
+    return module.exports.hash256(utils.concatUint8Arrays([a, b]))
   },
 
   /**
