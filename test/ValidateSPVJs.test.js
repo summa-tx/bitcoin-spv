@@ -1,6 +1,7 @@
 /* global artifacts contract describe before it assert */
 /* eslint-disable no-underscore-dangle */
-const BN = require('bn.js');
+// const BN = require('bn.js');
+const assert = require('chai').assert;
 
 const ValidateSPV = require('../contracts-js/ValidateSPV');
 const utils = require('./utils');
@@ -8,19 +9,20 @@ const btcUtils = require('../utils/utils')
 const constants = require('./constants');
 
 const OP_RETURN = constants.OP_RETURN
+const HEADER_ERR = constants.HEADER_ERR
 
 
 describe('ValidateSPV', () => {
   describe('#error constants', async () => {
     it('tests the constant getters for that sweet sweet coverage', async () => {
       let res = await ValidateSPV.getErrBadLength();
-      assert.equal(res, BigInt('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16));
+      assert.equal(res, BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16));
 
       res = await ValidateSPV.getErrInvalidChain();
-      assert.equal(res, BigInt('fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe', 16));
+      assert.equal(res, BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe', 16));
 
       res = await ValidateSPV.getErrLowWork();
-      assert.equal(res, BigInt('fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd', 16));
+      assert.equal(res, BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd', 16));
     });
   });
 
@@ -73,8 +75,8 @@ describe('ValidateSPV', () => {
     const legacyInput = btcUtils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab375000000000101ffffffff');
     const compatibilityWSHInput = btcUtils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000220020eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff');
     const compatibilityWPKHInput = btcUtils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000160014eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff');
-    const sequence = BigInt('ffffffff', 16);
-    const index = BigInt('0', 10);
+    const sequence = BigInt('0xffffffff', 16);
+    const index = 0n;
     const outpointTxId = btcUtils.deserializeHex('0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b');
 
     it('returns the tx input sequence and outpoint', async () => {
@@ -180,9 +182,9 @@ describe('ValidateSPV', () => {
       const payload = btcUtils.deserializeHex('0x1458514240d7287e5254af48cd292eb876cb07eb');
       const pkhOutput = await ValidateSPV.parseOutput(output);
 
-      assert(pkhOutput._value.eq(value));
-      assert(pkhOutput._outputType.eq(utils.OUTPUT_TYPES.PKH));
-      assert.equal(pkhOutput._payload, payload);
+      assert.equal(pkhOutput.value, value);
+      assert.equal(pkhOutput.outputType, utils.OUTPUT_TYPES.PKH);
+      assert.equal(pkhOutput.payload, payload);
     });
   });
 
@@ -190,76 +192,73 @@ describe('ValidateSPV', () => {
     it('returns the header digest, version, prevHash, merkleRoot, timestamp, target, and nonce',
       async () => {
         const validHeader = await ValidateSPV.parseHeader(
-          constants.OP_RETURN.INDEXED_HEADERS[0].HEADER
+          btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].HEADER)
         );
 
-        assert.equal(validHeader._digest, constants.OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE);
-        assert.equal(validHeader._version, constants.OP_RETURN.INDEXED_HEADERS[0].VERSION);
-        assert.equal(validHeader._prevHash, constants.OP_RETURN.INDEXED_HEADERS[0].PREV_HASH_LE);
-        assert.equal(
-          validHeader._merkleRoot,
-          constants.OP_RETURN.INDEXED_HEADERS[0].MERKLE_ROOT_LE
-        );
-        assert.equal(validHeader._timestamp, constants.OP_RETURN.INDEXED_HEADERS[0].TIMESTAMP);
-        assert.equal(validHeader._target, constants.OP_RETURN.INDEXED_HEADERS[0].TARGET);
-        assert.equal(validHeader._nonce, constants.OP_RETURN.INDEXED_HEADERS[0].NONCE);
+        assert.equal(validHeader.digest, btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE));
+        assert.equal(validHeader.version, OP_RETURN.INDEXED_HEADERS[0].VERSION);
+        assert.equal(validHeader.prevHash, btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].PREV_HASH_LE));
+        assert.equal(validHeader.merkleRoot, btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].MERKLE_ROOT_LE));
+        assert.equal(validHeader.timestamp, OP_RETURN.INDEXED_HEADERS[0].TIMESTAMP);
+        assert.equal(validHeader.target, OP_RETURN.INDEXED_HEADERS[0].TARGET);
+        assert.equal(validHeader.nonce, OP_RETURN.INDEXED_HEADERS[0].NONCE);
       });
 
     it('bubble up errors if input header is not 80 bytes', async () => {
       // Removed a byte from the header version to create error
       const invalidHeader = await ValidateSPV.parseHeader(
-        constants.HEADER_ERR.HEADER_0_LEN
+        btcUtils.deserializeHex(HEADER_ERR.HEADER_0_LEN)
       );
 
-      assert.equal(constants.EMPTY, invalidHeader._digest);
-      assert(new BN('0', 10).eq(invalidHeader._version));
-      assert.equal(constants.EMPTY, invalidHeader._prevHash);
-      assert.equal(constants.EMPTY, invalidHeader._merkleRoot);
-      assert(new BN('0', 10).eq(invalidHeader._timestamp));
-      assert(new BN('0', 10).eq(invalidHeader._target));
-      assert(new BN('0', 10).eq(invalidHeader._nonce));
+      assert.equal(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.digest);
+      assert.equal(0n, invalidHeader.version);
+      assert.equal(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.prevHash);
+      assert.equal(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.merkleRoot);
+      assert.equal(0n, invalidHeader.timestamp);
+      assert.equal(0n, invalidHeader.target);
+      assert.equal(0n, invalidHeader.nonce);
     });
   });
 
   describe('#validateHeaderChain', async () => {
     it('returns true if header chain is valid', async () => {
-      const res = await ValidateSPV.validateHeaderChain(constants.OP_RETURN.HEADER_CHAIN);
-      assert(res.eq(new BN('49134394618239', 10)));
+      const res = await ValidateSPV.validateHeaderChain(btcUtils.deserializeHex(OP_RETURN.HEADER_CHAIN));
+      assert.equal (res, 49134394618239n);
     });
 
     it('returns ERR_BAD_LENGTH if header chain is not divisible by 80', async () => {
-      const res = await ValidateSPV.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_INVALID_LEN);
-      assert(res.eq(new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)));
+      const res = await ValidateSPV.validateHeaderChain(btcUtils.deserializeHex(HEADER_ERR.HEADER_CHAIN_INVALID_LEN));
+      assert.equal(res, BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16));
     });
 
     it('returns ERR_INVALID_CHAIN if header chain prevHash is invalid', async () => {
       const res = await ValidateSPV.validateHeaderChain(
-        constants.HEADER_ERR.HEADER_CHAIN_INVALID_PREVHASH
+        btcUtils.deserializeHex(HEADER_ERR.HEADER_CHAIN_INVALID_PREVHASH)
       );
-      assert(res.eq(new BN('fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe', 16)));
+      assert.equal(res, BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe', 16));
     });
 
     it('returns ERR_LOW_WORK if a header does not meet its target', async () => {
-      const res = await ValidateSPV.validateHeaderChain(constants.HEADER_ERR.HEADER_CHAIN_LOW_WORK);
-      assert(res.eq(new BN('fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd', 16)));
+      const res = await ValidateSPV.validateHeaderChain(btcUtils.deserializeHex(HEADER_ERR.HEADER_CHAIN_LOW_WORK));
+      assert.equal(res, BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd', 16));
     });
   });
 
   describe('#validateHeaderWork', async () => {
     it('returns false on an empty digest', async () => {
-      const res = await ValidateSPV.validateHeaderWork(constants.EMPTY, 0);
+      const res = await ValidateSPV.validateHeaderWork(btcUtils.deserializeHex(constants.EMPTY), 0);
       assert.isFalse(res);
     });
 
     it('returns false if the digest has insufficient work', async () => {
-      const res = await ValidateSPV.validateHeaderWork('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 1);
+      const res = await ValidateSPV.validateHeaderWork(btcUtils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'), 1);
       assert.isFalse(res);
     });
 
     it('returns true if the digest has sufficient work', async () => {
       const res = await ValidateSPV.validateHeaderWork(
-        constants.OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE,
-        new BN('3840827764407250199942201944063224491938810378873470976', 10)
+        btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE),
+        3840827764407250199942201944063224491938810378873470976n
       );
       assert.isTrue(res);
     });
@@ -268,16 +267,16 @@ describe('ValidateSPV', () => {
   describe('#validateHeaderPrevHash', async () => {
     it('returns true if header prevHash is valid', async () => {
       const res = await ValidateSPV.validateHeaderPrevHash(
-        constants.OP_RETURN.INDEXED_HEADERS[1].HEADER,
-        constants.OP_RETURN.INDEXED_HEADERS[0].DIGEST_LE
+        btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[1].HEADER),
+        btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].DIGEST_LE)
       );
       assert.isTrue(res);
     });
 
     it('returns false if header prevHash is invalid', async () => {
       const res = await ValidateSPV.validateHeaderPrevHash(
-        constants.OP_RETURN.INDEXED_HEADERS[1].HEADER,
-        constants.OP_RETURN.INDEXED_HEADERS[1].DIGEST_LE
+        btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[1].HEADER),
+        btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[1].DIGEST_LE)
       );
       assert.isFalse(res);
     });
