@@ -53,13 +53,13 @@ module.exports = {
    */
   prove: (txid, merkleRoot, intermediateNodes, index) => {
     // Shortcut the empty-block case
-    // return intermediateNodes
-    console.log('id', txid, 'merkleRoot', merkleRoot, 'nodes', intermediateNodes, 'index', index)
-    if (utils.typedArraysAreEqual(txid, merkleRoot) && index == 0 && intermediateNodes.length == 0) {
+    if (utils.typedArraysAreEqual(txid, merkleRoot) && index === 0 && intermediateNodes.length == 0) {
       return true;
     }
 
-    let proof = txid + intermediateNodes + merkleRoot;
+    // concatUint8Arrays only takes in two arguments
+    let partialProof = utils.concatUint8Arrays(txid, intermediateNodes)
+    let proof = utils.concatUint8Arrays(partialProof, merkleRoot)
     // If the Merkle proof failed, bubble up error
     return btcUtils.verifyHash256Merkle(proof, index);
   },

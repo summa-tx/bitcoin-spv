@@ -26,7 +26,7 @@ describe('ValidateSPV', () => {
     });
   });
 
-  describe('#prove', async () => {
+  describe.only('#prove', async () => {
     it('returns true if proof is valid', async () => {
       const res = await ValidateSPV.prove(
         btcUtils.deserializeHex(OP_RETURN.TXID_LE),
@@ -35,6 +35,7 @@ describe('ValidateSPV', () => {
         OP_RETURN.PROOF_INDEX
       );
       assert.isTrue(res);
+      // assert.equal(res, [0,0,0])
     });
 
     it('shortcuts the coinbase special case', async () => {
