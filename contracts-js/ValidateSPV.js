@@ -80,7 +80,28 @@ module.exports = {
    * @returns {}
    */
   parseInput: (input) => {
-    return input;
+    // NB: If the scriptsig is exactly 00, we are witness.
+    // Otherwise we are compatibility
+    let sequence;
+    let witnessTag;
+    let inputType;
+
+    if (utils.typedArraysAreEqual(input.slice(36, 37), new Uint8Array([0]))) {
+      sequence = btcUtils.extractSequenceLegacy(input);
+      witnessTag = input.slice(36, 39);
+
+      if (utils.typedArraysAreEqual(witnessTag == utils.deserializeHex('220020')) || utils.typedArraysAreEqual(witnessTag == utils.deserializeHex('160014'))) {
+        inputType = InputTypes.COMPATIBILITY;
+      } else {
+        inputType = InputTypes.LEGACY;
+      }
+
+    } else {
+        _sequence = _input.extractSequenceWitness();
+        _inputType = uint8(InputTypes.WITNESS);
+    }
+
+    return (_sequence, _input.extractInputTxId(), _input.extractTxIndex(), _inputType);
   },
 
 //     function parseOutput(bytes memory _output) internal pure returns (uint64 _value, uint8 _outputType, bytes memory _payload) {
