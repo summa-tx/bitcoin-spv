@@ -9,8 +9,8 @@
 // import {SafeMath} from "./SafeMath.sol";
 // import {BTCUtils} from "./BTCUtils.sol";
 
-const btcUtils = require("./BTCUtils")
-const utils = require("../utils/utils")
+const btcUtils = require("./BTCUtils");
+const utils = require("../utils/utils");
 
 // library ValidateSPV {
 module.exports = {
@@ -237,38 +237,38 @@ module.exports = {
   validateHeaderChain: (headers) => {
     // Check header chain length
     if (headers.length % 80 !== 0) {
-      throw new Error('Header bytes not multiple of 80.')
+      throw new Error('Header bytes not multiple of 80.');
     }
 
     // Initialize header start index
-    let digest
-    let start = 0
-    let totalDifficulty = 0n
+    let digest;
+    let start = 0;
+    let totalDifficulty = 0n;
 
     for (let i = 0; i < headers.length / 80; i++) {
       // ith header start index and ith header
-      start = i * 80
-      let header = utils.safeSlice(headers, start, start + 80)
+      start = i * 80;
+      let header = utils.safeSlice(headers, start, start + 80);
 
       //After the first header, check that headers are in a chain
       if (i !== 0) {
         if (!module.exports.validateHeaderPrevHash(header, digest)) {
-          throw new Error('Header bytes not a valid chain.')
+          throw new Error('Header bytes not a valid chain.');
         }
       }
 
       // ith header target
-      let target = btcUtils.extractTarget(header)
+      let target = btcUtils.extractTarget(header);
 
       // Require that the header has sufficient work
-      digest = btcUtils.hash256(header)
+      digest = btcUtils.hash256(header);
       if (utils.bytesToUint(btcUtils.reverseEndianness(digest)) > target) {
-        throw new Error('Header does not meet its own difficulty target.')
+        throw new Error('Header does not meet its own difficulty target.');
       }
 
-      totalDifficulty += btcUtils.calculateDifficulty(target)
+      totalDifficulty += btcUtils.calculateDifficulty(target);
     }
-    return totalDifficulty
+    return totalDifficulty;
   },
 
 //     function validateHeaderWork(bytes32 _digest, uint256 _target) internal pure returns (bool) {
@@ -288,9 +288,9 @@ module.exports = {
    */
   validateHeaderWork: (digest, target) => {
     if (digest === 0) {
-      return false
+      return false;
     }
-    return utils.bytesToUint(digest) < target
+    return utils.bytesToUint(digest) < target;
   },
 
 //      function validateHeaderPrevHash(bytes memory _header, bytes32 _prevHeaderDigest) internal pure returns (bool) {
@@ -320,11 +320,11 @@ module.exports = {
    */
   validateHeaderPrevHash: (header, prevHeaderDigest) => {
     // Extract prevHash of current header
-    let prevHash = btcUtils.extractPrevBlockLE(header)
+    let prevHash = btcUtils.extractPrevBlockLE(header);
 
     // Compare prevHash of current header to previous header's digest
     if (!utils.typedArraysAreEqual(prevHash, prevHeaderDigest)) {
-      return false
+      return false;
     }
 
     return true;

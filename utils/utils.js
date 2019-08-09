@@ -63,7 +63,6 @@ module.exports = {
   },
 
   safeSlice: (buf, first, last) => {
-  // safeSlice: (buf, start, end) => {
     let start;
     let end;
 
@@ -103,7 +102,7 @@ module.exports = {
         throw new Error('Arrays must be of type Uint8Array');
       }
     })
-    
+
     let concatArray = new Uint8Array(length);
     let offset = 0;
 

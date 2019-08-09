@@ -1,7 +1,7 @@
 /** @title BitcoinSPV */
 /** @author Summa (https://summa.one) */
 
-const utils = require('../utils/utils')
+const utils = require('../utils/utils');
 
 module.exports = {
 
@@ -17,16 +17,16 @@ module.exports = {
    */
   determineVarIntDataLength: (flag) => {
     if (flag == 0xff) {
-      return 8  // one-byte flag, 8 bytes data
+      return 8 ; // one-byte flag, 8 bytes data
     }
     if (flag == 0xfe) {
-      return 4  // one-byte flag, 4 bytes data
+      return 4;  // one-byte flag, 4 bytes data
     }
     if (flag == 0xfd) {
-      return 2  // one-byte flag, 2 bytes data
+      return 2;  // one-byte flag, 2 bytes data
     }
 
-    return 0  // flag is data
+    return 0;  // flag is data
   },
 
   /**
@@ -36,8 +36,8 @@ module.exports = {
    * @returns {Uint8Array} The reversed array
    */
   reverseEndianness: (uint8Arr) => {
-    let newArr = utils.safeSlice(uint8Arr)
-    return new Uint8Array(newArr.reverse())
+    let newArr = utils.safeSlice(uint8Arr);
+    return new Uint8Array(newArr.reverse());
   },
 
   /**
@@ -47,12 +47,11 @@ module.exports = {
    * @returns {BigInt} The integer representation
    */
   bytesToUint: (uint8Arr) => {
-    let total = BigInt(0)
+    let total = BigInt(0);
     for (let i = 0; i < uint8Arr.length; i++) {
-      total += BigInt(uint8Arr[i]) << (BigInt(uint8Arr.length - i - 1) * BigInt(8))
+      total += BigInt(uint8Arr[i]) << (BigInt(uint8Arr.length - i - 1) * BigInt(8));
     }
-    return total
-
+    return total;
   },
 
   /**
@@ -63,9 +62,9 @@ module.exports = {
    */
   lastBytes: (arr, num) => {
     if (num >= arr.length) {
-      throw new Error('Underflow during subtraction.')
+      throw new Error('Underflow during subtraction.');
     }
-    return utils.safeSlice(arr, arr.length - num)
+    return utils.safeSlice(arr, arr.length - num);
   },
 
   /**
@@ -75,7 +74,7 @@ module.exports = {
    * @returns {Uint8Array}  The digest
    */
   hash160: (preImage) => {
-    return utils.ripemd160(utils.sha256(preImage))
+    return utils.ripemd160(utils.sha256(preImage));
   },
 
 /**
@@ -85,7 +84,7 @@ module.exports = {
  * @returns {Uint8Array}  The digest
  */
   hash256: (b) => {
-    return utils.sha256(utils.sha256(b))
+    return utils.sha256(utils.sha256(b));
   },
 
   /* ************ */
@@ -100,19 +99,19 @@ module.exports = {
    * @returns {Uint8Array} The input as a u8a
    */
   extractInputAtIndex: (vinArr, index) => {
-    let len = 0
-    let remaining = 0
-    let offset = 1n
+    let len = 0;
+    let remaining = 0;
+    let offset = 1n;
 
-    for (var i = 0; i <= index; i++) {
-      remaining = utils.safeSlice(vinArr, offset, vinArr.length - 1)
-      len = module.exports.determineInputLength(remaining)
+    for (let i = 0; i <= index; i++) {
+      remaining = utils.safeSlice(vinArr, offset, vinArr.length - 1);
+      len = module.exports.determineInputLength(remaining);
       if (i !== index) {
-        offset += len
+        offset += len;
       }
     }
 
-    return utils.safeSlice(vinArr, offset, offset + len)
+    return utils.safeSlice(vinArr, offset, offset + len);
   },
 
   /**
@@ -122,7 +121,7 @@ module.exports = {
    * @returns {boolean} True for legacy, False for witness
    */
   isLegacyInput: (input) => {
-    return !utils.typedArraysAreEqual(utils.safeSlice(input, 36, 37), new Uint8Array([0]))
+    return !utils.typedArraysAreEqual(utils.safeSlice(input, 36, 37), new Uint8Array([0]));
   },
 
   /**
@@ -132,10 +131,10 @@ module.exports = {
    * @returns {BigInt} The length of the input in bytes
    */
   determineInputLength: (arr) => {
-    let res = module.exports.extractScriptSigLen(arr)
-    let varIntDataLen = res.dataLen
-    let scriptSigLen = res.scriptSigLen
-    return BigInt(41) + varIntDataLen + scriptSigLen
+    let res = module.exports.extractScriptSigLen(arr);
+    let varIntDataLen = res.dataLen;
+    let scriptSigLen = res.scriptSigLen;
+    return BigInt(41) + varIntDataLen + scriptSigLen;
   },
 
   /**
@@ -145,11 +144,11 @@ module.exports = {
    * @returns {Uint8Array} The sequence bytes (LE uint)
    */
   extractSequenceLELegacy: (input) => {
-    let res = module.exports.extractScriptSigLen(input)
-    let varIntDataLen = res.dataLen
-    let scriptSigLen = res.scriptSigLen
-    let length = 36 + 1 + Number(varIntDataLen) + Number(scriptSigLen)
-    return utils.safeSlice(input, length, length + 4)
+    let res = module.exports.extractScriptSigLen(input);
+    let varIntDataLen = res.dataLen;
+    let scriptSigLen = res.scriptSigLen;
+    let length = 36 + 1 + Number(varIntDataLen) + Number(scriptSigLen);
+    return utils.safeSlice(input, length, length + 4);
   },
 
   /**
@@ -159,9 +158,9 @@ module.exports = {
    * @returns {Uint8Array} The sequence number (big-endian uint array)
    */
   extractSequenceLegacy: (input) => {
-    let leSeqence = module.exports.extractSequenceLELegacy(input)
-    let beSequence = module.exports.reverseEndianness(leSeqence)
-    return utils.bytesToUint(beSequence)
+    let leSeqence = module.exports.extractSequenceLELegacy(input);
+    let beSequence = module.exports.reverseEndianness(leSeqence);
+    return utils.bytesToUint(beSequence);
   },
 
   /**
@@ -172,10 +171,10 @@ module.exports = {
    */
   extractScriptSig: (input) => {
     let res = module.exports.extractScriptSigLen(input)
-    let varIntDataLen = res.dataLen
-    let scriptSigLen = res.scriptSigLen
-    let length = 1 + Number(varIntDataLen) + Number(scriptSigLen)
-    return utils.safeSlice(input, 36, 36 + length)
+    let varIntDataLen = res.dataLen;
+    let scriptSigLen = res.scriptSigLen;
+    let length = 1 + Number(varIntDataLen) + Number(scriptSigLen);
+    return utils.safeSlice(input, 36, 36 + length);
   },
 
   /**
@@ -185,15 +184,15 @@ module.exports = {
    * @returns {object} The length of the script sig in object form
    */
   extractScriptSigLen: (arr) => {
-    let varIntTag = utils.safeSlice(arr, 36, 37)
-    let varIntDataLen = module.exports.determineVarIntDataLength(varIntTag[0])
-    let len = 0
+    let varIntTag = utils.safeSlice(arr, 36, 37);
+    let varIntDataLen = module.exports.determineVarIntDataLength(varIntTag[0]);
+    let len = 0;
     if (varIntDataLen == 0) {
-      len = varIntTag[0]
+      len = varIntTag[0];
     } else {
-      len = utils.bytesToUint(module.exports.reverseEndianness(utils.safeSlice(arr, 37, 37 + varIntDataLen)))
+      len = utils.bytesToUint(module.exports.reverseEndianness(utils.safeSlice(arr, 37, 37 + varIntDataLen)));
     }
-    return { dataLen: BigInt(varIntDataLen), scriptSigLen: BigInt(len)}
+    return { dataLen: BigInt(varIntDataLen), scriptSigLen: BigInt(len)};
   },
 
 
@@ -208,7 +207,7 @@ module.exports = {
    * @returns {Uint8Array} The sequence bytes (LE uint)
    */
   extractSequenceLEWitness: (input) => {
-    return utils.safeSlice(input, 37, 41)
+    return utils.safeSlice(input, 37, 41);
   },
 
   /**
@@ -218,9 +217,9 @@ module.exports = {
    * @returns {Uint8Array} The sequence number (big-endian u8a)
    */
   extractSequenceWitness: (input) => {
-    let leSeqence = module.exports.extractSequenceLEWitness(input)
-    let inputSequence = module.exports.reverseEndianness(leSeqence)
-    return utils.bytesToUint(inputSequence)
+    let leSeqence = module.exports.extractSequenceLEWitness(input);
+    let inputSequence = module.exports.reverseEndianness(leSeqence);
+    return utils.bytesToUint(inputSequence);
   },
 
   /**
@@ -230,7 +229,7 @@ module.exports = {
    * @returns {Uint8Array}  The outpoint (LE bytes of prev tx hash + LE bytes of prev tx index)
    */
   extractOutpoint: (input) => {
-    return utils.safeSlice(input, 0, 36)
+    return utils.safeSlice(input, 0, 36);
   },
 
   /**
@@ -241,7 +240,7 @@ module.exports = {
    */
   // TODO: no test, check against function that uses this
   extractInputTxIdLE: (input) => {
-    return utils.safeSlice(input, 0, 32)
+    return utils.safeSlice(input, 0, 32);
   },
 
   /**
@@ -252,8 +251,8 @@ module.exports = {
    */
   // TODO: no test, check against function that uses this
   extractInputTxId: (input) => {
-    let leId = module.exports.extractInputTxId(input)
-    return module.exports.reverseEndianness(leId)
+    let leId = module.exports.extractInputTxId(input);
+    return module.exports.reverseEndianness(leId);
   },
 
   /**
@@ -264,7 +263,7 @@ module.exports = {
    */
   // TODO: no test, check against function that uses this
   extractTxIndexLE: (input) => {
-    return utils.safeSlice(input, 32, 36)
+    return utils.safeSlice(input, 32, 36);
   },
 
   /**
@@ -275,9 +274,9 @@ module.exports = {
    */
   // TODO: no test, check against function that uses this
   extractTxIndex: (input) => {
-    let leIndex = module.exports.extractTxIndexLE(input)
-    let beIndex = module.exports.reverseEndianness(leIndex)
-    return utils.bytesToUint(beIndex)
+    let leIndex = module.exports.extractTxIndexLE(input);
+    let beIndex = module.exports.reverseEndianness(leIndex);
+    return utils.bytesToUint(beIndex);
   },
 
   /* ****** */
@@ -291,13 +290,13 @@ module.exports = {
    * @returns {number} The length indicated by the prefix, error if invalid length
    */
   determineOutputLength: (output) => {
-    let len = utils.safeSlice(output, 8, 9)[0]
+    let len = utils.safeSlice(output, 8, 9)[0];
 
     if (len > 0xfd) {
-      throw new Error("Multi-byte VarInts not supported")
+      throw new Error("Multi-byte VarInts not supported");
     }
 
-    return BigInt(len) + 8n + 1n // 8 byte value, 1 byte for len itself
+    return BigInt(len) + 8n + 1n; // 8 byte value, 1 byte for len itself
   },
 
   /**
@@ -308,19 +307,19 @@ module.exports = {
    * @returns {Uint8Array} The specified output
    */
   extractOutputAtIndex: (vout, index) => {
-    let len
-    let remaining
-    let offset = 1n
+    let len;
+    let remaining;
+    let offset = 1n;
 
     for (let i = 0; i <= index; i++) {
-      remaining = utils.safeSlice(vout, offset, vout.length - 1)
-      len = module.exports.determineOutputLength(remaining)
+      remaining = utils.safeSlice(vout, offset, vout.length - 1);
+      len = module.exports.determineOutputLength(remaining);
       if (i !== index) {
-        offset += len
+        offset += len;
       }
     }
 
-    return utils.safeSlice(vout, offset, offset + len)
+    return utils.safeSlice(vout, offset, offset + len);
   },
 
   /**
@@ -363,7 +362,7 @@ module.exports = {
    */
   extractOpReturnData: (output) => {
     if (!utils.typedArraysAreEqual(utils.safeSlice(output, 9, 10), new Uint8Array([106]))) {
-      return null
+      return null;
     }
     let dataLen = utils.safeSlice(output, 10, 11);
     return utils.safeSlice(output, 11, 11 + Number(utils.bytesToUint(dataLen)));
@@ -415,28 +414,28 @@ module.exports = {
    * @returns {Boolean}       True if it represents a validly formatted vin
    */
   validateVin: (vin) => {
-    let offset = 1n
-    let vLength = BigInt(vin.length)
-    nIns = utils.safeSlice(vin, 0, 1)[0]
+    let offset = 1n;
+    let vLength = BigInt(vin.length);
+    nIns = utils.safeSlice(vin, 0, 1)[0];
 
     // Not valid if it says there are too many or no inputs
     if (nIns >= 0xfd || nIns === 0) {
-      return false
+      return false;
     }
 
     for (let i = 0; i < nIns; i++) {
       // Grab the next input and determine its length.
       // Increase the offset by that much
-      offset += module.exports.determineInputLength(utils.safeSlice(vin, offset))
+      offset += module.exports.determineInputLength(utils.safeSlice(vin, offset));
 
       // Returns false if we jump past the end
       if (offset > vLength) {
-        return false
+        return false;
       }
     }
 
     // Returns false if we're not exactly at the end
-    return offset == vLength
+    return offset == vLength;
   },
 
   /**
@@ -446,28 +445,28 @@ module.exports = {
    * @returns {Boolean}       True if it represents a validly formatted bout
    */
   validateVout: (vout) => {
-    offset = 1n
-    let vLength = BigInt(vout.length)
-    nOuts = utils.safeSlice(vout, 0, 1)[0]
+    offset = 1n;
+    let vLength = BigInt(vout.length);
+    nOuts = utils.safeSlice(vout, 0, 1)[0];
 
     // Not valid if it says there are too many or no inputs
     if (nOuts >= 0xfd || nOuts === 0) {
-      return false
+      return false;
     }
 
     for (let i = 0; i < nOuts; i++) {
       // Grab the next input and determine its length.
       // Increase the offset by that much
-      offset += module.exports.determineOutputLength(utils.safeSlice(vout, offset))
+      offset += module.exports.determineOutputLength(utils.safeSlice(vout, offset));
     }
 
     // Returns false if we jump past the end
     if (offset > vLength) {
-      return false
+      return false;
     }
 
     // Returns false if we're not exactly at the end
-    return offset == vLength
+    return offset == vLength;
   },
 
 
@@ -483,7 +482,7 @@ module.exports = {
    * @returns {Uint8Array}  The merkle root (little-endian)
    */
   extractMerkleRootLE: (header) => {
-    return utils.safeSlice(header, 36, 68)
+    return utils.safeSlice(header, 36, 68);
   },
 
   /**
@@ -493,7 +492,7 @@ module.exports = {
    * @returns {number}      The serialized merkle root (big-endian)
    */
   extractMerkleRootBE: (header) => {
-    return module.exports.reverseEndianness(module.exports.extractMerkleRootLE(header))
+    return module.exports.reverseEndianness(module.exports.extractMerkleRootLE(header));
   },
 
   /**
@@ -503,14 +502,14 @@ module.exports = {
    * @returns {BigInt}       The target threshold
    */
   extractTarget: (header) => {
-    let m = utils.safeSlice(header, 72, 75)
-    let e = BigInt(header[75])
+    let m = utils.safeSlice(header, 72, 75);
+    let e = BigInt(header[75]);
 
-    let mantissa = utils.bytesToUint(module.exports.reverseEndianness(m))
+    let mantissa = utils.bytesToUint(module.exports.reverseEndianness(m));
 
-    let exponent = e - 3n
+    let exponent = e - 3n;
 
-    return mantissa * 256n ** exponent
+    return mantissa * 256n ** exponent;
   },
 
   /**
@@ -522,10 +521,10 @@ module.exports = {
    */
   calculateDifficulty: (target) => {
     if (typeof target !== 'bigint') {
-      let bigTarget = BigInt(target)
-      return module.exports.DIFF1_TARGET / bigTarget
+      let bigTarget = BigInt(target);
+      return module.exports.DIFF1_TARGET / bigTarget;
     }
-    return module.exports.DIFF1_TARGET / target
+    return module.exports.DIFF1_TARGET / target;
   },
 
   /**
@@ -535,7 +534,7 @@ module.exports = {
    * @returns {Uint8Array}  The previous block's hash (little-endian)
    */
   extractPrevBlockLE: (header) => {
-    return utils.safeSlice(header, 4, 36)
+    return utils.safeSlice(header, 4, 36);
   },
 
   /**
@@ -545,7 +544,7 @@ module.exports = {
    * @returns {Uint8Array}  The previous block's hash (big-endian)
    */
   extractPrevBlockBE: (header) => {
-    return module.exports.reverseEndianness(module.exports.extractPrevBlockLE(header))
+    return module.exports.reverseEndianness(module.exports.extractPrevBlockLE(header));
   },
 
   /**
@@ -555,7 +554,7 @@ module.exports = {
    * @returns {Uint8Array}  The timestamp (little-endian bytes)
    */
   extractTimestampLE: (header) => {
-    return utils.safeSlice(header, 68, 72)
+    return utils.safeSlice(header, 68, 72);
   },
 
   /**
@@ -565,7 +564,7 @@ module.exports = {
    * @returns {BigInt/number}   The timestamp (uint)
    */
   extractTimestamp: (header) => {
-    return utils.bytesToUint(module.exports.reverseEndianness(module.exports.extractTimestampLE(header)))
+    return utils.bytesToUint(module.exports.reverseEndianness(module.exports.extractTimestampLE(header)));
   },
 
   /**
@@ -575,7 +574,7 @@ module.exports = {
    * @returns {BigInt}      The difficulty as an integer
    */
   extractDifficulty: (header) => {
-    return module.exports.calculateDifficulty(module.exports.extractTarget(header))
+    return module.exports.calculateDifficulty(module.exports.extractTarget(header));
   },
 
   /**
@@ -586,7 +585,7 @@ module.exports = {
    * @returns {Uint8Array}  The double-sha256 of the concatenated hashes
    */
   hash256MerkleStep: (a, b) => {
-    return module.exports.hash256(utils.concatUint8Arrays([a, b]))
+    return module.exports.hash256(utils.concatUint8Arrays([a, b]));
   },
 
   /**
@@ -597,36 +596,36 @@ module.exports = {
    * @returns {Boolean}       true if the proof is value, else false
    */
   verifyHash256Merkle: (proof, index) => {
-    const proofLength = proof.length
+    const proofLength = proof.length;
 
     // Not an even number of hashes
     if (proofLength % 32 !== 0) {
-      return false
+      return false;
     }
 
     // Special case for coinbase-only blocks
     if (proofLength === 32) {
-      return true
+      return true;
     }
 
     // Should never occur
     if (proofLength === 64) {
-      return false
+      return false;
     }
 
-    let idx = BigInt(index)
-    let root = utils.safeSlice(proof, (proofLength - 32), proofLength)
-    let current = utils.safeSlice(proof, 0, 32)
+    let idx = BigInt(index);
+    let root = utils.safeSlice(proof, (proofLength - 32), proofLength);
+    let current = utils.safeSlice(proof, 0, 32);
 
     for (let i = 1; i < ((proofLength / 32) - 1); i++) {
       if (idx % 2n === 1n) {
-        current = module.exports.hash256MerkleStep(utils.safeSlice(proof, (i * 32), ((i * 32) + 32)), current)
+        current = module.exports.hash256MerkleStep(utils.safeSlice(proof, (i * 32), ((i * 32) + 32)), current);
       } else {
-        current = module.exports.hash256MerkleStep(current, utils.safeSlice(proof, (i * 32), ((i * 32) + 32)))
+        current = module.exports.hash256MerkleStep(current, utils.safeSlice(proof, (i * 32), ((i * 32) + 32)));
       }
-      idx = idx >> 1n
+      idx = idx >> 1n;
     }
-    return utils.typedArraysAreEqual(current, root)
+    return utils.typedArraysAreEqual(current, root);
   },
 
   /**
@@ -639,16 +638,16 @@ module.exports = {
    */
   retargetAlgorithm: (previousTarget, firstTimestamp, secondTimestamp) => {
     let elapsedTime = BigInt(secondTimestamp - firstTimestamp);
-    const rp = module.exports.RETARGET_PERIOD
-    const div = rp / 4n
-    const mult = rp * 4n
+    const rp = module.exports.RETARGET_PERIOD;
+    const div = rp / 4n;
+    const mult = rp * 4n;
 
     // Normalize ratio to factor of 4 if very long or very short
     if (elapsedTime < div) {
-      elapsedTime = div
+      elapsedTime = div;
     }
     if (elapsedTime > mult) {
-      elapsedTime = mult
+      elapsedTime = mult;
     }
 
     /*
