@@ -25,12 +25,12 @@ const OUTPUT_TYPES = {
 module.exports = {
 
   /**
-   * @notice Validates a tx inclusion in the block
-   * @param {Uint8Array} txid The txid (LE)
-   * @param {Uint8Array} merkleRoot The merkle root (as in the block header)
-   * @param {Uint8Array} intermediateNodes The proof's intermediate nodes (digests between leaf and root)
-   * @param {number} index The leaf's index in the tree (0-indexed)
-   * @returns {boolean} true if fully valid, false otherwise
+   * @notice                Validates a tx inclusion in the block
+   * @param {Uint8Array}    txid The txid (LE)
+   * @param {Uint8Array}    merkleRoot The merkle root (as in the block header)
+   * @param {Uint8Array}    intermediateNodes The proof's intermediate nodes (digests between leaf and root)
+   * @param {number}        index The leaf's index in the tree (0-indexed)
+   * @returns {boolean}     true if fully valid, false otherwise
    */
   prove: (txid, merkleRoot, intermediateNodes, index) => {
     // Shortcut the empty-block case
@@ -44,23 +44,23 @@ module.exports = {
   },
 
   /**
-   * @notice Hashes transaction to get txid
-   * @dev Supports Legacy and Witness
-   * @param {Uint8Array} version 4-bytes version
-   * @param {Uint8Array} vin Raw bytes length-prefixed input vector
-   * @param {Uint8Array} vout Raw bytes length-prefixed output vector
-   * @param {Uint8Array} locktime 4-byte tx locktime
-   * @returns {Uint8Array} 32-byte transaction id, little endian
+   * @notice                Hashes transaction to get txid
+   * @dev                   Supports Legacy and Witness
+   * @param {Uint8Array}    version 4-bytes version
+   * @param {Uint8Array}    vin Raw bytes length-prefixed input vector
+   * @param {Uint8Array}    vout Raw bytes length-prefixed output vector
+   * @param {Uint8Array}    locktime 4-byte tx locktime
+   * @returns {Uint8Array}  32-byte transaction id, little endian
    */
   calculateTxId: (version, vin, vout, locktime) => {
     return btcUtils.hash256(utils.concatUint8Arrays([version, vin, vout, locktime]));
   },
 
   /**
-   * @notice Parses a tx input from raw input bytes
-   * @dev Supports Legacy and Witness inputs
-   * @param {Uint8Array} input bytes tx input
-   * @returns {object} Tx input, sequence number, tx hash, and index
+   * @notice                Parses a tx input from raw input bytes
+   * @dev                   Supports Legacy and Witness inputs
+   * @param {Uint8Array}    input bytes tx input
+   * @returns {object}      Tx input, sequence number, tx hash, and index
    */
   parseInput: (input) => {
     // NB: If the scriptsig is exactly 00, we are witness.
@@ -91,10 +91,10 @@ module.exports = {
   },
 
   /**
-   * @notice Parses a tx output from raw output bytes
-   * @dev Differentiates by output script prefix, handles legacy and witness
-   * @param {Uint8Array} output bytes tx output
-   * @returns {object} Tx output value, output type, payload
+   * @notice                Parses a tx output from raw output bytes
+   * @dev                   Differentiates by output script prefix, handles legacy and witness
+   * @param {Uint8Array}    output bytes tx output
+   * @returns {object}      Tx output value, output type, payload
    */
   parseOutput: (output) => {
     let value = output.extractValue();
@@ -161,10 +161,10 @@ module.exports = {
   /// @dev                Block headers are always 80 bytes, see Bitcoin docs
   /// @return             Header digest, version, previous block header hash, merkle root, timestamp, target, nonce
   /**
-   * @notice Parses a block header struct from a bytestring
-   * @dev Block headers are always 80 bytes, see Bitcoin docs
-   * @param {Uint8Array} header Header
-   * @returns {object} Header digest, version, previous block header hash, merkle root, timestamp, target, nonce
+   * @notice                Parses a block header struct from a bytestring
+   * @dev                   Block headers are always 80 bytes, see Bitcoin docs
+   * @param {Uint8Array}    header Header
+   * @returns {object}      Header digest, version, previous block header hash, merkle root, timestamp, target, nonce
    */
   parseHeader: (header) => {
     // If header has an invalid length, bubble up error
@@ -227,7 +227,7 @@ module.exports = {
    * @notice                Checks validity of header chain
    * @dev                   Compares the hash of each header to the prevHash in the next header
    * @param {Uint8Array}    headers Raw byte array of header chain
-   * @returns {BigInt}       The total accumulated difficulty of the header chain, or an error code
+   * @returns {BigInt}      The total accumulated difficulty of the header chain, or an error code
    */
   validateHeaderChain: (headers) => {
     // Check header chain length
@@ -267,10 +267,10 @@ module.exports = {
   },
 
   /**
-   * @notice              Checks validity of header work
-   * @param {Uint8Array}  digest Header digest
-   * @param {Uint8Array}  target The target threshold
-   * @returns {Boolean}   true if header work is valid, false otherwise
+   * @notice                Checks validity of header work
+   * @param {Uint8Array}    digest Header digest
+   * @param {Uint8Array}    target The target threshold
+   * @returns {Boolean}     true if header work is valid, false otherwise
    */
   validateHeaderWork: (digest, target) => {
     if (digest === 0) {
@@ -280,11 +280,11 @@ module.exports = {
   },
 
   /**
-   * @notice              Checks validity of header chain
-   * @dev                 Compares current header prevHash to previous header's digest
-   * @param {Uint8Array}  header The raw bytes header
-   * @param {Uint8Array}  prevHeaderDigest The previous header's digest
-   * @returns {Boolean}   true if header chain is valid, false otherwise
+   * @notice                Checks validity of header chain
+   * @dev                   Compares current header prevHash to previous header's digest
+   * @param {Uint8Array}    header The raw bytes header
+   * @param {Uint8Array}    prevHeaderDigest The previous header's digest
+   * @returns {Boolean}     true if header chain is valid, false otherwise
    */
   validateHeaderPrevHash: (header, prevHeaderDigest) => {
     // Extract prevHash of current header
