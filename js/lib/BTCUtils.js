@@ -251,7 +251,7 @@ module.exports = {
    */
   // TODO: no test, check against function that uses this
   extractInputTxId: (input) => {
-    let leId = module.exports.extractInputTxIdLE(input);
+    let leId = module.exports.extractInputTxId(input);
     return module.exports.reverseEndianness(leId);
   },
 
