@@ -1,3 +1,5 @@
+// import { S_IFBLK } from 'constants';
+
 // pragma solidity ^0.5.10;
 
 // /** @title ValidateSPV*/
@@ -206,14 +208,46 @@ module.exports = {
   /// @param _headers     Raw byte array of header chain
   /// @return             The total accumulated difficulty of the header chain, or an error code
   /**
-   * @notice
-   * @dev
-   * @param {}
-   * @param {}
-   * @returns {}
+   * @notice                Checks validity of header chain
+   * @dev                   Compares the hash of each header to the prevHash in the next header
+   * @param {Uint8Array}    headers Raw byte array of header chain
+   * @returns {BigInt}       The total accumulated difficulty of the header chain, or an error code
    */
   validateHeaderChain: (headers) => {
-    return headers;
+    // Check header chain length
+    if (headers.length % 80 !== 0) {
+      throw new Error('Header bytes not multiple of 80.')
+    }
+
+    // Initialize header start index
+    let digest
+    let start = 0
+    let totalDifficulty = 0n
+
+    for (let i = 0; i < headers.length / 80; i++) {
+      // ith header start index and ith header
+      start = i * 80
+      let header = utils.safeSlice(headers, start, start + 80)
+
+      //After the first header, check that headers are in a chain
+      if (i !== 0) {
+        if (!module.exports.validateHeaderPrevHash(header, digest)) {
+          throw new Error('Header bytes not a valid chain.')
+        }
+      }
+
+      // ith header target
+      let target = btcUtils.extractTarget(header)
+
+      // Require that the header has sufficient work
+      digest = btcUtils.hash256(header)
+      if (utils.bytesToUint(btcUtils.reverseEndianness(digest)) > target) {
+        throw new Error('Header does not meet its own difficulty target.')
+      }
+
+      totalDifficulty += btcUtils.calculateDifficulty(target)
+    }
+    return totalDifficulty
   },
 
 //     function validateHeaderWork(bytes32 _digest, uint256 _target) internal pure returns (bool) {
@@ -221,35 +255,21 @@ module.exports = {
 //         return (abi.encodePacked(_digest).bytesToUint() < _target);
 //     }
 
-//     /// @notice                     Checks validity of header chain
-//     /// @dev                        Compares current header prevHash to previous header's digest
-//     /// @param _header              The raw bytes header
-//     /// @param _prevHeaderDigest    The previous header's digest
-//     /// @return                     true if header chain is valid, false otherwise
-//     function validateHeaderPrevHash(bytes memory _header, bytes32 _prevHeaderDigest) internal pure returns (bool) {
-
-//         // Extract prevHash of current header
-//         bytes32 _prevHash = _header.extractPrevBlockLE().toBytes32();
-
-//         // Compare prevHash of current header to previous header's digest
-//         if (_prevHash != _prevHeaderDigest) {return false;}
-
-//         return true;
-//     }
-
   /// @notice             Checks validity of header work
   /// @param _digest      Header digest
   /// @param _target      The target threshold
   /// @return             true if header work is valid, false otherwise
   /**
-   * @notice
-   * @dev
-   * @param {}
-   * @param {}
-   * @returns {}
+   * @notice              Checks validity of header work
+   * @param {Uint8Array}  digest Header digest
+   * @param {Uint8Array}  target The target threshold
+   * @returns {Boolean}   true if header work is valid, false otherwise
    */
   validateHeaderWork: (digest, target) => {
-    return digest;
+    if (digest === 0) {
+      return false
+    }
+    return utils.bytesToUint(digest) < target
   },
 
 //      function validateHeaderPrevHash(bytes memory _header, bytes32 _prevHeaderDigest) internal pure returns (bool) {
@@ -263,19 +283,29 @@ module.exports = {
 //        return true;
 //      }
 
-  /// @notice                     Checks validity of header chain
-  /// @dev                        Compares current header prevHash to previous header's digest
-  /// @param _header              The raw bytes header
-  /// @param _prevHeaderDigest    The previous header's digest
-  /// @return                     true if header chain is valid, false otherwise
+
+//     /// @notice                     Checks validity of header chain
+//     /// @dev                        Compares current header prevHash to previous header's digest
+//     /// @param _header              The raw bytes header
+//     /// @param _prevHeaderDigest    The previous header's digest
+//     /// @return                     true if header chain is valid, false otherwise
+
   /**
-   * @notice
-   * @dev
-   * @param {}
-   * @param {}
-   * @returns {}
+   * @notice              Checks validity of header chain
+   * @dev                 Compares current header prevHash to previous header's digest
+   * @param {Uint8Array}  header The raw bytes header
+   * @param {Uint8Array}  prevHeaderDigest The previous header's digest
+   * @returns {Boolean}   true if header chain is valid, false otherwise
    */
   validateHeaderPrevHash: (header, prevHeaderDigest) => {
-    return header;
+    // Extract prevHash of current header
+    let prevHash = btcUtils.extractPrevBlockLE(header)
+
+    // Compare prevHash of current header to previous header's digest
+    if (!utils.typedArraysAreEqual(prevHash, prevHeaderDigest)) {
+      return false
+    }
+
+    return true;
   }
 }
