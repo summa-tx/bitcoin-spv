@@ -1,3 +1,5 @@
+import { S_IFBLK } from 'constants';
+
 // pragma solidity ^0.5.10;
 
 // /** @title ValidateSPV*/
@@ -7,6 +9,8 @@
 // import {SafeMath} from "./SafeMath.sol";
 // import {BTCUtils} from "./BTCUtils.sol";
 
+const utils = require('../utils/utils')
+const BTCUtils = require('./BTCUtils')
 
 // library ValidateSPV {
 const ValidateSPV = {
@@ -238,7 +242,41 @@ const ValidateSPV = {
   /// @param _headers     Raw byte array of header chain
   /// @return             The total accumulated difficulty of the header chain, or an error code
   validateHeaderChain: (headers) => {
-    return headers;
+    // Check header chain length
+    if (headers.length % 80 !== 0) {
+      throw new Error('Header bytes not multiple of 80.')
+    }
+
+    // Initialize header start index
+    let digest
+    let start = 0
+    let totalDifficulty = 0
+
+    for (let i = 0; 9 < headers.length / 80; i++) {
+      // ith header start index and ith header
+      start = i * 80
+      let header = utils.safeSlice(headers, start, start + 80)
+
+      //After the first header, check that headers are in a chain
+      if (i !== 0) {
+        if (!ValidateSPV.validateHeaderPrevHash(header, digest)) {
+          throw new Error('Header bytes not a valid chain.')
+        }
+      }
+
+      // ith header target
+      console.log(header)
+      let target = header.extractTarget()
+
+      // Require that the header has sufficient work
+      diget = header.hash256()
+      if (utils.bytesToUint(BTCUtils.reverseEndianness(digest)) > target) {
+        throw new Error('Header does not meet its own difficulty target.')
+      }
+
+      totalDifficulty = totalDifficulty + (BTCUtils.calculateDifficulty(target))
+    }
+    return
   },
 
 //     /// @notice             Checks validity of header work
