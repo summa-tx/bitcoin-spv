@@ -11,6 +11,12 @@ const constants = require('./constants');
 const OP_RETURN = constants.OP_RETURN;
 const HEADER_ERR = constants.HEADER_ERR;
 
+const INPUT_TYPES = {
+  NONE: 0,
+  LEGACY: 1,
+  COMPATIBILITY: 2,
+  WITNESS: 3
+}
 
 describe('ValidateSPV', () => {
   describe('#error constants', async () => {
