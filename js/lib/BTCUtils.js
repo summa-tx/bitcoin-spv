@@ -577,7 +577,6 @@ module.exports = {
 
   /**
    * @notice                Concatenates and hashes two inputs for merkle proving
-   * @dev
    * @param {Uint8Array}    a The first hash
    * @param {Uint8Array}    b The second hash
    * @returns {Uint8Array}  The double-sha256 of the concatenated hashes
@@ -591,7 +590,7 @@ module.exports = {
    * @dev                   Leaves are 1-indexed.
    * @param {Uin8Array}     proof The proof. Tightly packed LE sha256 hashes. The last hash is the root
    * @param {Number}        index The index of the leaf
-   * @returns {Boolean}     true if the proof is value, else false
+   * @returns {Boolean}     True if the proof is value, else false
    */
   verifyHash256Merkle: (proof, index) => {
     const proofLength = proof.length;
@@ -627,12 +626,12 @@ module.exports = {
   },
 
   /**
-   * @notice                performs the bitcoin difficulty retarget
-   * @dev                   implements the Bitcoin algorithm precisely
-   * @param {BigInt}        previousTarget the target of the previous period
-   * @param {number}        firstTimestamp the timestamp of the first block in the difficulty period
-   * @param {number}        secondTimestamp the timestamp of the last block in the difficulty period
-   * @returns {BigInt}      the new period's target threshold
+   * @notice                Performs the bitcoin difficulty retarget
+   * @dev                   Implements the Bitcoin algorithm precisely
+   * @param {BigInt}        previousTarget The target of the previous period
+   * @param {number}        firstTimestamp The timestamp of the first block in the difficulty period
+   * @param {number}        secondTimestamp The timestamp of the last block in the difficulty period
+   * @returns {BigInt}      The new period's target threshold
    */
   retargetAlgorithm: (previousTarget, firstTimestamp, secondTimestamp) => {
     let elapsedTime = BigInt(secondTimestamp - firstTimestamp);

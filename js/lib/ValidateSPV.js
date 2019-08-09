@@ -130,37 +130,6 @@ module.exports = {
     return { value, outputType, payload };
   },
 
-//     /// @notice             Parses a block header struct from a bytestring
-//     /// @dev                Block headers are always 80 bytes, see Bitcoin docs
-//     /// @return             Header digest, version, previous block header hash, merkle root, timestamp, target, nonce
-//     function parseHeader(bytes memory _header) internal pure returns (
-//         bytes32 _digest,
-//         uint32 _version,
-//         bytes32 _prevHash,
-//         bytes32 _merkleRoot,
-//         uint32 _timestamp,
-//         uint256 _target,
-//         uint32 _nonce
-//     ) {
-//         // If header has an invalid length, bubble up error
-//         if (_header.length != 80) {
-//             return(_digest, _version, _prevHash, _merkleRoot, _timestamp, _target, _nonce);
-//         }
-
-//         _digest = abi.encodePacked(_header.hash256()).reverseEndianness().toBytes32();
-//         _version = uint32(_header.slice(0, 4).reverseEndianness().bytesToUint());
-//         _prevHash = _header.extractPrevBlockLE().toBytes32();
-//         _merkleRoot = _header.extractMerkleRootLE().toBytes32();
-//         _timestamp = _header.extractTimestamp();
-//         _target = _header.extractTarget();
-//         _nonce = uint32(_header.slice(76, 4).reverseEndianness().bytesToUint());
-
-//         return(_digest, _version, _prevHash, _merkleRoot, _timestamp, _target, _nonce);
-//     }
-
-  /// @notice             Parses a block header struct from a bytestring
-  /// @dev                Block headers are always 80 bytes, see Bitcoin docs
-  /// @return             Header digest, version, previous block header hash, merkle root, timestamp, target, nonce
   /**
    * @notice                Parses a block header struct from a bytestring
    * @dev                   Block headers are always 80 bytes, see Bitcoin docs
@@ -185,46 +154,6 @@ module.exports = {
     return { digest, version, prevHash, merkleRoot, timestamp, target, nonce };
   },
 
-//     function validateHeaderChain(bytes memory _headers) internal pure returns (uint256 _totalDifficulty) {
-
-//         // Check header chain length
-//         if (_headers.length % 80 != 0) {return ERR_BAD_LENGTH;}
-
-//         // Initialize header start index
-//         bytes32 _digest;
-//         uint256 _start = 0;
-
-//         _totalDifficulty = 0;
-
-//         for (uint i = 0; i < _headers.length / 80; i++) {
-
-//             // ith header start index and ith header
-//             _start = i * 80;
-//             bytes memory _header = _headers.slice(_start, 80);
-
-//             // After the first header, check that headers are in a chain
-//             if (i != 0) {
-//                 if (!validateHeaderPrevHash(_header, _digest)) {return ERR_INVALID_CHAIN;}
-//             }
-
-//             // ith header target
-//             uint256 _target = _header.extractTarget();
-
-//             // Require that the header has sufficient work
-//             _digest = _header.hash256();
-//             if(abi.encodePacked(_digest).reverseEndianness().bytesToUint() > _target) {
-//                 return ERR_LOW_WORK;
-//             }
-
-//             // Add ith header difficulty to difficulty sum
-//             _totalDifficulty = _totalDifficulty.add(_target.calculateDifficulty());
-//         }
-//     }
-
-  /// @notice             Checks validity of header chain
-  /// @notice             Compares the hash of each header to the prevHash in the next header
-  /// @param _headers     Raw byte array of header chain
-  /// @return             The total accumulated difficulty of the header chain, or an error code
   /**
    * @notice                Checks validity of header chain
    * @dev                   Compares the hash of each header to the prevHash in the next header
@@ -272,7 +201,7 @@ module.exports = {
    * @notice                Checks validity of header work
    * @param {Uint8Array}    digest Header digest
    * @param {Uint8Array}    target The target threshold
-   * @returns {Boolean}     true if header work is valid, false otherwise
+   * @returns {Boolean}     True if header work is valid, false otherwise
    */
   validateHeaderWork: (digest, target) => {
     if (digest === 0) {
@@ -286,7 +215,7 @@ module.exports = {
    * @dev                   Compares current header prevHash to previous header's digest
    * @param {Uint8Array}    header The raw bytes header
    * @param {Uint8Array}    prevHeaderDigest The previous header's digest
-   * @returns {Boolean}     true if header chain is valid, false otherwise
+   * @returns {Boolean}     True if header chain is valid, false otherwise
    */
   validateHeaderPrevHash: (header, prevHeaderDigest) => {
     // Extract prevHash of current header
