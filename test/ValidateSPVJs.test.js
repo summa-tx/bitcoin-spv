@@ -5,11 +5,11 @@ const assert = require('chai').assert;
 
 const ValidateSPV = require('../contracts-js/ValidateSPV');
 const utils = require('./utils');
-const btcUtils = require('../utils/utils')
+const btcUtils = require('../utils/utils');
 const constants = require('./constants');
 
-const OP_RETURN = constants.OP_RETURN
-const HEADER_ERR = constants.HEADER_ERR
+const OP_RETURN = constants.OP_RETURN;
+const HEADER_ERR = constants.HEADER_ERR;
 
 
 describe('ValidateSPV', () => {

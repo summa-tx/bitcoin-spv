@@ -63,7 +63,6 @@ module.exports = {
   },
 
   safeSlice: (buf, first, last) => {
-  // safeSlice: (buf, start, end) => {
     let start;
     let end;
 
