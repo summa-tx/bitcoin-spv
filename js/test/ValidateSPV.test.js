@@ -203,10 +203,10 @@ describe('ValidateSPV', () => {
           btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].HEADER)
         );
 
-        assert.equal(validHeader.digest, btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE));
+        assert.isTrue(btcUtils.typedArraysAreEqual(validHeader.digest, btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE)));
         assert.equal(validHeader.version, OP_RETURN.INDEXED_HEADERS[0].VERSION);
-        assert.equal(validHeader.prevHash, btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].PREV_HASH_LE));
-        assert.equal(validHeader.merkleRoot, btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].MERKLE_ROOT_LE));
+        assert.isTrue(btcUtils.typedArraysAreEqual(validHeader.prevHash, btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].PREV_HASH_LE)));
+        assert.isTrue(btcUtils.typedArraysAreEqual(validHeader.merkleRoot, btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].MERKLE_ROOT_LE)));
         assert.equal(validHeader.timestamp, OP_RETURN.INDEXED_HEADERS[0].TIMESTAMP);
         assert.equal(validHeader.target, OP_RETURN.INDEXED_HEADERS[0].TARGET);
         assert.equal(validHeader.nonce, OP_RETURN.INDEXED_HEADERS[0].NONCE);
@@ -214,14 +214,12 @@ describe('ValidateSPV', () => {
 
     it('bubble up errors if input header is not 80 bytes', async () => {
       // Removed a byte from the header version to create error
-      const invalidHeader = await ValidateSPV.parseHeader(
-        btcUtils.deserializeHex(HEADER_ERR.HEADER_0_LEN)
-      );
+      const invalidHeader = await ValidateSPV.parseHeader(btcUtils.deserializeHex(HEADER_ERR.HEADER_0_LEN));
 
-      assert.equal(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.digest);
+      assert.isTrue(btcUtils.typedArraysAreEqual(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.digest));
       assert.equal(0n, invalidHeader.version);
-      assert.equal(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.prevHash);
-      assert.equal(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.merkleRoot);
+      assert.isTrue(btcUtils.typedArraysAreEqual(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.prevHash));
+      assert.isTrue(btcUtils.typedArraysAreEqual(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.merkleRoot));
       assert.equal(0n, invalidHeader.timestamp);
       assert.equal(0n, invalidHeader.target);
       assert.equal(0n, invalidHeader.nonce);

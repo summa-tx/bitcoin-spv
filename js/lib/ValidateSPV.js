@@ -38,7 +38,7 @@ module.exports = {
       return true;
     }
 
-    let proof = utils.concatUint8Arrays([txid, intermediateNodes, merkleRoot])
+    let proof = utils.concatUint8Arrays([txid, intermediateNodes, merkleRoot]);
     // If the Merkle proof failed, bubble up error
     return btcUtils.verifyHash256Merkle(proof, index);
   },
@@ -84,8 +84,8 @@ module.exports = {
       inputType = INPUT_TYPES.WITNESS;
     }
 
-    let inputId = btcUtils.extractInputTxId(input)
-    let inputIndex = btcUtils.extractTxIndex(input)
+    let inputId = btcUtils.extractInputTxId(input);
+    let inputIndex = btcUtils.extractTxIndex(input);
 
     return {sequence, inputId, inputIndex, inputType};
   },
@@ -123,7 +123,7 @@ module.exports = {
           payload = utils.safeSlice(output, 11, 31);
         } else {
           outputType = OUTPUT_TYPES.NONSTANDARD;
-          payload = null
+          payload = null;
         }
     }
 
@@ -169,8 +169,9 @@ module.exports = {
    */
   parseHeader: (header) => {
     // If header has an invalid length, bubble up error
+    const EMPTY = utils.deserializeHex('0x0000000000000000000000000000000000000000000000000000000000000000');
     if (header.length != 80) {
-      return { digest, version, prevHash, merkleRoot, timestamp, target, nonce };
+      return { digest: EMPTY, version: 0n, prevHash: EMPTY, merkleRoot: EMPTY, timestamp: 0n, target: 0n, nonce: 0n };
     }
 
     let digest = btcUtils.reverseEndianness(btcUtils.hash256(header));
