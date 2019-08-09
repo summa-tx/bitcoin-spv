@@ -1,7 +1,7 @@
 /** @title BitcoinSPV */
 /** @author Summa (https://summa.one) */
 
-const utils = require('../../utils/utils');
+const utils = require('../utils/utils');
 
 module.exports = {
 
@@ -10,10 +10,10 @@ module.exports = {
   DIFF1_TARGET: 0xffff0000000000000000000000000000000000000000000000000000n,
 
   /**
-   * @notice Determines the length of a VarInt in bytes
-   * @dev A VarInt of >1 byte is prefixed with a flag indicating its length
-   * @param {string} flag The first byte of a VarInt
-   * @returns {number} The number of non-flag bytes in the VarInt
+   * @notice                Determines the length of a VarInt in bytes
+   * @dev                   A VarInt of >1 byte is prefixed with a flag indicating its length
+   * @param {string}        flag The first byte of a VarInt
+   * @returns {number}      The number of non-flag bytes in the VarInt
    */
   determineVarIntDataLength: (flag) => {
     if (flag == 0xff) {
@@ -30,10 +30,10 @@ module.exports = {
   },
 
   /**
-   * @notice Changes the endianness of a byte array
-   * @dev Returns a new, backwards, byte array
-   * @param {Uint8Array} uint8Arr The array to reverse
-   * @returns {Uint8Array} The reversed array
+   * @notice                Changes the endianness of a byte array
+   * @dev                   Returns a new, backwards, byte array
+   * @param {Uint8Array}    uint8Arr The array to reverse
+   * @returns {Uint8Array}  The reversed array
    */
   reverseEndianness: (uint8Arr) => {
     let newArr = utils.safeSlice(uint8Arr);
@@ -41,10 +41,10 @@ module.exports = {
   },
 
   /**
-   * @notice Converts big-endian array to a uint
-   * @dev Traverses the byte array and sums the bytes
-   * @param {Uint8Array} uint8Arr The big-endian array-encoded integer
-   * @returns {BigInt} The integer representation
+   * @notice                Converts big-endian array to a uint
+   * @dev                   Traverses the byte array and sums the bytes
+   * @param {Uint8Array}    uint8Arr The big-endian array-encoded integer
+   * @returns {BigInt}      The integer representation
    */
   bytesToUint: (uint8Arr) => {
     let total = BigInt(0);
@@ -69,8 +69,7 @@ module.exports = {
 
   /**
    * @notice                Implements bitcoin's hash160 (rmd160(sha2()))
-   * @dev
-   * @param {Uint8Array}    preImage
+   * @param {Uint8Array}    preImage The pre-image
    * @returns {Uint8Array}  The digest
    */
   hash160: (preImage) => {
@@ -78,10 +77,9 @@ module.exports = {
   },
 
 /**
- * @notice                Implements bitcoin's hash256 (double sha2)
- * @dev
- * @param {Uint8Array}    preImage
- * @returns {Uint8Array}  The digest
+ * @notice                  Implements bitcoin's hash256 (double sha2)
+ * @param {Uint8Array}      preImage The pre-image
+ * @returns {Uint8Array}    The digest
  */
   hash256: (b) => {
     return utils.sha256(utils.sha256(b));
@@ -92,11 +90,11 @@ module.exports = {
   /* ************ */
 
   /**
-   * @notice Extracts the nth input from the vin (0-indexed)
-   * @dev Iterates over the vin. If you need to extract several, write a custom function
-   * @param {Uint8Array} vinArr The vin as a tightly-packed uint8array
-   * @param index The 0-indexed location of the input to extract
-   * @returns {Uint8Array} The input as a u8a
+   * @notice                Extracts the nth input from the vin (0-indexed)
+   * @dev                   Iterates over the vin. If you need to extract several, write a custom function
+   * @param {Uint8Array}    vinArr The vin as a tightly-packed uint8array
+   * @param {index}         index The 0-indexed location of the input to extract
+   * @returns {Uint8Array}  The input as a u8a
    */
   extractInputAtIndex: (vinArr, index) => {
     let len = 0;
@@ -115,20 +113,20 @@ module.exports = {
   },
 
   /**
-   * @notice Determines whether an input is legacy
-   * @dev False if no scriptSig, otherwise True
-   * @param {Uint8Array} input The input
-   * @returns {boolean} True for legacy, False for witness
+   * @notice                Determines whether an input is legacy
+   * @dev                   False if no scriptSig, otherwise True
+   * @param {Uint8Array}    input The input
+   * @returns {boolean}     True for legacy, False for witness
    */
   isLegacyInput: (input) => {
     return !utils.typedArraysAreEqual(utils.safeSlice(input, 36, 37), new Uint8Array([0]));
   },
 
   /**
-   * @notice Determines the length of an input from its scriptsig
-   * @dev 36 for outpoint, 1 for scriptsig length, 4 for sequence
-   * @param {Uint8Array} arr The input as a u8a
-   * @returns {BigInt} The length of the input in bytes
+   * @notice                Determines the length of an input from its scriptsig
+   * @dev                   36 for outpoint, 1 for scriptsig length, 4 for sequence
+   * @param {Uint8Array}    arr The input as a u8a
+   * @returns {BigInt}      The length of the input in bytes
    */
   determineInputLength: (arr) => {
     let res = module.exports.extractScriptSigLen(arr);
@@ -138,10 +136,10 @@ module.exports = {
   },
 
   /**
-   * @notice Extracts the LE sequence bytes from an input
-   * @dev Sequence is used for relative time locks
-   * @param {Uint8Array} input The LEGACY input
-   * @returns {Uint8Array} The sequence bytes (LE uint)
+   * @notice                Extracts the LE sequence bytes from an input
+   * @dev                   Sequence is used for relative time locks
+   * @param {Uint8Array}    input The LEGACY input
+   * @returns {Uint8Array}  The sequence bytes (LE uint)
    */
   extractSequenceLELegacy: (input) => {
     let res = module.exports.extractScriptSigLen(input);
@@ -152,10 +150,10 @@ module.exports = {
   },
 
   /**
-   * @notice Extracts the sequence from the input
-   * @dev Sequence is a 4-byte little-endian number
-   * @param {Uint8Array} input The LEGACY input
-   * @returns {Uint8Array} The sequence number (big-endian uint array)
+   * @notice                Extracts the sequence from the input
+   * @dev                   Sequence is a 4-byte little-endian number
+   * @param {Uint8Array}    input The LEGACY input
+   * @returns {Uint8Array}  The sequence number (big-endian uint array)
    */
   extractSequenceLegacy: (input) => {
     let leSeqence = module.exports.extractSequenceLELegacy(input);
@@ -164,10 +162,10 @@ module.exports = {
   },
 
   /**
-   * @notice Extracts the VarInt-prepended scriptSig from the input in a tx
-   * @dev Will return hex"00" if passed a witness input
-   * @param {Uint8Array} input The LEGACY input
-   * @returns {Uint8Array} The length-prepended script sig
+   * @notice                Extracts the VarInt-prepended scriptSig from the input in a tx
+   * @dev                   Will return hex"00" if passed a witness input
+   * @param {Uint8Array}    input The LEGACY input
+   * @returns {Uint8Array}  The length-prepended script sig
    */
   extractScriptSig: (input) => {
     let res = module.exports.extractScriptSigLen(input)
@@ -178,10 +176,10 @@ module.exports = {
   },
 
   /**
-   * @notice Determines the length of a scriptSig in an input
-   * @dev Will return 0 if passed a witness input
-   * @param {Uint8Array} arr The LEGACY input
-   * @returns {object} The length of the script sig in object form
+   * @notice                Determines the length of a scriptSig in an input
+   * @dev                   Will return 0 if passed a witness input
+   * @param {Uint8Array}    arr The LEGACY input
+   * @returns {object}      The length of the script sig in object form
    */
   extractScriptSigLen: (arr) => {
     let varIntTag = utils.safeSlice(arr, 36, 37);
@@ -201,20 +199,20 @@ module.exports = {
   /* ************* */
 
   /**
-   * @notice Extracts the LE sequence bytes from an input
-   * @dev Sequence is used for relative time locks
-   * @param {Uint8Array} input The WITNESS input
-   * @returns {Uint8Array} The sequence bytes (LE uint)
+   * @notice                Extracts the LE sequence bytes from an input
+   * @dev                   Sequence is used for relative time locks
+   * @param {Uint8Array}    input The WITNESS input
+   * @returns {Uint8Array}  The sequence bytes (LE uint)
    */
   extractSequenceLEWitness: (input) => {
     return utils.safeSlice(input, 37, 41);
   },
 
   /**
-   * @notice Extracts the sequence from the input in a tx
-   * @dev Sequence is a 4-byte little-endian number
-   * @param {Uint8Array} input The WITNESS input
-   * @returns {Uint8Array} The sequence number (big-endian u8a)
+   * @notice                Extracts the sequence from the input in a tx
+   * @dev                   Sequence is a 4-byte little-endian number
+   * @param {Uint8Array}    input The WITNESS input
+   * @returns {Uint8Array}  The sequence number (big-endian u8a)
    */
   extractSequenceWitness: (input) => {
     let leSeqence = module.exports.extractSequenceLEWitness(input);
@@ -251,7 +249,7 @@ module.exports = {
    */
   // TODO: no test, check against function that uses this
   extractInputTxId: (input) => {
-    let leId = module.exports.extractInputTxId(input);
+    let leId = module.exports.extractInputTxIdLE(input);
     return module.exports.reverseEndianness(leId);
   },
 
@@ -284,10 +282,10 @@ module.exports = {
   /* ****** */
 
   /**
-   * @notice Determines the length of an output
-   * @dev 5 types: WPKH, WSH, PKH, SH, and OP_RETURN
-   * @param {Uint8Array} output The output
-   * @returns {number} The length indicated by the prefix, error if invalid length
+   * @notice                Determines the length of an output
+   * @dev                   5 types: WPKH, WSH, PKH, SH, and OP_RETURN
+   * @param {Uint8Array}    output The output
+   * @returns {number}      The length indicated by the prefix, error if invalid length
    */
   determineOutputLength: (output) => {
     let len = utils.safeSlice(output, 8, 9)[0];
@@ -300,11 +298,11 @@ module.exports = {
   },
 
   /**
-   * @notice Extracts the output at a given index in the TxIns vector
-   * @dev Iterates over the vout. If you need to extract multiple, write a custom function
-   * @param {Uint8Array} vout The _vout to extract from
-   * @param {number} index The 0-indexed location of the output to extract
-   * @returns {Uint8Array} The specified output
+   * @notice                Extracts the output at a given index in the TxIns vector
+   * @dev                   Iterates over the vout. If you need to extract multiple, write a custom function
+   * @param {Uint8Array}    vout The _vout to extract from
+   * @param {number}        index The 0-indexed location of the output to extract
+   * @returns {Uint8Array}  The specified output
    */
   extractOutputAtIndex: (vout, index) => {
     let len;
@@ -323,30 +321,30 @@ module.exports = {
   },
 
   /**
-   * @notice Extracts the output script length
-   * @dev Indexes the length prefix on the pk_script
-   * @param {Uint8Array} output The output
-   * @returns {Uint8Array} The 1 byte length prefix
+   * @notice                Extracts the output script length
+   * @dev                   Indexes the length prefix on the pk_script
+   * @param {Uint8Array}    output The output
+   * @returns {Uint8Array}  The 1 byte length prefix
    */
   extractOutputScriptLen: (output) => {
     return utils.safeSlice(output, 8, 9);
   },
 
   /**
-   * @notice Extracts the value bytes from the output in a tx
-   * @dev Value is an 8-byte little-endian number
-   * @param {Uint8Array} output The output
-   * @returns {Uint8Array} The output value as LE bytes
+   * @notice                Extracts the value bytes from the output in a tx
+   * @dev                   Value is an 8-byte little-endian number
+   * @param {Uint8Array}    output The output
+   * @returns {Uint8Array}  The output value as LE bytes
    */
   extractValueLE: (output) => {
     return utils.safeSlice(output, 0, 8);
   },
 
   /**
-   * @notice Extracts the value from the output in a tx
-   * @dev Value is an 8-byte little-endian number
-   * @param {Uint8Array} output The output
-   * @returns {Uint8Array} The output value
+   * @notice                Extracts the value from the output in a tx
+   * @dev                   Value is an 8-byte little-endian number
+   * @param {Uint8Array}    output The output
+   * @returns {Uint8Array}  The output value
    */
   extractValue: (output) => {
     let leValue = module.exports.extractValueLE(output);
@@ -355,10 +353,10 @@ module.exports = {
   },
 
   /**
-   * @notice Extracts the data from an op return output
-   * @dev Returns empty Uint8Array if no data or not an op return
-   * @param {Uint8Array} output The output
-   * @returns {Uint8Array} Any data contained in the opreturn output, null if not an op return
+   * @notice                Extracts the data from an op return output
+   * @dev                   Returns empty Uint8Array if no data or not an op return
+   * @param {Uint8Array}    output The output
+   * @returns {Uint8Array}  Any data contained in the opreturn output, null if not an op return
    */
   extractOpReturnData: (output) => {
     if (!utils.typedArraysAreEqual(utils.safeSlice(output, 9, 10), new Uint8Array([106]))) {
@@ -369,10 +367,10 @@ module.exports = {
   },
 
   /**
-   * @notice Extracts the hash from the output script
-   * @dev Determines type by the length prefix and validates format
-   * @param {Uint8Array} output The output
-   * @returns {Uint8Array} The hash committed to by the pk_script, or null for errors
+   * @notice                Extracts the hash from the output script
+   * @dev                   Determines type by the length prefix and validates format
+   * @param {Uint8Array}    output The output
+   * @returns {Uint8Array}  The hash committed to by the pk_script, or null for errors
    */
   extractHash: (output) => {
     if (utils.safeSlice(output, 9, 10)[0] == 0) {
@@ -439,10 +437,10 @@ module.exports = {
   },
 
   /**
-   * @noticeChecks            Checks that the vout passed up is properly formatted
-   * @dev                     Consider a vin with a valid vout in its scriptsig
-   * @param {Uint8Array}      vout Raw bytes length-prefixed output vector
-   * @returns {Boolean}       True if it represents a validly formatted bout
+   * @notice                Checks that the vout passed up is properly formatted
+   * @dev                   Consider a vin with a valid vout in its scriptsig
+   * @param {Uint8Array}    vout Raw bytes length-prefixed output vector
+   * @returns {Boolean}     True if it represents a validly formatted bout
    */
   validateVout: (vout) => {
     offset = 1n;
@@ -516,7 +514,7 @@ module.exports = {
    * @notice                Calculate difficulty from the difficulty 1 target and current target
    * @dev                   Difficulty 1 is 0x1d00ffff on mainnet and testnet
    * @dev                   Difficulty 1 is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
-   * @param {BigInt/number} target
+   * @param {BigInt/number} target The current target
    * @returns {BigInt}      The block difficulty (bdiff)
    */
   calculateDifficulty: (target) => {
@@ -538,9 +536,9 @@ module.exports = {
   },
 
   /**
-   *  @notice                Extracts the previous block's hash from a block header
+   *  @notice               Extracts the previous block's hash from a block header
    * @dev                   Block headers do NOT include block number :(
-   * @param {Uint8Array}    header
+   * @param {Uint8Array}    header The header
    * @returns {Uint8Array}  The previous block's hash (big-endian)
    */
   extractPrevBlockBE: (header) => {
@@ -550,7 +548,7 @@ module.exports = {
   /**
    * @notice                Extracts the timestamp from a block header
    * @dev                   Time is not 100% reliable
-   * @param {Uint8Array}    header
+   * @param {Uint8Array}    header The header
    * @returns {Uint8Array}  The timestamp (little-endian bytes)
    */
   extractTimestampLE: (header) => {
@@ -558,10 +556,10 @@ module.exports = {
   },
 
   /**
-   * @notice                    Extracts the timestamp from a block header
-   * @dev                       Time is not 100% reliable
-   * @param {Uint8Array}        header
-   * @returns {BigInt/number}   The timestamp (uint)
+   * @notice                Extracts the timestamp from a block header
+   * @dev                   Time is not 100% reliable
+   * @param {Uint8Array}    header The header
+   * @returns {BigInt}      The timestamp (uint)
    */
   extractTimestamp: (header) => {
     return utils.bytesToUint(module.exports.reverseEndianness(module.exports.extractTimestampLE(header)));
@@ -570,7 +568,7 @@ module.exports = {
   /**
    * @notice                Extracts the expected difficulty from a block header
    * @dev                   Does NOT verify the work
-   * @param {Uint8Array}    header
+   * @param {Uint8Array}    header The header
    * @returns {BigInt}      The difficulty as an integer
    */
   extractDifficulty: (header) => {
@@ -589,11 +587,11 @@ module.exports = {
   },
 
   /**
-   * @notice                  Verifies a Bitcoin-style merkle tree
-   * @dev                     Leaves are 1-indexed.
-   * @param {Uin8Array}       proof The proof. Tightly packed LE sha256 hashes. The last hash is the root
-   * @param {Number}          index The index of the leaf
-   * @returns {Boolean}       true if the proof is value, else false
+   * @notice                Verifies a Bitcoin-style merkle tree
+   * @dev                   Leaves are 1-indexed.
+   * @param {Uin8Array}     proof The proof. Tightly packed LE sha256 hashes. The last hash is the root
+   * @param {Number}        index The index of the leaf
+   * @returns {Boolean}     true if the proof is value, else false
    */
   verifyHash256Merkle: (proof, index) => {
     const proofLength = proof.length;
@@ -631,9 +629,9 @@ module.exports = {
   /**
    * @notice                performs the bitcoin difficulty retarget
    * @dev                   implements the Bitcoin algorithm precisely
-   * @param {number}        previousTarget, could be BigInt
-   * @param {number}        firstTimestamp
-   * @param {number}        secondTimestamp
+   * @param {BigInt}        previousTarget the target of the previous period
+   * @param {number}        firstTimestamp the timestamp of the first block in the difficulty period
+   * @param {number}        secondTimestamp the timestamp of the last block in the difficulty period
    * @returns {BigInt}      the new period's target threshold
    */
   retargetAlgorithm: (previousTarget, firstTimestamp, secondTimestamp) => {

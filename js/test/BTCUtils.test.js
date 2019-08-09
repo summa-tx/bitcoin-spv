@@ -2,7 +2,7 @@
 // const BN = require('bn.js');
 const constants = require('./constants');
 
-const utils = require('../../utils/utils');
+const utils = require('../utils/utils');
 
 const assert = require('chai').assert;
 

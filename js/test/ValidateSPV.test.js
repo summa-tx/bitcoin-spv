@@ -5,25 +5,20 @@ const assert = require('chai').assert;
 
 const ValidateSPV = require('../lib/ValidateSPV');
 const utils = require('./utils');
-const btcUtils = require('../../utils/utils');
+const btcUtils = require('../utils/utils');
 const constants = require('./constants');
 
 const OP_RETURN = constants.OP_RETURN;
 const HEADER_ERR = constants.HEADER_ERR;
 
+const INPUT_TYPES = {
+  NONE: 0,
+  LEGACY: 1,
+  COMPATIBILITY: 2,
+  WITNESS: 3
+}
+
 describe('ValidateSPV', () => {
-  describe.skip('#error constants', async () => {
-    it('tests the constant getters for that sweet sweet coverage', async () => {
-      let res = await ValidateSPV.getErrBadLength();
-      assert.equal(res, BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16));
-
-      res = await ValidateSPV.getErrInvalidChain();
-      assert.equal(res, BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe', 16));
-
-      res = await ValidateSPV.getErrLowWork();
-      assert.equal(res, BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd', 16));
-    });
-  });
 
   describe('#prove', async () => {
     it('returns true if proof is valid', async () => {
@@ -85,8 +80,7 @@ describe('ValidateSPV', () => {
       assert.equal(txIn.sequence, sequence);
       assert.isTrue(btcUtils.typedArraysAreEqual(txIn.inputId, outpointTxId));
       assert.equal(txIn.inputIndex, index);
-      console.log('val: ', ValidateSPV)
-      assert.equal(txIn.inputType, utils.INPUT_TYPES.WITNESS);
+      assert.equal(txIn.inputType, INPUT_TYPES.WITNESS);
     });
 
     it('handles Legacy inputs', async () => {
@@ -95,7 +89,7 @@ describe('ValidateSPV', () => {
       assert.equal(txIn.sequence, sequence);
       assert.isTrue(btcUtils.typedArraysAreEqual(txIn.inputId, outpointTxId));
       assert.equal(txIn.inputIndex, index);
-      assert.equal(txIn.inputType, utils.INPUT_TYPES.LEGACY);
+      assert.equal(txIn.inputType, INPUT_TYPES.LEGACY);
     });
 
     it('handles p2wpkh-via-p2sh compatibility inputs', async () => {
@@ -105,7 +99,7 @@ describe('ValidateSPV', () => {
       // assert.equal(txIn.hash, outpointTxId);
       assert.isTrue(btcUtils.typedArraysAreEqual(txIn.inputId, outpointTxId));
       assert.equal(txIn.inputIndex, index);
-      assert.equal(txIn.inputType, utils.INPUT_TYPES.COMPATIBILITY);
+      assert.equal(txIn.inputType, INPUT_TYPES.COMPATIBILITY);
     });
 
     it('handles p2wsh-via-p2sh compatibility inputs', async () => {
@@ -114,7 +108,7 @@ describe('ValidateSPV', () => {
       assert.equal(txIn.sequence, sequence);
       assert.isTrue(btcUtils.typedArraysAreEqual(txIn.inputId, outpointTxId));
       assert.equal(txIn.inputIndex, index);
-      assert.equal(txIn.inputType, utils.INPUT_TYPES.COMPATIBILITY);
+      assert.equal(txIn.inputType, INPUT_TYPES.COMPATIBILITY);
     });
   });
 
@@ -124,7 +118,7 @@ describe('ValidateSPV', () => {
         btcUtils.deserializeHex(OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT)
       );
 
-      const value = BigInt(String(OP_RETURN.INDEXED_OUTPUTS[1].VALUE), 10);
+      const value = OP_RETURN.INDEXED_OUTPUTS[1].VALUE;
 
       assert.equal(opReturnTxOut.value, value);
       assert.equal(opReturnTxOut.outputType, utils.OUTPUT_TYPES.OP_RETURN);
@@ -197,25 +191,23 @@ describe('ValidateSPV', () => {
           btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].HEADER)
         );
 
-        assert.equal(btcUtils.typedArraysAreEqual));
-        // assert.equal(validHeader.version, OP_RETURN.INDEXED_HEADERS[0].VERSION);
-        // assert.equal(validHeader.prevHash, btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].PREV_HASH_LE));
-        // assert.equal(validHeader.merkleRoot, btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].MERKLE_ROOT_LE));
-        // assert.equal(validHeader.timestamp, OP_RETURN.INDEXED_HEADERS[0].TIMESTAMP);
-        // assert.equal(validHeader.target, OP_RETURN.INDEXED_HEADERS[0].TARGET);
-        // assert.equal(validHeader.nonce, OP_RETURN.INDEXED_HEADERS[0].NONCE);
+        assert.isTrue(btcUtils.typedArraysAreEqual(validHeader.digest, btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE)));
+        assert.equal(validHeader.version, OP_RETURN.INDEXED_HEADERS[0].VERSION);
+        assert.isTrue(btcUtils.typedArraysAreEqual(validHeader.prevHash, btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].PREV_HASH_LE)));
+        assert.isTrue(btcUtils.typedArraysAreEqual(validHeader.merkleRoot, btcUtils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].MERKLE_ROOT_LE)));
+        assert.equal(validHeader.timestamp, OP_RETURN.INDEXED_HEADERS[0].TIMESTAMP);
+        assert.equal(validHeader.target, OP_RETURN.INDEXED_HEADERS[0].TARGET);
+        assert.equal(validHeader.nonce, OP_RETURN.INDEXED_HEADERS[0].NONCE);
       });
 
     it('bubble up errors if input header is not 80 bytes', async () => {
       // Removed a byte from the header version to create error
-      const invalidHeader = await ValidateSPV.parseHeader(
-        btcUtils.deserializeHex(HEADER_ERR.HEADER_0_LEN)
-      );
+      const invalidHeader = await ValidateSPV.parseHeader(btcUtils.deserializeHex(HEADER_ERR.HEADER_0_LEN));
 
-      assert.equal(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.digest);
+      assert.isTrue(btcUtils.typedArraysAreEqual(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.digest));
       assert.equal(0n, invalidHeader.version);
-      assert.equal(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.prevHash);
-      assert.equal(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.merkleRoot);
+      assert.isTrue(btcUtils.typedArraysAreEqual(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.prevHash));
+      assert.isTrue(btcUtils.typedArraysAreEqual(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.merkleRoot));
       assert.equal(0n, invalidHeader.timestamp);
       assert.equal(0n, invalidHeader.target);
       assert.equal(0n, invalidHeader.nonce);
