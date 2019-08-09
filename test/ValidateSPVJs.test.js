@@ -100,27 +100,28 @@ describe('ValidateSPV', () => {
       const txIn = await ValidateSPV.parseInput(legacyInput);
 
       assert.equal(txIn.sequence, sequence);
-      assert.equal(txIn.hash, outpointTxId);
-      assert.equal(txIn.index, index);
-      assert.equal(txIn.inputType, new BN(utils.INPUT_TYPES.LEGACY, 10));
+      assert.isTrue(btcUtils.typedArraysAreEqual(txIn.inputId, outpointTxId));
+      assert.equal(txIn.inputIndex, index);
+      assert.equal(txIn.inputType, INPUT_TYPES.LEGACY);
     });
 
     it('handles p2wpkh-via-p2sh compatibility inputs', async () => {
       const txIn = await ValidateSPV.parseInput(compatibilityWPKHInput);
 
       assert.equal(txIn.sequence, sequence);
-      assert.equal(txIn.hash, outpointTxId);
-      assert.equal(txIn.index, index);
-      assert.equal(txIn.inputType, BigInt(utils.INPUT_TYPES.COMPATIBILITY, 10));
+      // assert.equal(txIn.hash, outpointTxId);
+      assert.isTrue(btcUtils.typedArraysAreEqual(txIn.inputId, outpointTxId));
+      assert.equal(txIn.inputIndex, index);
+      assert.equal(txIn.inputType, INPUT_TYPES.COMPATIBILITY);
     });
 
     it('handles p2wsh-via-p2sh compatibility inputs', async () => {
       const txIn = await ValidateSPV.parseInput(compatibilityWSHInput);
 
       assert.equal(txIn.sequence, sequence);
-      assert.equal(txIn.hash, outpointTxId);
-      assert.equal(txIn.index, index);
-      assert.equal(txIn.inputType, BigInt(utils.INPUT_TYPES.COMPATIBILITY, 10));
+      assert.isTrue(btcUtils.typedArraysAreEqual(txIn.inputId, outpointTxId));
+      assert.equal(txIn.inputIndex, index);
+      assert.equal(txIn.inputType, INPUT_TYPES.COMPATIBILITY);
     });
   });
 
