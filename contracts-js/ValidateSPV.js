@@ -53,7 +53,7 @@ module.exports = {
       return true;
     }
 
-    let proof = txid + ntermediateNodes + merkleRoot;
+    let proof = txid + intermediateNodes + merkleRoot;
     // If the Merkle proof failed, bubble up error
     return proof.verifyHash256Merkle(index);
   },

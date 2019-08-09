@@ -13,13 +13,13 @@ const OP_RETURN = constants.OP_RETURN
 describe('ValidateSPV', () => {
   describe('#error constants', async () => {
     it('tests the constant getters for that sweet sweet coverage', async () => {
-      let res = await ValidateSPV.getErrBadLength.call();
+      let res = await ValidateSPV.getErrBadLength();
       assert.equal(res, BigInt('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16));
 
-      res = await ValidateSPV.getErrInvalidChain.call();
+      res = await ValidateSPV.getErrInvalidChain();
       assert.equal(res, BigInt('fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe', 16));
 
-      res = await ValidateSPV.getErrLowWork.call();
+      res = await ValidateSPV.getErrLowWork();
       assert.equal(res, BigInt('fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd', 16));
     });
   });
@@ -37,8 +37,8 @@ describe('ValidateSPV', () => {
 
     it('shortcuts the coinbase special case', async () => {
       const res = await ValidateSPV.prove(
-        constants.OP_RETURN.TXID_LE,
-        constants.OP_RETURN.TXID_LE,
+        btcUtils.deserializeHex(OP_RETURN.TXID_LE),
+        btcUtils.deserializeHex(OP_RETURN.TXID_LE),
         '0x',
         0
       );
@@ -47,10 +47,10 @@ describe('ValidateSPV', () => {
 
     it('returns false if Merkle root is invalid', async () => {
       const res = await ValidateSPV.prove(
-        constants.OP_RETURN.TXID_LE,
-        constants.OP_RETURN.TXID_LE,
-        constants.OP_RETURN.PROOF,
-        constants.OP_RETURN.PROOF_INDEX
+        btcUtils.deserializeHex(OP_RETURN.TXID_LE),
+        btcUtils.deserializeHex(OP_RETURN.TXID_LE),
+        btcUtils.deserializeHex(OP_RETURN.PROOF),
+        OP_RETURN.PROOF_INDEX
       );
       assert.isFalse(res);
     });
@@ -59,125 +59,125 @@ describe('ValidateSPV', () => {
   describe('#calculateTxId', async () => {
     it('returns the transaction hash', async () => {
       const res = await ValidateSPV.calculateTxId(
-        constants.OP_RETURN.VERSION,
-        constants.OP_RETURN.VIN,
-        constants.OP_RETURN.VOUT,
-        constants.OP_RETURN.LOCKTIME_LE
+        btcUtils.deserializeHex(OP_RETURN.VERSION),
+        btcUtils.deserializeHex(OP_RETURN.VIN),
+        btcUtils.deserializeHex(OP_RETURN.VOUT),
+        btcUtils.deserializeHex(OP_RETURN.LOCKTIME_LE)
       );
-      assert.equal(res, constants.OP_RETURN.TXID_LE);
+      assert.equal(res, btcUtils.deserializeHex(OP_RETURN.TXID_LE));
     });
   });
 
   describe('#parseInput', async () => {
-    const input = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff';
-    const legacyInput = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab375000000000101ffffffff';
-    const compatibilityWSHInput = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000220020eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff';
-    const compatibilityWPKHInput = '0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000160014eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff';
-    const sequence = new BN('ffffffff', 16);
-    const index = new BN('0', 10);
-    const outpointTxId = '0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b';
+    const input = btcUtils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff');
+    const legacyInput = btcUtils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab375000000000101ffffffff');
+    const compatibilityWSHInput = btcUtils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000220020eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff');
+    const compatibilityWPKHInput = btcUtils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000160014eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff');
+    const sequence = BigInt('ffffffff', 16);
+    const index = BigInt('0', 10);
+    const outpointTxId = btcUtils.deserializeHex('0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b');
 
     it('returns the tx input sequence and outpoint', async () => {
       const txIn = await ValidateSPV.parseInput(input);
 
-      assert(txIn._sequence.eq(sequence));
+      assert.equal(txIn.sequence, sequence);
       assert.equal(txIn._hash, outpointTxId);
-      assert(txIn._index.eq(index));
-      assert(txIn._inputType.eq(new BN(utils.INPUT_TYPES.WITNESS, 10)));
+      assert.equal(txIn.index, index);
+      assert.equal(txIn.inputType, BigInt(utils.INPUT_TYPES.WITNESS, 10));
     });
 
     it('handles Legacy inputs', async () => {
       const txIn = await ValidateSPV.parseInput(legacyInput);
 
-      assert(txIn._sequence.eq(sequence));
-      assert.equal(txIn._hash, outpointTxId);
-      assert(txIn._index.eq(index));
-      assert(txIn._inputType.eq(new BN(utils.INPUT_TYPES.LEGACY, 10)));
+      assert.equal(txIn.sequence, sequence);
+      assert.equal(txIn.hash, outpointTxId);
+      assert.equal(txIn.index, index);
+      assert.equal(txIn.inputType, new BN(utils.INPUT_TYPES.LEGACY, 10));
     });
 
     it('handles p2wpkh-via-p2sh compatibility inputs', async () => {
       const txIn = await ValidateSPV.parseInput(compatibilityWPKHInput);
 
-      assert(txIn._sequence.eq(sequence));
-      assert.equal(txIn._hash, outpointTxId);
-      assert(txIn._index.eq(index));
-      assert(txIn._inputType.eq(new BN(utils.INPUT_TYPES.COMPATIBILITY, 10)));
+      assert.equal(txIn.sequence, sequence);
+      assert.equal(txIn.hash, outpointTxId);
+      assert.equal(txIn.index, index);
+      assert.equal(txIn.inputType, BigInt(utils.INPUT_TYPES.COMPATIBILITY, 10));
     });
 
     it('handles p2wsh-via-p2sh compatibility inputs', async () => {
       const txIn = await ValidateSPV.parseInput(compatibilityWSHInput);
 
-      assert(txIn._sequence.eq(sequence));
+      assert.equal(txIn._sequence, sequence);
       assert.equal(txIn._hash, outpointTxId);
-      assert(txIn._index.eq(index));
-      assert(txIn._inputType.eq(new BN(utils.INPUT_TYPES.COMPATIBILITY, 10)));
+      assert.equal(txIn._index, index);
+      assert.equal(txIn._inputType, BigInt(utils.INPUT_TYPES.COMPATIBILITY, 10));
     });
   });
 
   describe('#parseOutput', async () => {
     it('returns the tx output value, output type, and payload for an OP_RETURN output', async () => {
       const opReturnTxOut = await ValidateSPV.parseOutput(
-        constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT
+        btcUtils.deserializeHex(OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT)
       );
 
-      const value = new BN(String(constants.OP_RETURN.INDEXED_OUTPUTS[1].VALUE), 10);
+      const value = BigInt(String(OP_RETURN.INDEXED_OUTPUTS[1].VALUE), 10);
 
-      assert(opReturnTxOut._value.eq(value));
-      assert(opReturnTxOut._outputType.eq(utils.OUTPUT_TYPES.OP_RETURN));
-      assert.equal(opReturnTxOut._payload, constants.OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD);
+      assert.equal(opReturnTxOut.value, value);
+      assert.equal(opReturnTxOut.outputType, utils.OUTPUT_TYPES.OP_RETURN);
+      assert.equal(opReturnTxOut.payload, OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD);
     });
 
     it('returns the tx output value, output type, and payload for an WPKH output', async () => {
-      const output = '0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c';
-      const value = new BN('1000001000', 10);
-      const payload = '0x7849e6bf5e4b1ba7235572d1b0cbc094f0213e6c';
+      const output = btcUtils.deserializeHex('0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c');
+      const value = 1000001000n;
+      const payload = btcUtils.deserializeHex('0x7849e6bf5e4b1ba7235572d1b0cbc094f0213e6c');
 
       const wpkhOutput = await ValidateSPV.parseOutput(output);
 
-      assert(wpkhOutput._value.eq(value));
-      assert(wpkhOutput._outputType.eq(utils.OUTPUT_TYPES.WPKH));
-      assert.equal(wpkhOutput._payload, payload);
+      assert.equal(wpkhOutput.value, value);
+      assert.equal(wpkhOutput.outputType, utils.OUTPUT_TYPES.WPKH);
+      assert.equal(wpkhOutput.payload, payload);
     });
 
     it('returns the tx output value, output type, and payload for an WSH output', async () => {
-      const output = '0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922';
-      const value = new BN('1000000', 10);
+      const output = btcUtils.deserializeHex('0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922');
+      const value = 1000000n;
       const payload = '0xaedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922';
 
       const wshOutput = await ValidateSPV.parseOutput(output);
 
-      assert(wshOutput._value.eq(value));
-      assert(wshOutput._outputType.eq(utils.OUTPUT_TYPES.WSH));
-      assert.equal(wshOutput._payload, payload);
+      assert.equal(wshOutput.value, value);
+      assert.equal(wshOutput.outputType, utils.OUTPUT_TYPES.WSH);
+      assert.equal(wshOutput.payload, payload);
     });
 
     it('shows non-standard if the tx output type is not identifiable', async () => {
       // Changes 0x6a (OP_RETURN) to 0x7a to create error
-      const output = '0x0000000000000000167a14edb1b5c2f39af0fec151732585b1049b07895211';
+      const output = btcUtils.deserializeHex('0x0000000000000000167a14edb1b5c2f39af0fec151732585b1049b07895211');
 
       const nonstandardOutput = await ValidateSPV.parseOutput(output);
 
-      assert(new BN('0', 10).eq(nonstandardOutput._value));
-      assert(nonstandardOutput._outputType.eq(utils.OUTPUT_TYPES.NONSTANDARD));
-      assert.isNull(nonstandardOutput._payload);
+      assert.equal(0n, nonstandardOutput.value);
+      assert.equal(nonstandardOutput.outputType, utils.OUTPUT_TYPES.NONSTANDARD);
+      assert.isNull(nonstandardOutput.payload);
     });
 
     it('returns the tx output value, output type, and payload for an SH output', async () => {
-      const output = '0xe8df05000000000017a914a654ebafa7a37e04a7ec3f684e34897e48f0496287';
-      const value = new BN('05dfe8', 16);
-      const payload = '0xa654ebafa7a37e04a7ec3f684e34897e48f04962';
+      const output = btcUtils.deserializeHex('0xe8df05000000000017a914a654ebafa7a37e04a7ec3f684e34897e48f0496287');
+      const value = 385000n;
+      const payload = btcUtils.deserializeHex('0xa654ebafa7a37e04a7ec3f684e34897e48f04962');
 
       const shOutput = await ValidateSPV.parseOutput(output);
 
-      assert(shOutput._value.eq(value));
-      assert(shOutput._outputType.eq(utils.OUTPUT_TYPES.SH));
-      assert.equal(shOutput._payload, payload);
+      assert.equal(shOutput.value, value);
+      assert.equal(shOutput.outputType, utils.OUTPUT_TYPES.SH);
+      assert.equal(shOutput.payload, payload);
     });
 
     it('returns the tx output value, output type, and payload for an PKH output', async () => {
-      const output = '0x88080000000000001976a9141458514240d7287e5254af48cd292eb876cb07eb88ac';
-      const value = new BN('0888', 16);
-      const payload = '0x1458514240d7287e5254af48cd292eb876cb07eb';
+      const output = btcUtils.deserializeHex('0x88080000000000001976a9141458514240d7287e5254af48cd292eb876cb07eb88ac');
+      const value = 2184n;
+      const payload = btcUtils.deserializeHex('0x1458514240d7287e5254af48cd292eb876cb07eb');
       const pkhOutput = await ValidateSPV.parseOutput(output);
 
       assert(pkhOutput._value.eq(value));
