@@ -69,6 +69,7 @@ describe('ValidateSPV', () => {
       );
       let arraysAreEqual = btcUtils.typedArraysAreEqual(res, btcUtils.deserializeHex(OP_RETURN.TXID_LE))
       assert.isTrue(arraysAreEqual);
+      // assert.equal(res, btcUtils.deserializeHex(OP_RETURN.TXID_LE))
     });
   });
 

@@ -15,43 +15,13 @@ const utils = require("../utils/utils")
 // library ValidateSPV {
 module.exports = {
 
-//     using BTCUtils for bytes;
-//     using BTCUtils for uint256;
-//     using BytesLib for bytes;
-//     using SafeMath for uint256;
-
-//     enum InputTypes { NONE, LEGACY, COMPATIBILITY, WITNESS }
-//     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH, NONSTANDARD }
-
-
-//     function prove(
-//         bytes32 _txid,
-//         bytes32 _merkleRoot,
-//         bytes memory _intermediateNodes,
-//         uint _index
-//     ) internal pure returns (bool) {
-//         // Shortcut the empty-block case
-//         if (_txid == _merkleRoot && _index == 0 && _intermediateNodes.length == 0) {
-//             return true;
-//         }
-
-//         bytes memory _proof = abi.encodePacked(_txid, _intermediateNodes, _merkleRoot);
-//         // If the Merkle proof failed, bubble up error
-//         return _proof.verifyHash256Merkle(_index);
-//     }
-
-  /// @notice                     Validates a tx inclusion in the block
-  /// @param _txid                The txid (LE)
-  /// @param _merkleRoot          The merkle root (as in the block header)
-  /// @param _intermediateNodes   The proof's intermediate nodes (digests between leaf and root)
-  /// @param _index               The leaf's index in the tree (0-indexed)
-  /// @return                     true if fully valid, false otherwise
   /**
-   * @notice
-   * @dev
-   * @param {}
-   * @param {}
-   * @returns {}
+   * @notice Validates a tx inclusion in the block
+   * @param {Uint8Array} txid The txid (LE)
+   * @param {Uint8Array} merkleRoot The merkle root (as in the block header)
+   * @param {Uint8Array} intermediateNodes The proof's intermediate nodes (digests between leaf and root)
+   * @param {number} index The leaf's index in the tree (0-indexed)
+   * @returns {boolean} true if fully valid, false otherwise
    */
   prove: (txid, merkleRoot, intermediateNodes, index) => {
     // Shortcut the empty-block case
@@ -59,42 +29,22 @@ module.exports = {
       return true;
     }
 
-    // concatUint8Arrays only takes in two arguments
-    let partialProof = utils.concatUint8Arrays(txid, intermediateNodes)
-    let proof = utils.concatUint8Arrays(partialProof, merkleRoot)
+    let proof = utils.concatUint8Arrays([txid, intermediateNodes, merkleRoot])
     // If the Merkle proof failed, bubble up error
     return btcUtils.verifyHash256Merkle(proof, index);
   },
 
-//     function calculateTxId(
-//         bytes memory _version,
-//         bytes memory _vin,
-//         bytes memory _vout,
-//         bytes memory _locktime
-//     ) internal pure returns (bytes32) {
-//         // Get transaction hash double-Sha256(version + nIns + inputs + nOuts + outputs + locktime)
-//         return abi.encodePacked(_version, _vin, _vout, _locktime).hash256();
-//     }
-
-  /// @notice             Hashes transaction to get txid
-  /// @dev                Supports Legacy and Witness
-  /// @param _version     4-bytes version
-  /// @param _vin         Raw bytes length-prefixed input vector
-  /// @param _vout        Raw bytes length-prefixed output vector
-  /// @ param _locktime   4-byte tx locktime
-  /// @return             32-byte transaction id, little endian
   /**
-   * @notice
-   * @dev
-   * @param {}
-   * @param {}
-   * @returns {}
+   * @notice Hashes transaction to get txid
+   * @dev Supports Legacy and Witness
+   * @param {Uint8Array} version 4-bytes version
+   * @param {Uint8Array} vin Raw bytes length-prefixed input vector
+   * @param {Uint8Array} vout Raw bytes length-prefixed output vector
+   * @param {Uint8Array} locktime 4-byte tx locktime
+   * @returns {Uint8Array} 32-byte transaction id, little endian
    */
   calculateTxId: (version, vin, vout, locktime) => {
-    // concatUint8Arrays only takes in two arguments
-    let versionVin = utils.concatUint8Arrays(version, vin)
-    let voutLocktime = utils.concatUint8Arrays(vout,locktime)
-    return btcUtils.hash256(utils.concatUint8Arrays(versionVin, voutLocktime));
+    return btcUtils.hash256(utils.concatUint8Arrays([version, vin, vout, locktime]));
   },
 
 //     function parseInput(bytes memory _input) internal pure returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {
