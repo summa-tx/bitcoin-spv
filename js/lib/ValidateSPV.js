@@ -97,9 +97,9 @@ module.exports = {
    * @returns {object}      Tx output value, output type, payload
    */
   parseOutput: (output) => {
-    let value = output.extractValue();
+    let value = btcUtils.extractValue(output);
 
-    if (btcUtils.typedArraysAreEqual(output.slice(9, 10), new Uint8Array([106]))) {
+    if (utils.typedArraysAreEqual(output.slice(9, 10), new Uint8Array([106]))) {
       // OP_RETURN
       outputType = OUTPUT_TYPES.OP_RETURN;
       payload = btcUtils.extractOpReturnData(output);
@@ -123,6 +123,7 @@ module.exports = {
           payload = output.slice(11, 31);
         } else {
           outputType = OUTPUT_TYPES.NONSTANDARD;
+          payload = null
         }
     }
 

@@ -136,7 +136,7 @@ module.exports = {
    * @returns {}
    */
   parseOutput: (output) => {
-    let value = output.extractValue();
+    let value = btcUtils.extractValue(output);
 
     if (btcUtils.typedArraysAreEqual(output.slice(9, 10), new Uint8Array([106]))) {
       // OP_RETURN

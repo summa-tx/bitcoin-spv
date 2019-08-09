@@ -130,11 +130,11 @@ describe('ValidateSPV', () => {
         btcUtils.deserializeHex(OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT)
       );
 
-      const value = BigInt(String(OP_RETURN.INDEXED_OUTPUTS[1].VALUE), 10);
+      const value = OP_RETURN.INDEXED_OUTPUTS[1].VALUE;
 
       assert.equal(opReturnTxOut.value, value);
       assert.equal(opReturnTxOut.outputType, utils.OUTPUT_TYPES.OP_RETURN);
-      assert.equal(opReturnTxOut.payload, OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD);
+      assert.isTrue(btcUtils.typedArraysAreEqual(opReturnTxOut.payload, btcUtils.deserializeHex(OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD)));
     });
 
     it('returns the tx output value, output type, and payload for an WPKH output', async () => {
@@ -146,19 +146,19 @@ describe('ValidateSPV', () => {
 
       assert.equal(wpkhOutput.value, value);
       assert.equal(wpkhOutput.outputType, utils.OUTPUT_TYPES.WPKH);
-      assert.equal(wpkhOutput.payload, payload);
+      assert.isTrue(btcUtils.typedArraysAreEqual(wpkhOutput.payload, payload));
     });
 
     it('returns the tx output value, output type, and payload for an WSH output', async () => {
       const output = btcUtils.deserializeHex('0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922');
       const value = 1000000n;
-      const payload = '0xaedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922';
+      const payload = btcUtils.deserializeHex('0xaedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922');
 
       const wshOutput = await ValidateSPV.parseOutput(output);
 
       assert.equal(wshOutput.value, value);
       assert.equal(wshOutput.outputType, utils.OUTPUT_TYPES.WSH);
-      assert.equal(wshOutput.payload, payload);
+      assert.isTrue(btcUtils.typedArraysAreEqual(wshOutput.payload, payload));
     });
 
     it('shows non-standard if the tx output type is not identifiable', async () => {
@@ -181,7 +181,7 @@ describe('ValidateSPV', () => {
 
       assert.equal(shOutput.value, value);
       assert.equal(shOutput.outputType, utils.OUTPUT_TYPES.SH);
-      assert.equal(shOutput.payload, payload);
+      assert.isTrue(btcUtils.typedArraysAreEqual(shOutput.payload, payload));
     });
 
     it('returns the tx output value, output type, and payload for an PKH output', async () => {
@@ -192,7 +192,7 @@ describe('ValidateSPV', () => {
 
       assert.equal(pkhOutput.value, value);
       assert.equal(pkhOutput.outputType, utils.OUTPUT_TYPES.PKH);
-      assert.equal(pkhOutput.payload, payload);
+      assert.isTrue(btcUtils.typedArraysAreEqual(pkhOutput.payload, payload));
     });
   });
 
