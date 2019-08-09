@@ -6,7 +6,7 @@ const utils = require('../utils/utils');
 
 const assert = require('chai').assert;
 
-const HEADER_170 = utils.deserializeHex('0x0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70')
+const HEADER_170 = utils.deserializeHex('0x0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70');
 
 // txid BE: d60033c5cf5c199208a9c656a29967810c4e428c22efb492fdd816e6a0a1e548
 /* eslint-disable-next-line */
@@ -27,7 +27,7 @@ const BTCUtilsJs = require('../contracts-js/BTCUtils');
 describe('BTCUtils', () => {
   it('gets the last bytes correctly', async () => {
     const res = await BTCUtilsJs.lastBytes(utils.deserializeHex('0x00112233'), 2);
-    var arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x2233'))
+    var arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x2233'));
     assert.isTrue(arraysAreEqual);
   });
 
@@ -82,20 +82,20 @@ describe('BTCUtils', () => {
   it('implements bitcoin\'s hash160', async () => {
     let res;
     res = await BTCUtilsJs.hash160(utils.deserializeHex('0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'));
-    let u8aValue = utils.deserializeHex('0x1b60c31dba9403c74d81af255f0c300bfed5faa3')
-    var arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue)
-    assert.isTrue(arraysAreEqual)
+    let u8aValue = utils.deserializeHex('0x1b60c31dba9403c74d81af255f0c300bfed5faa3');
+    var arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
+    assert.isTrue(arraysAreEqual);
   });
 
   it('implements bitcoin\'s hash256', async () => {
     let res;
     res = await BTCUtilsJs.hash256(utils.deserializeHex('0x00'));
-    var arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x1406e05881e299367766d313e26c05564ec91bf721d31726bd6e46e60689539a'))
-    assert.isTrue(arraysAreEqual)
+    var arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x1406e05881e299367766d313e26c05564ec91bf721d31726bd6e46e60689539a'));
+    assert.isTrue(arraysAreEqual);
 
     res = await BTCUtilsJs.hash256(utils.deserializeHex('0x616263')); //'abc' in utf - 8
-    var arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x4f8b42c22dd3729b519ba6f68d2da7cc5b2d606d05daed5ad5128cc03e6c6358'))
-    assert.isTrue(arraysAreEqual)
+    var arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x4f8b42c22dd3729b519ba6f68d2da7cc5b2d606d05daed5ad5128cc03e6c6358'));
+    assert.isTrue(arraysAreEqual);
   });
 
   it('extracts a sequence from a witness input as LE and int', async () => {
@@ -107,7 +107,7 @@ describe('BTCUtils', () => {
     assert.isTrue(arraysAreEqual);
 
     res = BTCUtilsJs.extractSequenceWitness(input);
-    assert.equal(res, 4294967295n)
+    assert.equal(res, 4294967295n);
   });
 
   it('extracts a sequence from a legacy input as LE and int', async () => {
@@ -118,15 +118,15 @@ describe('BTCUtils', () => {
     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xffffffff'));
     assert.isTrue(arraysAreEqual);
     res = await BTCUtilsJs.extractSequenceLegacy(input);
-    assert.equal(res, 4294967295n)
+    assert.equal(res, 4294967295n);
   });
 
   it('extracts an outpoint as bytes', async () => {
     const input = constants.OP_RETURN.INPUTS;
     const res = await BTCUtilsJs.extractOutpoint(utils.deserializeHex(input));
-    let u8aValue = utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000')
-    let arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue)
-    assert.isTrue(arraysAreEqual)
+    let u8aValue = utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000');
+    let arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
+    assert.isTrue(arraysAreEqual);
   });
 
   /* Witness Output */
@@ -154,7 +154,7 @@ describe('BTCUtils', () => {
     const opReturnOutput = constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
 
     res = await BTCUtilsJs.extractHash(utils.deserializeHex(output));
-    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[0].PAYLOAD))
+    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[0].PAYLOAD));
     assert.isTrue(arraysAreEqual);
 
     res = await BTCUtilsJs.extractHash(utils.deserializeHex(opReturnOutput));
@@ -199,7 +199,7 @@ describe('BTCUtils', () => {
     assert.isTrue(arraysAreEqual);
 
     res = await BTCUtilsJs.extractValue(output);
-    assert.equal(res, 497480n)
+    assert.equal(res, 497480n);
 
     const opReturnOutput = utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT);
     const opReturnLERes = utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[1].VALUE_LE);
@@ -209,7 +209,7 @@ describe('BTCUtils', () => {
     assert.isTrue(arraysAreEqual);
 
     res = await BTCUtilsJs.extractValue(opReturnOutput);
-    assert.equal(res, 0n)
+    assert.equal(res, 0n);
   });
 
   it('extracts op_return data blobs', async () => {
@@ -402,8 +402,8 @@ describe('BTCUtils', () => {
 
   it('extracts a root from a header', async () => {
     const res = await BTCUtilsJs.extractMerkleRootBE(HEADER_170);
-    const u8aValue = utils.deserializeHex('0x7dac2c5666815c17a3b36427de37bb9d2e2c5ccec3f8633eb91a4205cb4c10ff')
-    var arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue)
+    const u8aValue = utils.deserializeHex('0x7dac2c5666815c17a3b36427de37bb9d2e2c5ccec3f8633eb91a4205cb4c10ff');
+    var arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
     assert.isTrue(arraysAreEqual);
   });
 
@@ -414,9 +414,9 @@ describe('BTCUtils', () => {
 
   it('extracts the prev block hash', async () => {
     const res = await BTCUtilsJs.extractPrevBlockBE(HEADER_170);
-    let u8aValue = utils.deserializeHex('0x000000002a22cfee1f2c846adbd12b3e183d4f97683f85dad08a79780a84bd55')
-    var arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue)
-    assert.isTrue(arraysAreEqual)
+    let u8aValue = utils.deserializeHex('0x000000002a22cfee1f2c846adbd12b3e183d4f97683f85dad08a79780a84bd55');
+    var arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
+    assert.isTrue(arraysAreEqual);
   });
 
   it('extracts a timestamp from a header', async () => {

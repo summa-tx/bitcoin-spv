@@ -232,9 +232,9 @@ describe('ValidateSPV', () => {
     it('throws Error("Header bytes not multiple of 80.") if header chain is not divisible by 80', async () => {
       try {
         const res = await ValidateSPV.validateHeaderChain(btcUtils.deserializeHex(HEADER_ERR.HEADER_CHAIN_INVALID_LEN));
-        assert(false, 'expected an error')
+        assert(false, 'expected an error');
       } catch (e) {
-        assert.include(e.message, 'Header bytes not multiple of 80.')
+        assert.include(e.message, 'Header bytes not multiple of 80.');
       }
     });
 
@@ -243,18 +243,18 @@ describe('ValidateSPV', () => {
         const res = await ValidateSPV.validateHeaderChain(
           btcUtils.deserializeHex(HEADER_ERR.HEADER_CHAIN_INVALID_PREVHASH)
         );
-        assert(false, 'expected an error')
+        assert(false, 'expected an error');
       } catch (e) {
-        assert.include(e.message, 'Header bytes not a valid chain.')
+        assert.include(e.message, 'Header bytes not a valid chain.');
       }
     });
 
     it('throws Error("Header does not meet its own difficulty target.) if a header does not meet its target', async () => {
       try {
         const res = await ValidateSPV.validateHeaderChain(btcUtils.deserializeHex(HEADER_ERR.HEADER_CHAIN_LOW_WORK));
-        assert(false, 'expected an error')
+        assert(false, 'expected an error');
       } catch (e) {
-        assert.include(e.message, 'Header does not meet its own difficulty target.')
+        assert.include(e.message, 'Header does not meet its own difficulty target.');
       }
     });
   });
