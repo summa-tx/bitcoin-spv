@@ -7,6 +7,9 @@
 // import {SafeMath} from "./SafeMath.sol";
 // import {BTCUtils} from "./BTCUtils.sol";
 
+const btcUtils = require("./BTCUtils")
+const utils = require("../utils/utils")
+
 
 // library ValidateSPV {
 module.exports = {
@@ -19,12 +22,7 @@ module.exports = {
 //     enum InputTypes { NONE, LEGACY, COMPATIBILITY, WITNESS }
 //     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH, NONSTANDARD }
 
-//     /// @notice                     Validates a tx inclusion in the block
-//     /// @param _txid                The txid (LE)
-//     /// @param _merkleRoot          The merkle root (as in the block header)
-//     /// @param _intermediateNodes   The proof's intermediate nodes (digests between leaf and root)
-//     /// @param _index               The leaf's index in the tree (0-indexed)
-//     /// @return                     true if fully valid, false otherwise
+
 //     function prove(
 //         bytes32 _txid,
 //         bytes32 _merkleRoot,
@@ -47,24 +45,25 @@ module.exports = {
   /// @param _intermediateNodes   The proof's intermediate nodes (digests between leaf and root)
   /// @param _index               The leaf's index in the tree (0-indexed)
   /// @return                     true if fully valid, false otherwise
+  /**
+   * @notice
+   * @dev
+   * @param {}
+   * @param {}
+   * @returns {}
+   */
   prove: (txid, merkleRoot, intermediateNodes, index) => {
     // Shortcut the empty-block case
+    console.log('id', txid, 'merkleRoot', merkleRoot, 'nodes', intermediateNodes, 'index', index)
     if (txid == merkleRoot && index == 0 && intermediateNodes.length == 0) {
       return true;
     }
 
     let proof = txid + intermediateNodes + merkleRoot;
     // If the Merkle proof failed, bubble up error
-    return proof.verifyHash256Merkle(index);
+    return btcUtils.verifyHash256Merkle(proof, index);
   },
 
-//     /// @notice             Hashes transaction to get txid
-//     /// @dev                Supports Legacy and Witness
-//     /// @param _version     4-bytes version
-//     /// @param _vin         Raw bytes length-prefixed input vector
-//     /// @param _vout        Raw bytes length-prefixed output vector
-//     /// @ param _locktime   4-byte tx locktime
-//     /// @return             32-byte transaction id, little endian
 //     function calculateTxId(
 //         bytes memory _version,
 //         bytes memory _vin,
@@ -82,14 +81,17 @@ module.exports = {
   /// @param _vout        Raw bytes length-prefixed output vector
   /// @ param _locktime   4-byte tx locktime
   /// @return             32-byte transaction id, little endian
+  /**
+   * @notice
+   * @dev
+   * @param {}
+   * @param {}
+   * @returns {}
+   */
   calculateTxId: (version, vin, vout, locktime) => {
     return version;
   },
 
-//     /// @notice         Parses a tx input from raw input bytes
-//     /// @dev            Supports Legacy and Witness inputs
-//     /// @param _input   Raw bytes tx input
-//     /// @return         Tx input sequence number, tx hash, and index
 //     function parseInput(bytes memory _input) internal pure returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {
 //         // NB: If the scriptsig is exactly 00, we are witness.
 //         //     Otherwise we are compatibility
@@ -115,14 +117,17 @@ module.exports = {
   /// @dev            Supports Legacy and Witness inputs
   /// @param _input   Raw bytes tx input
   /// @return         Tx input sequence number, tx hash, and index
+  /**
+   * @notice
+   * @dev
+   * @param {}
+   * @param {}
+   * @returns {}
+   */
   parseInput: (input) => {
     return input;
   },
 
-//     /// @notice         Parses a tx output from raw output bytes
-//     /// @dev            Differentiates by output script prefix, handles legacy and witness
-//     /// @param _output  Raw bytes tx output
-//     /// @return         Tx output value, output type, payload
 //     function parseOutput(bytes memory _output) internal pure returns (uint64 _value, uint8 _outputType, bytes memory _payload) {
 
 //         _value = _output.extractValue();
@@ -161,6 +166,13 @@ module.exports = {
   /// @dev            Differentiates by output script prefix, handles legacy and witness
   /// @param _output  Raw bytes tx output
   /// @return         Tx output value, output type, payload
+  /**
+   * @notice
+   * @dev
+   * @param {}
+   * @param {}
+   * @returns {}
+   */
   parseOutput: (output) => {
     return output;
   },
@@ -200,10 +212,6 @@ module.exports = {
     return header;
   },
 
-//     /// @notice             Checks validity of header chain
-//     /// @notice             Compares the hash of each header to the prevHash in the next header
-//     /// @param _headers     Raw byte array of header chain
-//     /// @return             The total accumulated difficulty of the header chain, or an error code
 //     function validateHeaderChain(bytes memory _headers) internal pure returns (uint256 _totalDifficulty) {
 
 //         // Check header chain length
@@ -244,14 +252,17 @@ module.exports = {
   /// @notice             Compares the hash of each header to the prevHash in the next header
   /// @param _headers     Raw byte array of header chain
   /// @return             The total accumulated difficulty of the header chain, or an error code
+  /**
+   * @notice
+   * @dev
+   * @param {}
+   * @param {}
+   * @returns {}
+   */
   validateHeaderChain: (headers) => {
     return headers;
   },
 
-//     /// @notice             Checks validity of header work
-//     /// @param _digest      Header digest
-//     /// @param _target      The target threshold
-//     /// @return             true if header work is valid, false otherwise
 //     function validateHeaderWork(bytes32 _digest, uint256 _target) internal pure returns (bool) {
 //         if (_digest == bytes32(0)) {return false;}
 //         return (abi.encodePacked(_digest).bytesToUint() < _target);
@@ -277,15 +288,40 @@ module.exports = {
   /// @param _digest      Header digest
   /// @param _target      The target threshold
   /// @return             true if header work is valid, false otherwise
+  /**
+   * @notice
+   * @dev
+   * @param {}
+   * @param {}
+   * @returns {}
+   */
   validateHeaderWork: (digest, target) => {
     return digest;
   },
+
+//      function validateHeaderPrevHash(bytes memory _header, bytes32 _prevHeaderDigest) internal pure returns (bool) {
+
+//        // Extract prevHash of current header
+//        bytes32 _prevHash = _header.extractPrevBlockLE().toBytes32();
+
+//        // Compare prevHash of current header to previous header's digest
+//        if (_prevHash != _prevHeaderDigest) {return false;}
+
+//        return true;
+//      }
 
   /// @notice                     Checks validity of header chain
   /// @dev                        Compares current header prevHash to previous header's digest
   /// @param _header              The raw bytes header
   /// @param _prevHeaderDigest    The previous header's digest
   /// @return                     true if header chain is valid, false otherwise
+  /**
+   * @notice
+   * @dev
+   * @param {}
+   * @param {}
+   * @returns {}
+   */
   validateHeaderPrevHash: (header, prevHeaderDigest) => {
     return header;
   }
