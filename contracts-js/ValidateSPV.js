@@ -13,43 +13,13 @@ const utils = require("../utils/utils")
 // library ValidateSPV {
 module.exports = {
 
-//     using BTCUtils for bytes;
-//     using BTCUtils for uint256;
-//     using BytesLib for bytes;
-//     using SafeMath for uint256;
-
-//     enum InputTypes { NONE, LEGACY, COMPATIBILITY, WITNESS }
-//     enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH, NONSTANDARD }
-
-
-//     function prove(
-//         bytes32 _txid,
-//         bytes32 _merkleRoot,
-//         bytes memory _intermediateNodes,
-//         uint _index
-//     ) internal pure returns (bool) {
-//         // Shortcut the empty-block case
-//         if (_txid == _merkleRoot && _index == 0 && _intermediateNodes.length == 0) {
-//             return true;
-//         }
-
-//         bytes memory _proof = abi.encodePacked(_txid, _intermediateNodes, _merkleRoot);
-//         // If the Merkle proof failed, bubble up error
-//         return _proof.verifyHash256Merkle(_index);
-//     }
-
-  /// @notice                     Validates a tx inclusion in the block
-  /// @param _txid                The txid (LE)
-  /// @param _merkleRoot          The merkle root (as in the block header)
-  /// @param _intermediateNodes   The proof's intermediate nodes (digests between leaf and root)
-  /// @param _index               The leaf's index in the tree (0-indexed)
-  /// @return                     true if fully valid, false otherwise
   /**
-   * @notice
-   * @dev
-   * @param {}
-   * @param {}
-   * @returns {}
+   * @notice Validates a tx inclusion in the block
+   * @param {Uint8Array} txid The txid (LE)
+   * @param {Uint8Array} merkleRoot The merkle root (as in the block header)
+   * @param {Uint8Array} intermediateNodes The proof's intermediate nodes (digests between leaf and root)
+   * @param {number} index The leaf's index in the tree (0-indexed)
+   * @returns {boolean} true if fully valid, false otherwise
    */
   prove: (txid, merkleRoot, intermediateNodes, index) => {
     // Shortcut the empty-block case
