@@ -228,21 +228,33 @@ describe('ValidateSPV', () => {
       assert.equal (res, 49134394618239n);
     });
 
-    it('returns ERR_BAD_LENGTH if header chain is not divisible by 80', async () => {
-      const res = await ValidateSPV.validateHeaderChain(btcUtils.deserializeHex(HEADER_ERR.HEADER_CHAIN_INVALID_LEN));
-      assert.equal(res, BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16));
+    it('throws Error("Header bytes not multiple of 80.") if header chain is not divisible by 80', async () => {
+      try {
+        const res = await ValidateSPV.validateHeaderChain(btcUtils.deserializeHex(HEADER_ERR.HEADER_CHAIN_INVALID_LEN));
+        assert(false, 'expected an error')
+      } catch (e) {
+        assert.include(e.message, 'Header bytes not multiple of 80.')
+      }
     });
 
-    it('returns ERR_INVALID_CHAIN if header chain prevHash is invalid', async () => {
-      const res = await ValidateSPV.validateHeaderChain(
-        btcUtils.deserializeHex(HEADER_ERR.HEADER_CHAIN_INVALID_PREVHASH)
-      );
-      assert.equal(res, BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe', 16));
+    it('throws Error("Header bytes not a valid chain.") if header chain prevHash is invalid', async () => {
+      try {
+        const res = await ValidateSPV.validateHeaderChain(
+          btcUtils.deserializeHex(HEADER_ERR.HEADER_CHAIN_INVALID_PREVHASH)
+        );
+        assert(false, 'expected an error')
+      } catch (e) {
+        assert.include(e.message, 'Header bytes not a valid chain.')
+      }
     });
 
-    it('returns ERR_LOW_WORK if a header does not meet its target', async () => {
-      const res = await ValidateSPV.validateHeaderChain(btcUtils.deserializeHex(HEADER_ERR.HEADER_CHAIN_LOW_WORK));
-      assert.equal(res, BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd', 16));
+    it('throws Error("Header does not meet its own difficulty target.) if a header does not meet its target', async () => {
+      try {
+        const res = await ValidateSPV.validateHeaderChain(btcUtils.deserializeHex(HEADER_ERR.HEADER_CHAIN_LOW_WORK));
+        assert(false, 'expected an error')
+      } catch (e) {
+        assert.include(e.message, 'Header does not meet its own difficulty target.')
+      }
     });
   });
 

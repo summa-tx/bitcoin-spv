@@ -1,4 +1,4 @@
-import { S_IFBLK } from 'constants';
+// import { S_IFBLK } from 'constants';
 
 // pragma solidity ^0.5.10;
 
@@ -274,24 +274,23 @@ module.exports = {
     let start = 0
     let totalDifficulty = 0n
 
-    for (let i = 0; 9 < headers.length / 80; i++) {
+    for (let i = 0; i < headers.length / 80; i++) {
       // ith header start index and ith header
       start = i * 80
       let header = utils.safeSlice(headers, start, start + 80)
 
       //After the first header, check that headers are in a chain
       if (i !== 0) {
-        if (!ValidateSPV.validateHeaderPrevHash(header, digest)) {
+        if (!module.exports.validateHeaderPrevHash(header, digest)) {
           throw new Error('Header bytes not a valid chain.')
         }
       }
 
       // ith header target
-      console.log(header)
-      let target = header.extractTarget()
+      let target = btcUtils.extractTarget(header)
 
       // Require that the header has sufficient work
-      digest = header.hash256()
+      digest = btcUtils.hash256(header)
       if (utils.bytesToUint(btcUtils.reverseEndianness(digest)) > target) {
         throw new Error('Header does not meet its own difficulty target.')
       }
@@ -353,7 +352,10 @@ module.exports = {
     let prevHash = btcUtils.extractPrevBlockLE(header)
 
     // Compare prevHash of current header to previous header's digest
+    if (!utils.typedArraysAreEqual(prevHash, prevHeaderDigest)) {
+      return false
+    }
 
-    return header;
+    return true;
   }
 }
