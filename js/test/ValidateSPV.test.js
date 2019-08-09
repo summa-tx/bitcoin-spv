@@ -19,18 +19,6 @@ const INPUT_TYPES = {
 }
 
 describe('ValidateSPV', () => {
-  describe('#error constants', async () => {
-    it('tests the constant getters for that sweet sweet coverage', async () => {
-      let res = await ValidateSPV.getErrBadLength();
-      assert.equal(res, BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16));
-
-      res = await ValidateSPV.getErrInvalidChain();
-      assert.equal(res, BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe', 16));
-
-      res = await ValidateSPV.getErrLowWork();
-      assert.equal(res, BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd', 16));
-    });
-  });
 
   describe('#prove', async () => {
     it('returns true if proof is valid', async () => {
