@@ -5,20 +5,20 @@ const ripemd160Lib = require('./ripemd160.js');
 module.exports = {
 
   OUTPUT_TYPES: {
-    NONE: 0n,
-    WPKH: 1n,
-    WSH: 2n,
-    OP_RETURN: 3n,
-    PKH: 4n,
-    SH: 5n,
-    NONSTANDARD: 6n
+    NONE: BigInt(0),
+    WPKH: BigInt(1),
+    WSH: BigInt(2),
+    OP_RETURN: BigInt(3),
+    PKH: BigInt(4),
+    SH: BigInt(5),
+    NONSTANDARD: BigInt(6)
   },
 
   INPUT_TYPES: {
-    NONE: 0n,
-    LEGACY: 1n,
-    COMPATIBILITY: 2n,
-    WITNESS: 3n
+    NONE: BigInt(0),
+    LEGACY: BigInt(1),
+    COMPATIBILITY: BigInt(2),
+    WITNESS: BigInt(3)
   },
 
   serializeHex: (uint8arr) => {
