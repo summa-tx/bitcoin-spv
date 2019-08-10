@@ -1,16 +1,35 @@
+/* global BigInt */
 const shaLib = require('./sha256.js');
 const ripemd160Lib = require('./ripemd160.js');
 
 module.exports = {
+
+  OUTPUT_TYPES: {
+    NONE: 0n,
+    WPKH: 1n,
+    WSH: 2n,
+    OP_RETURN: 3n,
+    PKH: 4n,
+    SH: 5n,
+    NONSTANDARD: 6n
+  },
+
+  INPUT_TYPES: {
+    NONE: 0n,
+    LEGACY: 1n,
+    COMPATIBILITY: 2n,
+    WITNESS: 3n
+  },
+
   serializeHex: (uint8arr) => {
     if (!uint8arr) {
       return '';
     }
 
     let hexStr = '';
-    for (let i = 0; i < uint8arr.length; i++) {
+    for (let i = 0; i < uint8arr.length; i += 1) {
       let hex = (uint8arr[i] & 0xff).toString(16);
-      hex = (hex.length === 1) ? '0' + hex : hex;
+      hex = (hex.length === 1) ? `0${hex}` : hex;
       hexStr += hex;
     }
 
@@ -22,41 +41,33 @@ module.exports = {
       return new Uint8Array();
     }
 
-    let hex = ''
+    let hex = '';
     if (hexStr.slice(0, 2) === '0x') {
       hex = hexStr.slice(2);
     } else {
       hex = hexStr;
     }
 
-    let a = [];
-    for (let i = 0; i < hex.length; i+=2) {
-      a.push(parseInt(hex.substr(i,2),16));
+    const a = [];
+    for (let i = 0; i < hex.length; i += 2) {
+      a.push(parseInt(hex.substr(i, 2), 16));
     }
 
     return new Uint8Array(a);
   },
 
-  sha256: (buf) => {
-    return module.exports.deserializeHex(shaLib(buf));
-  },
+  sha256: buf => module.exports.deserializeHex(shaLib(buf)),
 
-  ripemd160: (buf) => {
-    return ripemd160Lib.default(buf);
-  },
+  ripemd160: buf => ripemd160Lib.default(buf),
 
   typedArraysAreEqual: (a, b) => {
     if (a.byteLength !== b.byteLength) return false;
     return a.every((val, i) => val === b[i]);
   },
 
-  /// @notice          Converts big-endian bytes to a uint
-  /// @dev             Traverses the byte array and sums the bytes
-  /// @param _b        The big-endian bytes-encoded integer
-  /// @return          The integer representation
   bytesToUint: (uint8Arr) => {
     let total = BigInt(0);
-    for (let i = 0; i < uint8Arr.length; i++) {
+    for (let i = 0; i < uint8Arr.length; i += 1) {
       total += BigInt(uint8Arr[i]) << (BigInt(uint8Arr.length - i - 1) * BigInt(8));
     }
     return total;
@@ -69,11 +80,14 @@ module.exports = {
     if (first === null || undefined) { start = 0; }
     if (last === null || undefined) { end = buf.length - 1; }
 
+    /* eslint-disable-next-line valid-typeof */
     if (typeof first === 'bigint') {
       start = Number(first);
     } else {
       start = first;
     }
+
+    /* eslint-disable-next-line valid-typeof */
     if (typeof last === 'bigint') {
       end = Number(last);
     } else {
@@ -92,25 +106,25 @@ module.exports = {
    * @param {array}        a An array of Uint8Arrays
    * @return {Uint8Array}  A Uint8Array that is a concatenation of all the arrays
   */
-//  TODO: Can we make this so it takes in more than 2 arrays?
+
   concatUint8Arrays: (arrays) => {
-    var length = 0;
-    arrays.forEach(arr => {
+    let length = 0;
+    arrays.forEach((arr) => {
       if (arr instanceof Uint8Array) {
         length += arr.length;
       } else {
         throw new Error('Arrays must be of type Uint8Array');
       }
-    })
+    });
 
-    let concatArray = new Uint8Array(length);
+    const concatArray = new Uint8Array(length);
     let offset = 0;
 
-    arrays.forEach(arr => {
+    arrays.forEach((arr) => {
       concatArray.set(arr, offset);
       offset += arr.length;
-    })
+    });
 
     return concatArray;
   }
-}
+};

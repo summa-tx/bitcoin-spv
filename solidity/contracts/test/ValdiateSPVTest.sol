@@ -3,7 +3,7 @@ pragma solidity ^0.5.10;
 /** @title ValidateSPV*/
 /** @author Summa (https://summa.one) */
 
-import {ValidateSPV} from "../contracts/ValidateSPV.sol";
+import {ValidateSPV} from "../ValidateSPV.sol";
 
 
 contract ValidateSPVTest {

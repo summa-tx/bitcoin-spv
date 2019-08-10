@@ -3,7 +3,7 @@ pragma solidity ^0.5.10;
 /** @title ValidateSPV*/
 /** @author Summa (https://summa.one) */
 
-import {CheckBitcoinSigs} from "../contracts/CheckBitcoinSigs.sol";
+import {CheckBitcoinSigs} from "../CheckBitcoinSigs.sol";
 
 contract CheckBitcoinSigsTest {
 

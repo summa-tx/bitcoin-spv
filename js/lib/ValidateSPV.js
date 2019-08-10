@@ -4,23 +4,6 @@
 const btcUtils = require("./BTCUtils");
 const utils = require("../utils/utils");
 
-const INPUT_TYPES = {
-  NONE: 0,
-  LEGACY: 1,
-  COMPATIBILITY: 2,
-  WITNESS: 3
-}
-
-const OUTPUT_TYPES = {
-  NONE: 0,
-  WPKH: 1,
-  WSH: 2,
-  OP_RETURN: 3,
-  PKH: 4,
-  SH: 5,
-  NONSTANDARD: 6
-}
-
 // library ValidateSPV {
 module.exports = {
 
@@ -74,14 +57,14 @@ module.exports = {
       witnessTag = utils.safeSlice(input, 36, 39);
 
       if (utils.typedArraysAreEqual(witnessTag, utils.deserializeHex('220020')) || utils.typedArraysAreEqual(witnessTag, utils.deserializeHex('160014'))) {
-        inputType = INPUT_TYPES.COMPATIBILITY;
+        inputType = utils.INPUT_TYPES.COMPATIBILITY;
       } else {
-        inputType = INPUT_TYPES.LEGACY;
+        inputType = utils.INPUT_TYPES.LEGACY;
       }
 
     } else {
       sequence = btcUtils.extractSequenceWitness(input);
-      inputType = INPUT_TYPES.WITNESS;
+      inputType = utils.INPUT_TYPES.WITNESS;
     }
 
     let inputId = btcUtils.extractInputTxId(input);
@@ -101,28 +84,28 @@ module.exports = {
 
     if (utils.typedArraysAreEqual(utils.safeSlice(output, 9, 10), new Uint8Array([106]))) {
       // OP_RETURN
-      outputType = OUTPUT_TYPES.OP_RETURN;
+      outputType = utils.OUTPUT_TYPES.OP_RETURN;
       payload = btcUtils.extractOpReturnData(output);
     } else {
         let prefixHash = utils.safeSlice(output, 8, 10);
         if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([34, 0]))) {
           // P2WSH
-          outputType = OUTPUT_TYPES.WSH;
+          outputType = utils.OUTPUT_TYPES.WSH;
           payload = utils.safeSlice(output, 11, 43);
         } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([22, 0]))) {
           // P2WPKH
-          outputType = OUTPUT_TYPES.WPKH;
+          outputType = utils.OUTPUT_TYPES.WPKH;
           payload = utils.safeSlice(output, 11, 31);
         } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([25, 118]))) {
           // PKH
-          outputType = OUTPUT_TYPES.PKH;
+          outputType = utils.OUTPUT_TYPES.PKH;
           payload = utils.safeSlice(output, 12, 32);
         } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([23, 169]))) {
           // SH
-          outputType = OUTPUT_TYPES.SH;
+          outputType = utils.OUTPUT_TYPES.SH;
           payload = utils.safeSlice(output, 11, 31);
         } else {
-          outputType = OUTPUT_TYPES.NONSTANDARD;
+          outputType = utils.OUTPUT_TYPES.NONSTANDARD;
           payload = null;
         }
     }
