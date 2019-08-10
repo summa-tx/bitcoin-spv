@@ -223,8 +223,12 @@ describe('BTCUtils', () => {
     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD));
     assert.isTrue(arraysAreEqual);
 
-    res = await BTCUtilsJs.extractOpReturnData(output);
-    assert.isNull(res);
+    try {
+      await BTCUtilsJs.extractOpReturnData(output);
+      assert(false, 'expected an error');
+    } catch (e) {
+      assert.include(e.message, 'Malformatted data. Must be an op return.');
+    }
   });
 
   it('extracts inputs at specified indices', async () => {

@@ -354,13 +354,13 @@ module.exports = {
 
   /**
    * @notice                Extracts the data from an op return output
-   * @dev                   Returns empty Uint8Array if no data or not an op return
+   * @dev                   Errors if no data or not an op return
    * @param {Uint8Array}    output The output
    * @returns {Uint8Array}  Any data contained in the opreturn output, null if not an op return
    */
   extractOpReturnData: (output) => {
     if (!utils.typedArraysAreEqual(utils.safeSlice(output, 9, 10), new Uint8Array([106]))) {
-      return null;
+      throw new Error('Malformatted data. Must be an op return.')
     }
     let dataLen = utils.safeSlice(output, 10, 11);
     return utils.safeSlice(output, 11, 11 + Number(utils.bytesToUint(dataLen)));
