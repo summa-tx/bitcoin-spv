@@ -138,9 +138,9 @@ module.exports = {
    */
   parseHeader: (header) => {
     // If header has an invalid length, bubble up error
-    const EMPTY = utils.deserializeHex('0x0000000000000000000000000000000000000000000000000000000000000000');
+    // const EMPTY = utils.deserializeHex('0x0000000000000000000000000000000000000000000000000000000000000000');
     if (header.length != 80) {
-      return { digest: EMPTY, version: 0n, prevHash: EMPTY, merkleRoot: EMPTY, timestamp: 0n, target: 0n, nonce: 0n };
+      throw new Error('Malformatted header. Must be exactly 80 bytes.');
     }
 
     let digest = btcUtils.reverseEndianness(btcUtils.hash256(header));

@@ -200,17 +200,14 @@ describe('ValidateSPV', () => {
         assert.equal(validHeader.nonce, OP_RETURN.INDEXED_HEADERS[0].NONCE);
       });
 
-    it('bubble up errors if input header is not 80 bytes', async () => {
+    it('throws errors if input header is not 80 bytes', async () => {
       // Removed a byte from the header version to create error
-      const invalidHeader = await ValidateSPV.parseHeader(btcUtils.deserializeHex(HEADER_ERR.HEADER_0_LEN));
-
-      assert.isTrue(btcUtils.typedArraysAreEqual(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.digest));
-      assert.equal(0n, invalidHeader.version);
-      assert.isTrue(btcUtils.typedArraysAreEqual(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.prevHash));
-      assert.isTrue(btcUtils.typedArraysAreEqual(btcUtils.deserializeHex(constants.EMPTY), invalidHeader.merkleRoot));
-      assert.equal(0n, invalidHeader.timestamp);
-      assert.equal(0n, invalidHeader.target);
-      assert.equal(0n, invalidHeader.nonce);
+      try {
+        await ValidateSPV.parseHeader(btcUtils.deserializeHex(HEADER_ERR.HEADER_0_LEN));
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, 'Malformatted header. Must be exactly 80 bytes.');
+      }
     });
   });
 
@@ -222,7 +219,7 @@ describe('ValidateSPV', () => {
 
     it('throws Error("Header bytes not multiple of 80.") if header chain is not divisible by 80', async () => {
       try {
-        const res = await ValidateSPV.validateHeaderChain(btcUtils.deserializeHex(HEADER_ERR.HEADER_CHAIN_INVALID_LEN));
+        await ValidateSPV.validateHeaderChain(btcUtils.deserializeHex(HEADER_ERR.HEADER_CHAIN_INVALID_LEN));
         assert(false, 'expected an error');
       } catch (e) {
         assert.include(e.message, 'Header bytes not multiple of 80.');
