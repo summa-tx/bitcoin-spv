@@ -360,7 +360,7 @@ module.exports = {
    */
   extractOpReturnData: (output) => {
     if (!utils.typedArraysAreEqual(utils.safeSlice(output, 9, 10), new Uint8Array([106]))) {
-      throw new Error('Malformatted data. Must be an op return.')
+      throw new Error('Malformatted data. Must be an op return.');
     }
     let dataLen = utils.safeSlice(output, 10, 11);
     return utils.safeSlice(output, 11, 11 + Number(utils.bytesToUint(dataLen)));
@@ -377,7 +377,7 @@ module.exports = {
       let len = module.exports.extractOutputScriptLen(output)[0] - 2;
       // Check for maliciously formatted witness outputs
       if (utils.safeSlice(output, 10, 11)[0] != len) {
-        return null;
+        throw new Error('Witness output maliciously formatted.');
       }
       return utils.safeSlice(output, 11, 11 + len);
     } else {
@@ -386,14 +386,14 @@ module.exports = {
       if (utils.typedArraysAreEqual(tag, utils.deserializeHex('0x1976a9'))) {
         // Check for maliciously formatted p2pkh
         if (utils.safeSlice(output, 11, 12)[0] != 0x14 || !utils.typedArraysAreEqual(utils.safeSlice(output, output.length - 2, output.length), utils.deserializeHex('0x88ac'))) {
-          return null;
+          throw new Error('Maliciously formatted p2pkh.');
         }
         return utils.safeSlice(output, 12, 32);
       //p2sh
       } else if (utils.typedArraysAreEqual(tag, utils.deserializeHex('0x17a914'))) {
         // Check for maliciously formatted p2sh
         if (utils.safeSlice(output, output.length - 1, output.length)[0] != 0x87) {
-          return null;
+          throw new Error('Maliciously formatted p2sh.');
         }
         return utils.safeSlice(output, 11, 31);
       }

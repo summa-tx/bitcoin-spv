@@ -159,18 +159,37 @@ describe('BTCUtils', () => {
 
     res = await BTCUtilsJs.extractHash(utils.deserializeHex(opReturnOutput));
     assert.isNull(res);
+    // TODO: What type of error should be thrown here?
+    // try {
+    //   await BTCUtilsJs.extractOpReturnData(output);
+    //   assert(false, 'expected an error');
+    // } catch (e) {
+    //   assert.include(e.message, 'Malformatted data. Must be an op return.');
+    // }
 
     // malformatted witness
-    res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x0000000000000000220017'));
-    assert.isNull(res);
+    try {
+      await BTCUtilsJs.extractHash(utils.deserializeHex('0x0000000000000000220017'));
+      assert(false, 'expected an error');
+    } catch (e) {
+      assert.include(e.message, 'Witness output maliciously formatted.');
+    }
 
     // malformatted p2pkh
-    res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x00000000000000001976a912'));
-    assert.isNull(res);
+    try {
+      await BTCUtilsJs.extractHash(utils.deserializeHex('0x00000000000000001976a912'));
+      assert(false, 'expected an error');
+    } catch (e) {
+      assert.include(e.message, 'Maliciously formatted p2pkh.');
+    }
 
     // malformatted p2pkh
-    res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x00000000000000001976a914FFFF'));
-    assert.isNull(res);
+    try {
+      await BTCUtilsJs.extractHash(utils.deserializeHex('0x00000000000000001976a914FFFF'));
+      assert(false, 'expected an error');
+    } catch (e) {
+      assert.include(e.message, 'Maliciously formatted p2pkh.');
+    }
 
     // good p2pkh
     res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x00000000000000001976a914000000000000000000000000000000000000000088ac'));
@@ -178,8 +197,12 @@ describe('BTCUtils', () => {
     assert.isTrue(arraysAreEqual);
 
     // malformatted p2sh
-    res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x000000000000000017a914FF'));
-    assert.isNull(res);
+    try {
+      await BTCUtilsJs.extractHash(utils.deserializeHex('0x000000000000000017a914FF'));
+      assert(false, 'expected an error');
+    } catch (e) {
+      assert.include(e.message, 'Maliciously formatted p2sh.');
+    }
 
     // good p2sh
     res = await BTCUtilsJs.extractHash(utils.deserializeHex('0x000000000000000017a914000000000000000000000000000000000000000087'));
