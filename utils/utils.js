@@ -79,7 +79,8 @@ module.exports = {
     } else {
       end = last;
     }
-
+    
+    if (first < 0 || last < 0) { throw new Error('Underflow during subtraction.'); }
     if (end > buf.length) { throw new Error('Tried to slice past end of array'); }
     if (start < 0 || end < 0) { throw new Error('Slice must not use negative indexes'); }
     if (start >= end) { throw new Error('Slice must not have 0 length'); }

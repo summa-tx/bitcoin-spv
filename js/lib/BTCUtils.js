@@ -61,9 +61,6 @@ module.exports = {
    * @returns {BigInt}       The integer representation
    */
   lastBytes: (arr, num) => {
-    if (num >= arr.length) {
-      throw new Error('Underflow during subtraction.');
-    }
     return utils.safeSlice(arr, arr.length - num);
   },
 
@@ -81,8 +78,8 @@ module.exports = {
  * @param {Uint8Array}      preImage The pre-image
  * @returns {Uint8Array}    The digest
  */
-  hash256: (b) => {
-    return utils.sha256(utils.sha256(b));
+  hash256: (preImage) => {
+    return utils.sha256(utils.sha256(preImage));
   },
 
   /* ************ */
@@ -97,11 +94,11 @@ module.exports = {
    * @returns {Uint8Array}  The input as a u8a
    */
   extractInputAtIndex: (vinArr, index) => {
-    let len = 0;
-    let remaining = 0;
+    let len;
     let offset = 1n;
-
+    
     for (let i = 0; i <= index; i++) {
+      let remaining;
       remaining = utils.safeSlice(vinArr, offset, vinArr.length - 1);
       len = module.exports.determineInputLength(remaining);
       if (i !== index) {
@@ -119,7 +116,7 @@ module.exports = {
    * @returns {boolean}     True for legacy, False for witness
    */
   isLegacyInput: (input) => {
-    return !utils.typedArraysAreEqual(utils.safeSlice(input, 36, 37), new Uint8Array([0]));
+    return input[36] !== 0;
   },
 
   /**
