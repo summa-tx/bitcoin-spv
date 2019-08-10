@@ -1,23 +1,20 @@
-/* global artifacts contract describe before it assert */
-// const BN = require('bn.js');
-const assert = require('chai').assert;
+/* global describe it BigInt */
+const { assert } = require('chai');
 const utils = require('../utils/utils');
 const constants = require('./constants');
 
 const ValidateSPV = require('../lib/ValidateSPV');
 
-const OP_RETURN = constants.OP_RETURN;
-const HEADER_ERR = constants.HEADER_ERR;
+const { OP_RETURN, HEADER_ERR } = constants;
 
 const INPUT_TYPES = {
   NONE: 0,
   LEGACY: 1,
   COMPATIBILITY: 2,
   WITNESS: 3
-}
+};
 
 describe('ValidateSPV', () => {
-
   describe('#prove', () => {
     it('returns true if proof is valid', () => {
       const res = ValidateSPV.prove(
@@ -58,7 +55,7 @@ describe('ValidateSPV', () => {
         utils.deserializeHex(OP_RETURN.VOUT),
         utils.deserializeHex(OP_RETURN.LOCKTIME_LE)
       );
-      let arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(OP_RETURN.TXID_LE))
+      const arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(OP_RETURN.TXID_LE));
       assert.isTrue(arraysAreEqual);
     });
   });
@@ -68,8 +65,8 @@ describe('ValidateSPV', () => {
     const legacyInput = utils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab375000000000101ffffffff');
     const compatibilityWSHInput = utils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000220020eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff');
     const compatibilityWPKHInput = utils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000160014eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff');
-    const sequence = 4294967295n;
-    const index = 0n;
+    const sequence = BigInt(4294967295);
+    const index = BigInt(0);
     const outpointTxId = utils.deserializeHex('0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b');
 
     it('returns the tx input sequence and outpoint', () => {
@@ -125,7 +122,7 @@ describe('ValidateSPV', () => {
 
     it('returns the tx output value, output type, and payload for an WPKH output', () => {
       const output = utils.deserializeHex('0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c');
-      const value = 1000001000n;
+      const value = BigInt(1000001000);
       const payload = utils.deserializeHex('0x7849e6bf5e4b1ba7235572d1b0cbc094f0213e6c');
 
       const wpkhOutput = ValidateSPV.parseOutput(output);
@@ -137,7 +134,7 @@ describe('ValidateSPV', () => {
 
     it('returns the tx output value, output type, and payload for an WSH output', () => {
       const output = utils.deserializeHex('0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922');
-      const value = 1000000n;
+      const value = BigInt(1000000);
       const payload = utils.deserializeHex('0xaedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922');
 
       const wshOutput = ValidateSPV.parseOutput(output);
@@ -153,14 +150,14 @@ describe('ValidateSPV', () => {
 
       const nonstandardOutput = ValidateSPV.parseOutput(output);
 
-      assert.equal(0n, nonstandardOutput.value);
+      assert.equal(BigInt(0), nonstandardOutput.value);
       assert.equal(nonstandardOutput.outputType, utils.OUTPUT_TYPES.NONSTANDARD);
       assert.isNull(nonstandardOutput.payload);
     });
 
     it('returns the tx output value, output type, and payload for an SH output', () => {
       const output = utils.deserializeHex('0xe8df05000000000017a914a654ebafa7a37e04a7ec3f684e34897e48f0496287');
-      const value = 385000n;
+      const value = BigInt(385000);
       const payload = utils.deserializeHex('0xa654ebafa7a37e04a7ec3f684e34897e48f04962');
 
       const shOutput = ValidateSPV.parseOutput(output);
@@ -172,7 +169,7 @@ describe('ValidateSPV', () => {
 
     it('returns the tx output value, output type, and payload for an PKH output', () => {
       const output = utils.deserializeHex('0x88080000000000001976a9141458514240d7287e5254af48cd292eb876cb07eb88ac');
-      const value = 2184n;
+      const value = BigInt(2184);
       const payload = utils.deserializeHex('0x1458514240d7287e5254af48cd292eb876cb07eb');
       const pkhOutput = ValidateSPV.parseOutput(output);
 
@@ -200,22 +197,19 @@ describe('ValidateSPV', () => {
 
     it('bubble up errors if input header is not 80 bytes', () => {
       // Removed a byte from the header version to create error
-      const invalidHeader = ValidateSPV.parseHeader(utils.deserializeHex(HEADER_ERR.HEADER_0_LEN));
-
-      assert.isTrue(utils.typedArraysAreEqual(utils.deserializeHex(constants.EMPTY), invalidHeader.digest));
-      assert.equal(0n, invalidHeader.version);
-      assert.isTrue(utils.typedArraysAreEqual(utils.deserializeHex(constants.EMPTY), invalidHeader.prevHash));
-      assert.isTrue(utils.typedArraysAreEqual(utils.deserializeHex(constants.EMPTY), invalidHeader.merkleRoot));
-      assert.equal(0n, invalidHeader.timestamp);
-      assert.equal(0n, invalidHeader.target);
-      assert.equal(0n, invalidHeader.nonce);
+      try {
+        ValidateSPV.parseHeader(utils.deserializeHex(HEADER_ERR.HEADER_0_LEN));
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, 'Header must contain exactly 80 bytes');
+      }
     });
   });
 
   describe('#validateHeaderChain', () => {
     it('returns true if header chain is valid', () => {
       const res = ValidateSPV.validateHeaderChain(utils.deserializeHex(OP_RETURN.HEADER_CHAIN));
-      assert.equal (res, 49134394618239n);
+      assert.equal (res, BigInt(49134394618239));
     });
 
     it('throws Error("Header bytes not multiple of 80.") if header chain is not divisible by 80', () => {
@@ -262,7 +256,7 @@ describe('ValidateSPV', () => {
     it('returns true if the digest has sufficient work', () => {
       const res = ValidateSPV.validateHeaderWork(
         utils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE),
-        3840827764407250199942201944063224491938810378873470976n
+        BigInt('3840827764407250199942201944063224491938810378873470976')
       );
       assert.isTrue(res);
     });
