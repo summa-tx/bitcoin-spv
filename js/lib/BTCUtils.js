@@ -604,12 +604,15 @@ module.exports = {
     let idx = BigInt(index);
     let root = utils.safeSlice(proof, (proofLength - 32), proofLength);
     let current = utils.safeSlice(proof, 0, 32);
+    let length = (proofLength / 32) - 1
+    
+    for (let i = 1; i < length; i++) {
+      let next = utils.safeSlice(proof, (i * 32), ((i * 32) + 32))
 
-    for (let i = 1; i < ((proofLength / 32) - 1); i++) {
       if (idx % 2n === 1n) {
-        current = module.exports.hash256MerkleStep(utils.safeSlice(proof, (i * 32), ((i * 32) + 32)), current);
+        current = module.exports.hash256MerkleStep(next, current);
       } else {
-        current = module.exports.hash256MerkleStep(current, utils.safeSlice(proof, (i * 32), ((i * 32) + 32)));
+        current = module.exports.hash256MerkleStep(current, next);
       }
       idx = idx >> 1n;
     }
@@ -627,24 +630,17 @@ module.exports = {
   retargetAlgorithm: (previousTarget, firstTimestamp, secondTimestamp) => {
     let elapsedTime = BigInt(secondTimestamp - firstTimestamp);
     const rp = module.exports.RETARGET_PERIOD;
-    const div = rp / 4n;
-    const mult = rp * 4n;
+    const lowerBound = rp / 4n;
+    const upperBound = rp * 4n;
 
     // Normalize ratio to factor of 4 if very long or very short
-    if (elapsedTime < div) {
-      elapsedTime = div;
+    if (elapsedTime < lowerBound) {
+      elapsedTime = lowerBound;
     }
-    if (elapsedTime > mult) {
-      elapsedTime = mult;
+    if (elapsedTime > upperBound) {
+      elapsedTime = upperBound;
     }
 
-    /*
-      NB: high targets e.g. ffff0020 can cause overflows here
-          so we divide it by 256**2, then multiply by 256**2 later
-          we know the target is evenly divisible by 256**2, so this isn't an issue
-    */
-
-    let adjusted = (previousTarget / 65536n) * elapsedTime;
-    return (adjusted / module.exports.RETARGET_PERIOD) * 65536n;
+    return previousTarget * elapsedTime / module.exports.RETARGET_PERIOD;
   }
 }

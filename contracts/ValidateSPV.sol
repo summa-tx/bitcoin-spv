@@ -79,7 +79,7 @@ library ValidateSPV {
     /// @return         Tx input sequence number, tx hash, and index
     function parseInput(bytes memory _input) internal pure returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {
         // NB: If the scriptsig is exactly 00, we are witness.
-        //     Otherwise we are compatibility
+        //     Otherwise we are compatibility or legacy
         if (keccak256(_input.slice(36, 1)) != keccak256(hex"00")) {
             _sequence = _input.extractSequenceLegacy();
             bytes32 _witnessTag = keccak256(_input.slice(36, 3));

@@ -34,7 +34,7 @@ module.exports = {
    */
   prove: (txid, merkleRoot, intermediateNodes, index) => {
     // Shortcut the empty-block case
-    if (utils.typedArraysAreEqual(txid, merkleRoot) && index === 0 && intermediateNodes.length == 0) {
+    if (utils.typedArraysAreEqual(txid, merkleRoot) && index === 0 && intermediateNodes.length === 0) {
       return true;
     }
 
@@ -64,12 +64,12 @@ module.exports = {
    */
   parseInput: (input) => {
     // NB: If the scriptsig is exactly 00, we are witness.
-    // Otherwise we are compatibility
+    // Otherwise we are compatibility or legacy
     let sequence;
     let witnessTag;
     let inputType;
 
-    if (!utils.typedArraysAreEqual(utils.safeSlice(input, 36, 37), new Uint8Array([0]))) {
+    if (input[36] !== 0) {
       sequence = btcUtils.extractSequenceLegacy(input);
       witnessTag = utils.safeSlice(input, 36, 39);
     
@@ -138,7 +138,6 @@ module.exports = {
    */
   parseHeader: (header) => {
     // If header has an invalid length, bubble up error
-    // const EMPTY = utils.deserializeHex('0x0000000000000000000000000000000000000000000000000000000000000000');
     if (header.length != 80) {
       throw new Error('Malformatted header. Must be exactly 80 bytes.');
     }
@@ -189,6 +188,7 @@ module.exports = {
       // Require that the header has sufficient work
       digest = btcUtils.hash256(header);
       if (utils.bytesToUint(btcUtils.reverseEndianness(digest)) > target) {
+      // if (!module.exports.validateHeaderChain(btcUtils.reverseEndianness(digest), target)) {
         throw new Error('Header does not meet its own difficulty target.');
       }
 
