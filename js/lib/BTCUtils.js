@@ -10,13 +10,25 @@
  * @author Erin Hales <example@gmail.com>
  * @author Dominique Liau <example@gmail.com>
  * @copyright (c) [Summa]{@link https://summa.one} 2019
+ * @module BTCUtils
  *
  */
 
 import * as utils from '../utils/utils';
 
+/**
+ * @const {BigInt}
+ */
 export const RETARGET_PERIOD = BigInt(1209600);
+
+/**
+ * @const {BigInt}
+ */
 export const RETARGET_PERIOD_BLOCKS = BigInt(2016);
+
+/**
+ * @const {BigInt}
+ */
 export const DIFF_ONE_TARGET = BigInt('0xffff0000000000000000000000000000000000000000000000000000');
 
 /**

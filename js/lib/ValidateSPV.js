@@ -10,6 +10,7 @@
  * @author Erin Hales <example@gmail.com>
  * @author Dominique Liau <example@gmail.com>
  * @copyright (c) [Summa]{@link https://summa.one} 2019
+ * @module ValidateSPV
  *
  */
 

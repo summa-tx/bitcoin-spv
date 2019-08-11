@@ -4,6 +4,10 @@ const ripemd160Lib = require('./ripemd160.js');
 
 module.exports = {
 
+  /**
+   * Enum for transaction output types
+   * @enum {BigInt}
+   */
   OUTPUT_TYPES: {
     NONE: BigInt(0),
     WPKH: BigInt(1),
@@ -14,6 +18,10 @@ module.exports = {
     NONSTANDARD: BigInt(6)
   },
 
+  /**
+   * Enum for transaction input types
+   * @enum {BigInt}
+   */
   INPUT_TYPES: {
     NONE: BigInt(0),
     LEGACY: BigInt(1),
@@ -93,7 +101,7 @@ module.exports = {
     } else {
       end = last;
     }
-    
+
     if (first < 0 || last < 0) { throw new Error('Underflow during subtraction.'); }
     if (end > buf.length) { throw new Error('Tried to slice past end of array'); }
     if (start < 0 || end < 0) { throw new Error('Slice must not use negative indexes'); }
@@ -107,7 +115,6 @@ module.exports = {
    * @param {array}        a An array of Uint8Arrays
    * @return {Uint8Array}  A Uint8Array that is a concatenation of all the arrays
   */
-
   concatUint8Arrays: (arrays) => {
     let length = 0;
     arrays.forEach((arr) => {
