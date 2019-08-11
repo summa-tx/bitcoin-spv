@@ -1,28 +1,19 @@
 {
-    "name": "bitcoin-spv",
+    "name": "bitcoin-spv-js",
+    "author": "Erin Hales, Dominique Liau, James Prestwich",
     "version": "2.0.0",
-    "description": "bitcoin SPV proofs in Solidity",
+    "description": "bitcoin SPV proofs in Javascript",
     "scripts": {
-        "compile": "truffle compile",
-        "coverage": "npx solidity-coverage",
-        "lint": "solium -d contracts/ && eslint ./test",
-        "lint:fix": "solium --fix -d contracts/ && eslint --fix ./test",
-        "test": "truffle test"
+        "lint": "eslint ./test",
+        "lint:fix": "eslint --fix ./test",
+        "test": "mocha test"
     },
-    "author": "",
     "license": "LGPLv3",
-    "dependencies": {
-        "bn.js": "^5.0.0",
-        "create-hash": "^1.2.0",
-        "mocha": "^6.2.0",
-        "solium": "^1.2.4"
-    },
     "devDependencies": {
         "chai": "^4.2.0",
         "eslint": "^5.16.0",
         "eslint-config-airbnb-base": "^13.2.0",
         "eslint-plugin-import": "^2.18.0",
-        "eth-gas-reporter": "^0.2.8",
-        "solidity-coverage": "^0.6.3"
+        "mocha": "^6.2.0"
     }
 }

@@ -1,25 +1,10 @@
+/* global BigInt */
+
 // /** @title ValidateSPV*/
 // /** @author Summa (https://summa.one) */
 
-const btcUtils = require("./BTCUtils");
-const utils = require("../../utils/utils");
-
-const INPUT_TYPES = {
-  NONE: 0,
-  LEGACY: 1,
-  COMPATIBILITY: 2,
-  WITNESS: 3
-}
-
-const OUTPUT_TYPES = {
-  NONE: 0,
-  WPKH: 1,
-  WSH: 2,
-  OP_RETURN: 3,
-  PKH: 4,
-  SH: 5,
-  NONSTANDARD: 6
-}
+const btcUtils = require('./BTCUtils');
+const utils = require('../utils/utils');
 
 // library ValidateSPV {
 module.exports = {
@@ -28,17 +13,19 @@ module.exports = {
    * @notice                Validates a tx inclusion in the block
    * @param {Uint8Array}    txid The txid (LE)
    * @param {Uint8Array}    merkleRoot The merkle root (as in the block header)
-   * @param {Uint8Array}    intermediateNodes The proof's intermediate nodes (digests between leaf and root)
+   * @param {Uint8Array}    intermediateNodes The proof's intermediate nodes
+   *                        (digests between leaf and root)
    * @param {number}        index The leaf's index in the tree (0-indexed)
    * @returns {boolean}     true if fully valid, false otherwise
    */
   prove: (txid, merkleRoot, intermediateNodes, index) => {
     // Shortcut the empty-block case
-    if (utils.typedArraysAreEqual(txid, merkleRoot) && index === 0 && intermediateNodes.length === 0) {
+    if (utils.typedArraysAreEqual(txid, merkleRoot)
+        && index === 0 && intermediateNodes.length === 0) {
       return true;
     }
 
-    let proof = utils.concatUint8Arrays([txid, intermediateNodes, merkleRoot]);
+    const proof = utils.concatUint8Arrays([txid, intermediateNodes, merkleRoot]);
     // If the Merkle proof failed, bubble up error
     return btcUtils.verifyHash256Merkle(proof, index);
   },
@@ -52,9 +39,9 @@ module.exports = {
    * @param {Uint8Array}    locktime 4-byte tx locktime
    * @returns {Uint8Array}  32-byte transaction id, little endian
    */
-  calculateTxId: (version, vin, vout, locktime) => {
-    return btcUtils.hash256(utils.concatUint8Arrays([version, vin, vout, locktime]));
-  },
+  calculateTxId: (version, vin, vout, locktime) => btcUtils.hash256(
+    utils.concatUint8Arrays([version, vin, vout, locktime])
+  ),
 
   /**
    * @notice                Parses a tx input from raw input bytes
@@ -72,22 +59,23 @@ module.exports = {
     if (input[36] !== 0) {
       sequence = btcUtils.extractSequenceLegacy(input);
       witnessTag = utils.safeSlice(input, 36, 39);
-    
-      if (utils.typedArraysAreEqual(witnessTag, utils.deserializeHex('220020')) || utils.typedArraysAreEqual(witnessTag, utils.deserializeHex('160014'))) {
-        inputType = INPUT_TYPES.COMPATIBILITY;
-      } else {
-        inputType = INPUT_TYPES.LEGACY;
-      }
 
+      if (utils.typedArraysAreEqual(witnessTag, utils.deserializeHex('220020')) || utils.typedArraysAreEqual(witnessTag, utils.deserializeHex('160014'))) {
+        inputType = utils.INPUT_TYPES.COMPATIBILITY;
+      } else {
+        inputType = utils.INPUT_TYPES.LEGACY;
+      }
     } else {
       sequence = btcUtils.extractSequenceWitness(input);
-      inputType = INPUT_TYPES.WITNESS;
+      inputType = utils.INPUT_TYPES.WITNESS;
     }
 
-    let inputId = btcUtils.extractInputTxId(input);
-    let inputIndex = btcUtils.extractTxIndex(input);
+    const inputId = btcUtils.extractInputTxId(input);
+    const inputIndex = btcUtils.extractTxIndex(input);
 
-    return {sequence, inputId, inputIndex, inputType};
+    return {
+      sequence, inputId, inputIndex, inputType
+    };
   },
 
   /**
@@ -97,34 +85,36 @@ module.exports = {
    * @returns {object}      Tx output value, output type, payload
    */
   parseOutput: (output) => {
-    let value = btcUtils.extractValue(output);
+    const value = btcUtils.extractValue(output);
+    let outputType;
+    let payload;
 
     if (utils.typedArraysAreEqual(utils.safeSlice(output, 9, 10), new Uint8Array([106]))) {
       // OP_RETURN
-      outputType = OUTPUT_TYPES.OP_RETURN;
+      outputType = utils.OUTPUT_TYPES.OP_RETURN;
       payload = btcUtils.extractOpReturnData(output);
     } else {
-        let prefixHash = utils.safeSlice(output, 8, 10);
-        if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([34, 0]))) {
-          // P2WSH
-          outputType = OUTPUT_TYPES.WSH;
-          payload = utils.safeSlice(output, 11, 43);
-        } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([22, 0]))) {
-          // P2WPKH
-          outputType = OUTPUT_TYPES.WPKH;
-          payload = utils.safeSlice(output, 11, 31);
-        } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([25, 118]))) {
-          // PKH
-          outputType = OUTPUT_TYPES.PKH;
-          payload = utils.safeSlice(output, 12, 32);
-        } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([23, 169]))) {
-          // SH
-          outputType = OUTPUT_TYPES.SH;
-          payload = utils.safeSlice(output, 11, 31);
-        } else {
-          outputType = OUTPUT_TYPES.NONSTANDARD;
-          payload = null;
-        }
+      const prefixHash = utils.safeSlice(output, 8, 10);
+      if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([34, 0]))) {
+        // P2WSH
+        outputType = utils.OUTPUT_TYPES.WSH;
+        payload = utils.safeSlice(output, 11, 43);
+      } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([22, 0]))) {
+        // P2WPKH
+        outputType = utils.OUTPUT_TYPES.WPKH;
+        payload = utils.safeSlice(output, 11, 31);
+      } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([25, 118]))) {
+        // PKH
+        outputType = utils.OUTPUT_TYPES.PKH;
+        payload = utils.safeSlice(output, 12, 32);
+      } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([23, 169]))) {
+        // SH
+        outputType = utils.OUTPUT_TYPES.SH;
+        payload = utils.safeSlice(output, 11, 31);
+      } else {
+        outputType = utils.OUTPUT_TYPES.NONSTANDARD;
+        payload = null;
+      }
     }
 
     return { value, outputType, payload };
@@ -134,7 +124,8 @@ module.exports = {
    * @notice                Parses a block header struct from a bytestring
    * @dev                   Block headers are always 80 bytes, see Bitcoin docs
    * @param {Uint8Array}    header Header
-   * @returns {object}      Header digest, version, previous block header hash, merkle root, timestamp, target, nonce
+   * @returns {object}      Header digest, version, previous block header hash,
+   *                        merkle root, timestamp, target, nonce
    */
   parseHeader: (header) => {
     // If header has an invalid length, bubble up error
@@ -142,15 +133,17 @@ module.exports = {
       throw new Error('Malformatted header. Must be exactly 80 bytes.');
     }
 
-    let digest = btcUtils.reverseEndianness(btcUtils.hash256(header));
-    let version = utils.bytesToUint(btcUtils.reverseEndianness(utils.safeSlice(header, 0, 4)));
-    let prevHash = btcUtils.extractPrevBlockLE(header);
-    let merkleRoot = btcUtils.extractMerkleRootLE(header);
-    let timestamp = btcUtils.extractTimestamp(header);
-    let target = btcUtils.extractTarget(header);
-    let nonce = utils.bytesToUint(btcUtils.reverseEndianness(utils.safeSlice(header, 76, 80)));
+    const digest = btcUtils.reverseEndianness(btcUtils.hash256(header));
+    const version = utils.bytesToUint(btcUtils.reverseEndianness(utils.safeSlice(header, 0, 4)));
+    const prevHash = btcUtils.extractPrevBlockLE(header);
+    const merkleRoot = btcUtils.extractMerkleRootLE(header);
+    const timestamp = btcUtils.extractTimestamp(header);
+    const target = btcUtils.extractTarget(header);
+    const nonce = utils.bytesToUint(btcUtils.reverseEndianness(utils.safeSlice(header, 76, 80)));
 
-    return { digest, version, prevHash, merkleRoot, timestamp, target, nonce };
+    return {
+      digest, version, prevHash, merkleRoot, timestamp, target, nonce
+    };
   },
 
   /**
@@ -168,14 +161,14 @@ module.exports = {
     // Initialize header start index
     let digest;
     let start = 0;
-    let totalDifficulty = 0n;
+    let totalDifficulty = BigInt(0);
 
-    for (let i = 0; i < headers.length / 80; i++) {
+    for (let i = 0; i < headers.length / 80; i += 1) {
       // ith header start index and ith header
       start = i * 80;
-      let header = utils.safeSlice(headers, start, start + 80);
+      const header = utils.safeSlice(headers, start, start + 80);
 
-      //After the first header, check that headers are in a chain
+      // After the first header, check that headers are in a chain
       if (i !== 0) {
         if (!module.exports.validateHeaderPrevHash(header, digest)) {
           throw new Error('Header bytes not a valid chain.');
@@ -183,7 +176,7 @@ module.exports = {
       }
 
       // ith header target
-      let target = btcUtils.extractTarget(header);
+      const target = btcUtils.extractTarget(header);
 
       // Require that the header has sufficient work
       digest = btcUtils.hash256(header);
@@ -219,7 +212,7 @@ module.exports = {
    */
   validateHeaderPrevHash: (header, prevHeaderDigest) => {
     // Extract prevHash of current header
-    let prevHash = btcUtils.extractPrevBlockLE(header);
+    const prevHash = btcUtils.extractPrevBlockLE(header);
 
     // Compare prevHash of current header to previous header's digest
     if (!utils.typedArraysAreEqual(prevHash, prevHeaderDigest)) {
@@ -228,4 +221,4 @@ module.exports = {
 
     return true;
   }
-}
+};
