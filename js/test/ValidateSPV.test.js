@@ -1,9 +1,10 @@
 /* global describe it BigInt */
-const { assert } = require('chai');
-const utils = require('../utils/utils');
-const constants = require('./constants');
+import * as chai from 'chai';
+import * as utils from '../utils/utils';
+import * as constants from './constants';
+import * as ValidateSPV from '../lib/ValidateSPV';
 
-const ValidateSPV = require('../lib/ValidateSPV');
+const { assert } = chai;
 
 const { OP_RETURN, HEADER_ERR } = constants;
 
