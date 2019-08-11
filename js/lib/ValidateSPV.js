@@ -16,7 +16,6 @@
 const btcUtils = require('./BTCUtils');
 const utils = require('../utils/utils');
 
-// library ValidateSPV {
 module.exports = {
 
   /**
@@ -70,7 +69,7 @@ module.exports = {
       sequence = btcUtils.extractSequenceLegacy(input);
       witnessTag = utils.safeSlice(input, 36, 39);
 
-      if (utils.typedArraysAreEqual(witnessTag, utils.deserializeHex('220020')) || utils.typedArraysAreEqual(witnessTag, utils.deserializeHex('160014'))) {
+      if (utils.typedArraysAreEqual(witnessTag, new Uint8Array([0x22, 0x00, 0x20])) || utils.typedArraysAreEqual(witnessTag, new Uint8Array([0x16, 0x00, 0x14]))) {
         inputType = utils.INPUT_TYPES.COMPATIBILITY;
       } else {
         inputType = utils.INPUT_TYPES.LEGACY;
@@ -99,7 +98,7 @@ module.exports = {
     let outputType;
     let payload;
 
-    if (utils.typedArraysAreEqual(utils.safeSlice(output, 9, 10), new Uint8Array([106]))) {
+    if (output[9] === 0x6a) {
       // OP_RETURN
       outputType = utils.OUTPUT_TYPES.OP_RETURN;
       payload = btcUtils.extractOpReturnData(output);
