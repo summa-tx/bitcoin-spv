@@ -55,7 +55,10 @@ describe('ValidateSPV', () => {
         utils.deserializeHex(OP_RETURN.VOUT),
         utils.deserializeHex(OP_RETURN.LOCKTIME_LE)
       );
-      const arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(OP_RETURN.TXID_LE));
+      const arraysAreEqual = utils.typedArraysAreEqual(
+        res,
+        utils.deserializeHex(OP_RETURN.TXID_LE)
+      );
       assert.isTrue(arraysAreEqual);
     });
   });
@@ -117,7 +120,12 @@ describe('ValidateSPV', () => {
 
       assert.equal(opReturnTxOut.value, value);
       assert.equal(opReturnTxOut.outputType, utils.OUTPUT_TYPES.OP_RETURN);
-      assert.isTrue(utils.typedArraysAreEqual(opReturnTxOut.payload, utils.deserializeHex(OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD)));
+      assert.isTrue(
+        utils.typedArraysAreEqual(
+          opReturnTxOut.payload,
+          utils.deserializeHex(OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD)
+        )
+      );
     });
 
     it('returns the tx output value, output type, and payload for an WPKH output', () => {
@@ -186,10 +194,25 @@ describe('ValidateSPV', () => {
           utils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].HEADER)
         );
 
-        assert.isTrue(utils.typedArraysAreEqual(validHeader.digest, utils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE)));
+        assert.isTrue(
+          utils.typedArraysAreEqual(
+            validHeader.digest,
+            utils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE)
+          )
+        );
         assert.equal(validHeader.version, OP_RETURN.INDEXED_HEADERS[0].VERSION);
-        assert.isTrue(utils.typedArraysAreEqual(validHeader.prevHash, utils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].PREV_HASH_LE)));
-        assert.isTrue(utils.typedArraysAreEqual(validHeader.merkleRoot, utils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].MERKLE_ROOT_LE)));
+        assert.isTrue(
+          utils.typedArraysAreEqual(
+            validHeader.prevHash,
+            utils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].PREV_HASH_LE)
+          )
+        );
+        assert.isTrue(
+          utils.typedArraysAreEqual(
+            validHeader.merkleRoot,
+            utils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].MERKLE_ROOT_LE)
+          )
+        );
         assert.equal(validHeader.timestamp, OP_RETURN.INDEXED_HEADERS[0].TIMESTAMP);
         assert.equal(validHeader.target, OP_RETURN.INDEXED_HEADERS[0].TARGET);
         assert.equal(validHeader.nonce, OP_RETURN.INDEXED_HEADERS[0].NONCE);
@@ -209,7 +232,7 @@ describe('ValidateSPV', () => {
   describe('#validateHeaderChain', () => {
     it('returns true if header chain is valid', () => {
       const res = ValidateSPV.validateHeaderChain(utils.deserializeHex(OP_RETURN.HEADER_CHAIN));
-      assert.equal (res, BigInt(49134394618239));
+      assert.equal(res, BigInt('49134394618239'));
     });
 
     it('throws Error("Header bytes not multiple of 80.") if header chain is not divisible by 80', () => {
@@ -223,7 +246,7 @@ describe('ValidateSPV', () => {
 
     it('throws Error("Header bytes not a valid chain.") if header chain prevHash is invalid', () => {
       try {
-        const res = ValidateSPV.validateHeaderChain(
+        ValidateSPV.validateHeaderChain(
           utils.deserializeHex(HEADER_ERR.HEADER_CHAIN_INVALID_PREVHASH)
         );
         assert(false, 'expected an error');
@@ -234,7 +257,7 @@ describe('ValidateSPV', () => {
 
     it('throws Error("Header does not meet its own difficulty target.) if a header does not meet its target', () => {
       try {
-        const res = ValidateSPV.validateHeaderChain(utils.deserializeHex(HEADER_ERR.HEADER_CHAIN_LOW_WORK));
+        ValidateSPV.validateHeaderChain(utils.deserializeHex(HEADER_ERR.HEADER_CHAIN_LOW_WORK));
         assert(false, 'expected an error');
       } catch (e) {
         assert.include(e.message, 'Header does not meet its own difficulty target.');
