@@ -1,7 +1,17 @@
 /* global BigInt */
 
-/** @title BitcoinSPV */
-/** @author Summa (https://summa.one) */
+/**
+ * Copyright (c) 2019
+ *
+ * long description for the file
+ *
+ * @title BitcoinSPV
+ * @summary short description for the file
+ * @author James Prestwich <example@gmail.com>
+ * @author Erin Hales <example@gmail.com>
+ * @author Dominique Liau <example@gmail.com>
+ * 
+ */
 
 const utils = require('../utils/utils');
 
