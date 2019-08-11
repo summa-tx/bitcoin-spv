@@ -8,6 +8,7 @@
         "lint:fix": "eslint --fix ./test && eslint --fix ./lib",
         "test": "mocha test -r esm"
     },
+    "type": "module",
     "license": "LGPLv3",
     "devDependencies": {
         "chai": "^4.2.0",
