@@ -149,11 +149,12 @@ export function parseOutput(output) {
  * @param {Uint8Array}    header Header
  * @returns {object}      Header digest, version, previous block header hash,
  *                        merkle root, timestamp, target, nonce
+ * @throws {TypeError}    When passed a bad header
  */
 export function parseHeader(header) {
   // If header has an invalid length, bubble up error
   if (header.length !== 80) {
-    throw new Error('Malformatted header. Must be exactly 80 bytes.');
+    throw new TypeError('Malformatted header. Must be exactly 80 bytes.');
   }
 
   const digest = BTCUtils.reverseEndianness(BTCUtils.hash256(header));
@@ -176,11 +177,13 @@ export function parseHeader(header) {
  * @dev                   Compares the hash of each header to the prevHash in the next header
  * @param {Uint8Array}    headers Raw byte array of header chain
  * @returns {BigInt}      The total accumulated difficulty of the header chain, or an error code
- */
+ * @throws {TypeError}    When passed a chain that contains junk data
+ * @throws {Error}        When passed an invalid chain, or  header with llow work
+*/
 export function validateHeaderChain(headers) {
   // Check header chain length
   if (headers.length % 80 !== 0) {
-    throw new Error('Header bytes not multiple of 80.');
+    throw new TypeError('Header bytes not multiple of 80.');
   }
 
   // Initialize header start index

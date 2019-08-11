@@ -342,12 +342,13 @@ export function extractTxIndex(input) {
  * @dev                   5 types: WPKH, WSH, PKH, SH, and OP_RETURN
  * @param {Uint8Array}    output The output
  * @returns {number}      The length indicated by the prefix, error if invalid length
+ * @throws {RangeError}   When output script is longer than 0xfc bytes
  */
 export function determineOutputLength(output) {
   const len = utils.safeSlice(output, 8, 9)[0];
 
   if (len > 0xfd) {
-    throw new Error('Multi-byte VarInts not supported');
+    throw new RangeError('Multi-byte VarInts not supported');
   }
 
   return BigInt(len) + BigInt(8 + 1); // 8 byte value, 1 byte for len itself
@@ -424,10 +425,11 @@ export function extractValue(output) {
  * @dev                   Errors if no data or not an op return
  * @param {Uint8Array}    output The output
  * @returns {Uint8Array}  Any data contained in the opreturn output, null if not an op return
+ * @throws {TypeError}    When passed something other than an op return output
  */
 export function extractOpReturnData(output) {
   if (!utils.typedArraysAreEqual(utils.safeSlice(output, 9, 10), new Uint8Array([106]))) {
-    throw new Error('Malformatted data. Must be an op return.');
+    throw new TypeError('Malformatted data. Must be an op return.');
   }
   const dataLen = utils.safeSlice(output, 10, 11);
   return utils.safeSlice(output, 11, 11 + Number(utils.bytesToUint(dataLen)));
@@ -440,6 +442,7 @@ export function extractOpReturnData(output) {
  * @dev                   Determines type by the length prefix and validates format
  * @param {Uint8Array}    output The output
  * @returns {Uint8Array}  The hash committed to by the pk_script, or null for errors
+ * @throws {TypeError}    When passed a non-standard output type
  */
 export function extractHash(output) {
   const tag = utils.safeSlice(output, 8, 11);
@@ -449,7 +452,7 @@ export function extractHash(output) {
     const len = extractOutputScriptLen(output) - 2;
     // Check for maliciously formatted witness outputs
     if (output[10] !== len) {
-      throw new Error('Witness output maliciously formatted.');
+      throw new TypeError('Maliciously formatted witness output.');
     }
     return utils.safeSlice(output, 11, 11 + len);
   }
@@ -458,7 +461,7 @@ export function extractHash(output) {
   if (utils.typedArraysAreEqual(tag, utils.deserializeHex('0x1976a9'))) {
     // Check for maliciously formatted p2pkh
     if (output[11] !== 0x14 || !utils.typedArraysAreEqual(utils.safeSlice(output, output.length - 2, output.length), utils.deserializeHex('0x88ac'))) {
-      throw new Error('Maliciously formatted p2pkh.');
+      throw new TypeError('Maliciously formatted p2pkh output.');
     }
     return utils.safeSlice(output, 12, 32);
   }
@@ -468,13 +471,13 @@ export function extractHash(output) {
     // Check for maliciously formatted p2sh
     if (utils.safeSlice(output, output.length - 1, output.length)[0] !== 0x87) {
       // return null;
-      throw new Error('Maliciously formatted p2sh.');
+      throw new TypeError('Maliciously formatted p2sh output.');
     }
     return utils.safeSlice(output, 11, 31);
   }
 
   /* Abnormal Case */
-  throw new Error('Nonstandard, OP_RETURN, or malformatted output');
+  throw new TypeError('Nonstandard, OP_RETURN, or malformatted output');
 }
 
 /* ********** */
