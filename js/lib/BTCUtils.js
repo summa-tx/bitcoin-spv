@@ -126,10 +126,8 @@ module.exports = {
    * @returns {BigInt}      The length of the input in bytes
    */
   determineInputLength: (arr) => {
-    let res = module.exports.extractScriptSigLen(arr);
-    let varIntDataLen = res.dataLen;
-    let scriptSigLen = res.scriptSigLen;
-    return BigInt(41) + varIntDataLen + scriptSigLen;
+    let { dataLen, scriptSigLen } = module.exports.extractScriptSigLen(arr);
+    return BigInt(41) + dataLen + scriptSigLen;
   },
 
   /**
@@ -139,10 +137,8 @@ module.exports = {
    * @returns {Uint8Array}  The sequence bytes (LE uint)
    */
   extractSequenceLELegacy: (input) => {
-    let res = module.exports.extractScriptSigLen(input);
-    let varIntDataLen = res.dataLen;
-    let scriptSigLen = res.scriptSigLen;
-    let length = 36 + 1 + Number(varIntDataLen) + Number(scriptSigLen);
+    let { dataLen, scriptSigLen } = module.exports.extractScriptSigLen(input);
+    let length = 36 + 1 + Number(dataLen) + Number(scriptSigLen);
     return utils.safeSlice(input, length, length + 4);
   },
 
@@ -165,10 +161,8 @@ module.exports = {
    * @returns {Uint8Array}  The length-prepended script sig
    */
   extractScriptSig: (input) => {
-    let res = module.exports.extractScriptSigLen(input)
-    let varIntDataLen = res.dataLen;
-    let scriptSigLen = res.scriptSigLen;
-    let length = 1 + Number(varIntDataLen) + Number(scriptSigLen);
+    let {dataLen, scriptSigLen} = module.exports.extractScriptSigLen(input)
+    let length = 1 + Number(dataLen) + Number(scriptSigLen);
     return utils.safeSlice(input, 36, 36 + length);
   },
 
