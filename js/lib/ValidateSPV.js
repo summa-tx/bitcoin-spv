@@ -7,7 +7,7 @@
  *
  * @title ValidateSPV
  * @summary short description for the file
- * @author James Prestwich <example@gmail.com>
+ * @author James Prestwich <jamese@summa.one>
  * @author Erin Hales <example@gmail.com>
  * @author Dominique Liau <example@gmail.com>
  *
@@ -30,7 +30,8 @@ module.exports = {
   prove: (txid, merkleRoot, intermediateNodes, index) => {
     // Shortcut the empty-block case
     if (utils.typedArraysAreEqual(txid, merkleRoot)
-        && index === 0 && intermediateNodes.length === 0) {
+        && index === 0
+        && intermediateNodes.length === 0) {
       return true;
     }
 

@@ -7,7 +7,7 @@
  *
  * @title BitcoinSPV
  * @summary short description for the file
- * @author James Prestwich <example@gmail.com>
+ * @author James Prestwich <jamese@summa.one>
  * @author Erin Hales <example@gmail.com>
  * @author Dominique Liau <example@gmail.com>
  *
