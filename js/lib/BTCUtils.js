@@ -24,7 +24,7 @@ export const DIFF_ONE_TARGET = BigInt('0xffff00000000000000000000000000000000000
  * Determines the length of a VarInt in bytes
  *
  * @dev                   A VarInt of >1 byte is prefixed with a flag indicating its length
- * @param {string}        flag The first byte of a VarInt
+ * @param {number}        flag The first byte of a VarInt
  * @returns {number}      The number of non-flag bytes in the VarInt
  */
 export function determineVarIntDataLength(flag) {
