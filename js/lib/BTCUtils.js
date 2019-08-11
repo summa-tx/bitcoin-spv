@@ -102,7 +102,6 @@ module.exports = {
    */
   extractInputAtIndex: (vinArr, index) => {
     let len = 0;
-    // let remaining = 0;
     let offset = BigInt(1);
 
     for (let i = 0; i <= index; i += 1) {
@@ -130,8 +129,8 @@ module.exports = {
    * @param {Uint8Array}    arr The input as a u8a
    * @returns {BigInt}      The length of the input in bytes
    */
-  determineInputLength: (arr) => {
-    const { dataLen, scriptSigLen } = module.exports.extractScriptSigLen(arr);
+  determineInputLength: (input) => {
+    const { dataLen, scriptSigLen } = module.exports.extractScriptSigLen(input);
     return BigInt(41) + dataLen + scriptSigLen;
   },
 
@@ -151,7 +150,7 @@ module.exports = {
    * @notice                Extracts the sequence from the input
    * @dev                   Sequence is a 4-byte little-endian number
    * @param {Uint8Array}    input The LEGACY input
-   * @returns {Uint8Array}  The sequence number (big-endian uint array)
+   * @returns {BigInt}      The sequence number
    */
   extractSequenceLegacy: (input) => {
     const leSeqence = module.exports.extractSequenceLELegacy(input);
@@ -184,9 +183,8 @@ module.exports = {
     if (varIntDataLen === 0) {
       [len] = varIntTag;
     } else {
-      len = utils.bytesToUint(
-        module.exports.reverseEndianness(utils.safeSlice(arr, 37, 37 + varIntDataLen))
-      );
+      const varIntData = utils.safeSlice(arr, 37, 37 + varIntDataLen);
+      len = utils.bytesToUint(module.exports.reverseEndianness(varIntData));
     }
     return { dataLen: BigInt(varIntDataLen), scriptSigLen: BigInt(len) };
   },
@@ -208,7 +206,7 @@ module.exports = {
    * @notice                Extracts the sequence from the input in a tx
    * @dev                   Sequence is a 4-byte little-endian number
    * @param {Uint8Array}    input The WITNESS input
-   * @returns {Uint8Array}  The sequence number (big-endian u8a)
+   * @returns {BigInt}      The sequence number (big-endian u8a)
    */
   extractSequenceWitness: (input) => {
     const leSeqence = module.exports.extractSequenceLEWitness(input);
