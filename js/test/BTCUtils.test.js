@@ -3,7 +3,7 @@ const { assert } = require('chai');
 const constants = require('./constants');
 const utils = require('../utils/utils');
 
-const BTCUtilsJs = require('../lib/BTCUtils');
+const BTCUtilsJs = require('../src/BTCUtils');
 
 const HEADER_170 = utils.deserializeHex('0x0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70');
 

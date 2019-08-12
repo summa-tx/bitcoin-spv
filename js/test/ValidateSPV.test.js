@@ -3,7 +3,7 @@ const { assert } = require('chai');
 const utils = require('../utils/utils');
 const constants = require('./constants');
 
-const ValidateSPV = require('../lib/ValidateSPV');
+const ValidateSPV = require('../src/ValidateSPV');
 
 const { OP_RETURN, HEADER_ERR } = constants;
 

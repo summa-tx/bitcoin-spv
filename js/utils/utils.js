@@ -1,6 +1,6 @@
 /* global BigInt */
-const shaLib = require('./sha256.js');
-const ripemd160Lib = require('./ripemd160.js');
+const shaLib = require('../lib/sha256.js');
+const ripemd160Lib = require('../lib/ripemd160.js');
 
 module.exports = {
 
