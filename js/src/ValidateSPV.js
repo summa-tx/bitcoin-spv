@@ -186,7 +186,6 @@ export function validateHeaderChain(headers) {
     throw new TypeError('Header bytes not multiple of 80.');
   }
 
-  // Initialize header start index
   let digest;
   let totalDifficulty = BigInt(0);
 
