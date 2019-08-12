@@ -3,8 +3,8 @@ package utils
 import (
 	"crypto/sha256"
 	"encoding/binary"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"golang.org/x/crypto/ripemd160"
 )
 
