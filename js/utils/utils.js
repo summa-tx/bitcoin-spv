@@ -1,7 +1,6 @@
 /* global BigInt */
-import * as rmdlib from '../lib/ripemd160';
-
 import shaLib from '../lib/sha256';
+import rmdlib from '../lib/ripemd160';
 
 /**
  * Enum for transaction output types
@@ -68,7 +67,7 @@ export function sha256(buf) {
 }
 
 export function ripemd160(buf) {
-  return rmdlib.default(buf);
+  return rmdlib(buf);
 }
 
 export function typedArraysAreEqual(a, b) {

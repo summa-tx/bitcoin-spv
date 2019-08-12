@@ -2,7 +2,6 @@
 /* eslint-disable no-param-reassign */
 /*! noble-ripemd160 - MIT License (c) Paul Miller (paulmillr.com) */
 
-Object.defineProperty(exports, '__esModule', { value: true });
 const BLOCK_SIZE = 64;
 const OUTPUT_SIZE = 20;
 const DEFAULT_H = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0];
@@ -315,7 +314,8 @@ function u32to8(u32) {
 function toHex(uint8a) {
   return Array.from(uint8a).map(c => c.toString(16).padStart(2, '0')).join('');
 }
-function ripemd160(message) {
+
+export default function ripemd160(message) {
   const hasher = new Ripemd160();
   if (typeof message === 'string') {
     hasher.input(message);
@@ -325,5 +325,3 @@ function ripemd160(message) {
   const hash = u32to8(hasher.result());
   return typeof message === 'string' ? toHex(hash) : hash;
 }
-
-exports.default = ripemd160;
