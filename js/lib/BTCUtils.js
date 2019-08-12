@@ -108,7 +108,7 @@ module.exports = {
     let offset = BigInt(1);
 
     for (let i = 0; i <= index; i ++) {
-      let remaining = utils.safeSlice(vinArr, offset, vinArr.length - 1);
+      let remaining = utils.safeSlice(vinArr, offset, vinArr.length);
       len = module.exports.determineInputLength(remaining);
       if (i !== index) {
         offset += len;
