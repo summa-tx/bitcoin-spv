@@ -179,7 +179,7 @@ export function determineInputLength(input) {
  * @returns {Uint8Array}  The input as a u8a
  */
 export function extractInputAtIndex(vinArr, index) {
-  let len = 0;
+  let len;
   let offset = BigInt(1);
 
   for (let i = 0; i <= index; i += 1) {
@@ -366,11 +366,10 @@ export function determineOutputLength(output) {
  */
 export function extractOutputAtIndex(vout, index) {
   let len;
-  let remaining;
   let offset = BigInt(1);
 
   for (let i = 0; i <= index; i += 1) {
-    remaining = utils.safeSlice(vout, offset, vout.length - 1);
+    const remaining = utils.safeSlice(vout, offset, vout.length);
     len = determineOutputLength(remaining);
     if (i !== index) {
       offset += len;
@@ -410,7 +409,7 @@ export function extractValueLE(output) {
  *
  * @dev                   Value is an 8-byte little-endian number
  * @param {Uint8Array}    output The output
- * @returns {Uint8Array}  The output value
+ * @returns {BigInt}      The output value
  */
 export function extractValue(output) {
   const leValue = extractValueLE(output);
@@ -428,11 +427,11 @@ export function extractValue(output) {
  * @throws {TypeError}    When passed something other than an op return output
  */
 export function extractOpReturnData(output) {
-  if (!utils.typedArraysAreEqual(utils.safeSlice(output, 9, 10), new Uint8Array([106]))) {
+  if (output[9] !== 106) {
     throw new TypeError('Malformatted data. Must be an op return.');
   }
-  const dataLen = utils.safeSlice(output, 10, 11);
-  return utils.safeSlice(output, 11, 11 + Number(utils.bytesToUint(dataLen)));
+  const dataLen = output[10];
+  return utils.safeSlice(output, 11, 11 + dataLen);
 }
 
 /**
@@ -458,18 +457,20 @@ export function extractHash(output) {
   }
 
   /* P2PKH */
-  if (utils.typedArraysAreEqual(tag, utils.deserializeHex('0x1976a9'))) {
+  if (utils.typedArraysAreEqual(tag, new Uint8Array([0x19, 0x76, 0xa9]))) {
+    const lastTwoBytes = utils.safeSlice(output, output.length - 2, output.length);
+    if (output[11] !== 0x14
+        || !utils.typedArraysAreEqual(lastTwoBytes, new Uint8Array([0x88, 0xac]))) {
     // Check for maliciously formatted p2pkh
-    if (output[11] !== 0x14 || !utils.typedArraysAreEqual(utils.safeSlice(output, output.length - 2, output.length), utils.deserializeHex('0x88ac'))) {
       throw new TypeError('Maliciously formatted p2pkh output.');
     }
     return utils.safeSlice(output, 12, 32);
   }
 
   /* P2SH */
-  if (utils.typedArraysAreEqual(tag, utils.deserializeHex('0x17a914'))) {
+  if (utils.typedArraysAreEqual(tag, new Uint8Array([0x17, 0xa9, 0x14]))) {
     // Check for maliciously formatted p2sh
-    if (utils.safeSlice(output, output.length - 1, output.length)[0] !== 0x87) {
+    if (output[output.length - 1] !== 0x87) {
       // return null;
       throw new TypeError('Maliciously formatted p2sh output.');
     }
@@ -523,7 +524,7 @@ export function validateVin(vin) {
  *
  * @dev                   Consider a vin with a valid vout in its scriptsig
  * @param {Uint8Array}    vout Raw bytes length-prefixed output vector
- * @returns {Boolean}     True if it represents a validly formatted bout
+ * @returns {Boolean}     True if it represents a validly formatted vout
  */
 export function validateVout(vout) {
   let offset = BigInt(1);
@@ -570,7 +571,7 @@ export function extractMerkleRootLE(header) {
  *
  * Extracts the transaction merkle root from a block header
  *
- * @dev                   Use verifyHash256Merkle to verify proofs with this root
+ * @dev                   Use verifyMerkle to verify proofs with this root
  * @param {Uint8Array}    header An 80-byte Bitcoin header
  * @returns {number}      The serialized merkle root (big-endian)
  */
@@ -693,7 +694,7 @@ export function extractDifficulty(header) {
  * @returns {Uint8Array}  The double-sha256 of the concatenated hashes
  */
 export function hash256MerkleStep(a, b) {
-  return hash256(utils.concatUint8Arrays([a, b]));
+  return hash256(utils.concatUint8Arrays(a, b));
 }
 
 /**
@@ -701,7 +702,7 @@ export function hash256MerkleStep(a, b) {
  * Verifies a Bitcoin-style merkle tree
  *
  * @dev                   Leaves are 1-indexed.
- * @param {Uin8Array}     proof The proof. Tightly packed LE sha256 hashes.
+ * @param {Uint8Array}     proof The proof. Tightly packed LE sha256 hashes.
  *                        The last hash is the root
  * @param {Number}        index The index of the leaf
  * @returns {Boolean}     True if the proof is value, else false

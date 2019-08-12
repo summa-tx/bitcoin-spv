@@ -135,26 +135,6 @@ $ npm run test # truffle test
 $ npm run coverage
 ```
 
-### Generating merkle proofs from mainnet Bitcoin
-
-We included a basic tool for this! It uses Electrum to get tx data. Make sure
-you have python3.6 or greater, then do the following:
-
-```
-pipenv install
-pipenv run python scripts/merkle.py {txid BE}
-```
-
-### Generating header chains from scratch (useful for testing)
-
-Not recommended to set nbits lower than 2000ffff.
-
-```
-pipenv install
-pipenv run python scripts/header_chain.py {num_headers} {nbits_as_hex_string}
-pipenv run python scripts/header_chain.py 7 2000ffff
-```
-
 ### Important Bitcoin Gotchas
 Blockchain.info shows txids and merkle root in BE format
 

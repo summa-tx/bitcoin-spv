@@ -37,7 +37,7 @@ export function prove(txid, merkleRoot, intermediateNodes, index) {
     return true;
   }
 
-  const proof = utils.concatUint8Arrays([txid, intermediateNodes, merkleRoot]);
+  const proof = utils.concatUint8Arrays(txid, intermediateNodes, merkleRoot);
   // If the Merkle proof failed, bubble up error
   return BTCUtils.verifyHash256Merkle(proof, index);
 }
@@ -55,7 +55,7 @@ export function prove(txid, merkleRoot, intermediateNodes, index) {
  */
 export function calculateTxId(version, vin, vout, locktime) {
   return BTCUtils.hash256(
-    utils.concatUint8Arrays([version, vin, vout, locktime])
+    utils.concatUint8Arrays(version, vin, vout, locktime)
   );
 }
 
@@ -116,25 +116,25 @@ export function parseOutput(output) {
     payload = BTCUtils.extractOpReturnData(output);
   } else {
     const prefixHash = utils.safeSlice(output, 8, 10);
-    if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([34, 0]))) {
+    if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([0x22, 0x00]))) {
       // P2WSH
       outputType = utils.OUTPUT_TYPES.WSH;
       payload = utils.safeSlice(output, 11, 43);
-    } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([22, 0]))) {
+    } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([0x16, 0x00]))) {
       // P2WPKH
       outputType = utils.OUTPUT_TYPES.WPKH;
       payload = utils.safeSlice(output, 11, 31);
-    } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([25, 118]))) {
+    } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([0x19, 0x76]))) {
       // PKH
       outputType = utils.OUTPUT_TYPES.PKH;
       payload = utils.safeSlice(output, 12, 32);
-    } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([23, 169]))) {
+    } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([0x17, 0xa9]))) {
       // SH
       outputType = utils.OUTPUT_TYPES.SH;
       payload = utils.safeSlice(output, 11, 31);
     } else {
       outputType = utils.OUTPUT_TYPES.NONSTANDARD;
-      payload = null;
+      payload = new Uint8Array([]);
     }
   }
 
@@ -188,12 +188,11 @@ export function validateHeaderChain(headers) {
 
   // Initialize header start index
   let digest;
-  let start = 0;
   let totalDifficulty = BigInt(0);
 
   for (let i = 0; i < headers.length / 80; i += 1) {
     // ith header start index and ith header
-    start = i * 80;
+    const start = i * 80;
     const header = utils.safeSlice(headers, start, start + 80);
 
     // After the first header, check that headers are in a chain
@@ -208,8 +207,7 @@ export function validateHeaderChain(headers) {
 
     // Require that the header has sufficient work
     digest = BTCUtils.hash256(header);
-    if (utils.bytesToUint(BTCUtils.reverseEndianness(digest)) > target) {
-    // if (!module.exports.validateHeaderChain(BTCUtils.reverseEndianness(digest), target)) {
+    if (!module.exports.validateHeaderWork(BTCUtils.reverseEndianness(digest), target)) {
       throw new Error('Header does not meet its own difficulty target.');
     }
 

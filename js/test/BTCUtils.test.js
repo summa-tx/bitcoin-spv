@@ -2,7 +2,7 @@
 import * as chai from 'chai';
 import * as utils from '../utils/utils';
 import * as constants from './constants';
-import * as BTCUtils from '../lib/BTCUtils';
+import * as BTCUtils from '../src/BTCUtils';
 
 const { assert } = chai;
 
