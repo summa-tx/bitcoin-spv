@@ -35,7 +35,7 @@ module.exports = {
       return true;
     }
 
-    const proof = utils.concatUint8Arrays([txid, intermediateNodes, merkleRoot]);
+    const proof = utils.concatUint8Arrays(txid, intermediateNodes, merkleRoot);
     // If the Merkle proof failed, bubble up error
     return btcUtils.verifyHash256Merkle(proof, index);
   },
@@ -50,7 +50,7 @@ module.exports = {
    * @returns {Uint8Array}  32-byte transaction id, little endian
    */
   calculateTxId: (version, vin, vout, locktime) => btcUtils.hash256(
-    utils.concatUint8Arrays([version, vin, vout, locktime])
+    utils.concatUint8Arrays(version, vin, vout, locktime)
   ),
 
   /**
@@ -106,25 +106,25 @@ module.exports = {
       payload = btcUtils.extractOpReturnData(output);
     } else {
       const prefixHash = utils.safeSlice(output, 8, 10);
-      if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([34, 0]))) {
+      if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([0x22, 0x00]))) {
         // P2WSH
         outputType = utils.OUTPUT_TYPES.WSH;
         payload = utils.safeSlice(output, 11, 43);
-      } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([22, 0]))) {
+      } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([0x16, 0x00]))) {
         // P2WPKH
         outputType = utils.OUTPUT_TYPES.WPKH;
         payload = utils.safeSlice(output, 11, 31);
-      } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([25, 118]))) {
+      } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([0x19, 0x76]))) {
         // PKH
         outputType = utils.OUTPUT_TYPES.PKH;
         payload = utils.safeSlice(output, 12, 32);
-      } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([23, 169]))) {
+      } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([0x17, 0xa9]))) {
         // SH
         outputType = utils.OUTPUT_TYPES.SH;
         payload = utils.safeSlice(output, 11, 31);
       } else {
         outputType = utils.OUTPUT_TYPES.NONSTANDARD;
-        payload = null;
+        payload = new Uint8Array([]);
       }
     }
 
@@ -169,14 +169,12 @@ module.exports = {
       throw new Error('Header bytes not multiple of 80.');
     }
 
-    // Initialize header start index
-    let digest;
-    let start = 0;
     let totalDifficulty = BigInt(0);
-
+    let digest;
+    
     for (let i = 0; i < headers.length / 80; i += 1) {
       // ith header start index and ith header
-      start = i * 80;
+      let start = i * 80;
       const header = utils.safeSlice(headers, start, start + 80);
 
       // After the first header, check that headers are in a chain
@@ -191,8 +189,7 @@ module.exports = {
 
       // Require that the header has sufficient work
       digest = btcUtils.hash256(header);
-      if (utils.bytesToUint(btcUtils.reverseEndianness(digest)) > target) {
-      // if (!module.exports.validateHeaderChain(btcUtils.reverseEndianness(digest), target)) {
+      if (!module.exports.validateHeaderWork(btcUtils.reverseEndianness(digest), target)) {
         throw new Error('Header does not meet its own difficulty target.');
       }
 

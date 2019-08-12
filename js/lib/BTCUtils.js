@@ -294,12 +294,11 @@ module.exports = {
    * @returns {Uint8Array}  The specified output
    */
   extractOutputAtIndex: (vout, index) => {
-    let len;
-    let remaining;
     let offset = BigInt(1);
+    let len;
 
     for (let i = 0; i <= index; i += 1) {
-      remaining = utils.safeSlice(vout, offset, vout.length);
+      let remaining = utils.safeSlice(vout, offset, vout.length);
       len = module.exports.determineOutputLength(remaining);
       if (i !== index) {
         offset += len;
@@ -329,7 +328,7 @@ module.exports = {
    * @notice                Extracts the value from the output in a tx
    * @dev                   Value is an 8-byte little-endian number
    * @param {Uint8Array}    output The output
-   * @returns {Uint8Array}  The output value
+   * @returns {BigInt}  The output value
    */
   extractValue: (output) => {
     const leValue = module.exports.extractValueLE(output);
@@ -344,11 +343,11 @@ module.exports = {
    * @returns {Uint8Array}  Any data contained in the opreturn output, null if not an op return
    */
   extractOpReturnData: (output) => {
-    if (!utils.typedArraysAreEqual(utils.safeSlice(output, 9, 10), new Uint8Array([106]))) {
+    if (output[9] !== 106) {
       throw new Error('Malformatted data. Must be an op return.');
     }
-    const dataLen = utils.safeSlice(output, 10, 11);
-    return utils.safeSlice(output, 11, 11 + Number(utils.bytesToUint(dataLen)));
+    const dataLen = output[10];
+    return utils.safeSlice(output, 11, 11 + dataLen);
   },
 
   /**
@@ -371,18 +370,19 @@ module.exports = {
     }
 
     /* P2PKH */
-    if (utils.typedArraysAreEqual(tag, utils.deserializeHex('0x1976a9'))) {
+    if (utils.typedArraysAreEqual(tag, new Uint8Array([0x19, 0x76, 0xa9]))) {
       // Check for maliciously formatted p2pkh
-      if (output[11] !== 0x14 || !utils.typedArraysAreEqual(utils.safeSlice(output, output.length - 2, output.length), utils.deserializeHex('0x88ac'))) {
+      let lastTwoBytes = utils.safeSlice(output, output.length - 2, output.length)
+      if (output[11] !== 0x14 || !utils.typedArraysAreEqual(lastTwoBytes, new Uint8Array([0x88, 0xac]))) {
         throw new Error('Maliciously formatted p2pkh.');
       }
       return utils.safeSlice(output, 12, 32);
     }
 
     /* P2SH */
-    if (utils.typedArraysAreEqual(tag, utils.deserializeHex('0x17a914'))) {
+    if (utils.typedArraysAreEqual(tag, new Uint8Array([0x17, 0xa9, 0x14]))) {
       // Check for maliciously formatted p2sh
-      if (utils.safeSlice(output, output.length - 1, output.length)[0] !== 0x87) {
+      if (output[output.length - 1] !== 0x87) {
         // return null;
         throw new Error('Maliciously formatted p2sh.');
       }
@@ -432,7 +432,7 @@ module.exports = {
    * @notice                Checks that the vout passed up is properly formatted
    * @dev                   Consider a vin with a valid vout in its scriptsig
    * @param {Uint8Array}    vout Raw bytes length-prefixed output vector
-   * @returns {Boolean}     True if it represents a validly formatted bout
+   * @returns {Boolean}     True if it represents a validly formatted vout
    */
   validateVout: (vout) => {
     let offset = BigInt(1);
@@ -567,12 +567,12 @@ module.exports = {
    * @param {Uint8Array}    b The second hash
    * @returns {Uint8Array}  The double-sha256 of the concatenated hashes
    */
-  hash256MerkleStep: (a, b) => module.exports.hash256(utils.concatUint8Arrays([a, b])),
+  hash256MerkleStep: (a, b) => module.exports.hash256(utils.concatUint8Arrays(a, b)),
 
   /**
    * @notice                Verifies a Bitcoin-style merkle tree
    * @dev                   Leaves are 1-indexed.
-   * @param {Uin8Array}     proof The proof. Tightly packed LE sha256 hashes.
+   * @param {Uint8Array}     proof The proof. Tightly packed LE sha256 hashes.
    *                        The last hash is the root
    * @param {Number}        index The index of the leaf
    * @returns {Boolean}     True if the proof is value, else false

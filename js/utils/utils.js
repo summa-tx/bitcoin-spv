@@ -108,7 +108,7 @@ module.exports = {
    * @return {Uint8Array}  A Uint8Array that is a concatenation of all the arrays
   */
 
-  concatUint8Arrays: (arrays) => {
+  concatUint8Arrays: (...arrays) => {
     let length = 0;
     arrays.forEach((arr) => {
       if (arr instanceof Uint8Array) {
