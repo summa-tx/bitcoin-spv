@@ -125,17 +125,19 @@ export function hash256(preImage) {
  * Determines the length of a scriptSig in an input
  *
  * @dev                   Will return 0 if passed a witness input
- * @param {Uint8Array}    arr The LEGACY input
+ * @param {Uint8Array}    input The LEGACY input
  * @returns {object}      The length of the script sig in object form
  */
-export function extractScriptSigLen(arr) {
-  const varIntTag = utils.safeSlice(arr, 36, 37);
-  const varIntDataLen = determineVarIntDataLength(varIntTag[0]);
-  let len = 0;
+export function extractScriptSigLen(input) {
+  let len;
+
+  const varIntTag = input[36];
+  const varIntDataLen = determineVarIntDataLength(varIntTag);
+
   if (varIntDataLen === 0) {
-    [len] = varIntTag;
+    len = varIntTag;
   } else {
-    const varIntData = utils.safeSlice(arr, 37, 37 + varIntDataLen);
+    const varIntData = utils.safeSlice(input, 37, 37 + varIntDataLen);
     len = utils.bytesToUint(reverseEndianness(varIntData));
   }
   return { dataLen: BigInt(varIntDataLen), scriptSigLen: BigInt(len) };
@@ -183,7 +185,7 @@ export function extractInputAtIndex(vinArr, index) {
   let offset = BigInt(1);
 
   for (let i = 0; i <= index; i += 1) {
-    const remaining = utils.safeSlice(vinArr, offset, vinArr.length - 1);
+    const remaining = utils.safeSlice(vinArr, offset, vinArr.length);
     len = determineInputLength(remaining);
     if (i !== index) {
       offset += len;
@@ -345,8 +347,7 @@ export function extractTxIndex(input) {
  * @throws {RangeError}   When output script is longer than 0xfc bytes
  */
 export function determineOutputLength(output) {
-  const len = utils.safeSlice(output, 8, 9)[0];
-
+  const len = output[8];
   if (len > 0xfd) {
     throw new RangeError('Multi-byte VarInts not supported');
   }
