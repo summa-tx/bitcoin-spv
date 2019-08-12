@@ -6,9 +6,9 @@
  *
  * @title ValidateSPV
  * @summary Validate Bitcoin SPV proofs
- * @author James Prestwich <jamese@summa.one>
- * @author Erin Hales <example@gmail.com>
- * @author Dominique Liau <example@gmail.com>
+ * @author James Prestwich <james@summa.one>
+ * @author Erin Hales <erin@summa.one>
+ * @author Dominique Liau <dominique@summa.one>
  * @copyright (c) [Summa]{@link https://summa.one} 2019
  * @module ValidateSPV
  *
