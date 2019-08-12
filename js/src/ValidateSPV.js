@@ -172,51 +172,6 @@ export function parseHeader(header) {
 
 /**
  *
- * Checks validity of header chain
- *
- * @dev                   Compares the hash of each header to the prevHash in the next header
- * @param {Uint8Array}    headers Raw byte array of header chain
- * @returns {BigInt}      The total accumulated difficulty of the header chain, or an error code
- * @throws {TypeError}    When passed a chain that contains junk data
- * @throws {Error}        When passed an invalid chain, or  header with llow work
-*/
-export function validateHeaderChain(headers) {
-  // Check header chain length
-  if (headers.length % 80 !== 0) {
-    throw new TypeError('Header bytes not multiple of 80.');
-  }
-
-  let digest;
-  let totalDifficulty = BigInt(0);
-
-  for (let i = 0; i < headers.length / 80; i += 1) {
-    // ith header start index and ith header
-    const start = i * 80;
-    const header = utils.safeSlice(headers, start, start + 80);
-
-    // After the first header, check that headers are in a chain
-    if (i !== 0) {
-      if (!module.exports.validateHeaderPrevHash(header, digest)) {
-        throw new Error('Header bytes not a valid chain.');
-      }
-    }
-
-    // ith header target
-    const target = BTCUtils.extractTarget(header);
-
-    // Require that the header has sufficient work
-    digest = BTCUtils.hash256(header);
-    if (!module.exports.validateHeaderWork(BTCUtils.reverseEndianness(digest), target)) {
-      throw new Error('Header does not meet its own difficulty target.');
-    }
-
-    totalDifficulty += BTCUtils.calculateDifficulty(target);
-  }
-  return totalDifficulty;
-}
-
-/**
- *
  * Checks validity of header work
  *
  * @param {Uint8Array}    digest Header digest
@@ -249,4 +204,49 @@ export function validateHeaderPrevHash(header, prevHeaderDigest) {
   }
 
   return true;
+}
+
+/**
+ *
+ * Checks validity of header chain
+ *
+ * @dev                   Compares the hash of each header to the prevHash in the next header
+ * @param {Uint8Array}    headers Raw byte array of header chain
+ * @returns {BigInt}      The total accumulated difficulty of the header chain, or an error code
+ * @throws {TypeError}    When passed a chain that contains junk data
+ * @throws {Error}        When passed an invalid chain, or  header with llow work
+*/
+export function validateHeaderChain(headers) {
+  // Check header chain length
+  if (headers.length % 80 !== 0) {
+    throw new TypeError('Header bytes not multiple of 80.');
+  }
+
+  let digest;
+  let totalDifficulty = BigInt(0);
+
+  for (let i = 0; i < headers.length / 80; i += 1) {
+    // ith header start index and ith header
+    const start = i * 80;
+    const header = utils.safeSlice(headers, start, start + 80);
+
+    // After the first header, check that headers are in a chain
+    if (i !== 0) {
+      if (!validateHeaderPrevHash(header, digest)) {
+        throw new Error('Header bytes not a valid chain.');
+      }
+    }
+
+    // ith header target
+    const target = BTCUtils.extractTarget(header);
+
+    // Require that the header has sufficient work
+    digest = BTCUtils.hash256(header);
+    if (!validateHeaderWork(BTCUtils.reverseEndianness(digest), target)) {
+      throw new Error('Header does not meet its own difficulty target.');
+    }
+
+    totalDifficulty += BTCUtils.calculateDifficulty(target);
+  }
+  return totalDifficulty;
 }
