@@ -7,10 +7,10 @@
  *
  * @title BitcoinSPV
  * @summary short description for the file
- * @author James Prestwich <example@gmail.com>
+ * @author James Prestwich <jamese@summa.one>
  * @author Erin Hales <example@gmail.com>
  * @author Dominique Liau <example@gmail.com>
- * 
+ *
  */
 
 const utils = require('../utils/utils');
@@ -72,9 +72,7 @@ module.exports = {
    * @param {Uint8Array}     uint8Arr The big-endian array-encoded integer
    * @returns {BigInt}       The integer representation
    */
-  lastBytes: (arr, num) => {
-    return utils.safeSlice(arr, arr.length - num);
-  },
+  lastBytes: (arr, num) => utils.safeSlice(arr, arr.length - num),
 
   /**
    * @notice                Implements bitcoin's hash160 (rmd160(sha2()))
@@ -104,11 +102,10 @@ module.exports = {
    */
   extractInputAtIndex: (vinArr, index) => {
     let len = 0;
-    // let remaining = 0;
     let offset = BigInt(1);
 
-    for (let i = 0; i <= index; i ++) {
-      let remaining = utils.safeSlice(vinArr, offset, vinArr.length);
+    for (let i = 0; i <= index; i += 1) {
+      const remaining = utils.safeSlice(vinArr, offset, vinArr.length);
       len = module.exports.determineInputLength(remaining);
       if (i !== index) {
         offset += len;
@@ -132,8 +129,8 @@ module.exports = {
    * @param {Uint8Array}    arr The input as a u8a
    * @returns {BigInt}      The length of the input in bytes
    */
-  determineInputLength: (arr) => {
-    let { dataLen, scriptSigLen } = module.exports.extractScriptSigLen(arr);
+  determineInputLength: (input) => {
+    const { dataLen, scriptSigLen } = module.exports.extractScriptSigLen(input);
     return BigInt(41) + dataLen + scriptSigLen;
   },
 
@@ -144,8 +141,8 @@ module.exports = {
    * @returns {Uint8Array}  The sequence bytes (LE uint)
    */
   extractSequenceLELegacy: (input) => {
-    let { dataLen, scriptSigLen } = module.exports.extractScriptSigLen(input);
-    let length = 36 + 1 + Number(dataLen) + Number(scriptSigLen);
+    const { dataLen, scriptSigLen } = module.exports.extractScriptSigLen(input);
+    const length = 36 + 1 + Number(dataLen) + Number(scriptSigLen);
     return utils.safeSlice(input, length, length + 4);
   },
 
@@ -153,7 +150,7 @@ module.exports = {
    * @notice                Extracts the sequence from the input
    * @dev                   Sequence is a 4-byte little-endian number
    * @param {Uint8Array}    input The LEGACY input
-   * @returns {Uint8Array}  The sequence number (big-endian uint array)
+   * @returns {BigInt}      The sequence number
    */
   extractSequenceLegacy: (input) => {
     const leSeqence = module.exports.extractSequenceLELegacy(input);
@@ -168,8 +165,8 @@ module.exports = {
    * @returns {Uint8Array}  The length-prepended script sig
    */
   extractScriptSig: (input) => {
-    let {dataLen, scriptSigLen} = module.exports.extractScriptSigLen(input)
-    let length = 1 + Number(dataLen) + Number(scriptSigLen);
+    const { dataLen, scriptSigLen } = module.exports.extractScriptSigLen(input);
+    const length = 1 + Number(dataLen) + Number(scriptSigLen);
     return utils.safeSlice(input, 36, 36 + length);
   },
 
@@ -186,9 +183,8 @@ module.exports = {
     if (varIntDataLen === 0) {
       [len] = varIntTag;
     } else {
-      len = utils.bytesToUint(
-        module.exports.reverseEndianness(utils.safeSlice(arr, 37, 37 + varIntDataLen))
-      );
+      const varIntData = utils.safeSlice(arr, 37, 37 + varIntDataLen);
+      len = utils.bytesToUint(module.exports.reverseEndianness(varIntData));
     }
     return { dataLen: BigInt(varIntDataLen), scriptSigLen: BigInt(len) };
   },
@@ -210,7 +206,7 @@ module.exports = {
    * @notice                Extracts the sequence from the input in a tx
    * @dev                   Sequence is a 4-byte little-endian number
    * @param {Uint8Array}    input The WITNESS input
-   * @returns {Uint8Array}  The sequence number (big-endian u8a)
+   * @returns {BigInt}      The sequence number (big-endian u8a)
    */
   extractSequenceWitness: (input) => {
     const leSeqence = module.exports.extractSequenceLEWitness(input);
@@ -303,7 +299,7 @@ module.exports = {
     let offset = BigInt(1);
 
     for (let i = 0; i <= index; i += 1) {
-      remaining = utils.safeSlice(vout, offset, vout.length - 1);
+      remaining = utils.safeSlice(vout, offset, vout.length);
       len = module.exports.determineOutputLength(remaining);
       if (i !== index) {
         offset += len;
@@ -368,28 +364,19 @@ module.exports = {
     if (output[9] === 0) {
       const len = module.exports.extractOutputScriptLen(output) - 2;
       // Check for maliciously formatted witness outputs
-      if (output[10] != len) {
+      if (output[10] !== len) {
         throw new Error('Witness output maliciously formatted.');
       }
       return utils.safeSlice(output, 11, 11 + len);
-    } else {
-      // p2pkh
-      if (utils.typedArraysAreEqual(tag, utils.deserializeHex('0x1976a9'))) {
-        // Check for maliciously formatted p2pkh
-        if (output[11] != 0x14 || !utils.typedArraysAreEqual(utils.safeSlice(output, output.length - 2, output.length), utils.deserializeHex('0x88ac'))) {
-          throw new Error('Maliciously formatted p2pkh.');
-        }
-        return utils.safeSlice(output, 12, 32);
-      //p2sh
+    }
+
+    /* P2PKH */
+    if (utils.typedArraysAreEqual(tag, utils.deserializeHex('0x1976a9'))) {
+      // Check for maliciously formatted p2pkh
+      if (output[11] !== 0x14 || !utils.typedArraysAreEqual(utils.safeSlice(output, output.length - 2, output.length), utils.deserializeHex('0x88ac'))) {
+        throw new Error('Maliciously formatted p2pkh.');
       }
-      // else if (utils.typedArraysAreEqual(tag, utils.deserializeHex('0x17a914'))) {
-      //   // Check for maliciously formatted p2sh
-      //   if (utils.safeSlice(output, output.length - 1, output.length)[0] != 0x87) {
-      //     throw new Error('Maliciously formatted p2sh.');
-      //   }
-      //   return utils.safeSlice(output, 11, 31);
-      // }
-      // return utils.safeSlice(output, 12, 32);
+      return utils.safeSlice(output, 12, 32);
     }
 
     /* P2SH */
@@ -611,10 +598,10 @@ module.exports = {
 
     const root = utils.safeSlice(proof, (proofLength - 32), proofLength);
     let current = utils.safeSlice(proof, 0, 32);
-    let length = (proofLength / 32) - 1
-    
-    for (let i = 1; i < length; i++) {
-      let next = utils.safeSlice(proof, (i * 32), ((i * 32) + 32))
+    const length = (proofLength / 32) - 1;
+
+    for (let i = 1; i < length; i += 1) {
+      const next = utils.safeSlice(proof, (i * 32), ((i * 32) + 32));
 
       if (idx % 2 === 1) {
         current = module.exports.hash256MerkleStep(next, current);

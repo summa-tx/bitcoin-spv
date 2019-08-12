@@ -7,10 +7,10 @@
  *
  * @title ValidateSPV
  * @summary short description for the file
- * @author James Prestwich <example@gmail.com>
+ * @author James Prestwich <jamese@summa.one>
  * @author Erin Hales <example@gmail.com>
  * @author Dominique Liau <example@gmail.com>
- * 
+ *
  */
 
 const btcUtils = require('./BTCUtils');
@@ -30,7 +30,8 @@ module.exports = {
   prove: (txid, merkleRoot, intermediateNodes, index) => {
     // Shortcut the empty-block case
     if (utils.typedArraysAreEqual(txid, merkleRoot)
-        && index === 0 && intermediateNodes.length === 0) {
+        && index === 0
+        && intermediateNodes.length === 0) {
       return true;
     }
 
@@ -69,7 +70,8 @@ module.exports = {
       sequence = btcUtils.extractSequenceLegacy(input);
       witnessTag = utils.safeSlice(input, 36, 39);
 
-      if (utils.typedArraysAreEqual(witnessTag, new Uint8Array([0x22, 0x00, 0x20])) || utils.typedArraysAreEqual(witnessTag, new Uint8Array([0x16, 0x00, 0x14]))) {
+      if (utils.typedArraysAreEqual(witnessTag, new Uint8Array([0x22, 0x00, 0x20]))
+          || utils.typedArraysAreEqual(witnessTag, new Uint8Array([0x16, 0x00, 0x14]))) {
         inputType = utils.INPUT_TYPES.COMPATIBILITY;
       } else {
         inputType = utils.INPUT_TYPES.LEGACY;
@@ -138,7 +140,7 @@ module.exports = {
    */
   parseHeader: (header) => {
     // If header has an invalid length, bubble up error
-    if (header.length != 80) {
+    if (header.length !== 80) {
       throw new Error('Malformatted header. Must be exactly 80 bytes.');
     }
 
