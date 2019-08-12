@@ -3,18 +3,14 @@ package utils
 import (
 	"crypto/sha256"
 	"encoding/binary"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"golang.org/x/crypto/ripemd160"
 )
 
-// ExtractPrefix returns the extracted prefix as a byte array
-// from the given byte array.
-func ExtractPrefix(in []byte) []byte {
-	if len(in) < 6 {
-		return nil
-	}
-
-	return in[0:6]
+// DetermineVarIntDataLength extracts the payload length of a Bitcoin VarInt
+func DetermineVarIntDataLength(flag []byte) []byte {
+	return nil
 }
 
 // ReverseEndianness takes in a byte slice and returns a
@@ -69,15 +65,49 @@ func Hash256(in []byte) []byte {
 // Witness Input
 //
 
-// ExtractSequenceLE returns the LE sequence in from an inpute
-// byte slice.
-func ExtractSequenceLE(in []byte) []byte {
+// ExtractInputAtIndex parses the input vector and returns the vin at a specified index
+func ExtractInputAtIndex(vin []byte, index uint8) []byte {
 	return nil
 }
 
-// ExtractSequence returns the sequence from the input in a given tx.
+// IsLegacyInput determines whether an input is legacy
+func IsLegacyInput(input []byte) bool {
+	return nil
+}
+
+// DetermineInputLength gets the length of an input by parsing the scriptSigLen
+ func DetermineInputLength(input []byte) sdk.Int {
+	return sdk.NewInt(0)
+ }
+
+// ExtractSequenceLELegacy returns the LE sequence in from a tx input
 // The sequence is a 4 byte little-endian number.
-func ExtractSequence(in []byte) uint64 {
+func ExtractSequenceLELegacy(input []byte) []byte {
+	return nil
+}
+
+// ExtractSequenceLegacy returns the integer sequence in from a tx input
+func ExtractSequenceLegacy(input []byte) uint32 {
+	return 0
+}
+
+// ExtractScriptSig extracts the VarInt-prepended scriptSig from the input in a tx
+func ExtractScriptSig(input []byte) ([]byte) {
+	return nil
+}
+
+// ExtractScriptSigLen determines the length of a scriptSig in an input
+func ExtractScriptSigLen(input []byte) (uint8, sdk.Int) {
+	return 0, sdk.NewInt(0)
+}
+
+// ExtractSequenceLEWitness extracts the LE sequence bytes from a witness input
+func ExtractSequenceLEWitness(input []byte) []byte {
+	return nil
+}
+
+// ExtractSequenceWitness extracts the sequence integer from a witness input
+func ExtractSequenceWitness(input []byte) uint32 {
 	return 0
 }
 
@@ -105,8 +135,22 @@ func ExtractTxIndexLE(in []byte) []byte {
 }
 
 // ExtractTxIndex extracts the tx input index from the input in a tx
-func ExtractTxIndex(in []byte) uint64 {
+func ExtractTxIndex(in []byte) uint32 {
 	return 0
+}
+
+//
+// Output
+//
+
+// DetermineOutputLength returns the length of an output
+func DetermineOutputLength(in []byte) uint32 {
+	return 0
+}
+
+// ExtractOutputAtIndex returns the output at a given index in the TxIns vector
+func ExtractOutputAtIndex(in []byte, index uint8) []byte {
+	return nil
 }
 
 // ExtractOutputScriptLen extracts the output script length
@@ -137,55 +181,17 @@ func ExtractHash(in []byte) []byte {
 	return nil
 }
 
-// ExtractLockTimeLE returns the locktime in from a transaction
-// as a little endian []byte
-func ExtractLockTimeLE(in []byte) []byte {
-	return LastBytes(in, 4)
-}
+//
+// Transaction
+//
 
-// ExtractLocktime returns the uint64 value of the locktime in
-func ExtractLocktime(in []byte) uint64 {
-	return 0
-}
-
-// ExtractNumInputsBytes returns the number of inputs as in
-func ExtractNumInputsBytes(in []byte) []byte {
+// ValidateVin checks that the vin passed up is properly formatted
+func ValidateVin(vin []byte) bool {
 	return nil
 }
 
-// ExtractNumInputs returns the number of inputs as integer
-func ExtractNumInputs(in []byte) uint8 {
-	return 0
-}
-
-// FindNumOutputs finds the location of the number of outputs
-// and returns it as a uint64
-func FindNumOutputs(in []byte) uint64 {
-	return 0
-}
-
-// ExtractNumOutputsBytes extracts number of outputs as a []byte
-func ExtractNumOutputsBytes(in []byte) []byte {
-	return nil
-}
-
-// ExtractNumOutputs extracts the number of outputs as an integer
-func ExtractNumOutputs(in []byte) uint8 {
-	return 0
-}
-
-// ExtractInputAtIndex returns the input at a given index in the TxIns vector
-func ExtractInputAtIndex(in []byte, index uint8) []byte {
-	return nil
-}
-
-// DetermineOutputLength returns the length of an output
-func DetermineOutputLength(in []byte) uint64 {
-	return 0
-}
-
-// ExtractOutputAtIndex returns the output at a given index in the TxIns vector
-func ExtractOutputAtIndex(in []byte, index uint8) []byte {
+// ValidateVout checks that the vin passed up is properly formatted
+func ValidateVout(vout []byte) bool {
 	return nil
 }
 
@@ -213,39 +219,52 @@ func ExtractTarget(in []byte) []byte {
 // CalculateDifficulty calculates difficulty from the difficulty 1 target and current target
 // Difficulty 1 is 0x1d00ffff on mainnet and testnet
 // Difficulty 1 is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
-func CalculateDifficulty(target uint64) uint64 {
+func CalculateDifficulty(target sdk.Int) sdk.Int {
 	return 0
 }
 
 // ExtractPrevBlockHashLE returns the previous block's hash from a block header
 // Returns the hash as a little endian []byte
-func ExtractPrevBlockHashLE(in []byte) []byte {
+func ExtractPrevBlockHashLE(header []byte) []byte {
 	return nil
 }
 
 // ExtractPrevBlockHashBE returns the previous block's hash from a block header
 // Returns the hash as a big endian []byte
-func ExtractPrevBlockHashBE(in []byte) []byte {
-	return ReverseEndianness(ExtractPrevBlockHashLE(in))
+func ExtractPrevBlockHashBE(header []byte) []byte {
+	return ReverseEndianness(ExtractPrevBlockHashLE(header))
 }
 
 // ExtractTimestampLE returns the timestamp from a block header
 // It returns the timestamp as a little endian []byte
 // Time is not 100% reliable
-func ExtractTimestampLE(in []byte) []byte {
+func ExtractTimestampLE(header []byte) []byte {
 	return nil
 }
 
 // ExtractTimestamp returns the timestamp from a block header as a uint32
 // Time is not 100% reliable
-func ExtractTimestamp(in []byte) uint32 {
+func ExtractTimestamp(header []byte) uint32 {
 	return uint32(BytesToUint(ReverseEndianness(ExtractTimestampLE(in))))
+}
+
+// ExtractDifficulty calculates the difficulty of a header
+func ExtractDifficulty(header []byte) sdk.Int {
+	return sdk.Int(0)
 }
 
 func hash256MerkleStep(a []byte, b []byte) []byte {
 	return nil
 }
 
-func verifyHash256Merkle(a []byte, b []byte) bool {
+// VerifyHash256Merkle checks a merkle inclusion proof's validity
+func VerifyHash256Merkle(proof []byte, index uint32) bool {
 	return false
+}
+
+func retargetAlgorithm(
+		previousTarget sdk.Int,
+		firstTimestamp uint32,
+		secondTimestamp uint32) sdk.Int {
+	return sdk.Int(0)
 }
