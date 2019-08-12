@@ -160,7 +160,7 @@ describe('BTCUtils', () => {
       BTCUtils.extractHash(utils.deserializeHex('0x0000000000000000220017'));
       assert(false, 'expected an error');
     } catch (e) {
-      assert.include(e.message, 'Witness output maliciously formatted.');
+      assert.include(e.message, 'Maliciously formatted witness output.');
     }
 
     // malformatted p2pkh
@@ -168,7 +168,7 @@ describe('BTCUtils', () => {
       BTCUtils.extractHash(utils.deserializeHex('0x00000000000000001976a912'));
       assert(false, 'expected an error');
     } catch (e) {
-      assert.include(e.message, 'Maliciously formatted p2pkh.');
+      assert.include(e.message, 'Maliciously formatted p2pkh output.');
     }
 
     // malformatted p2pkh
@@ -176,7 +176,7 @@ describe('BTCUtils', () => {
       BTCUtils.extractHash(utils.deserializeHex('0x00000000000000001976a914FFFF'));
       assert(false, 'expected an error');
     } catch (e) {
-      assert.include(e.message, 'Maliciously formatted p2pkh.');
+      assert.include(e.message, 'Maliciously formatted p2pkh output.');
     }
 
     // good p2pkh
@@ -189,7 +189,7 @@ describe('BTCUtils', () => {
       BTCUtils.extractHash(utils.deserializeHex('0x000000000000000017a914FF'));
       assert(false, 'expected an error');
     } catch (e) {
-      assert.include(e.message, 'Maliciously formatted p2sh.');
+      assert.include(e.message, 'Maliciously formatted p2sh output.');
     }
 
     // good p2sh

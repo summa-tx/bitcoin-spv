@@ -6,8 +6,8 @@
  *
  * @title BTCUtils
  * @summary Utility functions for parsing Bitcoin datastructures
- * @author James Prestwich <jamese@summa.one>
- * @author Erin Hales <example@gmail.com>
+ * @author James Prestwich <james@summa.one>
+ * @author Erin Hales <erin@summa.one>
  * @author Dominique Liau <example@gmail.com>
  * @copyright (c) [Summa]{@link https://summa.one} 2019
  * @module BTCUtils
