@@ -574,7 +574,7 @@ export function extractMerkleRootLE(header) {
  *
  * @dev                   Use verifyMerkle to verify proofs with this root
  * @param {Uint8Array}    header An 80-byte Bitcoin header
- * @returns {number}      The serialized merkle root (big-endian)
+ * @returns {Uint8Array}  The serialized merkle root (big-endian)
  */
 export function extractMerkleRootBE(header) {
   return reverseEndianness(
