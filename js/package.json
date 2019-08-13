@@ -3,7 +3,7 @@
   "engines": {
     "node": ">10.0.0"
   },
-  "name": "bitcoin-spv-js",
+  "name": "@summa-tx/bitcoin-spv-js",
   "contributors": [
     "Erin Hales <erin@summa.one>",
     "Dominique Liau <dominique@summa.one>",
@@ -12,8 +12,8 @@
   "version": "2.0.0",
   "description": "bitcoin SPV proofs in Javascript",
   "scripts": {
-    "lint": "eslint ./test",
-    "lint:fix": "eslint --fix ./test",
+    "lint": "eslint ./test ./src",
+    "lint:fix": "eslint --fix ./test ./src",
     "test": "mocha test -r esm"
   },
   "license": "LGPLv3",

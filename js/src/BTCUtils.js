@@ -511,7 +511,7 @@ export function validateVin(vin) {
     // Returns false if we jump past the end
     if (offset > vLength) {
       return false;
-      }
+    }
   }
 
   // Returns false if we're not exactly at the end
