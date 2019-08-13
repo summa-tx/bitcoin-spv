@@ -96,6 +96,7 @@ export function safeSlice(buf, first, last) {
 
   /* eslint-disable-next-line valid-typeof */
   if (typeof first === 'bigint') {
+    if (first > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('BigInt argument out of safe number range');
     start = Number(first);
   } else {
     start = first;
@@ -103,6 +104,7 @@ export function safeSlice(buf, first, last) {
 
   /* eslint-disable-next-line valid-typeof */
   if (typeof last === 'bigint') {
+    if (first > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('BigInt argument out of safe number range');
     end = Number(last);
   } else {
     end = last;

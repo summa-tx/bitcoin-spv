@@ -1,7 +1,7 @@
 {
   "engineStrict": true,
   "engines": {
-    "node": "^10.0.0"
+    "node": ">10.0.0"
   },
   "name": "bitcoin-spv-js",
   "contributors": [
