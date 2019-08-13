@@ -1,6 +1,6 @@
 /* global BigInt */
-const shaLib = require('./sha256.js');
-const ripemd160Lib = require('./ripemd160.js');
+const shaLib = require('../lib/sha256.js');
+const ripemd160Lib = require('../lib/ripemd160.js');
 
 module.exports = {
 
@@ -108,7 +108,7 @@ module.exports = {
    * @return {Uint8Array}  A Uint8Array that is a concatenation of all the arrays
   */
 
-  concatUint8Arrays: (arrays) => {
+  concatUint8Arrays: (...arrays) => {
     let length = 0;
     arrays.forEach((arr) => {
       if (arr instanceof Uint8Array) {

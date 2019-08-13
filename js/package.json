@@ -1,19 +1,27 @@
 {
-    "name": "bitcoin-spv-js",
-    "author": "Erin Hales, Dominique Liau, James Prestwich",
-    "version": "2.0.0",
-    "description": "bitcoin SPV proofs in Javascript",
-    "scripts": {
-        "lint": "eslint ./test",
-        "lint:fix": "eslint --fix ./test",
-        "test": "mocha test"
-    },
-    "license": "LGPLv3",
-    "devDependencies": {
-        "chai": "^4.2.0",
-        "eslint": "^5.16.0",
-        "eslint-config-airbnb-base": "^13.2.0",
-        "eslint-plugin-import": "^2.18.0",
-        "mocha": "^6.2.0"
-    }
+  "engineStrict": true,
+  "engines": {
+    "node": "^10.0.0"
+  },
+  "name": "bitcoin-spv-js",
+  "contributors": [
+    "Erin Hales <erin@summa.one>",
+    "Dominique Liau <example@gmail.com>",
+    "James Prestwich <james@summa.one>"
+  ],
+  "version": "2.0.0",
+  "description": "bitcoin SPV proofs in Javascript",
+  "scripts": {
+    "lint": "eslint ./test",
+    "lint:fix": "eslint --fix ./test",
+    "test": "mocha test"
+  },
+  "license": "LGPLv3",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.2.0",
+    "eslint-plugin-import": "^2.18.0",
+    "mocha": "^6.2.0"
+  }
 }

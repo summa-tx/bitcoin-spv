@@ -3,7 +3,7 @@ const { assert } = require('chai');
 const utils = require('../utils/utils');
 const constants = require('./constants');
 
-const ValidateSPV = require('../lib/ValidateSPV');
+const ValidateSPV = require('../src/ValidateSPV');
 
 const { OP_RETURN, HEADER_ERR } = constants;
 
@@ -160,7 +160,7 @@ describe('ValidateSPV', () => {
 
       assert.equal(BigInt(0), nonstandardOutput.value);
       assert.equal(nonstandardOutput.outputType, utils.OUTPUT_TYPES.NONSTANDARD);
-      assert.isNull(nonstandardOutput.payload);
+      assert.isTrue(utils.typedArraysAreEqual(nonstandardOutput.payload, new Uint8Array([])));
     });
 
     it('returns the tx output value, output type, and payload for an SH output', () => {
