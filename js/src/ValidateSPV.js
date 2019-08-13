@@ -85,7 +85,7 @@ export function parseInput(input) {
       inputType = utils.INPUT_TYPES.LEGACY;
     }
   } else {
-    sequence = BTCUtils.extractSequenceWITNESS(input);
+    sequence = BTCUtils.extractSequenceWitness(input);
     inputType = utils.INPUT_TYPES.WITNESS;
   }
 
