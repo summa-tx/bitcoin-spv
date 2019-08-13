@@ -15,9 +15,9 @@ func DetermineVarIntDataLength(flag []byte) []byte {
 
 // ReverseEndianness takes in a byte slice and returns a
 // reversed endian byte slice.
-func ReverseEndianness(in []byte) []byte {
-	out := make([]byte, len(in), len(in))
-	copy(out, in)
+func ReverseEndianness(b []byte) []byte {
+	out := make([]byte, len(b), len(b))
+	copy(out, b)
 
 	for i := len(out)/2 - 1; i >= 0; i-- {
 		opp := len(out) - 1 - i
@@ -72,7 +72,7 @@ func ExtractInputAtIndex(vin []byte, index uint8) []byte {
 
 // IsLegacyInput determines whether an input is legacy
 func IsLegacyInput(input []byte) bool {
-	return nil
+	return false
 }
 
 // DetermineInputLength gets the length of an input by parsing the scriptSigLen
@@ -113,29 +113,29 @@ func ExtractSequenceWitness(input []byte) uint32 {
 
 // ExtractOutpoint returns the outpoint from the in input in a tx
 // The outpoint is a 32 bit tx id with 4 byte index
-func ExtractOutpoint(in []byte) []byte {
+func ExtractOutpoint(input []byte) []byte {
 	return nil
 }
 
 // ExtractInputTxIDLE returns the LE tx input index from the input in a tx
-func ExtractInputTxIDLE(in []byte) []byte {
+func ExtractInputTxIDLE(input []byte) []byte {
 	return nil
 }
 
 // ExtractTxID returns the input tx id from the input in a tx
 // Returns the tx id as a big-endian []byte
-func ExtractTxID(in []byte) []byte {
+func ExtractTxID(input []byte) []byte {
 	return nil
 }
 
 // ExtractTxIndexLE extracts the LE tx input index from the input in a tx
 // Returns the tx index as a little endian []byte
-func ExtractTxIndexLE(in []byte) []byte {
+func ExtractTxIndexLE(input []byte) []byte {
 	return nil
 }
 
 // ExtractTxIndex extracts the tx input index from the input in a tx
-func ExtractTxIndex(in []byte) uint32 {
+func ExtractTxIndex(input []byte) uint32 {
 	return 0
 }
 
@@ -144,40 +144,40 @@ func ExtractTxIndex(in []byte) uint32 {
 //
 
 // DetermineOutputLength returns the length of an output
-func DetermineOutputLength(in []byte) uint32 {
+func DetermineOutputLength(output []byte) uint32 {
 	return 0
 }
 
 // ExtractOutputAtIndex returns the output at a given index in the TxIns vector
-func ExtractOutputAtIndex(in []byte, index uint8) []byte {
+func ExtractOutputAtIndex(vout []byte, index uint8) []byte {
 	return nil
 }
 
 // ExtractOutputScriptLen extracts the output script length
-func ExtractOutputScriptLen() []byte {
-	return nil
+func ExtractOutputScriptLen(output []byte) uint32 {
+	return 0
 }
 
 // ExtractValueLE extracts the value in from the output in a tx
 // Returns a little endian []byte of the output value
-func ExtractValueLE(in []byte) []byte {
+func ExtractValueLE(output []byte) []byte {
 	return nil
 }
 
 // ExtractValue extracts the value from the output in a tx
-func ExtractValue() uint64 {
+func ExtractValue(output []byte) uint64 {
 	return 0
 }
 
 // ExtractOpReturnData returns the value from the output in a tx
 // Value is an 8byte little endian number
-func ExtractOpReturnData(in []byte) []byte {
+func ExtractOpReturnData(output []byte) []byte {
 	return nil
 }
 
 // ExtractHash extracts the hash from the output script
 // Returns the hash committed to by the pk_script
-func ExtractHash(in []byte) []byte {
+func ExtractHash(output []byte) []byte {
 	return nil
 }
 
@@ -187,12 +187,12 @@ func ExtractHash(in []byte) []byte {
 
 // ValidateVin checks that the vin passed up is properly formatted
 func ValidateVin(vin []byte) bool {
-	return nil
+	return false
 }
 
 // ValidateVout checks that the vin passed up is properly formatted
 func ValidateVout(vout []byte) bool {
-	return nil
+	return false
 }
 
 //
@@ -201,18 +201,18 @@ func ValidateVout(vout []byte) bool {
 
 // ExtractMerkleRootLE returns the transaction merkle root from a given block header
 // The returned merkle root is little-endian
-func ExtractMerkleRootLE(in []byte) []byte {
+func ExtractMerkleRootLE(header []byte) []byte {
 	return nil
 }
 
 // ExtractMerkleRootBE returns the transaction merkle root from a given block header
 // The returned merkle root is big-endian
-func ExtractMerkleRootBE(in []byte) []byte {
-	return ReverseEndianness(ExtractMerkleRootLE(in))
+func ExtractMerkleRootBE(header []byte) []byte {
+	return ReverseEndianness(ExtractMerkleRootLE(header))
 }
 
 // ExtractTarget returns the target from a given block hedaer
-func ExtractTarget(in []byte) []byte {
+func ExtractTarget(header []byte) []byte {
 	return nil
 }
 
@@ -220,7 +220,7 @@ func ExtractTarget(in []byte) []byte {
 // Difficulty 1 is 0x1d00ffff on mainnet and testnet
 // Difficulty 1 is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
 func CalculateDifficulty(target sdk.Int) sdk.Int {
-	return 0
+	return sdk.NewInt(0)
 }
 
 // ExtractPrevBlockHashLE returns the previous block's hash from a block header
@@ -245,12 +245,12 @@ func ExtractTimestampLE(header []byte) []byte {
 // ExtractTimestamp returns the timestamp from a block header as a uint32
 // Time is not 100% reliable
 func ExtractTimestamp(header []byte) uint32 {
-	return uint32(BytesToUint(ReverseEndianness(ExtractTimestampLE(in))))
+	return uint32(BytesToUint(ReverseEndianness(ExtractTimestampLE(header))))
 }
 
 // ExtractDifficulty calculates the difficulty of a header
 func ExtractDifficulty(header []byte) sdk.Int {
-	return sdk.Int(0)
+	return sdk.NewInt(0)
 }
 
 func hash256MerkleStep(a []byte, b []byte) []byte {
@@ -266,5 +266,5 @@ func retargetAlgorithm(
 		previousTarget sdk.Int,
 		firstTimestamp uint32,
 		secondTimestamp uint32) sdk.Int {
-	return sdk.Int(0)
+	return sdk.NewInt(0)
 }
