@@ -72,7 +72,11 @@ export function ripemd160(buf) {
 
 export function typedArraysAreEqual(a, b) {
   if (a.byteLength !== b.byteLength) return false;
-  return a.every((val, i) => val === b[i]);
+  if (a.BYTES_PER_ELEMENT !== b.BYTES_PER_ELEMENT) return false;
+  for (let i = 0; i < a.byteLength; i += 1) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }
 
 export function bytesToUint(uint8Arr) {
@@ -92,6 +96,7 @@ export function safeSlice(buf, first, last) {
 
   /* eslint-disable-next-line valid-typeof */
   if (typeof first === 'bigint') {
+    if (first > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('BigInt argument out of safe number range');
     start = Number(first);
   } else {
     start = first;
@@ -99,6 +104,7 @@ export function safeSlice(buf, first, last) {
 
   /* eslint-disable-next-line valid-typeof */
   if (typeof last === 'bigint') {
+    if (first > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('BigInt argument out of safe number range');
     end = Number(last);
   } else {
     end = last;
