@@ -343,7 +343,7 @@ export function extractTxIndex(input) {
  * 5 types: WPKH, WSH, PKH, SH, and OP_RETURN
  *
  * @param {Uint8Array}    output The output
- * @returns {number}      The length indicated by the prefix, error if invalid length
+ * @returns {BigInt}      The length indicated by the prefix, error if invalid length
  * @throws {RangeError}   When output script is longer than 0xfc bytes
  */
 export function determineOutputLength(output) {
@@ -361,7 +361,7 @@ export function determineOutputLength(output) {
  * Iterates over the vout. If you need to extract multiple,
  *
  *                        write a custom function
- * @param {Uint8Array}    vout The _vout to extract from
+ * @param {Uint8Array}    vout The vout to extract from
  * @param {number}        index The 0-indexed location of the output to extract
  * @returns {Uint8Array}  The specified output
  */
@@ -424,7 +424,7 @@ export function extractValue(output) {
  * Errors if no data or not an op return
  *
  * @param {Uint8Array}    output The output
- * @returns {Uint8Array}  Any data contained in the opreturn output, null if not an op return
+ * @returns {Uint8Array}  Any data contained in the opreturn output
  * @throws {TypeError}    When passed something other than an op return output
  */
 export function extractOpReturnData(output) {
@@ -441,7 +441,7 @@ export function extractOpReturnData(output) {
  * Determines type by the length prefix and validates format
  *
  * @param {Uint8Array}    output The output
- * @returns {Uint8Array}  The hash committed to by the pk_script, or null for errors
+ * @returns {Uint8Array}  The hash committed to by the pk_script
  * @throws {TypeError}    When passed a non-standard output type
  */
 export function extractHash(output) {
@@ -472,7 +472,6 @@ export function extractHash(output) {
   if (utils.typedArraysAreEqual(tag, new Uint8Array([0x17, 0xa9, 0x14]))) {
     // Check for maliciously formatted p2sh
     if (output[output.length - 1] !== 0x87) {
-      // return null;
       throw new TypeError('Maliciously formatted p2sh output.');
     }
     return utils.safeSlice(output, 11, 31);
@@ -512,7 +511,7 @@ export function validateVin(vin) {
     // Returns false if we jump past the end
     if (offset > vLength) {
       return false;
-    }
+      }
   }
 
   // Returns false if we're not exactly at the end
@@ -541,11 +540,10 @@ export function validateVout(vout) {
     // Grab the next input and determine its length.
     // Increase the offset by that much
     offset += determineOutputLength(utils.safeSlice(vout, offset));
-  }
-
-  // Returns false if we jump past the end
-  if (offset > vLength) {
-    return false;
+    // Returns false if we jump past the end
+    if (offset > vLength) {
+      return false;
+    }
   }
 
   // Returns false if we're not exactly at the end
