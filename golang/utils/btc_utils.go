@@ -9,8 +9,20 @@ import (
 )
 
 // DetermineVarIntDataLength extracts the payload length of a Bitcoin VarInt
-func DetermineVarIntDataLength(flag []byte) []byte {
-	return nil
+func DetermineVarIntDataLength(flag []byte) uint8 {
+	if flag[0] <= 0xfc {
+		return 0
+	}
+	if flag[0] == 0xfd {
+		return 2
+	}
+	if flag[0] == 0xfe {
+		return 4
+	}
+	if flag[0] == 0xff {
+		return 8
+	}
+	return 0
 }
 
 // ReverseEndianness takes in a byte slice and returns a
@@ -28,8 +40,8 @@ func ReverseEndianness(b []byte) []byte {
 }
 
 // BytesToUint takes a byte slice and then returns a Uint256
-func BytesToUint(in []byte) uint32 {
-	return binary.LittleEndian.Uint32(in)
+func BytesToUint(b []byte) uint32 {
+	return binary.LittleEndian.Uint32(b)
 }
 
 // LastBytes returns the last num in from a byte array
@@ -67,38 +79,53 @@ func Hash256(in []byte) []byte {
 
 // ExtractInputAtIndex parses the input vector and returns the vin at a specified index
 func ExtractInputAtIndex(vin []byte, index uint8) []byte {
-	return nil
+	var len uint32
+	offset := uint32(1)
+
+	for i := uint8(0); i < index; i++ {
+		remaining := vin[offset:]
+		len = DetermineInputLength(remaining)
+		if i != index {
+			offset += len
+		}
+	}
+
+	return vin[offset : offset+len]
 }
 
 // IsLegacyInput determines whether an input is legacy
 func IsLegacyInput(input []byte) bool {
-	return false
+	return input[36] != 0
 }
 
 // DetermineInputLength gets the length of an input by parsing the scriptSigLen
- func DetermineInputLength(input []byte) sdk.Int {
-	return sdk.NewInt(0)
- }
+func DetermineInputLength(input []byte) uint32 {
+	dataLen, scriptSigLen := ExtractScriptSigLen(input)
+
+	return 41 + dataLen + scriptSigLen
+}
 
 // ExtractSequenceLELegacy returns the LE sequence in from a tx input
 // The sequence is a 4 byte little-endian number.
 func ExtractSequenceLELegacy(input []byte) []byte {
-	return nil
+	dataLen, scriptSigLen := ExtractScriptSigLen(input)
+	len := 36 + 1 + dataLen + scriptSigLen
+	return input[len : len+4]
 }
 
 // ExtractSequenceLegacy returns the integer sequence in from a tx input
 func ExtractSequenceLegacy(input []byte) uint32 {
-	return 0
+	return binary.LittleEndian.Uint32(ExtractSequenceLELegacy(input))
 }
 
 // ExtractScriptSig extracts the VarInt-prepended scriptSig from the input in a tx
-func ExtractScriptSig(input []byte) ([]byte) {
+func ExtractScriptSig(input []byte) []byte {
 	return nil
 }
 
 // ExtractScriptSigLen determines the length of a scriptSig in an input
-func ExtractScriptSigLen(input []byte) (uint8, sdk.Int) {
-	return 0, sdk.NewInt(0)
+func ExtractScriptSigLen(input []byte) (uint32, uint32) {
+	return 0, 0
 }
 
 // ExtractSequenceLEWitness extracts the LE sequence bytes from a witness input
@@ -263,8 +290,8 @@ func VerifyHash256Merkle(proof []byte, index uint32) bool {
 }
 
 func retargetAlgorithm(
-		previousTarget sdk.Int,
-		firstTimestamp uint32,
-		secondTimestamp uint32) sdk.Int {
+	previousTarget sdk.Int,
+	firstTimestamp uint32,
+	secondTimestamp uint32) sdk.Int {
 	return sdk.NewInt(0)
 }

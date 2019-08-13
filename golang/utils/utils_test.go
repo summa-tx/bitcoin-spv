@@ -14,13 +14,6 @@ func TestReverseEndianness(t *testing.T) {
 	assert.Equal(t, len(reversed), len(testbytes))
 }
 
-func TestExtractPrefix(t *testing.T) {
-	testbytes := []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-	prefix := ExtractPrefix(testbytes)
-	assert.Equal(t, len(prefix), 6)
-	assert.Equal(t, prefix, []byte{1, 2, 3, 4, 5, 6})
-}
-
 func TestBytesToUint(t *testing.T) {
 	testbytes := []byte{255, 255, 255, 255}
 	num := BytesToUint(testbytes)
