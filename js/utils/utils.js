@@ -78,7 +78,7 @@ export function typedArraysAreEqual(a, b) {
 export function bytesToUint(uint8Arr) {
   let total = BigInt(0);
   for (let i = 0; i < uint8Arr.length; i += 1) {
-    total += BigInt(uint8Arr[i]) << (BigInt(uint8Arr.length - i - 1) * BigInt(8));
+    total += BigInt(uint8Arr[i]) << (BigInt(uint8Arr.length - i) * BigInt(8));
   }
   return total;
 }

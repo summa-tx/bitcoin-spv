@@ -46,7 +46,7 @@ export function prove(txid, merkleRoot, intermediateNodes, index) {
  *
  * Hashes transaction to get txid
  *
- * @dev                   Supports Legacy and Witness
+ * @dev                   Supports LEGACY and WITNESS
  * @param {Uint8Array}    version 4-bytes version
  * @param {Uint8Array}    vin Raw bytes length-prefixed input vector
  * @param {Uint8Array}    vout Raw bytes length-prefixed output vector
@@ -63,13 +63,13 @@ export function calculateTxId(version, vin, vout, locktime) {
  *
  * Parses a tx input from raw input bytes
  *
- * @dev                   Supports Legacy and Witness inputs
+ * @dev                   Supports LEGACY and WITNESS inputs
  * @param {Uint8Array}    input bytes tx input
  * @returns {object}      Tx input, sequence number, tx hash, and index
  */
 export function parseInput(input) {
-  // NB: If the scriptsig is exactly 00, we are witness.
-  // Otherwise we are compatibility or legacy
+  // NB: If the scriptsig is exactly 00, we are WITNESS.
+  // Otherwise we are Compatibility or LEGACY
   let sequence;
   let witnessTag;
   let inputType;
@@ -85,7 +85,7 @@ export function parseInput(input) {
       inputType = utils.INPUT_TYPES.LEGACY;
     }
   } else {
-    sequence = BTCUtils.extractSequenceWitness(input);
+    sequence = BTCUtils.extractSequenceWITNESS(input);
     inputType = utils.INPUT_TYPES.WITNESS;
   }
 
@@ -101,7 +101,7 @@ export function parseInput(input) {
  *
  * Parses a tx output from raw output bytes
  *
- * @dev                   Differentiates by output script prefix, handles legacy and witness
+ * @dev                   Differentiates by output script prefix, handles LEGACY and WITNESS
  * @param {Uint8Array}    output bytes tx output
  * @returns {object}      Tx output value, output type, payload
  */
@@ -214,7 +214,7 @@ export function validateHeaderPrevHash(header, prevHeaderDigest) {
  * @param {Uint8Array}    headers Raw byte array of header chain
  * @returns {BigInt}      The total accumulated difficulty of the header chain, or an error code
  * @throws {TypeError}    When passed a chain that contains junk data
- * @throws {Error}        When passed an invalid chain, or  header with llow work
+ * @throws {Error}        When passed an invalid chain, or header with low work
 */
 export function validateHeaderChain(headers) {
   // Check header chain length

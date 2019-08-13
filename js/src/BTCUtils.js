@@ -34,8 +34,8 @@ export const DIFF_ONE_TARGET = BigInt('0xffff00000000000000000000000000000000000
 /**
  *
  * Determines the length of a VarInt in bytes
+ * A VarInt of >1 byte is prefixed with a flag indicating its length
  *
- * @dev                   A VarInt of >1 byte is prefixed with a flag indicating its length
  * @param {number}        flag The first byte of a VarInt
  * @returns {number}      The number of non-flag bytes in the VarInt
  */
@@ -56,8 +56,8 @@ export function determineVarIntDataLength(flag) {
 /**
  *
  * Changes the endianness of a byte array
+ * Returns a new, backwards, byte array
  *
- * @dev                   Returns a new, backwards, byte array
  * @param {Uint8Array}    uint8Arr The array to reverse
  * @returns {Uint8Array}  The reversed array
  */
@@ -69,8 +69,8 @@ export function reverseEndianness(uint8Arr) {
 /**
  *
  * Converts big-endian array to a uint
+ * Traverses the byte array and sums the bytes
  *
- * @dev                   Traverses the byte array and sums the bytes
  * @param {Uint8Array}    uint8Arr The big-endian array-encoded integer
  * @returns {BigInt}      The integer representation
  */
@@ -84,11 +84,11 @@ export function bytesToUint(uint8Arr) {
 
 /**
  *
- * Get the last _num bytes from a byte array
+ * Get the last num bytes from a byte array
+ * The byte array to slice
  *
- * @dev                    The byte array to slice
  * @param {Uint8Array}     uint8Arr The big-endian array-encoded integer
- * @returns {BigInt}       The integer representation
+ * @returns {Uint8Array}   The last `num` bytes of the bytearray
  */
 export function lastBytes(arr, num) {
   return utils.safeSlice(arr, arr.length - num);
@@ -123,8 +123,8 @@ export function hash256(preImage) {
 /**
  *
  * Determines the length of a scriptSig in an input
+ * Will return 0 if passed a witness input
  *
- * @dev                   Will return 0 if passed a witness input
  * @param {Uint8Array}    input The LEGACY input
  * @returns {object}      The length of the script sig in object form
  */
@@ -146,8 +146,8 @@ export function extractScriptSigLen(input) {
 /**
  *
  * Extracts the LE sequence bytes from an input
+ * Sequence is used for relative time locks
  *
- * @dev                   Sequence is used for relative time locks
  * @param {Uint8Array}    input The LEGACY input
  * @returns {Uint8Array}  The sequence bytes (LE uint)
  */
@@ -160,8 +160,8 @@ export function extractSequenceLELegacy(input) {
 /**
  *
  * Determines the length of an input from its scriptsig
+ * 36 for outpoint, 1 for scriptsig length, 4 for sequence
  *
- * @dev                   36 for outpoint, 1 for scriptsig length, 4 for sequence
  * @param {Uint8Array}    arr The input as a u8a
  * @returns {BigInt}      The length of the input in bytes
  */
@@ -173,8 +173,8 @@ export function determineInputLength(input) {
 /**
  *
  * Extracts the nth input from the vin (0-indexed)
+ * Iterates over the vin. If you need to extract several,
  *
- * @dev                   Iterates over the vin. If you need to extract several,
  *                        write a custom function
  * @param {Uint8Array}    vinArr The vin as a tightly-packed uint8array
  * @param {index}         index The 0-indexed location of the input to extract
@@ -198,10 +198,10 @@ export function extractInputAtIndex(vinArr, index) {
 /**
  *
  * Determines whether an input is legacy
+ * False if no scriptSig, otherwise True
  *
- * @dev                   False if no scriptSig, otherwise True
  * @param {Uint8Array}    input The input
- * @returns {boolean}     True for legacy, False for witness
+ * @returns {boolean}     True for LEGACY, False for WITNESS
  */
 export function isLegacyInput(input) {
   return input[36] !== 0;
@@ -210,8 +210,8 @@ export function isLegacyInput(input) {
 /**
  *
  * Extracts the sequence from the input
+ * Sequence is a 4-byte little-endian number
  *
- * @dev                   Sequence is a 4-byte little-endian number
  * @param {Uint8Array}    input The LEGACY input
  * @returns {BigInt}      The sequence number
  */
@@ -224,8 +224,8 @@ export function extractSequenceLegacy(input) {
 /**
  *
  * Extracts the VarInt-prepended scriptSig from the input in a tx
+ * Will return Uint8Array([0x00]) if passed a witness input
  *
- * @dev                   Will return hex"00" if passed a witness input
  * @param {Uint8Array}    input The LEGACY input
  * @returns {Uint8Array}  The length-prepended script sig
  */
@@ -243,8 +243,8 @@ export function extractScriptSig(input) {
 /**
  *
  * Extracts the LE sequence bytes from an input
+ * Sequence is used for relative time locks
  *
- * @dev                   Sequence is used for relative time locks
  * @param {Uint8Array}    input The WITNESS input
  * @returns {Uint8Array}  The sequence bytes (LE uint)
  */
@@ -255,8 +255,8 @@ export function extractSequenceLEWitness(input) {
 /**
  *
  * Extracts the sequence from the input in a tx
+ * Sequence is a 4-byte little-endian number
  *
- * @dev                   Sequence is a 4-byte little-endian number
  * @param {Uint8Array}    input The WITNESS input
  * @returns {BigInt}      The sequence number (big-endian u8a)
  */
@@ -269,8 +269,8 @@ export function extractSequenceWitness(input) {
 /**
  *
  * Extracts the outpoint from the input in a tx
+ * 32 byte tx id with 4 byte index
  *
- * @dev                   32 byte tx id with 4 byte index
  * @param {Uint8Array}    input The input
  * @returns {Uint8Array}  The outpoint (LE bytes of prev tx hash + LE bytes of prev tx index)
  */
@@ -281,8 +281,8 @@ export function extractOutpoint(input) {
 /**
  *
  * Extracts the outpoint tx id from an input
+ * 32 byte tx id
  *
- * @dev                   32 byte tx id
  * @param {Uint8Array}    input The input
  * @returns {Uint8Array}  The tx id (little-endian bytes)
  */
@@ -294,8 +294,8 @@ export function extractInputTxIdLE(input) {
 /**
  *
  * Extracts the outpoint index from an input
+ * 32 byte tx id
  *
- * @dev                   32 byte tx id
  * @param {Uint8Array}    input The input
  * @returns {Uint8Array}  The tx id (big-endian bytes)
  */
@@ -308,8 +308,8 @@ export function extractInputTxId(input) {
 /**
  *
  * Extracts the LE tx input index from the input in a tx
+ * 4 byte tx index
  *
- * @dev                   4 byte tx index
  * @param {Uint8Array}    input The input
  * @returns {Uint8Array}  The tx index (little-endian bytes)
  */
@@ -321,8 +321,8 @@ export function extractTxIndexLE(input) {
 /**
  *
  * Extracts the LE tx input index from the input in a tx
+ * 4 byte tx index
  *
- * @dev                   4 byte tx index
  * @param {Uint8Array}    input The input
  * @returns {BigInt}      The tx index (big-endian uint)
  */
@@ -340,8 +340,8 @@ export function extractTxIndex(input) {
 /**
  *
  * Determines the length of an output
+ * 5 types: WPKH, WSH, PKH, SH, and OP_RETURN
  *
- * @dev                   5 types: WPKH, WSH, PKH, SH, and OP_RETURN
  * @param {Uint8Array}    output The output
  * @returns {number}      The length indicated by the prefix, error if invalid length
  * @throws {RangeError}   When output script is longer than 0xfc bytes
@@ -358,8 +358,8 @@ export function determineOutputLength(output) {
 /**
  *
  * Extracts the output at a given index in the TxIns vector
+ * Iterates over the vout. If you need to extract multiple,
  *
- * @dev                   Iterates over the vout. If you need to extract multiple,
  *                        write a custom function
  * @param {Uint8Array}    vout The _vout to extract from
  * @param {number}        index The 0-indexed location of the output to extract
@@ -383,8 +383,8 @@ export function extractOutputAtIndex(vout, index) {
 /**
  *
  * Extracts the output script length
+ * Indexes the length prefix on the pk_script
  *
- * @dev                   Indexes the length prefix on the pk_script
  * @param {Uint8Array}    output The output
  * @returns {Uint8Array}  The 1 byte length prefix
  */
@@ -395,8 +395,8 @@ export function extractOutputScriptLen(output) {
 /**
  *
  * Extracts the value bytes from the output in a tx
+ * Value is an 8-byte little-endian number
  *
- * @dev                   Value is an 8-byte little-endian number
  * @param {Uint8Array}    output The output
  * @returns {Uint8Array}  The output value as LE bytes
  */
@@ -407,8 +407,8 @@ export function extractValueLE(output) {
 /**
  *
  * Extracts the value from the output in a tx
+ * Value is an 8-byte little-endian number
  *
- * @dev                   Value is an 8-byte little-endian number
  * @param {Uint8Array}    output The output
  * @returns {BigInt}      The output value
  */
@@ -421,8 +421,8 @@ export function extractValue(output) {
 /**
  *
  * Extracts the data from an op return output
+ * Errors if no data or not an op return
  *
- * @dev                   Errors if no data or not an op return
  * @param {Uint8Array}    output The output
  * @returns {Uint8Array}  Any data contained in the opreturn output, null if not an op return
  * @throws {TypeError}    When passed something other than an op return output
@@ -438,8 +438,8 @@ export function extractOpReturnData(output) {
 /**
  *
  * Extracts the hash from the output script
+ * Determines type by the length prefix and validates format
  *
- * @dev                   Determines type by the length prefix and validates format
  * @param {Uint8Array}    output The output
  * @returns {Uint8Array}  The hash committed to by the pk_script, or null for errors
  * @throws {TypeError}    When passed a non-standard output type
@@ -489,8 +489,8 @@ export function extractHash(output) {
 /**
  *
  * Checks that the vin passed up is properly formatted
+ * Consider a vin with a valid vout in its scriptsig
  *
- * @dev                     Consider a vin with a valid vout in its scriptsig
  * @param {Uint8Array}      vin Raw bytes length-prefixed input vector
  * @returns {Boolean}       True if it represents a validly formatted vin
  */
@@ -522,8 +522,8 @@ export function validateVin(vin) {
 /**
  *
  * Checks that the vout passed up is properly formatted
+ * Consider a vin with a valid vout in its scriptsig
  *
- * @dev                   Consider a vin with a valid vout in its scriptsig
  * @param {Uint8Array}    vout Raw bytes length-prefixed output vector
  * @returns {Boolean}     True if it represents a validly formatted vout
  */
@@ -559,8 +559,8 @@ export function validateVout(vout) {
 /**
  *
  * Extracts the transaction merkle root from a block header
+ * Returns a the merkle root from a block header as a Uint8Array.
  *
- * @dev                   Returns a the merkle root from a block header as a Uint8Array.
  * @param {Uint8Array}    header An 80-byte Bitcoin header
  * @returns {Uint8Array}  The merkle root (little-endian)
  */
@@ -571,8 +571,8 @@ export function extractMerkleRootLE(header) {
 /**
  *
  * Extracts the transaction merkle root from a block header
+ * Use verifyMerkle to verify proofs with this root
  *
- * @dev                   Use verifyMerkle to verify proofs with this root
  * @param {Uint8Array}    header An 80-byte Bitcoin header
  * @returns {Uint8Array}  The serialized merkle root (big-endian)
  */
@@ -585,8 +585,8 @@ export function extractMerkleRootBE(header) {
 /**
  *
  * Extracts the target from a block header
+ * Target is a 256 bit number encoded as a 3-byte mantissa
  *
- * @dev                    Target is a 256 bit number encoded as a 3-byte mantissa
  *                         and 1 byte exponent
  * @param {Uint8Array}     header
  * @returns {BigInt}       The target threshold
@@ -605,8 +605,8 @@ export function extractTarget(header) {
 /**
  *
  * Calculate difficulty from the difficulty 1 target and current target
+ * Difficulty 1 is 0x1d00ffff on mainnet and testnet
  *
- * @dev                   Difficulty 1 is 0x1d00ffff on mainnet and testnet
  * @param {BigInt/number} target The current target
  * @returns {BigInt}      The block difficulty (bdiff)
  */
@@ -623,8 +623,8 @@ export function calculateDifficulty(target) {
 /**
  *
  * Extracts the previous block's hash from a block header
- *
- * @dev                   Block headers do NOT include block number :(
+ * Block headers do NOT include block number :(
+   *
  * @param {Uint8Array}    header An 80-byte Bitcoin header
  * @returns {Uint8Array}  The previous block's hash (little-endian)
  */
@@ -635,8 +635,8 @@ export function extractPrevBlockLE(header) {
 /**
  *
  *  Extracts the previous block's hash from a block header
- *
- * @dev                   Block headers do NOT include block number :(
+ * Block headers do NOT include block number :(
+   *
  * @param {Uint8Array}    header The header
  * @returns {Uint8Array}  The previous block's hash (big-endian)
  */
@@ -649,8 +649,8 @@ export function extractPrevBlockBE(header) {
 /**
  *
  * Extracts the timestamp from a block header
+ * Time is not 100% reliable
  *
- * @dev                   Time is not 100% reliable
  * @param {Uint8Array}    header The header
  * @returns {Uint8Array}  The timestamp (little-endian bytes)
  */
@@ -661,8 +661,8 @@ export function extractTimestampLE(header) {
 /**
  *
  * Extracts the timestamp from a block header
+ * Time is not 100% reliable
  *
- * @dev                   Time is not 100% reliable
  * @param {Uint8Array}    header The header
  * @returns {BigInt}      The timestamp (uint)
  */
@@ -675,8 +675,8 @@ export function extractTimestamp(header) {
 /**
  *
  * Extracts the expected difficulty from a block header
+ * Does NOT verify the work
  *
- * @dev                   Does NOT verify the work
  * @param {Uint8Array}    header The header
  * @returns {BigInt}      The difficulty as an integer
  */
@@ -701,8 +701,8 @@ export function hash256MerkleStep(a, b) {
 /**
  *
  * Verifies a Bitcoin-style merkle tree
+ * Leaves are 1-indexed.
  *
- * @dev                   Leaves are 1-indexed.
  * @param {Uint8Array}     proof The proof. Tightly packed LE sha256 hashes.
  *                        The last hash is the root
  * @param {Number}        index The index of the leaf
@@ -747,8 +747,8 @@ export function verifyHash256Merkle(proof, index) {
 /**
  *
  * Performs the bitcoin difficulty retarget
+ * Implements the Bitcoin algorithm precisely
  *
- * @dev                   Implements the Bitcoin algorithm precisely
  * @param {BigInt}        previousTarget The target of the previous period
  * @param {number}        firstTimestamp The timestamp of the first block in the difficulty period
  * @param {number}        secondTimestamp The timestamp of the last block in the difficulty period
