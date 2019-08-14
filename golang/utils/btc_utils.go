@@ -351,7 +351,8 @@ func ExtractTarget(header []byte) sdk.Int {
 // Difficulty 1 is 0x1d00ffff on mainnet and testnet
 // Difficulty 1 is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
 func CalculateDifficulty(target sdk.Int) sdk.Int {
-	return sdk.NewInt(0)
+	diffOneTarget, _ := sdk.NewIntFromString("0xffff0000000000000000000000000000000000000000000000000000")
+	return diffOneTarget.Quo(target)
 }
 
 // ExtractPrevBlockHashLE returns the previous block's hash from a block header
