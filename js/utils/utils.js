@@ -35,8 +35,12 @@ export const INPUT_TYPES = {
  * @returns {string}      The value as a hex string
  */
 export function serializeHex(uint8arr) {
-  if (!uint8arr) {
+  if (!uint8arr || uint8arr.length === 0) {
     return '';
+  }
+
+  if (!(uint8arr instanceof Uint8Array)) {
+    throw new Error('Cannot serialize hex, must be a Uint8Array');
   }
 
   let hexStr = '';
@@ -59,6 +63,10 @@ export function serializeHex(uint8arr) {
 export function deserializeHex(hexStr) {
   if (!hexStr) {
     return new Uint8Array();
+  }
+
+  if (typeof hexStr !== 'string') {
+    throw new Error('Error deserializing hex, must be a string');
   }
 
   let hex = '';
@@ -164,8 +172,6 @@ export function safeSlice(buf, first, last) {
     end = last;
   }
 
-  // TODO: is this necessary with the if statement below?
-  // if (first < 0 || last < 0) { throw new Error('Underflow during subtraction.'); }
   if (end > buf.length) { throw new Error('Tried to slice past end of array'); }
   if (start < 0 || end < 0) { throw new Error('Slice must not use negative indexes'); }
   if (start >= end) { throw new Error('Slice must not have 0 length'); }
