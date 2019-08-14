@@ -110,13 +110,15 @@ describe('utils', () => {
       assert.isTrue(arraysAreEqual);
 
       res = utils.deserializeHex('0x0001022a646566ff');
-      arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([0, 1, 2, 42, 100, 101, 102, 255]));
+      arraysAreEqual = utils.typedArraysAreEqual(
+        res, new Uint8Array([0, 1, 2, 42, 100, 101, 102, 255])
+      );
       assert.isTrue(arraysAreEqual);
     });
 
     it('errors if passed anything other than a string', () => {
       try {
-        res = utils.deserializeHex(5);
+        utils.deserializeHex(5);
         assert(false, 'expected an errror');
       } catch (e) {
         assert.include(e.message, 'Error deserializing hex, must be a string');
@@ -180,13 +182,13 @@ describe('utils', () => {
 
   describe('#safeSlice', () => {
     it('returns a safe slice on an array', () => {
-      const arr = new Uint8Array([1,2,3,4,5]);
+      const arr = new Uint8Array([1, 2, 3, 4, 5]);
       let res;
       let arraysAreEqual;
 
       // regular slice
       res = utils.safeSlice(arr, 0, 3);
-      arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([1,2,3]));
+      arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([1, 2, 3]));
       assert.isTrue(arraysAreEqual);
 
       // slice that copies the original array
@@ -196,12 +198,12 @@ describe('utils', () => {
 
       // slice with start index, but not end index
       res = utils.safeSlice(arr, 2);
-      arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([3,4,5]));
+      arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([3, 4, 5]));
       assert.isTrue(arraysAreEqual);
     });
     it('error if passed invalid arguments', () => {
-      const arr = [1,2,3,4,5];
-      const OUT_OF_RANGE = BigInt(Number.MAX_SAFE_INTEGER + 1)
+      const arr = [1, 2, 3, 4, 5];
+      const OUT_OF_RANGE = BigInt(Number.MAX_SAFE_INTEGER + 1);
 
       // start is a BigInt and is out of range
       try {
@@ -283,7 +285,7 @@ describe('utils', () => {
       }
 
       try {
-        utils.concatUint8Arrays(arr1, {arr: [1]}, arr3);
+        utils.concatUint8Arrays(arr1, { arr: [1] }, arr3);
         assert(false, 'expected an error');
       } catch (e) {
         assert.include(e.message, 'Arrays must be of type Uint8Array');
