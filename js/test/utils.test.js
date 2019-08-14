@@ -106,7 +106,6 @@ describe('utils', () => {
       const res = utils.typedArraysAreEqual(arr1, arr2);
       assert.isFalse(res);
     });
-    // return false if Uint8Arrays are not equal
   });
 
   describe('#safeSlice', () => {
