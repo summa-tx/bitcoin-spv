@@ -55,31 +55,6 @@ export function determineVarIntDataLength(flag) {
 
 /**
  *
- * Changes the endianness of a byte array
- * Returns a new, backwards, byte array
- *
- * @param {Uint8Array}    uint8Arr The array to reverse
- * @returns {Uint8Array}  The reversed array
- */
-export function reverseEndianness(uint8Arr) {
-  const newArr = utils.safeSlice(uint8Arr);
-  return new Uint8Array(newArr.reverse());
-}
-
-/**
- *
- * Get the last num bytes from a byte array
- * The byte array to slice
- *
- * @param {Uint8Array}     uint8Arr The big-endian array-encoded integer
- * @returns {Uint8Array}   The last `num` bytes of the bytearray
- */
-export function lastBytes(arr, num) {
-  return utils.safeSlice(arr, arr.length - num);
-}
-
-/**
- *
  * Implements bitcoin's hash160 (rmd160(sha2()))
  *
  * @param {Uint8Array}    preImage The pre-image
@@ -122,7 +97,7 @@ export function extractScriptSigLen(input) {
     len = varIntTag;
   } else {
     const varIntData = utils.safeSlice(input, 37, 37 + varIntDataLen);
-    len = utils.bytesToUint(reverseEndianness(varIntData));
+    len = utils.bytesToUint(utils.reverseEndianness(varIntData));
   }
   return { dataLen: BigInt(varIntDataLen), scriptSigLen: BigInt(len) };
 }
@@ -201,7 +176,7 @@ export function isLegacyInput(input) {
  */
 export function extractSequenceLegacy(input) {
   const leSeqence = extractSequenceLELegacy(input);
-  const beSequence = reverseEndianness(leSeqence);
+  const beSequence = utils.reverseEndianness(leSeqence);
   return utils.bytesToUint(beSequence);
 }
 
@@ -246,7 +221,7 @@ export function extractSequenceLEWitness(input) {
  */
 export function extractSequenceWitness(input) {
   const leSeqence = extractSequenceLEWitness(input);
-  const inputSequence = reverseEndianness(leSeqence);
+  const inputSequence = utils.reverseEndianness(leSeqence);
   return utils.bytesToUint(inputSequence);
 }
 
@@ -286,7 +261,7 @@ export function extractInputTxIdLE(input) {
 // TODO: no test, check against function that uses this
 export function extractInputTxId(input) {
   const leId = extractInputTxIdLE(input);
-  return reverseEndianness(leId);
+  return utils.reverseEndianness(leId);
 }
 
 /**
@@ -313,7 +288,7 @@ export function extractTxIndexLE(input) {
 // TODO: no test, check against function that uses this
 export function extractTxIndex(input) {
   const leIndex = extractTxIndexLE(input);
-  const beIndex = reverseEndianness(leIndex);
+  const beIndex = utils.reverseEndianness(leIndex);
   return utils.bytesToUint(beIndex);
 }
 
@@ -398,7 +373,7 @@ export function extractValueLE(output) {
  */
 export function extractValue(output) {
   const leValue = extractValueLE(output);
-  const beValue = reverseEndianness(leValue);
+  const beValue = utils.reverseEndianness(leValue);
   return utils.bytesToUint(beValue);
 }
 
@@ -559,7 +534,7 @@ export function extractMerkleRootLE(header) {
  * @returns {Uint8Array}  The serialized merkle root (big-endian)
  */
 export function extractMerkleRootBE(header) {
-  return reverseEndianness(
+  return utils.reverseEndianness(
     extractMerkleRootLE(header)
   );
 }
@@ -577,7 +552,7 @@ export function extractTarget(header) {
   const m = utils.safeSlice(header, 72, 75);
   const e = BigInt(header[75]);
 
-  const mantissa = utils.bytesToUint(reverseEndianness(m));
+  const mantissa = utils.bytesToUint(utils.reverseEndianness(m));
 
   const exponent = e - BigInt(3);
 
@@ -623,7 +598,7 @@ export function extractPrevBlockLE(header) {
  * @returns {Uint8Array}  The previous block's hash (big-endian)
  */
 export function extractPrevBlockBE(header) {
-  return reverseEndianness(
+  return utils.reverseEndianness(
     extractPrevBlockLE(header)
   );
 }
@@ -650,7 +625,7 @@ export function extractTimestampLE(header) {
  */
 export function extractTimestamp(header) {
   return utils.bytesToUint(
-    reverseEndianness(extractTimestampLE(header))
+    utils.reverseEndianness(extractTimestampLE(header))
   );
 }
 
