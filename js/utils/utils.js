@@ -173,7 +173,7 @@ export function safeSlice(buf, first, last) {
 
 /**
  * JS version of abi.encodePacked, concatenates u8a arrays
- * 
+ *
  * @dev                  Use when you see abi.encodePacked
  * @param {array}        a An array of Uint8Arrays
  * @return {Uint8Array}  A Uint8Array that is a concatenation of all the arrays
