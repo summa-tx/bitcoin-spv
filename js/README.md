@@ -6,6 +6,10 @@
 transactions. Basically, these tools help you parse, inspect, and authenticate
 Bitcoin transactions.
 
+This library will run in all modern browsers, as well as Node. Due to extensive
+use of `BigInt`s and es6 modules, this library requires Node 10 or higher.
+Usage in Node requires the `--experimental-modules` flag.
+
 ### IMPORTANT WARNING
 
 It is extremely easy to write insecure code using these libraries. We do not
