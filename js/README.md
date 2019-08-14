@@ -64,21 +64,21 @@ const VIN = utils.deserializeHex('0xVIN_BYTES');
 const VOUT = utils.deserializeHex('0xVOUT_BYTES');
 const LOCKTIME = utils.deserializeHex('0xLOCKTIME_BYTES');
 const HEADER_CHAIN = utils.deserializeHex('0xHEADER_BYTES');
-const PROOF = utils.deserializeHex('0xPROOF_BYTES')
-const PROOF_INDEX = 0
+const PROOF = utils.deserializeHex('0xPROOF_BYTES');
+const PROOF_INDEX = 0;
 
 // calculateTxId takes in 4 values as Uint8Arrays: version, vin, vout, and locktime
 // calculateTxId returns the id as a Uint8Array
 let txid = ValidateSPV.calculateTxId(VERSION, VIN, VOUT, LOCKTIME);
 
-let merkleRoot = BTCUtils.extractMerkleRootLE(HEADER_CHAIN)
-assert(ValidateSPV.prove(txid, merkleRoot, PROOF, PROOF_INDEX, 'Invalid inclusion proof')
+let merkleRoot = BTCUtils.extractMerkleRootLE(HEADER_CHAIN);
+assert(ValidateSPV.prove(txid, merkleRoot, PROOF, PROOF_INDEX, 'Invalid inclusion proof');
 
 let totalDiff;
 try {
-    totalDiff = ValidateSP.validateHeaderChain(HEADER_CHAIN)
+    totalDiff = ValidateSP.validateHeaderChain(HEADER_CHAIN);
     console.log(
-        `Verified ${utils.serializeHex(txid)} with ${totalDiff} total work`
+        `Verified ${utils.serializeHex(txid)} with ${totalDiff} total work`;
     );
 } catch(e) {
     console.log(`Invalid header chain: ${e.message}`);
