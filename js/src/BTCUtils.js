@@ -428,7 +428,7 @@ export function extractValue(output) {
  * @throws {TypeError}    When passed something other than an op return output
  */
 export function extractOpReturnData(output) {
-  if (output[9] !== 106) {
+  if (output[9] !== 0x6a) {
     throw new TypeError('Malformatted data. Must be an op return.');
   }
   const dataLen = output[10];
@@ -511,7 +511,7 @@ export function validateVin(vin) {
     // Returns false if we jump past the end
     if (offset > vLength) {
       return false;
-      }
+    }
   }
 
   // Returns false if we're not exactly at the end

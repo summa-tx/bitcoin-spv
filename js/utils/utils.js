@@ -74,7 +74,7 @@ export function typedArraysAreEqual(a, b) {
   if (a.byteLength !== b.byteLength) return false;
   if (a.BYTES_PER_ELEMENT !== b.BYTES_PER_ELEMENT) return false;
   for (let i = 0; i < a.byteLength; i += 1) {
-    if (a[i] != b[i]) return false;
+    if (a[i] !== b[i]) return false;
   }
   return true;
 }
