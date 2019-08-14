@@ -14,12 +14,6 @@ func TestReverseEndianness(t *testing.T) {
 	assert.Equal(t, len(reversed), len(testbytes))
 }
 
-func TestBytesToUint(t *testing.T) {
-	testbytes := []byte{255, 255, 255, 255}
-	num := BytesToUint(testbytes)
-	assert.Equal(t, num, uint32(4294967295))
-}
-
 func TestLastBytes(t *testing.T) {
 	testbytes := []byte{1, 2, 3, 4}
 	last := LastBytes(testbytes, 1)
