@@ -14,7 +14,8 @@
   "scripts": {
     "lint": "eslint ./test ./src ./utils",
     "lint:fix": "eslint --fix ./test ./src ./utils",
-    "test": "mocha test -r esm"
+    "test": "mocha test -r esm",
+    "test:coverage": "jest --coverage"
   },
   "license": "LGPLv3",
   "devDependencies": {
@@ -23,6 +24,7 @@
     "eslint-config-airbnb-base": "^13.2.0",
     "eslint-plugin-import": "^2.18.0",
     "esm": "^3.2.25",
+    "jest": "^24.8.0",
     "mocha": "^6.2.0"
   },
   "dependencies": {
