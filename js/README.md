@@ -58,74 +58,46 @@ In addition, the verifier may set any number of other acceptance constraints
 on the proof. E.g. the contract may check that the `vout` contains an
 output paying at least 30,000 satoshi to a particular `scriptPubkey`.
 
-<!-- ### Why is there a library and a Delegate?
+**Usage Example:**
+```JavaScript
+import * as BTCUtils from "./js/src/BTCUtils.js";
+import * as ValidateSPV from "./js/src/ValidateSPV.js";
 
-1.0.0 was accessible only by the EVM's `DELEGATECALL`. For v2.0.0 we give you
-the option to use `DELEGATECALL` or to compile the library methods into your
-contract.
+// convert data to a Uint8Array using the deserializeHex function
+const OUTPUT = BTCUtils.deserializeHex("0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18");
 
-Compiling them in will save several hundred gas per invocation. That's
-significant for higher-level functions like `prove` in `ValidateSPV`. But it
-does add additional deployment cost to your contracts.
-
-If you're using the Delegate, make sure to add a linking step to your
-deployment scripts. :) -->
-
-
-<!-- **Usage Example:**
-```Solidity
-import {BTCUtils} from "./BTCUtils.sol";
-import {BTCUtilsDelegate} from "./BTCUtilsDelegate.sol";
-
-
-contract CompilesIn {
-    using BTCUtils for bytes
-
-    function multiHash(bytes memory _b) {
-        return keccak256(_b.hash256());  // Compiled In
-    }
-
+// extractHash takes in the Output as a Uint8Array
+// extractHash returns the hash as a Uint8Array
+function callExtractHash () {
+    let res = BTCUtils.extractHash(OUTPUT);
+    // do stuff with res
+    return BTCUtils.serializeHex(res); // convert it back to a hex value using the serializeHex function
 }
 
-contract DelegateCalls {
-    using BTCUtilsDelegate for bytes;
+// convert data to a Uint8Array using the deserializeHex function
+const BE_VALUE = BTCUtils.deserializeHex("0x00112233")
 
-    function multiHash(bytes memory _b) {
-        return keccak256(_b.hash256());  // DELEGATECALL
-    }
+// some functions require an LE or BE value, to convert between the two, use the reverseEndianness function
+// reverseEndianness takes in an LE or BE value as a Uint8Array
+// reverseEndianness reverses the endianness and returns it as a Uint8Array
+function callReverseEndianness () {
+    let leValue = BTCUtils.reverseEndianness(BE_VALUE);
 }
 
-contract MixedAccess {
+// convert data to a Uint8Array using the deserializeHex function
+const VERSION = BTCUtils.deserializeHex('0x01000000');
+const VIN = BTCUtils.deserializeHex('0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff');
+const VOUT = BTCUtils.deserializeHex('0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211');
+const LOCKTIME_LE = BTCUtils.deserializeHex('0x00000000');
 
-    function multiHash(bytes memory _b) {
-        return keccak256(BTCUtils.hash256(_b));  // Compiled In
-    }
-
-    function multiHashWithDelegate(bytes memory _b) {
-        return keccak256(BTCUtilsDelegate.hash256(_b)); // DELEGATECALL
-    }
-
+// calculateTxId takes in 4 values as Uint8Arrays: version, vin, vout, and locktime
+// calculateTxId returns the id as a Uint8Array
+function callCalculateTxId () {
+    let id = ValidateSPV.calculateTxId(VERSION, VIN, VOUT, LOCKTIME_LE)
 }
-
-``` -->
-
-
-<!-- ### Deployed Instances (for DELEGATECALLs)
-
-| Contract    | Version |  Solc     |  Main                                        |  Ropsten
-|-------------|---------|-----------|----------------------------------------------|-------------------------------------------
-| ValidateSPV |  1.0.0  |  v0.4.25  |  0xaa75a0d48fca26ec2102ab68047e98a80a63df1d  |  0x112ef10aef3bde1cd8fd062d805ae8173ec36d66
-| BTCUtils    |	 1.0.0  |  v0.4.25  |  0xD0d4EA34e4a5c27cA40e78838a4Ed5C1bB033BbC  |  0x7a79d4112d79af980e741e0b10c47ffa543cc93a
-| BytesLib    |	 1.0.0  |  v0.4.25  |  0x302A17fcE39E877966817b7cc5479D8BfCe05295  |  0xcc69fec9ba70d6b4e386bfdb70b94349aff15f53
-| ValidateSPV |  1.1.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
-| BTCUtils    |	 1.1.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
-| BytesLib    |	 1.1.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED -->
-
-
+```
 
 ### Development Setup
-<!-- By default, you must run an instance of `ganache-cli` (or some other ganache
-VM) when running tests. -->
 ```sh
 $ cd js
 $ npm i
