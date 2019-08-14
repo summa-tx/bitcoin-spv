@@ -133,8 +133,8 @@ export function determineInputLength(input) {
  *
  * Extracts the nth input from the vin (0-indexed)
  * Iterates over the vin. If you need to extract several,
- *
- *                        write a custom function
+ *    write a custom function
+ * 
  * @param {Uint8Array}    vinArr The vin as a tightly-packed uint8array
  * @param {index}         index The 0-indexed location of the input to extract
  * @returns {Uint8Array}  The input as a u8a
@@ -318,8 +318,8 @@ export function determineOutputLength(output) {
  *
  * Extracts the output at a given index in the TxIns vector
  * Iterates over the vout. If you need to extract multiple,
- *
- *                        write a custom function
+ *    write a custom function
+ * 
  * @param {Uint8Array}    vout The vout to extract from
  * @param {number}        index The 0-indexed location of the output to extract
  * @returns {Uint8Array}  The specified output
@@ -543,8 +543,8 @@ export function extractMerkleRootBE(header) {
  *
  * Extracts the target from a block header
  * Target is a 256 bit number encoded as a 3-byte mantissa
- *
- *                         and 1 byte exponent
+ *    and 1 byte exponent
+ *                         
  * @param {Uint8Array}     header
  * @returns {BigInt}       The target threshold
  */
@@ -660,7 +660,7 @@ export function hash256MerkleStep(a, b) {
  * Verifies a Bitcoin-style merkle tree
  * Leaves are 1-indexed.
  *
- * @param {Uint8Array}     proof The proof. Tightly packed LE sha256 hashes.
+ * @param {Uint8Array}    proof The proof. Tightly packed LE sha256 hashes.
  *                        The last hash is the root
  * @param {Number}        index The index of the leaf
  * @returns {Boolean}     True if the proof is value, else false
