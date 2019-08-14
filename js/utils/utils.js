@@ -79,6 +79,14 @@ export function typedArraysAreEqual(a, b) {
   return true;
 }
 
+/**
+ *
+ * Converts big-endian array to a uint
+ * Traverses the byte array and sums the bytes
+ *
+ * @param {Uint8Array}    uint8Arr The big-endian array-encoded integer
+ * @returns {BigInt}      The integer representation
+ */
 export function bytesToUint(uint8Arr) {
   let total = BigInt(0);
   for (let i = 0; i < uint8Arr.length; i += 1) {
@@ -142,4 +150,29 @@ export function concatUint8Arrays(...arrays) {
   });
 
   return concatArray;
+}
+
+/**
+ *
+ * Changes the endianness of a byte array
+ * Returns a new, backwards, byte array
+ *
+ * @param {Uint8Array}    uint8Arr The array to reverse
+ * @returns {Uint8Array}  The reversed array
+ */
+export function reverseEndianness(uint8Arr) {
+  const newArr = safeSlice(uint8Arr);
+  return new Uint8Array(newArr.reverse());
+}
+
+/**
+ *
+ * Get the last num bytes from a byte array
+ * The byte array to slice
+ *
+ * @param {Uint8Array}     uint8Arr The big-endian array-encoded integer
+ * @returns {Uint8Array}   The last `num` bytes of the bytearray
+ */
+export function lastBytes(arr, num) {
+  return safeSlice(arr, arr.length - num);
 }
