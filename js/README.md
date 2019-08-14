@@ -17,13 +17,7 @@ building with these libraries.
 
 - Merkle proof indexes are 0-indexed (like they should have been all along)
 - Merkle proofs for `ValidateSPV#prove` no longer require the leaf or root hash
-
-<!-- ### Solidity Compiler
-
-Starting from version `1.1.0`, required solidity compiler (`solc`) version is
-at least `0.5.10`. -->
-
-<!-- TODO: Include note about needing node 10 or above -->
+- Node 10.0.0 or greater is required
 
 ### How are proofs formatted?
 
@@ -39,11 +33,11 @@ for these:
     1. The variable-length input vector
         1. No more than 0xfc inputs
         1. Prefixed with the number of inputs
-        1. Tightly packed in a single Uint8Array called `vin`
+        1. Tightly packed in a single bytearray called `vin`
     1. The variable-length output vector
         1. No more than 0xfc outputs
         1. Prefixed with the number of inputs
-        1. Tightly packed in a single Uint8Array called `vout`
+        1. Tightly packed in a single bytearray called `vout`
     1. The transaction locktime (a 4-byte LE integer)
 1. The header chain:
     1. Contains any number of 80-byte headers
@@ -64,7 +58,7 @@ In addition, the verifier may set any number of other acceptance constraints
 on the proof. E.g. the contract may check that the `vout` contains an
 output paying at least 30,000 satoshi to a particular `scriptPubkey`.
 
-### Why is there a library and a Delegate?
+<!-- ### Why is there a library and a Delegate?
 
 1.0.0 was accessible only by the EVM's `DELEGATECALL`. For v2.0.0 we give you
 the option to use `DELEGATECALL` or to compile the library methods into your
@@ -75,16 +69,17 @@ significant for higher-level functions like `prove` in `ValidateSPV`. But it
 does add additional deployment cost to your contracts.
 
 If you're using the Delegate, make sure to add a linking step to your
-deployment scripts. :)
+deployment scripts. :) -->
 
-**Usage Example:**
-<!-- ```Solidity
+
+<!-- **Usage Example:**
+```Solidity
 import {BTCUtils} from "./BTCUtils.sol";
 import {BTCUtilsDelegate} from "./BTCUtilsDelegate.sol";
 
 
 contract CompilesIn {
-    using BTCUtils for bytes;
+    using BTCUtils for bytes
 
     function multiHash(bytes memory _b) {
         return keccak256(_b.hash256());  // Compiled In
@@ -115,7 +110,7 @@ contract MixedAccess {
 ``` -->
 
 
-### Deployed Instances (for DELEGATECALLs)
+<!-- ### Deployed Instances (for DELEGATECALLs)
 
 | Contract    | Version |  Solc     |  Main                                        |  Ropsten
 |-------------|---------|-----------|----------------------------------------------|-------------------------------------------
@@ -124,17 +119,17 @@ contract MixedAccess {
 | BytesLib    |	 1.0.0  |  v0.4.25  |  0x302A17fcE39E877966817b7cc5479D8BfCe05295  |  0xcc69fec9ba70d6b4e386bfdb70b94349aff15f53
 | ValidateSPV |  1.1.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
 | BTCUtils    |	 1.1.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
-| BytesLib    |	 1.1.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
+| BytesLib    |	 1.1.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED -->
 
 
 
 ### Development Setup
-By default, you must run an instance of `ganache-cli` (or some other ganache
-VM) when running tests.
+<!-- By default, you must run an instance of `ganache-cli` (or some other ganache
+VM) when running tests. -->
 ```sh
-$ npm run compile # truffle compile
+$ cd js
+$ npm i
 $ npm run test # truffle test
-$ npm run coverage
 ```
 
 ### Important Bitcoin Gotchas
