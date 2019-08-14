@@ -68,22 +68,6 @@ export function reverseEndianness(uint8Arr) {
 
 /**
  *
- * Converts big-endian array to a uint
- * Traverses the byte array and sums the bytes
- *
- * @param {Uint8Array}    uint8Arr The big-endian array-encoded integer
- * @returns {BigInt}      The integer representation
- */
-export function bytesToUint(uint8Arr) {
-  let total = BigInt(0);
-  for (let i = 0; i < uint8Arr.length; i += 1) {
-    total += BigInt(uint8Arr[i]) << (BigInt(uint8Arr.length - i - 1) * BigInt(8));
-  }
-  return total;
-}
-
-/**
- *
  * Get the last num bytes from a byte array
  * The byte array to slice
  *
