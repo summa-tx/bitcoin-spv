@@ -25,9 +25,7 @@
     "eslint-plugin-import": "^2.18.0",
     "esm": "^3.2.25",
     "jest": "^24.8.0",
-    "mocha": "^6.2.0"
-  },
-  "dependencies": {
+    "mocha": "^6.2.0",
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
     "babel-jest": "^24.8.0"
