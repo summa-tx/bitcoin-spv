@@ -12,8 +12,8 @@
   "version": "2.0.0",
   "description": "bitcoin SPV proofs in Javascript",
   "scripts": {
-    "lint": "eslint ./test ./src",
-    "lint:fix": "eslint --fix ./test ./src",
+    "lint": "eslint ./test ./src ./utils",
+    "lint:fix": "eslint --fix ./test ./src ./utils",
     "test": "mocha test -r esm"
   },
   "license": "LGPLv3",
