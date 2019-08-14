@@ -157,13 +157,13 @@ export function parseHeader(header) {
     throw new TypeError('Malformatted header. Must be exactly 80 bytes.');
   }
 
-  const digest = BTCUtils.reverseEndianness(BTCUtils.hash256(header));
-  const version = utils.bytesToUint(BTCUtils.reverseEndianness(utils.safeSlice(header, 0, 4)));
+  const digest = utils.reverseEndianness(BTCUtils.hash256(header));
+  const version = utils.bytesToUint(utils.reverseEndianness(utils.safeSlice(header, 0, 4)));
   const prevHash = BTCUtils.extractPrevBlockLE(header);
   const merkleRoot = BTCUtils.extractMerkleRootLE(header);
   const timestamp = BTCUtils.extractTimestamp(header);
   const target = BTCUtils.extractTarget(header);
-  const nonce = utils.bytesToUint(BTCUtils.reverseEndianness(utils.safeSlice(header, 76, 80)));
+  const nonce = utils.bytesToUint(utils.reverseEndianness(utils.safeSlice(header, 76, 80)));
 
   return {
     digest, version, prevHash, merkleRoot, timestamp, target, nonce
@@ -242,7 +242,7 @@ export function validateHeaderChain(headers) {
 
     // Require that the header has sufficient work
     digest = BTCUtils.hash256(header);
-    if (!validateHeaderWork(BTCUtils.reverseEndianness(digest), target)) {
+    if (!validateHeaderWork(utils.reverseEndianness(digest), target)) {
       throw new Error('Header does not meet its own difficulty target.');
     }
 
