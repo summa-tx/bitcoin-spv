@@ -67,32 +67,72 @@ describe('utils', () => {
   });
 
   describe('#serializeHex', () => {
-    it('converts a hexadecimal to Uint8Array', () => {
+    it('serializes a Uint8Array into a hex string', () => {
 
     });
+    // empty string
+    // not a hex string
   });
 
   describe('#deserializeHex', () => {
-    it('');
+    it('deserializes a hex string into a Uint8Array');
+    // empty array
+    // not a uint8array
   });
 
   describe('#sha256', () => {
-    it('');
+    it('returns a sha256 hash', () => {
+      // returns false. are values wrong??? Erin halp!
+      const res = utils.sha256(utils.deserializeHex('0x00'));
+      const arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('c4dd67368286d02d62bdaa7a775b7594765d5210c9ad20cc3c24148d493353d7'));
+      assert.isTrue(arraysAreEqual);
+    });
   });
 
   describe('#ripemd160', () => {
-    it('');
+    it('returns a ripemd160 hash');
   });
 
   describe('#typedArraysAreEqual', () => {
-    it('');
+    it('returns true if Uint8Arrays are equal', () => {
+      const arr1 = new Uint8Array([255, 255, 255]);
+      const arr2 = new Uint8Array([255, 255, 255]);
+      const res = utils.typedArraysAreEqual(arr1, arr2);
+      assert.isTrue(res);
+    });
+    it('returns false if Uint8Arrays are not equal', () => {
+      const arr1 = new Uint8Array([255, 255, 254]);
+      const arr2 = new Uint8Array([255, 255, 255]);
+      const res = utils.typedArraysAreEqual(arr1, arr2);
+      assert.isFalse(res);
+    });
+    // return false if Uint8Arrays are not equal
   });
 
   describe('#safeSlice', () => {
-    it('');
+    it('returns a safe slice on an array');
+    // throws RangeError("BigInt argument out of safe number range") if `first` is out of range
+    // throws RangeError("BigInt argument out of safe number range") if `last` is out of range
+    // throws Error("Underflow during subtraction.") if `first` is less than 0 // unecessary???
+    // throws Error("Underflow during subtraction.") if `last` is less than 0 // unecessary???
+    // throws Error("Tried to slice past end of array") if `end` if larger than array length
+    // throws Error("Slice must not use negative indexes") if `start` is negative
+    // throws Error("Slice must not use negative indexes") if `end` is negative
+    // throws Error("Slice must not have 0 length") is `start` is greater than or equal to `end`
   });
 
   describe('#concatUint8Arrays', () => {
-    it('');
+    it('concatenates Uint8Arrays', () => {
+      const arr1 = new Uint8Array([255, 255, 255]);
+      const arr2 = new Uint8Array([0, 0, 0]);
+      const arr3 = new Uint8Array([23, 70, 189]);
+      const arrTotal = new Uint8Array([255, 255, 255, 0, 0, 0, 23, 70, 189]);
+      const res = utils.concatUint8Arrays(arr1, arr2, arr3);
+      const arraysAreEqual = utils.typedArraysAreEqual(res, arrTotal);
+      assert.isTrue(arraysAreEqual);
+    });
+    // only one array
+    // no arguments
+    // input is not arrays
   });
 });

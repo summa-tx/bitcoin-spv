@@ -158,13 +158,14 @@ export function safeSlice(buf, first, last) {
 
   /* eslint-disable-next-line valid-typeof */
   if (typeof last === 'bigint') {
-    if (first > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('BigInt argument out of safe number range');
+    if (last > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('BigInt argument out of safe number range');
     end = Number(last);
   } else {
     end = last;
   }
 
-  if (first < 0 || last < 0) { throw new Error('Underflow during subtraction.'); }
+  // TODO: is this necessary with the if statement below?
+  // if (first < 0 || last < 0) { throw new Error('Underflow during subtraction.'); }
   if (end > buf.length) { throw new Error('Tried to slice past end of array'); }
   if (start < 0 || end < 0) { throw new Error('Slice must not use negative indexes'); }
   if (start >= end) { throw new Error('Slice must not have 0 length'); }
