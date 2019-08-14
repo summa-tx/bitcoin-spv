@@ -166,6 +166,16 @@ describe('utils', () => {
       const res = utils.typedArraysAreEqual(arr1, arr2);
       assert.isFalse(res);
     });
+    it('throws error if any arrays are not of type Uint8Array', () => {
+      const arr1 = new Uint8Array([255, 255, 255]);
+      const arr2 = [255, 255, 255];
+      try {
+        utils.typedArraysAreEqual(arr1, arr2);
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, 'Arrays must be of type Uint8Array');
+      }
+    });
   });
 
   describe('#safeSlice', () => {
@@ -281,6 +291,5 @@ describe('utils', () => {
     });
     // only one array
     // no arguments
-    // input is not arrays
   });
 });

@@ -115,6 +115,10 @@ export function ripemd160(buf) {
  * @returns {boolean}     True if the arrays are equal, false if otherwise
  */
 export function typedArraysAreEqual(a, b) {
+  if (!(a instanceof Uint8Array) || !(b instanceof Uint8Array)) {
+    throw new Error('Arrays must be of type Uint8Array');
+  }
+
   if (a.byteLength !== b.byteLength) return false;
   if (a.BYTES_PER_ELEMENT !== b.BYTES_PER_ELEMENT) return false;
   for (let i = 0; i < a.byteLength; i += 1) {
