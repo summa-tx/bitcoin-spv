@@ -1,10 +1,10 @@
-## Bitcoin SPV Proofs in Solidity
+## Bitcoin SPV Proofs in JavaScript
 
 ### What is it?
 
-`bitcoin-spv` is a collection of Solidity libraries for working with Bitcoin
-transactions in Solidity contracts. Basically, these tools help you parse,
-inspect, and authenticate Bitcoin transactions.
+`bitcoin-spv` is a collection of JavaScript functions for working with Bitcoin
+transactions. Basically, these tools help you parse, inspect, and authenticate
+Bitcoin transactions.
 
 ### IMPORTANT WARNING
 
@@ -18,10 +18,12 @@ building with these libraries.
 - Merkle proof indexes are 0-indexed (like they should have been all along)
 - Merkle proofs for `ValidateSPV#prove` no longer require the leaf or root hash
 
-### Solidity Compiler
+<!-- ### Solidity Compiler
 
 Starting from version `1.1.0`, required solidity compiler (`solc`) version is
-at least `0.5.10`.
+at least `0.5.10`. -->
+
+<!-- TODO: Include note about needing node 10 or above -->
 
 ### How are proofs formatted?
 
@@ -37,11 +39,11 @@ for these:
     1. The variable-length input vector
         1. No more than 0xfc inputs
         1. Prefixed with the number of inputs
-        1. Tightly packed in a single bytearray called `vin`
+        1. Tightly packed in a single Uint8Array called `vin`
     1. The variable-length output vector
         1. No more than 0xfc outputs
         1. Prefixed with the number of inputs
-        1. Tightly packed in a single bytearray called `vout`
+        1. Tightly packed in a single Uint8Array called `vout`
     1. The transaction locktime (a 4-byte LE integer)
 1. The header chain:
     1. Contains any number of 80-byte headers
@@ -76,9 +78,9 @@ If you're using the Delegate, make sure to add a linking step to your
 deployment scripts. :)
 
 **Usage Example:**
-```Solidity
-import {BTCUtils} from "./solidity/contracts/BTCUtils.sol";
-import {BTCUtilsDelegate} from "./solidity/contracts/BTCUtilsDelegate.sol";
+<!-- ```Solidity
+import {BTCUtils} from "./BTCUtils.sol";
+import {BTCUtilsDelegate} from "./BTCUtilsDelegate.sol";
 
 
 contract CompilesIn {
@@ -110,7 +112,7 @@ contract MixedAccess {
 
 }
 
-```
+``` -->
 
 
 ### Deployed Instances (for DELEGATECALLs)
