@@ -65,4 +65,34 @@ describe('utils', () => {
       assert.equal(res, BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'));
     });
   });
+
+  describe('#serializeHex', () => {
+    it('converts a hexadecimal to Uint8Array', () => {
+
+    });
+  });
+
+  describe('#deserializeHex', () => {
+    it('');
+  });
+
+  describe('#sha256', () => {
+    it('');
+  });
+
+  describe('#ripemd160', () => {
+    it('');
+  });
+
+  describe('#typedArraysAreEqual', () => {
+    it('');
+  });
+
+  describe('#safeSlice', () => {
+    it('');
+  });
+
+  describe('#concatUint8Arrays', () => {
+    it('');
+  });
 });
