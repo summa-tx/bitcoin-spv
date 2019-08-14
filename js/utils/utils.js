@@ -27,6 +27,13 @@ export const INPUT_TYPES = {
   WITNESS: BigInt(3)
 };
 
+/**
+ *
+ * Serializes a Uint8Array into a hex string
+ *
+ * @param {Uint8Array}    uint8arr The value as a u8a
+ * @returns {string}      The value as a hex string
+ */
 export function serializeHex(uint8arr) {
   if (!uint8arr) {
     return '';
@@ -42,6 +49,13 @@ export function serializeHex(uint8arr) {
   return `0x${hexStr.toLowerCase()}`;
 }
 
+/**
+ *
+ * Deserializes a hex string into a Uint8Array
+ *
+ * @param {Uint8Array}    uint8arr The value as a hex string
+ * @returns {string}      The value as a u8a
+ */
 export function deserializeHex(hexStr) {
   if (!hexStr) {
     return new Uint8Array();
@@ -62,14 +76,36 @@ export function deserializeHex(hexStr) {
   return new Uint8Array(a);
 }
 
+/**
+ *
+ * Executes the sha256 hash
+ *
+ * @param {Uint8Array}    but The pre-image
+ * @returns {Uint8Array}  The digest
+ */
 export function sha256(buf) {
   return shaLib(buf);
 }
 
+/**
+ *
+ * Executes the ripemd160 hash
+ *
+ * @param {Uint8Array}    buf The pre-image
+ * @returns {Uint8Array}  The digest
+ */
 export function ripemd160(buf) {
   return rmdlib(buf);
 }
 
+/**
+ *
+ * Compares u8a arrays
+ *
+ * @param {Uint8Array}    a The first array
+ * @param {Uint8Array}    b The second array
+ * @returns {boolean}     True if the arrays are equal, false if otherwise
+ */
 export function typedArraysAreEqual(a, b) {
   if (a.byteLength !== b.byteLength) return false;
   if (a.BYTES_PER_ELEMENT !== b.BYTES_PER_ELEMENT) return false;
@@ -95,6 +131,16 @@ export function bytesToUint(uint8Arr) {
   return total;
 }
 
+/**
+ *
+ * Performs a safe slice on an array
+ * Errors if any invalid arguments are given
+ *
+ * @param {Uint8Array}    buf The u8a
+ * @param {Number|BigInt} first The index where the slice should start
+ * @param {Number|BigInt} last The index where the slice should end (non-inclusive)
+ * @returns {Uint8Array}  The slice
+ */
 export function safeSlice(buf, first, last) {
   let start;
   let end;
@@ -126,7 +172,8 @@ export function safeSlice(buf, first, last) {
 }
 
 /**
- * @notice               JS version of abi.encodePacked when trying to concatenate 2 values
+ * JS version of abi.encodePacked, concatenates u8a arrays
+ * 
  * @dev                  Use when you see abi.encodePacked
  * @param {array}        a An array of Uint8Arrays
  * @return {Uint8Array}  A Uint8Array that is a concatenation of all the arrays
