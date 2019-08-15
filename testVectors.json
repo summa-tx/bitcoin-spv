@@ -19,11 +19,11 @@
   }],
   "SEQUENCE_WITNESS": {
     "LE": "0xffffffff",
-    "WITNESS": "4294967295"
+    "WITNESS": 4294967295
   },
   "SEQUENCE_LEGACY": {
     "LE": "0xffffffff",
-    "LEGACY": "4294967295"
+    "LEGACY": 4294967295
   },
   "OUTPUT": {
     "MALFORMATTED": {
