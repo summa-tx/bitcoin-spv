@@ -101,6 +101,10 @@ describe('utils', () => {
       let res;
       let arraysAreEqual;
 
+      res = utils.deserializeHex();
+      arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array());
+
+
       res = utils.deserializeHex('0x00');
       arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([0]));
       assert.isTrue(arraysAreEqual);
@@ -178,6 +182,12 @@ describe('utils', () => {
         assert.include(e.message, 'Arrays must be of type Uint8Array');
       }
     });
+    it('returns false if Uint8Arrays lengths are not equal', () => {
+      const arr1 = new Uint8Array([255, 255]);
+      const arr2 = new Uint8Array([255, 255, 255]);
+      const res = utils.typedArraysAreEqual(arr1, arr2);
+      assert.isFalse(res);
+    });
   });
 
   describe('#safeSlice', () => {
@@ -199,6 +209,21 @@ describe('utils', () => {
       // slice with start index, but not end index
       res = utils.safeSlice(arr, 2);
       arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([3, 4, 5]));
+      assert.isTrue(arraysAreEqual);
+    });
+    it('uses default values', () => {
+      const arr = new Uint8Array([1, 2, 3, 4, 5]);
+      let res;
+      let arraysAreEqual;
+
+      // default end
+      res = utils.safeSlice(arr, 3);
+      arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([4, 5]));
+      assert.isTrue(arraysAreEqual);
+
+      // default start
+      res = utils.safeSlice(arr, null, 3);
+      arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([1, 2, 3]));
       assert.isTrue(arraysAreEqual);
     });
     it('error if passed invalid arguments', () => {

@@ -120,7 +120,6 @@ export function typedArraysAreEqual(a, b) {
   }
 
   if (a.byteLength !== b.byteLength) return false;
-  if (a.BYTES_PER_ELEMENT !== b.BYTES_PER_ELEMENT) return false;
   for (let i = 0; i < a.byteLength; i += 1) {
     if (a[i] !== b[i]) return false;
   }
@@ -157,8 +156,8 @@ export function safeSlice(buf, first, last) {
   let start;
   let end;
 
-  if (first === null || undefined) { start = 0; }
-  if (last === null || undefined) { end = buf.length - 1; }
+  if (!first) { start = 0; }
+  if (!last) { end = buf.length; }
 
   /* eslint-disable-next-line valid-typeof */
   if (typeof first === 'bigint') {

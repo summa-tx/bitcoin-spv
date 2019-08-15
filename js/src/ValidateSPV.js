@@ -179,7 +179,7 @@ export function parseHeader(header) {
  * @returns {Boolean}     True if header work is valid, false otherwise
  */
 export function validateHeaderWork(digest, target) {
-  if (digest === 0) {
+  if (utils.typedArraysAreEqual(digest, new Uint8Array(Array(32).fill(0)))) {
     return false;
   }
   return utils.bytesToUint(digest) < target;

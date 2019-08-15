@@ -497,4 +497,33 @@ describe('BTCUtils', () => {
       assert.equal(actual, expected);
     }
   });
+
+  describe('#calculateDifficulty', () => {
+    it('throws if passed the wrong type', () => {
+      try {
+        BTCUtils.calculateDifficulty(7);
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, 'Argument must be a BigInt');
+      }
+      try {
+        BTCUtils.calculateDifficulty('7');
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, 'Argument must be a BigInt');
+      }
+      try {
+        BTCUtils.calculateDifficulty([]);
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, 'Argument must be a BigInt');
+      }
+      try {
+        BTCUtils.calculateDifficulty({});
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, 'Argument must be a BigInt');
+      }
+    });
+  });
 });

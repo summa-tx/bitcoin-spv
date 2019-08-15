@@ -1,5 +1,7 @@
+/* istanbul ignore file */
 /* global BigInt */
 /* eslint-disable no-param-reassign */
+
 /*! noble-ripemd160 - MIT License (c) Paul Miller (paulmillr.com) */
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy

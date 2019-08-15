@@ -268,7 +268,7 @@ describe('ValidateSPV', () => {
 
   describe('#validateHeaderWork', () => {
     it('returns false on an empty digest', () => {
-      const res = ValidateSPV.validateHeaderWork(utils.deserializeHex(constants.EMPTY), 0);
+      const res = ValidateSPV.validateHeaderWork(utils.deserializeHex(constants.EMPTY), 1);
       assert.isFalse(res);
     });
 
