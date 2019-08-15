@@ -261,18 +261,25 @@ describe('BTCUtils', () => {
     let res;
     let arraysAreEqual;
     res = BTCUtils.extractScriptSig(utils.deserializeHex(constants.OP_RETURN.INPUTS));
+    // SCRIPT_SIGS[0].SCRIPT_SIG
     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x00'));
     assert.isTrue(arraysAreEqual);
 
+    // SCRIPT_SIGS[1].INPUT
     res = BTCUtils.extractScriptSig(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff'));
+    // SCRIPT_SIGS[1].SCRIPT_SIG
     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x01ee'));
     assert.isTrue(arraysAreEqual);
 
+    // SCRIPT_SIGS[2].INPUT
     res = BTCUtils.extractScriptSig(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff'));
+    // SCRIPT_SIGS[2].SCRIPT_SIG
     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xfd0100ee'));
     assert.isTrue(arraysAreEqual);
 
+    // SCRIPT_SIGS[3].INPUT
     res = BTCUtils.extractScriptSig(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff'));
+    // SCRIPT_SIGS[3].SCRIPT_SIG
     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xfe01000000ee'));
     assert.isTrue(arraysAreEqual);
   });
@@ -283,10 +290,12 @@ describe('BTCUtils', () => {
     assert.equal(res.dataLen, BigInt(0));
     assert.equal(res.scriptSigLen, BigInt(0));
 
+    // SCRIPT_SIG_LEN.INPUT[0]
     res = BTCUtils.extractScriptSigLen(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff'));
     assert.equal(res.dataLen, BigInt(0));
     assert.equal(res.scriptSigLen, BigInt(1));
 
+    // SCRIPT_SIG_LEN.INPUT[1]
     res = BTCUtils.extractScriptSigLen(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000FF0000000000000000ffffffff'));
     assert.equal(res.dataLen, BigInt(8));
     assert.equal(res.scriptSigLen, BigInt(0));
@@ -300,18 +309,22 @@ describe('BTCUtils', () => {
     assert.isTrue(res);
 
     // too many inputs stated
+    // INVALID_VIN_LEN[0]
     res = BTCUtils.validateVin(utils.deserializeHex('0xFF1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff'));
     assert.isFalse(res);
 
     // no inputs stated
+    // INVALID_VIN_LEN[1]
     res = BTCUtils.validateVin(utils.deserializeHex('0x001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff'));
     assert.isFalse(res);
 
     // fewer bytes in vin than stated
+    // INVALID_VIN_LEN[2]
     res = BTCUtils.validateVin(utils.deserializeHex('0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffff'));
     assert.isFalse(res);
 
     // more bytes in vin than stated
+    // INVALID_VIN_LEN[3]
     res = BTCUtils.validateVin(utils.deserializeHex('0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffffEEEEE'));
     assert.isFalse(res);
   });
@@ -324,43 +337,55 @@ describe('BTCUtils', () => {
     assert.isTrue(res);
 
     // too many outputs stated
+    // INVALID_VOUT_LEN[0]
     res = BTCUtils.validateVout(utils.deserializeHex('0xFF4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211'));
     assert.isFalse(res);
 
     // no outputs stated
+    // INVALID_VOUT_LEN[1]
     res = BTCUtils.validateVout(utils.deserializeHex('0x004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211'));
     assert.isFalse(res);
 
     // fewer bytes in vout than stated
+    // INVALID_VOUT_LEN[2]
     res = BTCUtils.validateVout(utils.deserializeHex('0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952'));
     assert.isFalse(res);
 
     // more bytes in vout than stated
+    // INVALID_VOUT_LEN[3]
     res = BTCUtils.validateVout(utils.deserializeHex('0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952111111111111111'));
     assert.isFalse(res);
   });
 
   it('determines output length properly', () => {
     let res;
+
+    // OUTPUT_LEN.INPUT[0]
     res = BTCUtils.determineOutputLength(utils.deserializeHex('0x00000000000000002200'));
     assert.equal(res, BigInt(43));
 
+    // OUTPUT_LEN.INPUT[1]
     res = BTCUtils.determineOutputLength(utils.deserializeHex('0x00000000000000001600'));
     assert.equal(res, BigInt(31));
 
+    // OUTPUT_LEN.INPUT[2]
     res = BTCUtils.determineOutputLength(utils.deserializeHex('0x0000000000000000206a'));
     assert.equal(res, BigInt(41));
 
+    // OUTPUT_LEN.INPUT[3]
     res = BTCUtils.determineOutputLength(utils.deserializeHex('0x000000000000000002'));
     assert.equal(res, BigInt(11));
 
+    // OUTPUT_LEN.INPUT[4]
     res = BTCUtils.determineOutputLength(utils.deserializeHex('0x000000000000000000'));
     assert.equal(res, BigInt(9));
 
+    // OUTPUT_LEN.INPUT[5]
     res = BTCUtils.determineOutputLength(utils.deserializeHex('0x000000000000000088'));
     assert.equal(res, BigInt(145));
 
     try {
+      // OUTPUT_LEN.INPUT[6]
       res = BTCUtils.determineOutputLength(utils.deserializeHex('0x0000000000000000FF00'));
       assert(false, 'Expected an error');
     } catch (e) {
@@ -386,14 +411,17 @@ describe('BTCUtils', () => {
     assert.isTrue(arraysAreEqual);
 
     res = BTCUtils.extractOutputAtIndex(TWO_IN_TX_VOUT, 0);
+    // INDEXED_OUTPUT[0]
     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x4db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f0'));
 
+    // INDEXED_OUTPUT[1]
     res = BTCUtils.extractOutputAtIndex(TWO_IN_TX_VOUT, 1);
     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922'));
   });
 
   it('extracts a root from a header', () => {
     const res = BTCUtils.extractMerkleRootBE(HEADER_170);
+    // HEADER.ROOT
     const u8aValue = utils.deserializeHex('0x7dac2c5666815c17a3b36427de37bb9d2e2c5ccec3f8633eb91a4205cb4c10ff');
     const arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
     assert.isTrue(arraysAreEqual);
@@ -406,6 +434,7 @@ describe('BTCUtils', () => {
 
   it('extracts the prev block hash', () => {
     const res = BTCUtils.extractPrevBlockBE(HEADER_170);
+    // HEADER.PREV_BLOCK_HASH
     const u8aValue = utils.deserializeHex('0x000000002a22cfee1f2c846adbd12b3e183d4f97683f85dad08a79780a84bd55');
     const arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
     assert.isTrue(arraysAreEqual);
@@ -413,23 +442,27 @@ describe('BTCUtils', () => {
 
   it('extracts a timestamp from a header', () => {
     const res = BTCUtils.extractTimestamp(HEADER_170);
+    // HEADER.TIMESTAMP
     assert.equal(res, BigInt(1231731025));
   });
 
   it('verifies a bitcoin merkle root', () => {
     let res;
+    // MERKLE_ROOT.TRUE[0]
     res = BTCUtils.verifyHash256Merkle(
       utils.deserializeHex('0x82501c1178fa0b222c1f3d474ec726b832013f0a532b44bb620cce8624a5feb1169e1e83e930853391bc6f35f605c6754cfead57cf8387639d3b4096c54f18f4ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d'),
       0 // 0-indexed
     );
     assert.isTrue(res);
 
+    // MERKLE_ROOT.TRUE[1]
     res = BTCUtils.verifyHash256Merkle(
       utils.deserializeHex('0x169e1e83e930853391bc6f35f605c6754cfead57cf8387639d3b4096c54f18f482501c1178fa0b222c1f3d474ec726b832013f0a532b44bb620cce8624a5feb1ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d'),
       1 // 0-indexed
     );
     assert.isTrue(res);
 
+    // MERKLE_ROOT.TRUE[2]
     res = BTCUtils.verifyHash256Merkle(
       utils.deserializeHex('0x6c1320f4552ba68f3dbdd91f9422405f779b779e21678448e8035c21c1e2edd67a6190a846e318878be71565841d90a78e9e617b2d859d5e0767c13de427be4a2a6a6d55b17316d45ac11c4e613c38b293db606bace5062470d783471cc66c180455e6472ce92d32179994c3d44b75dd9834e1e7438cf9ab5be1ef6edf1e4a8d361dda470aca6e97c3b4056d4b329beba9ffd6a26c86a2a3f8f9ad31826b69ee49693027a439b3149853907afe87031f3bcf484b8bdd2e047d579d2ee2569c16769a33473b652d1d365886f9f9fba64fdea23ab16306ae1484ed632dcd381e5132c401084bc783478306202844b9cf34aff6ab24182206caa6eebc3e016fa373986d08ac9ae256ddda2deedc6662fd8f8a300ecdd38db2c5d6d2765a7515531e7f96f0310f9493cf79be3e60f63d8a6fa0c62ea59312731fd5b71b261abd99f5b908b3166d53532c9557a0f6ce9bc18f7b7619b2257043052a7ff2e5030e838f2e9edcc0f7273fa273a6b3ce2112dbd686f060b5f61deb1abc7247edf1bd6cd7ca4a6c5cfaedbc5905ef4f0511b143a0672ce4fa2dc1ed8852e077e0184febca'),
       4 // 0-indexed
@@ -443,14 +476,17 @@ describe('BTCUtils', () => {
     assert.isTrue(res);
 
     // not evenly divisible by 32
+    // MERKLE_ROOT.FALSE[0]
     res = BTCUtils.verifyHash256Merkle(utils.deserializeHex('0x00'), 0);
     assert.isFalse(res);
 
     // 1-hash special case
+    // MERKLE_ROOT.FALSE[1]
     res = BTCUtils.verifyHash256Merkle(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'), 0);
     assert.isTrue(res);
 
     // 2-hash special case
+    // MERKLE_ROOT.FALSE[2]
     res = BTCUtils.verifyHash256Merkle(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'), 0);
     assert.isFalse(res);
   });
