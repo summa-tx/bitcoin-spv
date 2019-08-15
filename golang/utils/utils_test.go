@@ -45,10 +45,6 @@ func TestHash160(t *testing.T) {
 
 	hashed := Hash160(decodedTest)
 
-	if hashed == decodedCompare {
-		fmt.Println("yaya")
-	}
-
 	assert.Equal(t, hashed, decodedCompare)
 }
 
