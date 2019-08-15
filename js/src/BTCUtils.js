@@ -571,13 +571,11 @@ export function extractTarget(header) {
  * @returns {BigInt}      The block difficulty (bdiff)
  */
 export function calculateDifficulty(target) {
-  let t = target;
-
   /* eslint-disable-next-line valid-typeof */
   if (typeof target !== 'bigint') {
-    t = BigInt(target);
+    throw new Error('Argument must be a BigInt');
   }
-  return DIFF_ONE_TARGET / t;
+  return DIFF_ONE_TARGET / target;
 }
 
 /**
