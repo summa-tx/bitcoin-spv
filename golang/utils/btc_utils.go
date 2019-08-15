@@ -293,7 +293,5 @@ func retargetAlgorithm(
 	previousTarget sdk.Int,
 	firstTimestamp uint32,
 	secondTimestamp uint32) sdk.Int {
-		elapsedTime := secondTimestamp - firstTimestamp
-
 	return sdk.NewInt(0)
 }
