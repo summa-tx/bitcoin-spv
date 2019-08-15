@@ -294,8 +294,20 @@ describe('utils', () => {
       const arr2 = new Uint8Array([0, 0, 0]);
       const arr3 = new Uint8Array([23, 70, 189]);
       const arrTotal = new Uint8Array([255, 255, 255, 0, 0, 0, 23, 70, 189]);
-      const res = utils.concatUint8Arrays(arr1, arr2, arr3);
-      const arraysAreEqual = utils.typedArraysAreEqual(res, arrTotal);
+
+      let res;
+      let arraysAreEqual;
+
+      res = utils.concatUint8Arrays(arr1, arr2, arr3);
+      arraysAreEqual = utils.typedArraysAreEqual(res, arrTotal);
+      assert.isTrue(arraysAreEqual);
+
+      res = utils.concatUint8Arrays(arr1);
+      arraysAreEqual = utils.typedArraysAreEqual(res, arr1);
+      assert.isTrue(arraysAreEqual);
+
+      res = utils.concatUint8Arrays();
+      arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([]));
       assert.isTrue(arraysAreEqual);
     });
     it('throws error if arguments are not Uint8Arrays', () => {
@@ -316,7 +328,5 @@ describe('utils', () => {
         assert.include(e.message, 'Arrays must be of type Uint8Array');
       }
     });
-    // only one array
-    // no arguments
   });
 });

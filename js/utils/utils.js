@@ -185,10 +185,12 @@ export function safeSlice(buf, first, last) {
  * JS version of abi.encodePacked, concatenates u8a arrays
  *
  * @dev                  Use when you see abi.encodePacked
- * @param {array}        a An array of Uint8Arrays
+ * @param {array}        arrays An array of Uint8Arrays
  * @return {Uint8Array}  A Uint8Array that is a concatenation of all the arrays
  */
 export function concatUint8Arrays(...arrays) {
+  if (arrays.length === 1) { return arrays[0]; }
+
   let length = 0;
   arrays.forEach((arr) => {
     if (arr instanceof Uint8Array) {
