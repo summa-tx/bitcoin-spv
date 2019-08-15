@@ -25,18 +25,24 @@ const TWO_IN_INDEX = BigInt(781);
 
 describe('BTCUtils', () => {
   it('implements bitcoin\'s hash160', () => {
+    // HASH_160.INPUT
     const res = BTCUtils.hash160(utils.deserializeHex('0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'));
+    // HASH_160.OUTPUT
     const u8aValue = utils.deserializeHex('0x1b60c31dba9403c74d81af255f0c300bfed5faa3');
     const arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
     assert.isTrue(arraysAreEqual);
   });
 
   it('implements bitcoin\'s hash256', () => {
+    // HASH_256[0].INPUT
     let res = BTCUtils.hash256(utils.deserializeHex('0x00'));
+    // HASH_256[0].OUTPUT
     let arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x1406e05881e299367766d313e26c05564ec91bf721d31726bd6e46e60689539a'));
     assert.isTrue(arraysAreEqual);
 
+    // HASH_256[1].INPUT
     res = BTCUtils.hash256(utils.deserializeHex('0x616263')); // 'abc' in utf - 8
+    // HASH_256[1].OUTPUT
     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x4f8b42c22dd3729b519ba6f68d2da7cc5b2d606d05daed5ad5128cc03e6c6358'));
     assert.isTrue(arraysAreEqual);
   });
@@ -45,10 +51,12 @@ describe('BTCUtils', () => {
     const input = utils.deserializeHex(constants.OP_RETURN.INPUTS);
 
     let res = BTCUtils.extractSequenceLEWitness(input);
+    // SEQUENCE_WITNESS.LE
     const arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xffffffff'));
     assert.isTrue(arraysAreEqual);
 
     res = BTCUtils.extractSequenceWitness(input);
+    // SEQUENCE_WITNESS.WITNESS
     assert.equal(res, BigInt(4294967295));
   });
 
@@ -56,10 +64,12 @@ describe('BTCUtils', () => {
     const input = utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff');
 
     let res = BTCUtils.extractSequenceLELegacy(input);
+    // SEQUENCE_LEGACY.LE
     const arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xffffffff'));
     assert.isTrue(arraysAreEqual);
 
     res = BTCUtils.extractSequenceLegacy(input);
+    // SEQUENCE_LEGACY.LEGACY
     assert.equal(res, BigInt(4294967295));
   });
 
@@ -103,6 +113,7 @@ describe('BTCUtils', () => {
 
     // malformatted witness
     try {
+      // OUTPUT.MALFORMATTED.WITNESS
       BTCUtils.extractHash(utils.deserializeHex('0x0000000000000000220017'));
       assert(false, 'expected an error');
     } catch (e) {
@@ -111,6 +122,7 @@ describe('BTCUtils', () => {
 
     // malformatted p2pkh
     try {
+      // OUTPUT.MALFORMATTED.P2PKH[0]
       BTCUtils.extractHash(utils.deserializeHex('0x00000000000000001976a912'));
       assert(false, 'expected an error');
     } catch (e) {
@@ -119,6 +131,7 @@ describe('BTCUtils', () => {
 
     // malformatted p2pkh
     try {
+      // OUTPUT.MALFORMATTED.P2PKH[1]
       BTCUtils.extractHash(utils.deserializeHex('0x00000000000000001976a914FFFF'));
       assert(false, 'expected an error');
     } catch (e) {
@@ -126,11 +139,13 @@ describe('BTCUtils', () => {
     }
 
     // good p2pkh
+    // OUTPUT.GOOD.P2PKH
     res = BTCUtils.extractHash(utils.deserializeHex('0x00000000000000001976a914000000000000000000000000000000000000000088ac'));
     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(`0x${'00'.repeat(20)}`));
     assert.isTrue(arraysAreEqual);
 
     // malformatted p2sh
+    // OUTPUT.MALFORMATTED.P2SH
     try {
       BTCUtils.extractHash(utils.deserializeHex('0x000000000000000017a914FF'));
       assert(false, 'expected an error');
@@ -139,6 +154,7 @@ describe('BTCUtils', () => {
     }
 
     // good p2sh
+    // OUTPUT.GOOD.P2SH
     res = BTCUtils.extractHash(utils.deserializeHex('0x000000000000000017a914000000000000000000000000000000000000000087'));
     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(`0x${'00'.repeat(20)}`));
     assert.isTrue(arraysAreEqual);
@@ -197,10 +213,12 @@ describe('BTCUtils', () => {
     assert.isTrue(arraysAreEqual);
 
     res = BTCUtils.extractInputAtIndex(TWO_IN_TX_VIN, 0);
+    // INDEXED_INPUT[0]
     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff'));
     assert.isTrue(arraysAreEqual);
 
     res = BTCUtils.extractInputAtIndex(TWO_IN_TX_VIN, 1);
+    // INDEXED_INPUT[1]
     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff'));
     assert.isTrue(arraysAreEqual);
   });
@@ -211,24 +229,30 @@ describe('BTCUtils', () => {
     res = BTCUtils.isLegacyInput(utils.deserializeHex(input));
     assert.isFalse(res);
 
+    // LEGACY_INPUT
     res = BTCUtils.isLegacyInput(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff'));
     assert.isTrue(res);
   });
 
   it('determines input length', () => {
     let res;
+    // INPUT_LENGTH[0]
     res = BTCUtils.determineInputLength(utils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff'));
     assert.equal(res, BigInt(41));
 
+    // INPUT_LENGTH[1]
     res = BTCUtils.determineInputLength(utils.deserializeHex('0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000000000000'));
     assert.equal(res, BigInt(41));
 
+    // INPUT_LENGTH[2]
     res = BTCUtils.determineInputLength(utils.deserializeHex('0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0400000002000000000000'));
     assert.equal(res, BigInt(43));
 
+    // INPUT_LENGTH[3]
     res = BTCUtils.determineInputLength(utils.deserializeHex('0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000900000000000000000000000000'));
     assert.equal(res, BigInt(50));
 
+    // INPUT_LENGTH[4]
     res = BTCUtils.determineInputLength(utils.deserializeHex('0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000'));
     assert.equal(res, BigInt(298));
   });
