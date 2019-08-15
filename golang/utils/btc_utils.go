@@ -1,25 +1,39 @@
 package utils
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
+	"errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"golang.org/x/crypto/ripemd160"
 )
 
+// bytesToUint converts 1, 2, 3, or 4-byte numbers to uints
+func bytesToUint(b []byte) uint {
+	var total uint
+	length := uint(len(b))
+
+	for i := uint(0); i >= length; i++ {
+		total += uint(b[i]) << (length - i - 1) * 8
+	}
+
+	return total
+}
+
 // DetermineVarIntDataLength extracts the payload length of a Bitcoin VarInt
-func DetermineVarIntDataLength(flag []byte) uint8 {
-	if flag[0] <= 0xfc {
+func DetermineVarIntDataLength(flag uint8) uint8 {
+	if flag <= 0xfc {
 		return 0
 	}
-	if flag[0] == 0xfd {
+	if flag == 0xfd {
 		return 2
 	}
-	if flag[0] == 0xfe {
+	if flag == 0xfe {
 		return 4
 	}
-	if flag[0] == 0xff {
+	if flag == 0xff {
 		return 8
 	}
 	return 0
@@ -37,11 +51,6 @@ func ReverseEndianness(b []byte) []byte {
 	}
 
 	return out
-}
-
-// BytesToUint takes a byte slice and then returns a Uint256
-func BytesToUint(b []byte) uint32 {
-	return binary.LittleEndian.Uint32(b)
 }
 
 // LastBytes returns the last num in from a byte array
@@ -79,8 +88,8 @@ func Hash256(in []byte) []byte {
 
 // ExtractInputAtIndex parses the input vector and returns the vin at a specified index
 func ExtractInputAtIndex(vin []byte, index uint8) []byte {
-	var len uint32
-	offset := uint32(1)
+	var len uint
+	offset := uint(1)
 
 	for i := uint8(0); i < index; i++ {
 		remaining := vin[offset:]
@@ -99,9 +108,8 @@ func IsLegacyInput(input []byte) bool {
 }
 
 // DetermineInputLength gets the length of an input by parsing the scriptSigLen
-func DetermineInputLength(input []byte) uint32 {
+func DetermineInputLength(input []byte) uint {
 	dataLen, scriptSigLen := ExtractScriptSigLen(input)
-
 	return 41 + dataLen + scriptSigLen
 }
 
@@ -109,61 +117,71 @@ func DetermineInputLength(input []byte) uint32 {
 // The sequence is a 4 byte little-endian number.
 func ExtractSequenceLELegacy(input []byte) []byte {
 	dataLen, scriptSigLen := ExtractScriptSigLen(input)
-	len := 36 + 1 + dataLen + scriptSigLen
-	return input[len : len+4]
+	length := 36 + 1 + dataLen + scriptSigLen
+	return input[length : length+4]
 }
 
 // ExtractSequenceLegacy returns the integer sequence in from a tx input
-func ExtractSequenceLegacy(input []byte) uint32 {
-	return binary.LittleEndian.Uint32(ExtractSequenceLELegacy(input))
+func ExtractSequenceLegacy(input []byte) uint {
+	return uint(binary.LittleEndian.Uint32(ExtractSequenceLELegacy(input)))
 }
 
 // ExtractScriptSig extracts the VarInt-prepended scriptSig from the input in a tx
 func ExtractScriptSig(input []byte) []byte {
-	return nil
+	dataLen, scriptSigLen := ExtractScriptSigLen(input)
+	length := 1 + dataLen + scriptSigLen
+	return input[36 : 36+length]
 }
 
 // ExtractScriptSigLen determines the length of a scriptSig in an input
-func ExtractScriptSigLen(input []byte) (uint32, uint32) {
-	return 0, 0
+func ExtractScriptSigLen(input []byte) (uint, uint) {
+	varIntTag := input[36]
+	varIntDataLen := DetermineVarIntDataLength(varIntTag)
+
+	length := uint(varIntTag)
+	if varIntDataLen != 0 {
+		length = bytesToUint(ReverseEndianness(input[37 : 37+varIntDataLen]))
+	}
+
+	return uint(varIntDataLen), length
 }
 
 // ExtractSequenceLEWitness extracts the LE sequence bytes from a witness input
 func ExtractSequenceLEWitness(input []byte) []byte {
-	return nil
+	return input[37:41]
 }
 
 // ExtractSequenceWitness extracts the sequence integer from a witness input
-func ExtractSequenceWitness(input []byte) uint32 {
-	return 0
+func ExtractSequenceWitness(input []byte) uint {
+	return bytesToUint(ExtractSequenceLEWitness(input))
 }
 
 // ExtractOutpoint returns the outpoint from the in input in a tx
 // The outpoint is a 32 bit tx id with 4 byte index
 func ExtractOutpoint(input []byte) []byte {
-	return nil
+	return input[0:36]
 }
 
 // ExtractInputTxIDLE returns the LE tx input index from the input in a tx
 func ExtractInputTxIDLE(input []byte) []byte {
-	return nil
+	return input[0:32]
 }
 
 // ExtractTxID returns the input tx id from the input in a tx
 // Returns the tx id as a big-endian []byte
 func ExtractTxID(input []byte) []byte {
-	return nil
+	return ReverseEndianness(input[0:32])
 }
 
 // ExtractTxIndexLE extracts the LE tx input index from the input in a tx
 // Returns the tx index as a little endian []byte
 func ExtractTxIndexLE(input []byte) []byte {
-	return nil
+	return input[32:36]
 }
 
 // ExtractTxIndex extracts the tx input index from the input in a tx
-func ExtractTxIndex(input []byte) uint32 {
-	return 0
+func ExtractTxIndex(input []byte) uint {
+	return bytesToUint(ReverseEndianness(ExtractTxIndexLE(input)))
 }
 
 //
@@ -171,41 +189,85 @@ func ExtractTxIndex(input []byte) uint32 {
 //
 
 // DetermineOutputLength returns the length of an output
-func DetermineOutputLength(output []byte) uint32 {
-	return 0
+func DetermineOutputLength(output []byte) uint {
+	length := uint(output[8])
+	return length
 }
 
 // ExtractOutputAtIndex returns the output at a given index in the TxIns vector
-func ExtractOutputAtIndex(vout []byte, index uint8) []byte {
-	return nil
+func ExtractOutputAtIndex(vout []byte, index uint8) ([]byte, error) {
+	var length uint
+	var offset uint = 1
+
+	for i := uint8(0); i <= index; i++ {
+		remaining := vout[offset:]
+		length := DetermineOutputLength(remaining)
+		if i != index {
+			offset += length
+		}
+	}
+	return vout[offset : offset+length], nil
 }
 
 // ExtractOutputScriptLen extracts the output script length
-func ExtractOutputScriptLen(output []byte) uint32 {
-	return 0
+func ExtractOutputScriptLen(output []byte) uint {
+	return uint(output[8])
 }
 
 // ExtractValueLE extracts the value in from the output in a tx
 // Returns a little endian []byte of the output value
 func ExtractValueLE(output []byte) []byte {
-	return nil
+	return output[:8]
 }
 
 // ExtractValue extracts the value from the output in a tx
-func ExtractValue(output []byte) uint64 {
-	return 0
+func ExtractValue(output []byte) uint {
+	return bytesToUint(ReverseEndianness(ExtractValueLE(output)))
 }
 
 // ExtractOpReturnData returns the value from the output in a tx
 // Value is an 8byte little endian number
-func ExtractOpReturnData(output []byte) []byte {
-	return nil
+func ExtractOpReturnData(output []byte) ([]byte, error) {
+	if output[9] != 0x6a {
+		return nil, errors.New("Not an op return output")
+	}
+
+	dataLen := output[10]
+	return output[11 : 11+dataLen], nil
 }
 
 // ExtractHash extracts the hash from the output script
 // Returns the hash committed to by the pk_script
-func ExtractHash(output []byte) []byte {
-	return nil
+func ExtractHash(output []byte) ([]byte, error) {
+	tag := output[8:11]
+
+	/* Witness Case */
+	if output[9] == 0 {
+		length := ExtractOutputScriptLen(output) - 2
+		if uint(output[10]) != length {
+			return nil, errors.New("Maliciously formatted witness output")
+		}
+		return output[11 : 11+length], nil
+	}
+
+	/* P2PKH */
+	if bytes.Equal(tag, []byte{0x19, 0x76, 0xa9}) {
+		lastTwo := output[len(output)-2:]
+		if output[11] != 0x14 || !bytes.Equal(lastTwo, []byte{0x88, 0xac}) {
+			return nil, errors.New("Maliciously formatted p2pkh output")
+		}
+		return output[12:32], nil
+	}
+
+	/* P2SH */
+	if bytes.Equal(tag, []byte{0x17, 0xa9, 0x14}) {
+		if output[len(output)-1] != 0x87 {
+			return nil, errors.New("Maliciously formatted p2sh output")
+		}
+		return output[11:31], nil
+	}
+
+	return nil, errors.New("Nonstandard, OP_RETURN, or malformatted output")
 }
 
 //
@@ -214,12 +276,42 @@ func ExtractHash(output []byte) []byte {
 
 // ValidateVin checks that the vin passed up is properly formatted
 func ValidateVin(vin []byte) bool {
-	return false
+	var offset uint = 1
+	vLength := uint(len(vin))
+	nIns := uint(vin[0])
+
+	if nIns >= 0xfd || nIns == 0 {
+		return false
+	}
+
+	for i := uint(0); i < nIns; i++ {
+		offset += DetermineInputLength(vin[offset:])
+		if offset > vLength {
+			return false
+		}
+	}
+
+	return offset == vLength
 }
 
 // ValidateVout checks that the vin passed up is properly formatted
 func ValidateVout(vout []byte) bool {
-	return false
+	var offset uint = 1
+	vLength := uint(len(vout))
+	nOuts := uint(vout[0])
+
+	if nOuts >= 0xfd || nOuts == 0 {
+		return false
+	}
+
+	for i := uint(0); i < nOuts; i++ {
+		offset += DetermineOutputLength(vout[offset:])
+		if offset > vLength {
+			return false
+		}
+	}
+
+	return offset == vLength
 }
 
 //
@@ -229,7 +321,7 @@ func ValidateVout(vout []byte) bool {
 // ExtractMerkleRootLE returns the transaction merkle root from a given block header
 // The returned merkle root is little-endian
 func ExtractMerkleRootLE(header []byte) []byte {
-	return nil
+	return header[36:68]
 }
 
 // ExtractMerkleRootBE returns the transaction merkle root from a given block header
@@ -239,21 +331,34 @@ func ExtractMerkleRootBE(header []byte) []byte {
 }
 
 // ExtractTarget returns the target from a given block hedaer
-func ExtractTarget(header []byte) []byte {
-	return nil
+func ExtractTarget(header []byte) sdk.Int {
+	m := header[72:75]
+	e := sdk.NewInt(int64(header[75]))
+
+	mantissa := sdk.NewInt(int64(bytesToUint(ReverseEndianness(m))))
+	exponent := e.Sub(sdk.NewInt(3))
+	base := sdk.NewInt(256)
+
+	result := sdk.NewInt(0).BigInt()
+	result.Exp(base.BigInt(), exponent.BigInt(), nil)
+
+	sdkResult := sdk.NewIntFromBigInt(result)
+
+	return sdkResult.Mul(mantissa)
 }
 
 // CalculateDifficulty calculates difficulty from the difficulty 1 target and current target
 // Difficulty 1 is 0x1d00ffff on mainnet and testnet
 // Difficulty 1 is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
 func CalculateDifficulty(target sdk.Int) sdk.Int {
-	return sdk.NewInt(0)
+	diffOneTarget, _ := sdk.NewIntFromString("0xffff0000000000000000000000000000000000000000000000000000")
+	return diffOneTarget.Quo(target)
 }
 
 // ExtractPrevBlockHashLE returns the previous block's hash from a block header
 // Returns the hash as a little endian []byte
 func ExtractPrevBlockHashLE(header []byte) []byte {
-	return nil
+	return header[4:36]
 }
 
 // ExtractPrevBlockHashBE returns the previous block's hash from a block header
@@ -266,32 +371,77 @@ func ExtractPrevBlockHashBE(header []byte) []byte {
 // It returns the timestamp as a little endian []byte
 // Time is not 100% reliable
 func ExtractTimestampLE(header []byte) []byte {
-	return nil
+	return header[68:72]
 }
 
-// ExtractTimestamp returns the timestamp from a block header as a uint32
+// ExtractTimestamp returns the timestamp from a block header as a uint
 // Time is not 100% reliable
-func ExtractTimestamp(header []byte) uint32 {
-	return uint32(BytesToUint(ReverseEndianness(ExtractTimestampLE(header))))
+func ExtractTimestamp(header []byte) uint {
+	return bytesToUint(ReverseEndianness(ExtractTimestampLE(header)))
 }
 
 // ExtractDifficulty calculates the difficulty of a header
 func ExtractDifficulty(header []byte) sdk.Int {
-	return sdk.NewInt(0)
+	return CalculateDifficulty(ExtractTarget(header))
 }
 
 func hash256MerkleStep(a []byte, b []byte) []byte {
-	return nil
+	return Hash256(append(a[:], b[:]...))
 }
 
 // VerifyHash256Merkle checks a merkle inclusion proof's validity
-func VerifyHash256Merkle(proof []byte, index uint32) bool {
-	return false
+func VerifyHash256Merkle(proof []byte, index uint) bool {
+	idx := index
+	proofLength := len(proof)
+
+	if proofLength%32 != 0 {
+		return false
+	}
+
+	if proofLength == 32 {
+		return true
+	}
+
+	if proofLength == 64 {
+		return false
+	}
+
+	root := proof[proofLength-32:]
+	current := proof[:32]
+
+	for i := 1; i < proofLength%32-1; i++ {
+		next := proof[i*32 : i*32+32]
+		if idx%2 == 1 {
+			current = hash256MerkleStep(next, current)
+		} else {
+			current = hash256MerkleStep(current, next)
+		}
+	}
+
+	return bytes.Equal(current, root)
 }
 
-func retargetAlgorithm(
+// RetargetAlgorithm performs Bitcoin consensus retargets
+func RetargetAlgorithm(
 	previousTarget sdk.Int,
-	firstTimestamp uint32,
-	secondTimestamp uint32) sdk.Int {
-	return sdk.NewInt(0)
+	firstTimestamp uint,
+	secondTimestamp uint) sdk.Int {
+
+	retargetPeriod := sdk.NewInt(1209600)
+	lowerBound := retargetPeriod.Quo(sdk.NewInt(4))
+	upperBound := retargetPeriod.Mul(sdk.NewInt(4))
+
+	first := sdk.NewInt(int64(firstTimestamp))
+	second := sdk.NewInt(int64(secondTimestamp))
+
+	elapsedTime := second.Sub(first)
+
+	if elapsedTime.GT(upperBound) {
+		elapsedTime = upperBound
+	}
+	if elapsedTime.LT(lowerBound) {
+		elapsedTime = lowerBound
+	}
+
+	return previousTarget.Mul(elapsedTime).Quo(retargetPeriod)
 }

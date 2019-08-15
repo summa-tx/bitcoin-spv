@@ -1,5 +1,5 @@
 {
-  "name": "bitcoin-spv",
+  "name": "@summa-tx/bitcoin-spv-sol",
   "version": "2.0.0",
   "description": "bitcoin SPV proofs in Solidity",
   "scripts": {
@@ -11,16 +11,14 @@
   },
   "author": "",
   "license": "LGPLv3",
-  "dependencies": {
-    "bn.js": "^5.0.0",
-    "create-hash": "^1.2.0",
-    "solium": "^1.2.4"
-  },
   "devDependencies": {
     "eslint": "^5.16.0",
+    "bn.js": "^5.0.0",
+    "solium": "^1.2.4",
     "eslint-config-airbnb-base": "^13.2.0",
     "eslint-plugin-import": "^2.18.0",
     "eth-gas-reporter": "^0.2.8",
-    "solidity-coverage": "^0.6.3"
+    "solidity-coverage": "^0.6.3",
+    "solidity-docgen": "^0.3.0-beta.4"
   }
 }
