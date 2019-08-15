@@ -8,8 +8,6 @@ import (
 	"encoding/hex"
 
 	"log"
-
-	"fmt"
 )
 
 func TestReverseEndianness(t *testing.T) {
@@ -26,12 +24,31 @@ func TestLastBytes(t *testing.T) {
 	assert.Equal(t, last, []byte{4})
 }
 
-func TestHash160(t *testing.T) {
-	// testbytes := []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-	// hash160 := Hash160(testbytes)
-	// assert.Equal(t, hash160, []byte{27, 96, 195, 29, 186, 148, 3, 199, 77, 129, 175, 37, 95, 12, 48, 11, 254, 213, 250, 163})
-	testString := "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-	compareString := "1b60c31dba9403c74d81af255f0c300bfed5faa3"
+// func TestHash160(t *testing.T) {
+// 	// testbytes := []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+// 	// hash160 := Hash160(testbytes)
+// 	// assert.Equal(t, hash160, []byte{27, 96, 195, 29, 186, 148, 3, 199, 77, 129, 175, 37, 95, 12, 48, 11, 254, 213, 250, 163})
+// 	testString := "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+// 	compareString := "1b60c31dba9403c74d81af255f0c300bfed5faa3"
+
+// 	decodedTest, errTest := hex.DecodeString(testString)
+// 	if errTest != nil {
+// 		log.Fatal(errTest)
+// 	}
+
+// 	decodedCompare, errCompare := hex.DecodeString(compareString)
+// 	if errCompare != nil {
+// 		log.Fatal(errCompare)
+// 	}
+
+// 	hashed := Hash160(decodedTest)
+
+// 	assert.Equal(t, hashed, decodedCompare)
+// }
+
+func TestHash256(t *testing.T) {
+	testString := "00"
+	compareString := "1406e05881e299367766d313e26c05564ec91bf721d31726bd6e46e60689539a"
 
 	decodedTest, errTest := hex.DecodeString(testString)
 	if errTest != nil {
@@ -43,70 +60,59 @@ func TestHash160(t *testing.T) {
 		log.Fatal(errCompare)
 	}
 
-	hashed := Hash160(decodedTest)
-
-	if hashed == decodedCompare {
-		fmt.Println("yaya")
-	}
+	hashed := Hash256(decodedTest)
 
 	assert.Equal(t, hashed, decodedCompare)
 }
 
-func TestHash256(t *testing.T) {
-	t.Skip()
+func TestBytesToUint(t *testing.T) {
+	// TODO: figure out how to put these test values in array?
+	one := []byte{0}
+	two := []byte{255}
+	three := []byte{0, 255}
+	four := []byte{255, 0}
+	five := []byte{1}
+	six := []byte{0, 1}
+	seven := []byte{1, 0}
+	eight := []byte{255, 255, 255, 255}
+
+	res1 := bytesToUint(one)
+	assert.Equal(t, res1, uint(0))
+
+	res2 := bytesToUint(two)
+	assert.Equal(t, res2, uint(255))
+
+	res3 := bytesToUint(three)
+	assert.Equal(t, res3, uint(255))
+
+	res4 := bytesToUint(four)
+	assert.Equal(t, res4, uint(65280))
+
+	res5 := bytesToUint(five)
+	assert.Equal(t, res5, uint(1))
+
+	res6 := bytesToUint(six)
+	assert.Equal(t, res6, uint(1))
+
+	res7 := bytesToUint(seven)
+	assert.Equal(t, res7, uint(256))
+
+	res8 := bytesToUint(eight)
+	assert.Equal(t, res8, uint(4294967295))
 }
 
-// /* global it describe BigInt */
-// import * as chai from 'chai';
-// import * as utils from '../utils/utils';
-// import * as constants from './constants';
-// import * as BTCUtils from '../src/BTCUtils';
+func TestDetermineVarIntDataLength(t *testing.T) {
+	// let res;
 
-// const { assert } = chai;
-
-// const HEADER_170 = utils.deserializeHex('0x0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70');
-
-// // txid BE: d60033c5cf5c199208a9c656a29967810c4e428c22efb492fdd816e6a0a1e548
-// /* eslint-disable-next-line */
-// const OP_RETURN_TX = utils.deserializeHex('0x010000000001011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211024730440220276e0ec78028582054d86614c65bc4bf85ff5710b9d3a248ca28dd311eb2fa6802202ec950dd2a8c9435ff2d400cc45d7a4854ae085f49e05cc3f503834546d410de012103732783eef3af7e04d3af444430a629b16a9261e4025f52bf4d6d026299c37c7400000000');
-// const OP_RETURN_PROOF = utils.deserializeHex('0x48e5a1a0e616d8fd92b4ef228c424e0c816799a256c6a90892195ccfc53300d6e35a0d6de94b656694589964a252957e4673a9fb1d2f8b4a92e3f0a7bb654fddb94e5a1e6d7f7f499fd1be5dd30a73bf5584bf137da5fdd77cc21aeb95b9e35788894be019284bd4fbed6dd6118ac2cb6d26bc4be4e423f55a3a48f2874d8d02a65d9c87d07de21d4dfe7b0a9f4a23cc9a58373e9e6931fefdb5afade5df54c91104048df1ee999240617984e18b6f931e2373673d0195b8c6987d7ff7650d5ce53bcec46e13ab4f2da1146a7fc621ee672f62bc22742486392d75e55e67b09960c3386a0b49e75f1723d6ab28ac9a2028a0c72866e2111d79d4817b88e17c821937847768d92837bae3832bb8e5a4ab4434b97e00a6c10182f211f592409068d6f5652400d9a3d1cc150a7fb692e874cc42d76bdafc842f2fe0f835a7c24d2d60c109b187d64571efbaa8047be85821f8e67e0e85f2f5894bc63d00c2ed9d640296ef123ea96da5cf695f22bf7d94be87d49db1ad7ac371ac43c4da4161c8c2');
-// const OP_RETURN_INDEX = BigInt(281);
-
-// // txid BE: b2e80a7f77eaca95c2e57938199022bddee0b0a56e0574f52e415ee907992654
-// /* eslint-disable-next-line */
-// const TWO_IN_TX = utils.deserializeHex('0x010000000001027bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff024db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f040420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c9192202483045022100d9fb1c15fe691c06dace09305bdd7e3cd19ada9c9392ca3a8c0a6f22a61c2ef002206efd72d89b6c1680d4135de14887a774ad0d6ad81dcd15833c3dc30b90a5ca86012102d0ec63b4c9f3d9e8083a0216c22d675f6f9a5b0bf1931f09a690e7e8bb24f63402483045022100fc7bf8811762a0c25c65deed711304ffd81413a347b656f45e38e3be40ecfcb8022077a020fda57e57062f99e2c0b714d251a879664bdb6dffcb04642182645470ea0121039b3e8cd31336f9ce7733885cf6d64433df129ce4c274b089825bf1419d047a4300000000');
-// const TWO_IN_TX_VIN = utils.deserializeHex('0x027bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff');
-// const TWO_IN_TX_VOUT = utils.deserializeHex('0x024db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f040420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922');
-// const TWO_IN_PROOF = utils.deserializeHex('0x54269907e95e412ef574056ea5b0e0debd2290193879e5c295caea777f0ae8b2602ac17ae2e219873600eb2b6fb301f31894121b475f19d394d92122de353e3e47254a20aa67eb76e73f284b11fb1d0e101100753d8ab7818961220cdd26860f756c859e76151b1d368a7f102649eca20ff00bf3e664a1dfa420af1f81077c94c8b9827f337f48d24a0f556bace3a35439451c788b4ba0453de5c8c3fd7e841003b7dd274c3b118e94b2286c725b61e72432a305593e91bf7c0fe1c423d4cb0a21a4fa31617fd9938a1b57649466837632a44faf6f36704a01a39a2e7a545ec3a1e6309f5aadca2171cac2beff0896c6a251c877ad42d1c414293bd7e36a02c5b5415b45f1a13f4a01926f28017ba01b2cca53ec53224acb2934d43499a83a18d3a0d186fe6c8e85faa6bde57b521af40617cb24d59b50933eda6d64a5d6ffc1b3cf4f35d6040e60a67c3f270ef7e237066cf2118d7767a6161ec4f1ff24ac70a2f0d7763665a84f267898e93e5ec693ddb4938aa2d9caca11b1462bc6b772a8743c578ec3d89fd330b90126d2f758e9319c4d3232aed3545bda2fbcb9d39af17209f58088422fc42c5849f910c29ec174fbf89bf4fb25b5600d024773ee5a5e');
-// const TWO_IN_INDEX = BigInt(781);
-
-// describe('BTCUtils', () => {
-//   it('gets the last bytes correctly', () => {
-//     const res = BTCUtils.lastBytes(utils.deserializeHex('0x00112233'), 2);
-//     const arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x2233'));
-//     assert.isTrue(arraysAreEqual);
-//   });
-
-//   it('errors if slice is larger than the bytearray', () => {
-//     try {
-//       BTCUtils.lastBytes(utils.deserializeHex('0x00'), 2);
-//       assert(false, 'expected an errror');
-//     } catch (e) {
-//       assert.include(e.message, 'Underflow during subtraction.');
-//     }
-//   });
-
-//   it('reverses endianness', () => {
-//     let res;
-//     let arraysAreEqual;
-//     res = BTCUtils.reverseEndianness(utils.deserializeHex('0x00112233'));
-//     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x33221100'));
-//     assert.isTrue(arraysAreEqual);
-
-//     res = BTCUtils.reverseEndianness(utils.deserializeHex('0x0123456789abcdef'));
-//     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xefcdab8967452301'));
-//     assert.isTrue(arraysAreEqual);
-//   });
+	// res = BTCUtils.determineVarIntDataLength(0x01);
+	// assert.equal(res, 0);
+	// res = BTCUtils.determineVarIntDataLength(0xfd);
+	// assert.equal(res, 2);
+	// res = BTCUtils.determineVarIntDataLength(0xfe);
+	// assert.equal(res, 4);
+	// res = BTCUtils.determineVarIntDataLength(0xff);
+	// assert.equal(res, 8);
+}
 
 //   it('converts big-endian bytes to integers', () => {
 //     let res = BTCUtils.bytesToUint(utils.deserializeHex('0x00'));
@@ -133,23 +139,6 @@ func TestHash256(t *testing.T) {
 //     // max uint256: (2^256)-1
 //     res = BTCUtils.bytesToUint(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'));
 //     assert.equal(res, BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'));
-//   });
-
-//   it('implements bitcoin\'s hash160', () => {
-//     const res = BTCUtils.hash160(utils.deserializeHex('0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'));
-//     const u8aValue = utils.deserializeHex('0x1b60c31dba9403c74d81af255f0c300bfed5faa3');
-//     const arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
-//     assert.isTrue(arraysAreEqual);
-//   });
-
-//   it('implements bitcoin\'s hash256', () => {
-//     let res = BTCUtils.hash256(utils.deserializeHex('0x00'));
-//     let arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x1406e05881e299367766d313e26c05564ec91bf721d31726bd6e46e60689539a'));
-//     assert.isTrue(arraysAreEqual);
-
-//     res = BTCUtils.hash256(utils.deserializeHex('0x616263')); // 'abc' in utf - 8
-//     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x4f8b42c22dd3729b519ba6f68d2da7cc5b2d606d05daed5ad5128cc03e6c6358'));
-//     assert.isTrue(arraysAreEqual);
 //   });
 
 //   it('extracts a sequence from a witness input as LE and int', () => {
