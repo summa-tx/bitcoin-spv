@@ -132,7 +132,7 @@
     "INDEX": 0,
     "OUTPOINT_TX_ID": "0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b"
   },
-  "OUPUT_TYPE": {
+  "OUTPUT_TYPE": {
     "WPKH": {
       "OUTPUT": "0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c",
       "VALUE": 1000001000,
