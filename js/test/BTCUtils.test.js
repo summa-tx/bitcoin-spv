@@ -87,12 +87,11 @@ describe('BTCUtils', () => {
   });
 
   it('extracts a sequence from a witness input as LE and int', () => {
-    const input = constants.OP_RETURN.INPUTS;
+    const input = OP_RETURN.INPUTS;
 
     let res = BTCUtils.extractSequenceLEWitness(input);
-    // const arraysAreEqual = utils.typedArraysAreEqual(res, SEQUENCE_WITNESS.LE);
-    // assert.isTrue(arraysAreEqual);
-    assert.equal(res, SEQUENCE_WITNESS.LE)
+    const arraysAreEqual = utils.typedArraysAreEqual(res, SEQUENCE_WITNESS.LE);
+    assert.isTrue(arraysAreEqual);
 
     res = BTCUtils.extractSequenceWitness(input);
     assert.equal(res, BigInt(SEQUENCE_WITNESS.WITNESS));
