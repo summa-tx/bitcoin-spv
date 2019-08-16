@@ -555,7 +555,6 @@ func TestValidateVout(t *testing.T) {
 //     res = BTCUtils.determineOutputLength(utils.deserializeHex('0x000000000000000088'));
 //     assert.equal(res, BigInt(145));
 
-// FIXME: need to write test for error handling
 //     try {
 //       res = BTCUtils.determineOutputLength(utils.deserializeHex('0x0000000000000000FF00'));
 //       assert(false, 'Expected an error');
@@ -587,6 +586,8 @@ func TestDetermineOutputLength(t *testing.T) {
 	decode, err = hex.DecodeString("000000000000000088")
 	res = DetermineOutputLength(decode)
 	assert.Equal(t, res, uint(145))
+
+	// TODO: write test for error handling
 
 	if err != nil {}
 }
