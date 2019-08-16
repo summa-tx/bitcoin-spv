@@ -515,8 +515,24 @@ func TestValidateVin(t *testing.T) {
 //     assert.isFalse(res);
 //   });
 func TestValidateVout(t *testing.T) {
-	t.Skip()
-	// TODO: skip the first test, do the rest
+	// TODO: write first test
+	decode, err := hex.DecodeString("FF4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211")
+	res := ValidateVin(decode)
+	assert.Equal(t, res, false)
+
+	decode, err = hex.DecodeString("004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211")
+	res = ValidateVin(decode)
+	assert.Equal(t, res, false)
+
+	decode, err = hex.DecodeString("024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952")
+	res = ValidateVin(decode)
+	assert.Equal(t, res, false)
+
+	decode, err = hex.DecodeString("024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952111111111111111")
+	res = ValidateVin(decode)
+	assert.Equal(t, res, false)
+
+	if err != nil {}
 }
 
 //   it('determines output length properly', () => {
