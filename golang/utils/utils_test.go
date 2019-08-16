@@ -102,7 +102,9 @@ func TestBytesToUint(t *testing.T) {
 }
 
 func TestDetermineVarIntDataLength(t *testing.T) {
-	// let res;
+
+	res := DetermineVarIntDataLength([]byte{1})
+	assert.Equal(t, res, 0)
 
 	// res = BTCUtils.determineVarIntDataLength(0x01);
 	// assert.equal(res, 0);
