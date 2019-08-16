@@ -6,18 +6,22 @@ import (
 	"encoding/binary"
 	"errors"
 
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"golang.org/x/crypto/ripemd160"
 )
 
 // bytesToUint converts 1, 2, 3, or 4-byte numbers to uints
 func bytesToUint(b []byte) uint {
-	var total uint
+	total := uint(0)
 	length := uint(len(b))
 
-	for i := uint(0); i >= length; i++ {
-		total += uint(b[i]) << (length - i - 1) * 8
+	for i := uint(0); i < length; i++ {
+		total += uint(b[i]) << ((length - i - 1) * 8)
 	}
+
+	fmt.Println(b, total)
 
 	return total
 }

@@ -73,40 +73,40 @@ func TestHash256(t *testing.T) {
 }
 
 func TestBytesToUint(t *testing.T) {
-	// TODO: figure out how to put these test values in array?
-	t.Skip()
-	one := []byte{0}
-	two := []byte{255}
-	three := []byte{0, 255}
-	four := []byte{255, 0}
-	five := []byte{1}
-	six := []byte{0, 1}
-	seven := []byte{1, 0}
-	eight := []byte{255, 255, 255, 255}
+	decode, err := hex.DecodeString("00")
+	res := bytesToUint(decode)
+	assert.Equal(t, res, uint(0))
 
-	res1 := bytesToUint(one)
-	assert.Equal(t, res1, uint(0))
+	decode, err = hex.DecodeString("ff")
+	res = bytesToUint(decode)
+	assert.Equal(t, res, uint(255))
 
-	res2 := bytesToUint(two)
-	assert.Equal(t, res2, uint(255))
+	decode, err = hex.DecodeString("00ff")
+	res = bytesToUint(decode)
+	assert.Equal(t, res, uint(255))
 
-	res3 := bytesToUint(three)
-	assert.Equal(t, res3, uint(255))
+	decode, err = hex.DecodeString("ff00")
+	res = bytesToUint(decode)
+	assert.Equal(t, res, uint(65280))
 
-	res4 := bytesToUint(four)
-	assert.Equal(t, res4, uint(65280))
+	decode, err = hex.DecodeString("01")
+	res = bytesToUint(decode)
+	assert.Equal(t, res, uint(1))
 
-	res5 := bytesToUint(five)
-	assert.Equal(t, res5, uint(1))
+	decode, err = hex.DecodeString("0001")
+	res = bytesToUint(decode)
+	assert.Equal(t, res, uint(1))
 
-	res6 := bytesToUint(six)
-	assert.Equal(t, res6, uint(1))
+	decode, err = hex.DecodeString("0100")
+	res = bytesToUint(decode)
+	assert.Equal(t, res, uint(256))
 
-	res7 := bytesToUint(seven)
-	assert.Equal(t, res7, uint(256))
+	// FIXME: need correct input and output for this test
+	// decode, err = hex.DecodeString("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+	// res = bytesToUint(decode)
+	// assert.Equal(t, res, uint(4294967295))
 
-	res8 := bytesToUint(eight)
-	assert.Equal(t, res8, uint(4294967295))
+	if err != nil {}
 }
 
 //   it('converts big-endian bytes to integers', () => {
@@ -146,6 +146,13 @@ func TestBytesToUint(t *testing.T) {
 //     res = BTCUtils.extractSequenceWitness(input);
 //     assert.equal(res, BigInt(4294967295));
 //   });
+func TestExtractSequenceWitness(t *testing.T) {
+	t.Skip()
+}
+
+func TestExtractSequenceLEWitness(t *testing.T) {
+	t.Skip()
+}
 
 //   it('extracts a sequence from a legacy input as LE and int', () => {
 //     const input = utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff');
@@ -157,6 +164,14 @@ func TestBytesToUint(t *testing.T) {
 //     res = BTCUtils.extractSequenceLegacy(input);
 //     assert.equal(res, BigInt(4294967295));
 //   });
+// TODO:
+func TestExtractSequenceLegacy(t *testing.T) {
+	t.Skip()
+}
+
+func TestExtractSequenceLELegacy(t *testing.T) {
+	t.Skip()
+}
 
 //   it('extracts an outpoint as bytes', () => {
 //     const input = constants.OP_RETURN.INPUTS;
@@ -165,6 +180,9 @@ func TestBytesToUint(t *testing.T) {
 //     const arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
 //     assert.isTrue(arraysAreEqual);
 //   });
+func TestExtractOutpoint(t *testing.T) {
+	t.Skip()
+}
 
 //   /* Witness Output */
 //   it('extracts the length of the output script', () => {
@@ -177,6 +195,9 @@ func TestBytesToUint(t *testing.T) {
 //     res = BTCUtils.extractOutputScriptLen(opReturnOutput);
 //     assert.equal(res, 0x16);
 //   });
+func TestExtractOuputScriptLen(t *testing.T) {
+	t.Skip()
+}
 
 //   it('extracts the hash from an output', () => {
 //     const output = constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
@@ -238,6 +259,9 @@ func TestBytesToUint(t *testing.T) {
 //     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(`0x${'00'.repeat(20)}`));
 //     assert.isTrue(arraysAreEqual);
 //   });
+func TestExtractHash(t *testing.T) {
+	t.Skip()
+}
 
 //   it('extracts the value as LE and int', () => {
 //     let res;
@@ -263,6 +287,13 @@ func TestBytesToUint(t *testing.T) {
 //     res = BTCUtils.extractValue(opReturnOutput);
 //     assert.equal(res, BigInt(0));
 //   });
+func TestExtractValue(t *testing.T) {
+	t.Skip()
+}
+
+func TestExtractValueLE(t *testing.T) {
+	t.Skip()
+}
 
 //   it('extracts op_return data blobs', () => {
 //     const output = utils.deserializeHex(constants.OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT);
@@ -282,6 +313,9 @@ func TestBytesToUint(t *testing.T) {
 //       assert.include(e.message, 'Malformatted data. Must be an op return.');
 //     }
 //   });
+func TestExtractOpReturnData(t *testing.T) {
+	t.Skip()
+}
 
 //   it('extracts inputs at specified indices', () => {
 //     let res = BTCUtils.extractInputAtIndex(utils.deserializeHex(constants.OP_RETURN.VIN), 0);
@@ -299,6 +333,9 @@ func TestBytesToUint(t *testing.T) {
 //     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff'));
 //     assert.isTrue(arraysAreEqual);
 //   });
+func TestExtractInputAtIndex(t *testing.T) {
+	t.Skip()
+}
 
 //   it('sorts legacy from witness inputs', () => {
 //     const input = constants.OP_RETURN.INPUTS;
@@ -309,6 +346,10 @@ func TestBytesToUint(t *testing.T) {
 //     res = BTCUtils.isLegacyInput(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff'));
 //     assert.isTrue(res);
 //   });
+func TestIsLegacyInput(t *testing.T) {
+	t.Skip()
+	// TODO: skip first
+}
 
 //   it('determines input length', () => {
 //     let res;
@@ -327,6 +368,10 @@ func TestBytesToUint(t *testing.T) {
 //     res = BTCUtils.determineInputLength(utils.deserializeHex('0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000'));
 //     assert.equal(res, BigInt(298));
 //   });
+func TestDetermineInputLength(t *testing.T) {
+	t.Skip()
+	// TODO:
+}
 
 //   it('extracts the scriptSig from inputs', () => {
 //     let res;
@@ -347,6 +392,10 @@ func TestBytesToUint(t *testing.T) {
 //     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xfe01000000ee'));
 //     assert.isTrue(arraysAreEqual);
 //   });
+func TestExtractScriptSig(t *testing.T) {
+	t.Skip()
+	// TODO: skip first
+}
 
 //   it('extracts the length of the VarInt and scriptSig from inputs', () => {
 //     let res;
@@ -362,6 +411,10 @@ func TestBytesToUint(t *testing.T) {
 //     assert.equal(res.dataLen, BigInt(8));
 //     assert.equal(res.scriptSigLen, BigInt(0));
 //   });
+func TestExtractScriptSigLen(t *testing.T) {
+	t.Skip()
+	// TODO: skip first test, do the rest
+}
 
 //   it('validates vin length based on stated size', () => {
 //     let res;
@@ -386,6 +439,10 @@ func TestBytesToUint(t *testing.T) {
 //     res = BTCUtils.validateVin(utils.deserializeHex('0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffffEEEEE'));
 //     assert.isFalse(res);
 //   });
+func TestValidateVin(t *testing.T) {
+	t.Skip()
+	// TODO: skip the first test, do the rest
+}
 
 //   it('validates vout length based on stated size', () => {
 //     let res;
@@ -410,6 +467,10 @@ func TestBytesToUint(t *testing.T) {
 //     res = BTCUtils.validateVout(utils.deserializeHex('0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952111111111111111'));
 //     assert.isFalse(res);
 //   });
+func TestValidateVout(t *testing.T) {
+	t.Skip()
+	// TODO: skip the first test, do the rest
+}
 
 //   it('determines output length properly', () => {
 //     let res;
@@ -489,6 +550,9 @@ func TestDetermineOutputLength(t *testing.T) {
 //     res = BTCUtils.extractOutputAtIndex(TWO_IN_TX_VOUT, 1);
 //     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922'));
 //   });
+func TestExtractOutputAtIndex(t *testing.T) {
+	t.Skip()
+}
 
 //   it('extracts a root from a header', () => {
 //     const res = BTCUtils.extractMerkleRootBE(HEADER_170);
@@ -496,11 +560,17 @@ func TestDetermineOutputLength(t *testing.T) {
 //     const arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
 //     assert.isTrue(arraysAreEqual);
 //   });
+func TestExtractMerkleRootBE(t *testing.T) {
+	t.Skip()
+}
 
 //   it('extracts the target from a header', () => {
 //     const res = BTCUtils.extractTarget(HEADER_170);
 //     assert.equal(res, BigInt('26959535291011309493156476344723991336010898738574164086137773096960'));
 //   });
+func TestExtractTarget(t *testing.T) {
+	t.Skip()
+}
 
 //   it('extracts the prev block hash', () => {
 //     const res = BTCUtils.extractPrevBlockBE(HEADER_170);
@@ -508,6 +578,9 @@ func TestDetermineOutputLength(t *testing.T) {
 //     const arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
 //     assert.isTrue(arraysAreEqual);
 //   });
+func TestExtractPrevBlockHashBE(t *testing.T) {
+	t.Skip()
+}
 
 //   it('extracts a timestamp from a header', () => {
 //     const res = BTCUtils.extractTimestamp(HEADER_170);
@@ -562,6 +635,9 @@ func TestExtractTimestamp(t *testing.T) {
 //     res = BTCUtils.verifyHash256Merkle(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'), 0);
 //     assert.isFalse(res);
 //   });
+func TestVerifyHash256Merkle (t *testing.T) {
+	t.Skip()
+}
 
 //   it('determines VarInt data lengths correctly', () => {
 //     let res;
@@ -615,6 +691,9 @@ func TestDetermineVarIntDataLength (t *testing.T) {
 //       assert.equal(res * BigInt(4) & previousTarget, previousTarget);
 //     }
 //   });
+func TestRetargetAlgorithm(t *testing.T) {
+	t.Skip()
+}
 
 //   it('extracts difficulty from a header', () => {
 //     let actual;
