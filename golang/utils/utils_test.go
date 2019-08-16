@@ -72,6 +72,32 @@ func TestHash256(t *testing.T) {
 	assert.Equal(t, hashed, decodedCompare)
 }
 
+//   it('converts big-endian bytes to integers', () => {
+//     let res = BTCUtils.bytesToUint(utils.deserializeHex('0x00'));
+//     assert.equal(res, BigInt(0));
+
+//     res = BTCUtils.bytesToUint(utils.deserializeHex('0xff'));
+//     assert.equal(res, BigInt(255));
+
+//     res = BTCUtils.bytesToUint(utils.deserializeHex('0x00ff'));
+//     assert.equal(res, BigInt(255));
+
+//     res = BTCUtils.bytesToUint(utils.deserializeHex('0xff00'));
+//     assert.equal(res, BigInt(65280));
+
+//     res = BTCUtils.bytesToUint(utils.deserializeHex('0x01'));
+//     assert.equal(res, BigInt(1));
+
+//     res = BTCUtils.bytesToUint(utils.deserializeHex('0x0001'));
+//     assert.equal(res, BigInt(1));
+
+//     res = BTCUtils.bytesToUint(utils.deserializeHex('0x0100'));
+//     assert.equal(res, BigInt(256));
+
+//     // max uint256: (2^256)-1
+//     res = BTCUtils.bytesToUint(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'));
+//     assert.equal(res, BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'));
+//   });
 func TestBytesToUint(t *testing.T) {
 	decode, err := hex.DecodeString("00")
 	res := bytesToUint(decode)
@@ -109,33 +135,6 @@ func TestBytesToUint(t *testing.T) {
 	if err != nil {}
 }
 
-//   it('converts big-endian bytes to integers', () => {
-//     let res = BTCUtils.bytesToUint(utils.deserializeHex('0x00'));
-//     assert.equal(res, BigInt(0));
-
-//     res = BTCUtils.bytesToUint(utils.deserializeHex('0xff'));
-//     assert.equal(res, BigInt(255));
-
-//     res = BTCUtils.bytesToUint(utils.deserializeHex('0x00ff'));
-//     assert.equal(res, BigInt(255));
-
-//     res = BTCUtils.bytesToUint(utils.deserializeHex('0xff00'));
-//     assert.equal(res, BigInt(65280));
-
-//     res = BTCUtils.bytesToUint(utils.deserializeHex('0x01'));
-//     assert.equal(res, BigInt(1));
-
-//     res = BTCUtils.bytesToUint(utils.deserializeHex('0x0001'));
-//     assert.equal(res, BigInt(1));
-
-//     res = BTCUtils.bytesToUint(utils.deserializeHex('0x0100'));
-//     assert.equal(res, BigInt(256));
-
-//     // max uint256: (2^256)-1
-//     res = BTCUtils.bytesToUint(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'));
-//     assert.equal(res, BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'));
-//   });
-
 //   it('extracts a sequence from a witness input as LE and int', () => {
 //     const input = utils.deserializeHex(constants.OP_RETURN.INPUTS);
 
@@ -154,16 +153,6 @@ func TestExtractSequenceLEWitness(t *testing.T) {
 	t.Skip()
 }
 
-//   it('extracts a sequence from a legacy input as LE and int', () => {
-//     const input = utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff');
-
-//     let res = BTCUtils.extractSequenceLELegacy(input);
-//     const arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xffffffff'));
-//     assert.isTrue(arraysAreEqual);
-
-//     res = BTCUtils.extractSequenceLegacy(input);
-//     assert.equal(res, BigInt(4294967295));
-//   });
 func TestExtractSequenceLegacy(t *testing.T) {
 	decodeTest, err := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff")
 	res := ExtractSequenceLegacy(decodeTest)
@@ -358,30 +347,35 @@ func TestExtractInputAtIndex(t *testing.T) {
 //     assert.isTrue(res);
 //   });
 func TestIsLegacyInput(t *testing.T) {
-	t.Skip()
-	// TODO: skip first
+	// TODO: first test
+	decode, err := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
+	res := IsLegacyInput(decode)
+	assert.Equal(t, res, true)
+	if err != nil {}
 }
 
-//   it('determines input length', () => {
-//     let res;
-//     res = BTCUtils.determineInputLength(utils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff'));
-//     assert.equal(res, BigInt(41));
-
-//     res = BTCUtils.determineInputLength(utils.deserializeHex('0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000000000000'));
-//     assert.equal(res, BigInt(41));
-
-//     res = BTCUtils.determineInputLength(utils.deserializeHex('0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0400000002000000000000'));
-//     assert.equal(res, BigInt(43));
-
-//     res = BTCUtils.determineInputLength(utils.deserializeHex('0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000900000000000000000000000000'));
-//     assert.equal(res, BigInt(50));
-
-//     res = BTCUtils.determineInputLength(utils.deserializeHex('0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000'));
-//     assert.equal(res, BigInt(298));
-//   });
 func TestDetermineInputLength(t *testing.T) {
-	t.Skip()
-	// TODO:
+	decode, err := hex.DecodeString("7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff")
+	res := DetermineInputLength(decode)
+	assert.Equal(t, res, uint(41))
+
+	decode, err = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000000000000")
+	res = DetermineInputLength(decode)
+	assert.Equal(t, res, uint(41))
+
+	decode, err = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0400000002000000000000")
+	res = DetermineInputLength(decode)
+	assert.Equal(t, res, uint(43))
+
+	decode, err = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000900000000000000000000000000")
+	res = DetermineInputLength(decode)
+	assert.Equal(t, res, uint(50))
+
+	decode, err = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000")
+	res = DetermineInputLength(decode)
+	assert.Equal(t, res, uint(298))
+
+	if err != nil {}
 }
 
 //   it('extracts the scriptSig from inputs', () => {
@@ -503,6 +497,7 @@ func TestValidateVout(t *testing.T) {
 //     res = BTCUtils.determineOutputLength(utils.deserializeHex('0x000000000000000088'));
 //     assert.equal(res, BigInt(145));
 
+// FIXME: need to write test for error handling
 //     try {
 //       res = BTCUtils.determineOutputLength(utils.deserializeHex('0x0000000000000000FF00'));
 //       assert(false, 'Expected an error');
@@ -650,18 +645,6 @@ func TestVerifyHash256Merkle (t *testing.T) {
 	t.Skip()
 }
 
-//   it('determines VarInt data lengths correctly', () => {
-//     let res;
-
-//     res = BTCUtils.determineVarIntDataLength(0x01);
-//     assert.equal(res, 0);
-//     res = BTCUtils.determineVarIntDataLength(0xfd);
-//     assert.equal(res, 2);
-//     res = BTCUtils.determineVarIntDataLength(0xfe);
-//     assert.equal(res, 4);
-//     res = BTCUtils.determineVarIntDataLength(0xff);
-//     assert.equal(res, 8);
-//   });
 func TestDetermineVarIntDataLength (t *testing.T) {
 	res1 := DetermineVarIntDataLength(uint8(0x01))
 	assert.Equal(t, res1, uint8(0))
