@@ -432,8 +432,19 @@ func TestExtractScriptSig(t *testing.T) {
 //     assert.equal(res.scriptSigLen, BigInt(0));
 //   });
 func TestExtractScriptSigLen(t *testing.T) {
-	t.Skip()
-	// TODO: skip first test, do the rest
+	// TODO: write first test
+
+	decode, err := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
+	dataLen, scriptSigLen := ExtractScriptSigLen(decode)
+	assert.Equal(t, dataLen, uint(0))
+	assert.Equal(t, scriptSigLen, uint(1))
+
+	decode, err = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000FF0000000000000000ffffffff")
+	dataLen, scriptSigLen = ExtractScriptSigLen(decode)
+	assert.Equal(t, dataLen, uint(8))
+	assert.Equal(t, scriptSigLen, uint(0))
+
+	if err != nil {}
 }
 
 //   it('validates vin length based on stated size', () => {
