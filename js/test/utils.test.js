@@ -1,14 +1,12 @@
 /* global BigInt describe it */
-
 import * as chai from 'chai';
 import * as utils from '../utils/utils';
 import * as vectors from '../../testVectors.json';
 
-let vectorObj = JSON.parse(JSON.stringify(vectors));
+const vectorObj = JSON.parse(JSON.stringify(vectors));
+utils.updateJson(vectorObj);
 
-utils.parseJson(vectorObj)
-
-let {
+const {
   LAST_BYTES,
   REVERSE_ENDIANNESS,
   LARGE_BYTES,

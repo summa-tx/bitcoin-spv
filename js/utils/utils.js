@@ -236,22 +236,21 @@ export function lastBytes(arr, num) {
   return safeSlice(arr, arr.length - num);
 }
 
-export function parseJson(element) {
+export function updateJson(element) {
   if (Array.isArray(element)) {
-    for(let i = 0; i < element.length; i++) {
-      // may want to refine this if statement to check if it's a hex value in the actual function
-      if (typeof element[i] === "string") {
-        element[i] = deserializeHex(element[i])
+    for (let i = 0; i < element.length; i += 1) {
+      if (typeof element[i] === 'string') {
+        element[i] = deserializeHex(element[i]);
       } else {
-        parseJson(element[i])
+        updateJson(element[i]);
       }
     }
-  } else if (typeof element === "object") {
-    for (var prop in element) {
+  } else if (typeof element === 'object') {
+    for (const prop in element) {
       if (typeof element[prop] === 'object') {
-        parseJson(element[prop])
-      } else if (typeof element[prop] === "string") {
-        element[prop] = deserializeHex(element[prop])
+        updateJson(element[prop]);
+      } else if (typeof element[prop] === 'string') {
+        element[prop] = deserializeHex(element[prop]);
       }
     }
   }

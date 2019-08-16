@@ -6,11 +6,10 @@ import * as vectors from '../../testVectors.json';
 
 const { assert } = chai;
 
-let vectorObj = JSON.parse(JSON.stringify(vectors));
+const vectorObj = JSON.parse(JSON.stringify(vectors));
+utils.updateJson(vectorObj);
 
-utils.parseJson(vectorObj)
-
-let {
+const {
   EMPTY,
   HEADER,
   HEADER_ERR,
@@ -76,16 +75,12 @@ describe('ValidateSPV', () => {
   });
 
   describe('#parseInput', () => {
-    const input = PARSE_INPUT.INPUT;
-    const legacyInput = PARSE_INPUT.LEGACY_INPUT;
-    const compatibilityWSHInput = PARSE_INPUT.COMPATIBILITY_WSH_INPUT;
-    const compatibilityWPKHInput = PARSE_INPUT.COMPATIBILITY_WPKH_INPUT;
     const sequence = BigInt(PARSE_INPUT.SEQUENCE);
     const index = BigInt(PARSE_INPUT.INDEX);
     const outpointTxId = PARSE_INPUT.OUTPOINT_TX_ID;
 
     it('returns the tx input sequence and outpoint', () => {
-      const txIn = ValidateSPV.parseInput(input);
+      const txIn = ValidateSPV.parseInput(PARSE_INPUT.INPUT);
 
       assert.equal(txIn.sequence, sequence);
       assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, outpointTxId));
@@ -94,7 +89,7 @@ describe('ValidateSPV', () => {
     });
 
     it('handles Legacy inputs', () => {
-      const txIn = ValidateSPV.parseInput(legacyInput);
+      const txIn = ValidateSPV.parseInput(PARSE_INPUT.LEGACY_INPUT);
 
       assert.equal(txIn.sequence, sequence);
       assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, outpointTxId));
@@ -103,7 +98,7 @@ describe('ValidateSPV', () => {
     });
 
     it('handles p2wpkh-via-p2sh compatibility inputs', () => {
-      const txIn = ValidateSPV.parseInput(compatibilityWPKHInput);
+      const txIn = ValidateSPV.parseInput(PARSE_INPUT.COMPATIBILITY_WPKH_INPUT);
 
       assert.equal(txIn.sequence, sequence);
       assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, outpointTxId));
@@ -112,7 +107,7 @@ describe('ValidateSPV', () => {
     });
 
     it('handles p2wsh-via-p2sh compatibility inputs', () => {
-      const txIn = ValidateSPV.parseInput(compatibilityWSHInput);
+      const txIn = ValidateSPV.parseInput(PARSE_INPUT.COMPATIBILITY_WSH_INPUT);
 
       assert.equal(txIn.sequence, sequence);
       assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, outpointTxId));
@@ -125,9 +120,7 @@ describe('ValidateSPV', () => {
     it('returns the tx output value, output type, and payload for an OP_RETURN output', () => {
       const opReturnTxOut = ValidateSPV.parseOutput(OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT);
 
-      const value = OP_RETURN.INDEXED_OUTPUTS[1].VALUE;
-
-      assert.equal(opReturnTxOut.value, value);
+      assert.equal(opReturnTxOut.value, OP_RETURN.INDEXED_OUTPUTS[1].VALUE);
       assert.equal(opReturnTxOut.outputType, utils.OUTPUT_TYPES.OP_RETURN);
       assert.isTrue(
         utils.typedArraysAreEqual(
@@ -138,27 +131,19 @@ describe('ValidateSPV', () => {
     });
 
     it('returns the tx output value, output type, and payload for an WPKH output', () => {
-      const output = OUTPUT_TYPE.WPKH.OUTPUT;
-      const value = BigInt(OUTPUT_TYPE.WPKH.VALUE);
-      const payload = OUTPUT_TYPE.WPKH.PAYLOAD;
+      const wpkhOutput = ValidateSPV.parseOutput(OUTPUT_TYPE.WPKH.OUTPUT);
 
-      const wpkhOutput = ValidateSPV.parseOutput(output);
-
-      assert.equal(wpkhOutput.value, value);
+      assert.equal(wpkhOutput.value, BigInt(OUTPUT_TYPE.WPKH.VALUE));
       assert.equal(wpkhOutput.outputType, utils.OUTPUT_TYPES.WPKH);
-      assert.isTrue(utils.typedArraysAreEqual(wpkhOutput.payload, payload));
+      assert.isTrue(utils.typedArraysAreEqual(wpkhOutput.payload, OUTPUT_TYPE.WPKH.PAYLOAD));
     });
 
     it('returns the tx output value, output type, and payload for an WSH output', () => {
-      const output = OUTPUT_TYPE.WSH.OUTPUT;
-      const value = BigInt(OUTPUT_TYPE.WSH.VALUE);
-      const payload = OUTPUT_TYPE.WSH.PAYLOAD;
+      const wshOutput = ValidateSPV.parseOutput(OUTPUT_TYPE.WSH.OUTPUT);
 
-      const wshOutput = ValidateSPV.parseOutput(output);
-
-      assert.equal(wshOutput.value, value);
+      assert.equal(wshOutput.value, BigInt(OUTPUT_TYPE.WSH.VALUE));
       assert.equal(wshOutput.outputType, utils.OUTPUT_TYPES.WSH);
-      assert.isTrue(utils.typedArraysAreEqual(wshOutput.payload, payload));
+      assert.isTrue(utils.typedArraysAreEqual(wshOutput.payload, OUTPUT_TYPE.WSH.PAYLOAD));
     });
 
     it('shows non-standard if the tx output type is not identifiable', () => {
@@ -171,27 +156,19 @@ describe('ValidateSPV', () => {
     });
 
     it('returns the tx output value, output type, and payload for an SH output', () => {
-      const output = OUTPUT_TYPE.SH.OUTPUT;
-      const value = BigInt(OUTPUT_TYPE.SH.VALUE);
-      const payload = OUTPUT_TYPE.SH.PAYLOAD;
+      const shOutput = ValidateSPV.parseOutput(OUTPUT_TYPE.SH.OUTPUT);
 
-      const shOutput = ValidateSPV.parseOutput(output);
-
-      assert.equal(shOutput.value, value);
+      assert.equal(shOutput.value, BigInt(OUTPUT_TYPE.SH.VALUE));
       assert.equal(shOutput.outputType, utils.OUTPUT_TYPES.SH);
-      assert.isTrue(utils.typedArraysAreEqual(shOutput.payload, payload));
+      assert.isTrue(utils.typedArraysAreEqual(shOutput.payload, OUTPUT_TYPE.SH.PAYLOAD));
     });
 
     it('returns the tx output value, output type, and payload for an PKH output', () => {
-      const output = OUTPUT_TYPE.PKH.OUTPUT;
-      const value = BigInt(OUTPUT_TYPE.PKH.VALUE);
-      const payload = OUTPUT_TYPE.PKH.PAYLOAD;
+      const pkhOutput = ValidateSPV.parseOutput(OUTPUT_TYPE.PKH.OUTPUT);
 
-      const pkhOutput = ValidateSPV.parseOutput(output);
-
-      assert.equal(pkhOutput.value, value);
+      assert.equal(pkhOutput.value, BigInt(OUTPUT_TYPE.PKH.VALUE));
       assert.equal(pkhOutput.outputType, utils.OUTPUT_TYPES.PKH);
-      assert.isTrue(utils.typedArraysAreEqual(pkhOutput.payload, payload));
+      assert.isTrue(utils.typedArraysAreEqual(pkhOutput.payload, OUTPUT_TYPE.PKH.PAYLOAD));
     });
   });
 
@@ -203,17 +180,11 @@ describe('ValidateSPV', () => {
         );
 
         assert.isTrue(
-          utils.typedArraysAreEqual(
-            validHeader.digest,
-            OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE
-          )
+          utils.typedArraysAreEqual(validHeader.digest, OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE)
         );
         assert.equal(validHeader.version, OP_RETURN.INDEXED_HEADERS[0].VERSION);
         assert.isTrue(
-          utils.typedArraysAreEqual(
-            validHeader.prevHash,
-            OP_RETURN.INDEXED_HEADERS[0].PREV_HASH_LE
-          )
+          utils.typedArraysAreEqual(validHeader.prevHash, OP_RETURN.INDEXED_HEADERS[0].PREV_HASH_LE)
         );
         assert.isTrue(
           utils.typedArraysAreEqual(

@@ -4,11 +4,10 @@ import * as utils from '../utils/utils';
 import * as BTCUtils from '../src/BTCUtils';
 import * as vectors from '../../testVectors.json';
 
-let vectorObj = JSON.parse(JSON.stringify(vectors));
+const vectorObj = JSON.parse(JSON.stringify(vectors));
+utils.updateJson(vectorObj);
 
-utils.parseJson(vectorObj)
-
-let {
+const {
   HEADER_170,
   OP_RETURN_PROOF,
   OP_RETURN_INDEX,
