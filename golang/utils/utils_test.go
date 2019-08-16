@@ -164,13 +164,24 @@ func TestExtractSequenceLEWitness(t *testing.T) {
 //     res = BTCUtils.extractSequenceLegacy(input);
 //     assert.equal(res, BigInt(4294967295));
 //   });
-// TODO:
 func TestExtractSequenceLegacy(t *testing.T) {
-	t.Skip()
+	decodeTest, err := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff")
+	res := ExtractSequenceLegacy(decodeTest)
+
+	assert.Equal(t, res, uint(4294967295))
+
+	if err != nil {}
 }
 
 func TestExtractSequenceLELegacy(t *testing.T) {
-	t.Skip()
+	decodeTest, err := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff")
+	res := ExtractSequenceLELegacy(decodeTest)
+
+	decodeAnswer, err := hex.DecodeString("ffffffff")
+
+	assert.Equal(t, res, decodeAnswer)
+
+	if err != nil {}
 }
 
 //   it('extracts an outpoint as bytes', () => {
