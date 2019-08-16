@@ -9,9 +9,7 @@ let vectorObj = JSON.parse(JSON.stringify(vectors));
 utils.parseJson(vectorObj)
 
 let {
-  // EMPTY,
   HEADER_170,
-  // OP_RETURN_TX,
   OP_RETURN_PROOF,
   OP_RETURN_INDEX,
   OUTPOINT,
@@ -31,7 +29,6 @@ let {
   OUTPUT_LEN,
   HEADER,
   MERKLE_ROOT,
-  // HEADER_ERR,
   OP_RETURN,
   TWO_IN,
   RETARGET_TUPLES

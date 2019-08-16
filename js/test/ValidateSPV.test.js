@@ -12,33 +12,11 @@ utils.parseJson(vectorObj)
 
 let {
   EMPTY,
-  // HEADER_170,
-  // OP_RETURN_TX,
-  // OP_RETURN_PROOF,
-  // OP_RETURN_INDEX,
-  // OUTPOINT,
-  // HASH_160,
-  // HASH_256,
-  // SEQUENCE_WITNESS,
-  // SEQUENCE_LEGACY,
-  // OUTPUT,
-  // INDEXED_INPUT,
-  // INDEXED_OUTPUT,
-  // LEGACY_INPUT,
-  // INPUT_LENGTH,
-  // SCRIPT_SIGS,
-  // SCRIPT_SIG_LEN,
-  // INVALID_VIN_LEN,
-  // INVALID_VOUT_LEN,
-  // OUTPUT_LEN,
   HEADER,
-  // MERKLE_ROOT,
   HEADER_ERR,
   OUTPUT_TYPE,
   PARSE_INPUT,
-  OP_RETURN,
-  // TWO_IN,
-  // RETARGET_TUPLES
+  OP_RETURN
 } = vectorObj;
 
 const INPUT_TYPES = {
