@@ -398,8 +398,23 @@ func TestDetermineInputLength(t *testing.T) {
 //     assert.isTrue(arraysAreEqual);
 //   });
 func TestExtractScriptSig(t *testing.T) {
-	t.Skip()
-	// TODO: skip first
+	// TODO: first test
+	decodeTest, err := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
+	res := ExtractScriptSig(decodeTest)
+	decodeAnswer, err := hex.DecodeString("01ee'")
+	assert.Equal(t, res, decodeAnswer)
+
+	decodeTest, err = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff")
+	res = ExtractScriptSig(decodeTest)
+	decodeAnswer, err = hex.DecodeString("fd0100ee")
+	assert.Equal(t, res, decodeAnswer)
+
+	decodeTest, err = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff")
+	res = ExtractScriptSig(decodeTest)
+	decodeAnswer, err = hex.DecodeString("fe01000000ee")
+	assert.Equal(t, res, decodeAnswer)
+
+	if err != nil {}
 }
 
 //   it('extracts the length of the VarInt and scriptSig from inputs', () => {
