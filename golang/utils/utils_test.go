@@ -471,8 +471,24 @@ func TestExtractScriptSigLen(t *testing.T) {
 //     assert.isFalse(res);
 //   });
 func TestValidateVin(t *testing.T) {
-	t.Skip()
-	// TODO: skip the first test, do the rest
+	// TODO: write first test
+	decode, err := hex.DecodeString("FF1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff")
+	res := ValidateVin(decode)
+	assert.Equal(t, res, false)
+
+	decode, err = hex.DecodeString("001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff")
+	res = ValidateVin(decode)
+	assert.Equal(t, res, false)
+
+	decode, err = hex.DecodeString("011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffff")
+	res = ValidateVin(decode)
+	assert.Equal(t, res, false)
+
+	decode, err = hex.DecodeString("011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffffEEEEE")
+	res = ValidateVin(decode)
+	assert.Equal(t, res, false)
+
+	if err != nil {}
 }
 
 //   it('validates vout length based on stated size', () => {
