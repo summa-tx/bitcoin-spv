@@ -65,12 +65,19 @@ describe('ValidateSPV', () => {
   });
 
   describe('#parseInput', () => {
+    // PARSE_INPUT.INPUT
     const input = utils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff');
+    // PARSE_INPUT.LEGACY_INPUT
     const legacyInput = utils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab375000000000101ffffffff');
+    // PARSE_INPUT.COMPATIBILITY_WSH_INPUT
     const compatibilityWSHInput = utils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000220020eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff');
+    // PARSE_INPUT.COMPATIBILITY_WPKH_INPUT
     const compatibilityWPKHInput = utils.deserializeHex('0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000160014eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff');
+    // PARSE_INPUT.SEQUENCE
     const sequence = BigInt(4294967295);
+    // PARSE_INPUT.INDEX
     const index = BigInt(0);
+    // PARSE_INPUT.OUTPOINT_TX_ID
     const outpointTxId = utils.deserializeHex('0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b');
 
     it('returns the tx input sequence and outpoint', () => {
@@ -95,7 +102,6 @@ describe('ValidateSPV', () => {
       const txIn = ValidateSPV.parseInput(compatibilityWPKHInput);
 
       assert.equal(txIn.sequence, sequence);
-      // assert.equal(txIn.hash, outpointTxId);
       assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, outpointTxId));
       assert.equal(txIn.inputIndex, index);
       assert.equal(txIn.inputType, INPUT_TYPES.COMPATIBILITY);
@@ -130,8 +136,11 @@ describe('ValidateSPV', () => {
     });
 
     it('returns the tx output value, output type, and payload for an WPKH output', () => {
+      // OUTPUT_TYPE.WPKH.OUTPUT
       const output = utils.deserializeHex('0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c');
+      // OUTPUT_TYPE.WPKH.VALUE
       const value = BigInt(1000001000);
+      // OUTPUT_TYPE.WPKH.PAYLOAD
       const payload = utils.deserializeHex('0x7849e6bf5e4b1ba7235572d1b0cbc094f0213e6c');
 
       const wpkhOutput = ValidateSPV.parseOutput(output);
@@ -142,8 +151,11 @@ describe('ValidateSPV', () => {
     });
 
     it('returns the tx output value, output type, and payload for an WSH output', () => {
+      // OUTPUT_TYPE.WSH.OUTPUT
       const output = utils.deserializeHex('0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922');
+      // OUTPUT_TYPE.WSH.VALUE
       const value = BigInt(1000000);
+      // OUTPUT_TYPE.WSH.PAYLOAD
       const payload = utils.deserializeHex('0xaedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922');
 
       const wshOutput = ValidateSPV.parseOutput(output);
@@ -155,6 +167,7 @@ describe('ValidateSPV', () => {
 
     it('shows non-standard if the tx output type is not identifiable', () => {
       // Changes 0x6a (OP_RETURN) to 0x7a to create error
+      // OUTPUT_TYPE.NONSTANDARD
       const output = utils.deserializeHex('0x0000000000000000167a14edb1b5c2f39af0fec151732585b1049b07895211');
 
       const nonstandardOutput = ValidateSPV.parseOutput(output);
@@ -165,8 +178,11 @@ describe('ValidateSPV', () => {
     });
 
     it('returns the tx output value, output type, and payload for an SH output', () => {
+      // OUPUT_TYPE.SH.OUTPUT
       const output = utils.deserializeHex('0xe8df05000000000017a914a654ebafa7a37e04a7ec3f684e34897e48f0496287');
+      // OUPUT_TYPE.SH.VALUE
       const value = BigInt(385000);
+      // OUPUT_TYPE.SH.PAYLOAD
       const payload = utils.deserializeHex('0xa654ebafa7a37e04a7ec3f684e34897e48f04962');
 
       const shOutput = ValidateSPV.parseOutput(output);
@@ -177,8 +193,11 @@ describe('ValidateSPV', () => {
     });
 
     it('returns the tx output value, output type, and payload for an PKH output', () => {
+      // OUPUT_TYPE.PKH.OUTPUT
       const output = utils.deserializeHex('0x88080000000000001976a9141458514240d7287e5254af48cd292eb876cb07eb88ac');
+      // OUPUT_TYPE.PKH.VALUE
       const value = BigInt(2184);
+      // OUPUT_TYPE.PKH.PAYLOAD
       const payload = utils.deserializeHex('0x1458514240d7287e5254af48cd292eb876cb07eb');
       const pkhOutput = ValidateSPV.parseOutput(output);
 
@@ -268,11 +287,12 @@ describe('ValidateSPV', () => {
 
   describe('#validateHeaderWork', () => {
     it('returns false on an empty digest', () => {
-      const res = ValidateSPV.validateHeaderWork(utils.deserializeHex(constants.EMPTY), 1);
+      const res = ValidateSPV.validateHeaderWork(utils.deserializeHex(EMPTY), 1);
       assert.isFalse(res);
     });
 
     it('returns false if the digest has insufficient work', () => {
+      // HEADER.VALIDATE_WORK[0]
       const res = ValidateSPV.validateHeaderWork(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'), 1);
       assert.isFalse(res);
     });
@@ -280,6 +300,7 @@ describe('ValidateSPV', () => {
     it('returns true if the digest has sufficient work', () => {
       const res = ValidateSPV.validateHeaderWork(
         utils.deserializeHex(OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE),
+        // HEADER.VALIDATE_WORK[1]
         BigInt('3840827764407250199942201944063224491938810378873470976')
       );
       assert.isTrue(res);
