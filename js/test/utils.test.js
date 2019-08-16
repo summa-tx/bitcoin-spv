@@ -2,20 +2,32 @@
 
 import * as chai from 'chai';
 import * as utils from '../utils/utils';
+import * as vectors from '../../testVectors.json';
+
+let vectorObj = JSON.parse(JSON.stringify(vectors));
+
+utils.parseJson(vectorObj)
+
+let {
+  LAST_BYTES,
+  REVERSE_ENDIANNESS,
+  LARGE_BYTES,
+  HASH
+} = vectorObj;
 
 const { assert } = chai;
 
 describe('utils', () => {
   describe('#lastBytes', () => {
     it('gets the last bytes correctly', () => {
-      const res = utils.lastBytes(utils.deserializeHex('0x00112233'), 2);
-      const arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x2233'));
+      const res = utils.lastBytes(LAST_BYTES.INPUT, 2);
+      const arraysAreEqual = utils.typedArraysAreEqual(res, LAST_BYTES.OUTPUT);
       assert.isTrue(arraysAreEqual);
     });
 
     it('errors if slice is larger than the bytearray', () => {
       try {
-        utils.lastBytes(utils.deserializeHex('0x00'), 2);
+        utils.lastBytes(new Uint8Array([0]), 2);
         assert(false, 'expected an errror');
       } catch (e) {
         assert.include(e.message, 'Slice must not use negative indexes');
@@ -27,41 +39,42 @@ describe('utils', () => {
     it('reverses endianness', () => {
       let res;
       let arraysAreEqual;
-      res = utils.reverseEndianness(utils.deserializeHex('0x00112233'));
-      arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x33221100'));
+
+      res = utils.reverseEndianness(REVERSE_ENDIANNESS[0].BE);
+      arraysAreEqual = utils.typedArraysAreEqual(res, REVERSE_ENDIANNESS[0].LE);
       assert.isTrue(arraysAreEqual);
 
-      res = utils.reverseEndianness(utils.deserializeHex('0x0123456789abcdef'));
-      arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xefcdab8967452301'));
+      res = utils.reverseEndianness(REVERSE_ENDIANNESS[1].BE);
+      arraysAreEqual = utils.typedArraysAreEqual(res, REVERSE_ENDIANNESS[1].LE);
       assert.isTrue(arraysAreEqual);
     });
   });
 
   describe('#bytesToUint', () => {
     it('converts big-endian bytes to integers', () => {
-      let res = utils.bytesToUint(utils.deserializeHex('0x00'));
+      let res = utils.bytesToUint(new Uint8Array([0]));
       assert.equal(res, BigInt(0));
 
-      res = utils.bytesToUint(utils.deserializeHex('0xff'));
+      res = utils.bytesToUint(new Uint8Array([255]));
       assert.equal(res, BigInt(255));
 
-      res = utils.bytesToUint(utils.deserializeHex('0x00ff'));
+      res = utils.bytesToUint(new Uint8Array([0, 255]));
       assert.equal(res, BigInt(255));
 
-      res = utils.bytesToUint(utils.deserializeHex('0xff00'));
+      res = utils.bytesToUint(new Uint8Array([255, 0]));
       assert.equal(res, BigInt(65280));
 
-      res = utils.bytesToUint(utils.deserializeHex('0x01'));
+      res = utils.bytesToUint(new Uint8Array([1]));
       assert.equal(res, BigInt(1));
 
-      res = utils.bytesToUint(utils.deserializeHex('0x0001'));
+      res = utils.bytesToUint(new Uint8Array([0, 1]));
       assert.equal(res, BigInt(1));
 
-      res = utils.bytesToUint(utils.deserializeHex('0x0100'));
+      res = utils.bytesToUint(new Uint8Array([1, 0]));
       assert.equal(res, BigInt(256));
 
       // max uint256: (2^256)-1
-      res = utils.bytesToUint(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'));
+      res = utils.bytesToUint(LARGE_BYTES);
       assert.equal(res, BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'));
     });
   });
@@ -115,7 +128,8 @@ describe('utils', () => {
 
       res = utils.deserializeHex('0x0001022a646566ff');
       arraysAreEqual = utils.typedArraysAreEqual(
-        res, new Uint8Array([0, 1, 2, 42, 100, 101, 102, 255])
+        res,
+        new Uint8Array([0, 1, 2, 42, 100, 101, 102, 255])
       );
       assert.isTrue(arraysAreEqual);
     });
@@ -134,12 +148,12 @@ describe('utils', () => {
     it('returns a sha256 hash', () => {
       let res;
       let arraysAreEqual;
-      res = utils.sha256(utils.deserializeHex('0x616263'));
-      arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'));
+      res = utils.sha256(HASH.SHA_256[0].PRE_IMAGE);
+      arraysAreEqual = utils.typedArraysAreEqual(res, HASH.SHA_256[0].DIGEST);
       assert.isTrue(arraysAreEqual);
 
       res = utils.sha256(new Uint8Array([]));
-      arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'));
+      arraysAreEqual = utils.typedArraysAreEqual(res, HASH.SHA_256[1].DIGEST);
       assert.isTrue(arraysAreEqual);
     });
   });
@@ -150,11 +164,11 @@ describe('utils', () => {
       let arraysAreEqual;
 
       res = utils.ripemd160(new Uint8Array([0]));
-      arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xc81b94933420221a7ac004a90242d8b1d3e5070d'));
+      arraysAreEqual = utils.typedArraysAreEqual(res, HASH.RIPEMD_160[0].DIGEST);
       assert.isTrue(arraysAreEqual);
 
-      res = utils.ripemd160(utils.deserializeHex('2c415d8f16ce68ede2b3642800883055'));
-      arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xb09d9089acb3855efacd76960db70d166c32c5e6'));
+      res = utils.ripemd160(HASH.RIPEMD_160[1].PRE_IMAGE);
+      arraysAreEqual = utils.typedArraysAreEqual(res, HASH.RIPEMD_160[1].DIGEST);
       assert.isTrue(arraysAreEqual);
     });
   });
