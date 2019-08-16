@@ -53,6 +53,15 @@ func TestLastBytes(t *testing.T) {
 // 	assert.Equal(t, hashed, decodedCompare)
 // }
 
+func TestHash160 (t *testing.T) {
+	decodeTest, err := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+	res := Hash160(decodeTest)
+	decodeAnswer, err := hex.DecodeString("1b60c31dba9403c74d81af255f0c300bfed5faa3")
+	assert.Equal(t, res, decodeAnswer)
+
+	if err != nil {}
+}
+
 func TestHash256(t *testing.T) {
 	testString := "00"
 	compareString := "1406e05881e299367766d313e26c05564ec91bf721d31726bd6e46e60689539a"
