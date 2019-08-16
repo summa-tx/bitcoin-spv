@@ -191,7 +191,7 @@ func ExtractTxIndex(input []byte) uint {
 // DetermineOutputLength returns the length of an output
 func DetermineOutputLength(output []byte) uint {
 	length := uint(output[8])
-	return length
+	return length + uint(9)
 }
 
 // ExtractOutputAtIndex returns the output at a given index in the TxIns vector
