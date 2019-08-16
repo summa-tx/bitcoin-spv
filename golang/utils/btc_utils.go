@@ -21,8 +21,6 @@ func bytesToUint(b []byte) uint {
 		total += uint(b[i]) << ((length - i - 1) * 8)
 	}
 
-	fmt.Println(b, total)
-
 	return total
 }
 
