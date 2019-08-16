@@ -37,8 +37,8 @@ const { assert } = chai;
 
 describe('BTCUtils', () => {
   it('implements bitcoin\'s hash160', () => {
-    const res = BTCUtils.hash160(HASH_160.INPUT);
-    const u8aValue = HASH_160.OUTPUT;
+    const res = BTCUtils.hash160(HASH_160[0].INPUT);
+    const u8aValue = HASH_160[0].OUTPUT;
     const arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
     assert.isTrue(arraysAreEqual);
   });
