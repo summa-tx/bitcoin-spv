@@ -1,36 +1,7 @@
 /* global it describe BigInt */
 import * as chai from 'chai';
 import * as utils from '../utils/utils';
-import * as constants from './constants';
 import * as BTCUtils from '../src/BTCUtils';
-// import {
-//   // EMPTY,
-//   HEADER_170,
-//   // OP_RETURN_TX,
-//   OP_RETURN_PROOF,
-//   OP_RETURN_INDEX,
-//   OUTPOINT,
-//   HASH_160,
-//   HASH_256,
-//   SEQUENCE_WITNESS,
-//   SEQUENCE_LEGACY,
-//   OUTPUT,
-//   INDEXED_INPUT,
-//   INDEXED_OUTPUT,
-//   LEGACY_INPUT,
-//   INPUT_LENGTH,
-//   SCRIPT_SIGS,
-//   SCRIPT_SIG_LEN,
-//   INVALID_VIN_LEN,
-//   INVALID_VOUT_LEN,
-//   OUTPUT_LEN,
-//   HEADER,
-//   MERKLE_ROOT,
-//   // HEADER_ERR,
-//   OP_RETURN,
-//   TWO_IN,
-//   // RETARGET_TUPLES
-// } from '../../testVectors.json';
 import * as vectors from '../../testVectors.json';
 
 let vectorObj = JSON.parse(JSON.stringify(vectors));
@@ -511,17 +482,17 @@ describe('BTCUtils', () => {
       expected = RETARGET_TUPLES[i][0].difficulty;
       assert.equal(actual, expected);
 
-      // actual = BTCUtils.extractDifficulty(
-      //   RETARGET_TUPLES[i][1].hex
-      // );
-      // expected = RETARGET_TUPLES[i][1].difficulty;
-      // assert.equal(actual, expected);
+      actual = BTCUtils.extractDifficulty(
+        RETARGET_TUPLES[i][1].hex
+      );
+      expected = RETARGET_TUPLES[i][1].difficulty;
+      assert.equal(actual, expected);
 
-      // actual = BTCUtils.extractDifficulty(
-      //   RETARGET_TUPLES[i][2].hex
-      // );
-      // expected = RETARGET_TUPLES[i][2].difficulty;
-      // assert.equal(actual, expected);
+      actual = BTCUtils.extractDifficulty(
+        RETARGET_TUPLES[i][2].hex
+      );
+      expected = RETARGET_TUPLES[i][2].difficulty;
+      assert.equal(actual, expected);
     }
   });
 
