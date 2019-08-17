@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
+	"math/big"
 
 	// "fmt"
 
@@ -22,6 +24,12 @@ func bytesToUint(b []byte) uint {
 	}
 
 	return total
+}
+
+// BytesToBigInt converts a bytestring to a cosmos-sdk Int
+func BytesToBigInt(b []byte) sdk.Int {
+	ret, _ := sdk.NewIntFromString("0x" + hex.EncodeToString(b))
+	return ret
 }
 
 // DetermineVarIntDataLength extracts the payload length of a Bitcoin VarInt
@@ -334,19 +342,20 @@ func ExtractMerkleRootBE(header []byte) []byte {
 
 // ExtractTarget returns the target from a given block hedaer
 func ExtractTarget(header []byte) sdk.Int {
+	// nBits encoding. 3 byte mantissa, 1 byte exponent
 	m := header[72:75]
 	e := sdk.NewInt(int64(header[75]))
 
-	mantissa := sdk.NewInt(int64(bytesToUint(ReverseEndianness(m))))
+	mantissa, _ := sdk.NewIntFromString("0x" + hex.EncodeToString(ReverseEndianness(m)))
 	exponent := e.Sub(sdk.NewInt(3))
-	base := sdk.NewInt(256)
 
-	result := sdk.NewInt(0).BigInt()
-	result.Exp(base.BigInt(), exponent.BigInt(), nil)
+	// Have to convert to underlying big.Int as the sdk does not expose exponentiation
+	base := big.NewInt(256)
+	base.Exp(base, exponent.BigInt(), nil)
 
-	sdkResult := sdk.NewIntFromBigInt(result)
+	exponentTerm := sdk.NewIntFromBigInt(base)
 
-	return sdkResult.Mul(mantissa)
+	return mantissa.Mul(exponentTerm)
 }
 
 // CalculateDifficulty calculates difficulty from the difficulty 1 target and current target

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/hex"
 	"log"
 	"testing"
@@ -23,14 +24,6 @@ func TestLastBytes(t *testing.T) {
 	last := LastBytes(testbytes, 1)
 	assert.Equal(t, last, []byte{4})
 }
-
-// func DecodeHex(hex string) []byte {
-// 	decodedString, _ := hex.DecodeString(hex)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	return decodedString
-// }
 
 // func TestHash160(t *testing.T) {
 // 	testString := "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
@@ -70,32 +63,6 @@ func TestHash256(t *testing.T) {
 	assert.Equal(t, hashed, decodedCompare)
 }
 
-//   it('converts big-endian bytes to integers', () => {
-//     let res = BTCUtils.bytesToUint(utils.deserializeHex('0x00'));
-//     assert.equal(res, BigInt(0));
-
-//     res = BTCUtils.bytesToUint(utils.deserializeHex('0xff'));
-//     assert.equal(res, BigInt(255));
-
-//     res = BTCUtils.bytesToUint(utils.deserializeHex('0x00ff'));
-//     assert.equal(res, BigInt(255));
-
-//     res = BTCUtils.bytesToUint(utils.deserializeHex('0xff00'));
-//     assert.equal(res, BigInt(65280));
-
-//     res = BTCUtils.bytesToUint(utils.deserializeHex('0x01'));
-//     assert.equal(res, BigInt(1));
-
-//     res = BTCUtils.bytesToUint(utils.deserializeHex('0x0001'));
-//     assert.equal(res, BigInt(1));
-
-//     res = BTCUtils.bytesToUint(utils.deserializeHex('0x0100'));
-//     assert.equal(res, BigInt(256));
-
-//     // max uint256: (2^256)-1
-//     res = BTCUtils.bytesToUint(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'));
-//     assert.equal(res, BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'));
-//   });
 func TestBytesToUint(t *testing.T) {
 	decode, _ := hex.DecodeString("00")
 	res := bytesToUint(decode)
@@ -124,11 +91,20 @@ func TestBytesToUint(t *testing.T) {
 	decode, _ = hex.DecodeString("0100")
 	res = bytesToUint(decode)
 	assert.Equal(t, res, uint(256))
+}
 
-	// FIXME: need correct input and output for this test
-	// decode, _ = hex.DecodeString("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
-	// res = bytesToUint(decode)
-	// assert.Equal(t, res, uint(4294967295))
+func TestBytesToBigInt(t *testing.T) {
+	hexString := "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+	decoded, _ := hex.DecodeString(hexString)
+
+	buf := bytes.Buffer{}
+	buf.WriteString("0x")
+	buf.WriteString(hexString)
+
+	expected, _ := sdk.NewIntFromString(buf.String())
+	result := BytesToBigInt(decoded)
+
+	assert.True(t, expected.Equal(result))
 }
 
 //   it('extracts a sequence from a witness input as LE and int', () => {
@@ -405,7 +381,6 @@ func TestExtractScriptSig(t *testing.T) {
 	res = ExtractScriptSig(decodeTest)
 	decodeAnswer, _ = hex.DecodeString("fe01000000ee")
 	assert.Equal(t, res, decodeAnswer)
-
 }
 
 //   it('extracts the length of the VarInt and scriptSig from inputs', () => {
@@ -760,4 +735,18 @@ func TestExtractDifficulty(t *testing.T) {
 	// var actual sdk.Int
 	// var expected sdk.Int
 	t.Skip()
+}
+
+func TestCalculateDifficulty(t *testing.T) {
+	diffOneTarget, _ := sdk.NewIntFromString("0xffff0000000000000000000000000000000000000000000000000000")
+	diff := CalculateDifficulty(diffOneTarget)
+	assert.True(t, diff.Equal(sdk.NewInt(1)))
+
+	diff256, _ := sdk.NewIntFromString("0xffff00000000000000000000000000000000000000000000000000")
+	diff = CalculateDifficulty(diff256)
+	assert.True(t, diff.Equal(sdk.NewInt(256)))
+
+	diff65536, _ := sdk.NewIntFromString("0xffff000000000000000000000000000000000000000000000000")
+	diff = CalculateDifficulty(diff65536)
+	assert.True(t, diff.Equal(sdk.NewInt(65536)))
 }
