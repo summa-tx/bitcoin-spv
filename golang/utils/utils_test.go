@@ -1,13 +1,11 @@
 package utils
 
 import (
+	"encoding/hex"
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"encoding/hex"
-
-	"log"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -27,7 +25,7 @@ func TestLastBytes(t *testing.T) {
 }
 
 // func DecodeHex(hex string) []byte {
-// 	decodedString, err := hex.DecodeString(hex)
+// 	decodedString, _ := hex.DecodeString(hex)
 // 	if err != nil {
 // 		log.Fatal(err)
 // 	}
@@ -99,40 +97,38 @@ func TestHash256(t *testing.T) {
 //     assert.equal(res, BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'));
 //   });
 func TestBytesToUint(t *testing.T) {
-	decode, err := hex.DecodeString("00")
+	decode, _ := hex.DecodeString("00")
 	res := bytesToUint(decode)
 	assert.Equal(t, res, uint(0))
 
-	decode, err = hex.DecodeString("ff")
+	decode, _ = hex.DecodeString("ff")
 	res = bytesToUint(decode)
 	assert.Equal(t, res, uint(255))
 
-	decode, err = hex.DecodeString("00ff")
+	decode, _ = hex.DecodeString("00ff")
 	res = bytesToUint(decode)
 	assert.Equal(t, res, uint(255))
 
-	decode, err = hex.DecodeString("ff00")
+	decode, _ = hex.DecodeString("ff00")
 	res = bytesToUint(decode)
 	assert.Equal(t, res, uint(65280))
 
-	decode, err = hex.DecodeString("01")
+	decode, _ = hex.DecodeString("01")
 	res = bytesToUint(decode)
 	assert.Equal(t, res, uint(1))
 
-	decode, err = hex.DecodeString("0001")
+	decode, _ = hex.DecodeString("0001")
 	res = bytesToUint(decode)
 	assert.Equal(t, res, uint(1))
 
-	decode, err = hex.DecodeString("0100")
+	decode, _ = hex.DecodeString("0100")
 	res = bytesToUint(decode)
 	assert.Equal(t, res, uint(256))
 
 	// FIXME: need correct input and output for this test
-	// decode, err = hex.DecodeString("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+	// decode, _ = hex.DecodeString("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
 	// res = bytesToUint(decode)
 	// assert.Equal(t, res, uint(4294967295))
-
-	if err != nil {}
 }
 
 //   it('extracts a sequence from a witness input as LE and int', () => {
@@ -154,23 +150,21 @@ func TestExtractSequenceLEWitness(t *testing.T) {
 }
 
 func TestExtractSequenceLegacy(t *testing.T) {
-	decodeTest, err := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff")
+	decodeTest, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff")
 	res := ExtractSequenceLegacy(decodeTest)
 
 	assert.Equal(t, res, uint(4294967295))
 
-	if err != nil {}
 }
 
 func TestExtractSequenceLELegacy(t *testing.T) {
-	decodeTest, err := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff")
+	decodeTest, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff")
 	res := ExtractSequenceLELegacy(decodeTest)
 
-	decodeAnswer, err := hex.DecodeString("ffffffff")
+	decodeAnswer, _ := hex.DecodeString("ffffffff")
 
 	assert.Equal(t, res, decodeAnswer)
 
-	if err != nil {}
 }
 
 //   it('extracts an outpoint as bytes', () => {
@@ -348,34 +342,32 @@ func TestExtractInputAtIndex(t *testing.T) {
 //   });
 func TestIsLegacyInput(t *testing.T) {
 	// TODO: first test
-	decode, err := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
+	decode, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
 	res := IsLegacyInput(decode)
 	assert.Equal(t, res, true)
-	if err != nil {}
 }
 
 func TestDetermineInputLength(t *testing.T) {
-	decode, err := hex.DecodeString("7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff")
+	decode, _ := hex.DecodeString("7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff")
 	res := DetermineInputLength(decode)
 	assert.Equal(t, res, uint(41))
 
-	decode, err = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000000000000")
+	decode, _ = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000000000000")
 	res = DetermineInputLength(decode)
 	assert.Equal(t, res, uint(41))
 
-	decode, err = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0400000002000000000000")
+	decode, _ = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0400000002000000000000")
 	res = DetermineInputLength(decode)
 	assert.Equal(t, res, uint(43))
 
-	decode, err = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000900000000000000000000000000")
+	decode, _ = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000900000000000000000000000000")
 	res = DetermineInputLength(decode)
 	assert.Equal(t, res, uint(50))
 
-	decode, err = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000")
+	decode, _ = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000")
 	res = DetermineInputLength(decode)
 	assert.Equal(t, res, uint(298))
 
-	if err != nil {}
 }
 
 //   it('extracts the scriptSig from inputs', () => {
@@ -399,22 +391,21 @@ func TestDetermineInputLength(t *testing.T) {
 //   });
 func TestExtractScriptSig(t *testing.T) {
 	// TODO: first test
-	decodeTest, err := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
+	decodeTest, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
 	res := ExtractScriptSig(decodeTest)
-	decodeAnswer, err := hex.DecodeString("01ee'")
+	decodeAnswer, _ := hex.DecodeString("01ee'")
 	assert.Equal(t, res, decodeAnswer)
 
-	decodeTest, err = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff")
+	decodeTest, _ = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff")
 	res = ExtractScriptSig(decodeTest)
-	decodeAnswer, err = hex.DecodeString("fd0100ee")
+	decodeAnswer, _ = hex.DecodeString("fd0100ee")
 	assert.Equal(t, res, decodeAnswer)
 
-	decodeTest, err = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff")
+	decodeTest, _ = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff")
 	res = ExtractScriptSig(decodeTest)
-	decodeAnswer, err = hex.DecodeString("fe01000000ee")
+	decodeAnswer, _ = hex.DecodeString("fe01000000ee")
 	assert.Equal(t, res, decodeAnswer)
 
-	if err != nil {}
 }
 
 //   it('extracts the length of the VarInt and scriptSig from inputs', () => {
@@ -434,17 +425,16 @@ func TestExtractScriptSig(t *testing.T) {
 func TestExtractScriptSigLen(t *testing.T) {
 	// TODO: write first test
 
-	decode, err := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
+	decode, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
 	dataLen, scriptSigLen := ExtractScriptSigLen(decode)
 	assert.Equal(t, dataLen, uint(0))
 	assert.Equal(t, scriptSigLen, uint(1))
 
-	decode, err = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000FF0000000000000000ffffffff")
+	decode, _ = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000FF0000000000000000ffffffff")
 	dataLen, scriptSigLen = ExtractScriptSigLen(decode)
 	assert.Equal(t, dataLen, uint(8))
 	assert.Equal(t, scriptSigLen, uint(0))
 
-	if err != nil {}
 }
 
 //   it('validates vin length based on stated size', () => {
@@ -472,23 +462,22 @@ func TestExtractScriptSigLen(t *testing.T) {
 //   });
 func TestValidateVin(t *testing.T) {
 	// TODO: write first test
-	decode, err := hex.DecodeString("FF1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff")
+	decode, _ := hex.DecodeString("FF1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff")
 	res := ValidateVin(decode)
 	assert.Equal(t, res, false)
 
-	decode, err = hex.DecodeString("001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff")
+	decode, _ = hex.DecodeString("001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff")
 	res = ValidateVin(decode)
 	assert.Equal(t, res, false)
 
-	decode, err = hex.DecodeString("011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffff")
+	decode, _ = hex.DecodeString("011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffff")
 	res = ValidateVin(decode)
 	assert.Equal(t, res, false)
 
-	decode, err = hex.DecodeString("011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffffEEEEE")
+	decode, _ = hex.DecodeString("011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffffEEEEE")
 	res = ValidateVin(decode)
 	assert.Equal(t, res, false)
 
-	if err != nil {}
 }
 
 //   it('validates vout length based on stated size', () => {
@@ -516,23 +505,22 @@ func TestValidateVin(t *testing.T) {
 //   });
 func TestValidateVout(t *testing.T) {
 	// TODO: write first test
-	decode, err := hex.DecodeString("FF4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211")
+	decode, _ := hex.DecodeString("FF4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211")
 	res := ValidateVin(decode)
 	assert.Equal(t, res, false)
 
-	decode, err = hex.DecodeString("004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211")
+	decode, _ = hex.DecodeString("004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211")
 	res = ValidateVin(decode)
 	assert.Equal(t, res, false)
 
-	decode, err = hex.DecodeString("024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952")
+	decode, _ = hex.DecodeString("024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952")
 	res = ValidateVin(decode)
 	assert.Equal(t, res, false)
 
-	decode, err = hex.DecodeString("024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952111111111111111")
+	decode, _ = hex.DecodeString("024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952111111111111111")
 	res = ValidateVin(decode)
 	assert.Equal(t, res, false)
 
-	if err != nil {}
 }
 
 //   it('determines output length properly', () => {
@@ -563,33 +551,32 @@ func TestValidateVout(t *testing.T) {
 //     }
 //   });
 func TestDetermineOutputLength(t *testing.T) {
-	decode, err := hex.DecodeString("00000000000000002200")
+	decode, _ := hex.DecodeString("00000000000000002200")
 	res := DetermineOutputLength(decode)
 	assert.Equal(t, res, uint(43))
 
-	decode, err = hex.DecodeString("00000000000000001600")
+	decode, _ = hex.DecodeString("00000000000000001600")
 	res = DetermineOutputLength(decode)
 	assert.Equal(t, res, uint(31))
 
-	decode, err = hex.DecodeString("0000000000000000206a")
+	decode, _ = hex.DecodeString("0000000000000000206a")
 	res = DetermineOutputLength(decode)
 	assert.Equal(t, res, uint(41))
 
-	decode, err = hex.DecodeString("000000000000000002")
+	decode, _ = hex.DecodeString("000000000000000002")
 	res = DetermineOutputLength(decode)
 	assert.Equal(t, res, uint(11))
 
-	decode, err = hex.DecodeString("000000000000000000")
+	decode, _ = hex.DecodeString("000000000000000000")
 	res = DetermineOutputLength(decode)
 	assert.Equal(t, res, uint(9))
 
-	decode, err = hex.DecodeString("000000000000000088")
+	decode, _ = hex.DecodeString("000000000000000088")
 	res = DetermineOutputLength(decode)
 	assert.Equal(t, res, uint(145))
 
 	// TODO: write test for error handling
 
-	if err != nil {}
 }
 
 //   it('extracts outputs at specified indices', () => {
@@ -654,10 +641,7 @@ func TestExtractPrevBlockHashBE(t *testing.T) {
 // FIXME: sdk.NewInt stuff doesn't work
 func TestExtractTimestamp(t *testing.T) {
 	t.Skip()
-	decoded, err := hex.DecodeString("0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70")
-	if err != nil {
-		log.Fatal(err)
-	}
+	decoded, _ := hex.DecodeString("0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70")
 	res := ExtractTimestamp(decoded)
 	assert.Equal(t, res, sdk.NewInt(int64(1231731025)))
 }
@@ -700,11 +684,11 @@ func TestExtractTimestamp(t *testing.T) {
 //     res = BTCUtils.verifyHash256Merkle(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'), 0);
 //     assert.isFalse(res);
 //   });
-func TestVerifyHash256Merkle (t *testing.T) {
+func TestVerifyHash256Merkle(t *testing.T) {
 	t.Skip()
 }
 
-func TestDetermineVarIntDataLength (t *testing.T) {
+func TestDetermineVarIntDataLength(t *testing.T) {
 	res1 := DetermineVarIntDataLength(uint8(0x01))
 	assert.Equal(t, res1, uint8(0))
 	res2 := DetermineVarIntDataLength(uint8(0xfd))
@@ -773,7 +757,7 @@ func TestRetargetAlgorithm(t *testing.T) {
 //   });
 // });
 func TestExtractDifficulty(t *testing.T) {
-// var actual sdk.Int
-// var expected sdk.Int
-t.Skip()
+	// var actual sdk.Int
+	// var expected sdk.Int
+	t.Skip()
 }
