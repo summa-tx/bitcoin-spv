@@ -3,29 +3,59 @@ package utils
 import (
 	"bytes"
 	"encoding/hex"
+	"encoding/json"
+	"io/ioutil"
 	"log"
+	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func TestReverseEndianness(t *testing.T) {
+type UtilsSuite struct {
+	suite.Suite
+	Constants map[string]interface{}
+}
+
+func TestUtilsSuite(t *testing.T) {
+	suite.Run(t, new(UtilsSuite))
+}
+
+func (suite *UtilsSuite) SetupTest() {
+	jsonFile, err := os.Open("../../testVectors.json")
+	defer jsonFile.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var constants map[string]interface{}
+	json.Unmarshal([]byte(byteValue), &constants)
+
+	suite.Constants = constants
+}
+
+func (suite *UtilsSuite) TestReverseEndianness() {
 	testbytes := []byte{1, 2, 3}
 	reversed := ReverseEndianness(testbytes)
-	assert.Equal(t, reversed, []byte{3, 2, 1})
-	assert.NotEqual(t, reversed, []byte{1, 2, 3})
-	assert.Equal(t, len(reversed), len(testbytes))
+	suite.Equal(reversed, []byte{3, 2, 1})
+	suite.NotEqual(reversed, []byte{1, 2, 3})
+	suite.Equal(len(reversed), len(testbytes))
 }
 
-func TestLastBytes(t *testing.T) {
+func (suite *UtilsSuite) TestLastBytes() {
 	testbytes := []byte{1, 2, 3, 4}
 	last := LastBytes(testbytes, 1)
-	assert.Equal(t, last, []byte{4})
+	suite.Equal(last, []byte{4})
 }
 
-// func TestHash160(t *testing.T) {
+// func (suite *UtilsSuite) TestHash160() {
 // 	testString := "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 // 	compareString := "1b60c31dba9403c74d81af255f0c300bfed5faa3"
 
@@ -41,10 +71,10 @@ func TestLastBytes(t *testing.T) {
 
 // 	hashed := Hash160(decodedTest)
 
-// 	assert.Equal(t, hashed, decodedCompare)
+// 	suite.Equal(hashed, decodedCompare)
 // }
 
-func TestHash256(t *testing.T) {
+func (suite *UtilsSuite) TestHash256() {
 	testString := "00"
 	compareString := "1406e05881e299367766d313e26c05564ec91bf721d31726bd6e46e60689539a"
 
@@ -60,40 +90,40 @@ func TestHash256(t *testing.T) {
 
 	hashed := Hash256(decodedTest)
 
-	assert.Equal(t, hashed, decodedCompare)
+	suite.Equal(hashed, decodedCompare)
 }
 
-func TestBytesToUint(t *testing.T) {
+func (suite *UtilsSuite) TestBytesToUint() {
 	decode, _ := hex.DecodeString("00")
 	res := bytesToUint(decode)
-	assert.Equal(t, res, uint(0))
+	suite.Equal(res, uint(0))
 
 	decode, _ = hex.DecodeString("ff")
 	res = bytesToUint(decode)
-	assert.Equal(t, res, uint(255))
+	suite.Equal(res, uint(255))
 
 	decode, _ = hex.DecodeString("00ff")
 	res = bytesToUint(decode)
-	assert.Equal(t, res, uint(255))
+	suite.Equal(res, uint(255))
 
 	decode, _ = hex.DecodeString("ff00")
 	res = bytesToUint(decode)
-	assert.Equal(t, res, uint(65280))
+	suite.Equal(res, uint(65280))
 
 	decode, _ = hex.DecodeString("01")
 	res = bytesToUint(decode)
-	assert.Equal(t, res, uint(1))
+	suite.Equal(res, uint(1))
 
 	decode, _ = hex.DecodeString("0001")
 	res = bytesToUint(decode)
-	assert.Equal(t, res, uint(1))
+	suite.Equal(res, uint(1))
 
 	decode, _ = hex.DecodeString("0100")
 	res = bytesToUint(decode)
-	assert.Equal(t, res, uint(256))
+	suite.Equal(res, uint(256))
 }
 
-func TestBytesToBigInt(t *testing.T) {
+func (suite *UtilsSuite) TestBytesToBigInt() {
 	hexString := "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 	decoded, _ := hex.DecodeString(hexString)
 
@@ -104,7 +134,7 @@ func TestBytesToBigInt(t *testing.T) {
 	expected, _ := sdk.NewIntFromString(buf.String())
 	result := BytesToBigInt(decoded)
 
-	assert.True(t, expected.Equal(result))
+	suite.True(expected.Equal(result))
 }
 
 //   it('extracts a sequence from a witness input as LE and int', () => {
@@ -117,29 +147,29 @@ func TestBytesToBigInt(t *testing.T) {
 //     res = BTCUtils.extractSequenceWitness(input);
 //     assert.equal(res, BigInt(4294967295));
 //   });
-func TestExtractSequenceWitness(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestExtractSequenceWitness() {
+	suite.T().Skip()
 }
 
-func TestExtractSequenceLEWitness(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestExtractSequenceLEWitness() {
+	suite.T().Skip()
 }
 
-func TestExtractSequenceLegacy(t *testing.T) {
+func (suite *UtilsSuite) TestExtractSequenceLegacy() {
 	decodeTest, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff")
 	res := ExtractSequenceLegacy(decodeTest)
 
-	assert.Equal(t, res, uint(4294967295))
+	suite.Equal(res, uint(4294967295))
 
 }
 
-func TestExtractSequenceLELegacy(t *testing.T) {
+func (suite *UtilsSuite) TestExtractSequenceLELegacy() {
 	decodeTest, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff")
 	res := ExtractSequenceLELegacy(decodeTest)
 
 	decodeAnswer, _ := hex.DecodeString("ffffffff")
 
-	assert.Equal(t, res, decodeAnswer)
+	suite.Equal(res, decodeAnswer)
 
 }
 
@@ -150,8 +180,8 @@ func TestExtractSequenceLELegacy(t *testing.T) {
 //     const arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
 //     assert.isTrue(arraysAreEqual);
 //   });
-func TestExtractOutpoint(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestExtractOutpoint() {
+	suite.T().Skip()
 }
 
 //   /* Witness Output */
@@ -165,8 +195,8 @@ func TestExtractOutpoint(t *testing.T) {
 //     res = BTCUtils.extractOutputScriptLen(opReturnOutput);
 //     assert.equal(res, 0x16);
 //   });
-func TestExtractOuputScriptLen(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestExtractOuputScriptLen() {
+	suite.T().Skip()
 }
 
 //   it('extracts the hash from an output', () => {
@@ -229,8 +259,8 @@ func TestExtractOuputScriptLen(t *testing.T) {
 //     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(`0x${'00'.repeat(20)}`));
 //     assert.isTrue(arraysAreEqual);
 //   });
-func TestExtractHash(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestExtractHash() {
+	suite.T().Skip()
 }
 
 //   it('extracts the value as LE and int', () => {
@@ -257,12 +287,12 @@ func TestExtractHash(t *testing.T) {
 //     res = BTCUtils.extractValue(opReturnOutput);
 //     assert.equal(res, BigInt(0));
 //   });
-func TestExtractValue(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestExtractValue() {
+	suite.T().Skip()
 }
 
-func TestExtractValueLE(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestExtractValueLE() {
+	suite.T().Skip()
 }
 
 //   it('extracts op_return data blobs', () => {
@@ -283,8 +313,8 @@ func TestExtractValueLE(t *testing.T) {
 //       assert.include(e.message, 'Malformatted data. Must be an op return.');
 //     }
 //   });
-func TestExtractOpReturnData(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestExtractOpReturnData() {
+	suite.T().Skip()
 }
 
 //   it('extracts inputs at specified indices', () => {
@@ -303,8 +333,8 @@ func TestExtractOpReturnData(t *testing.T) {
 //     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff'));
 //     assert.isTrue(arraysAreEqual);
 //   });
-func TestExtractInputAtIndex(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestExtractInputAtIndex() {
+	suite.T().Skip()
 }
 
 //   it('sorts legacy from witness inputs', () => {
@@ -316,33 +346,33 @@ func TestExtractInputAtIndex(t *testing.T) {
 //     res = BTCUtils.isLegacyInput(utils.deserializeHex('0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff'));
 //     assert.isTrue(res);
 //   });
-func TestIsLegacyInput(t *testing.T) {
+func (suite *UtilsSuite) TestIsLegacyInput() {
 	// TODO: first test
 	decode, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
 	res := IsLegacyInput(decode)
-	assert.Equal(t, res, true)
+	suite.Equal(res, true)
 }
 
-func TestDetermineInputLength(t *testing.T) {
+func (suite *UtilsSuite) TestDetermineInputLength() {
 	decode, _ := hex.DecodeString("7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff")
 	res := DetermineInputLength(decode)
-	assert.Equal(t, res, uint(41))
+	suite.Equal(res, uint(41))
 
 	decode, _ = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000000000000")
 	res = DetermineInputLength(decode)
-	assert.Equal(t, res, uint(41))
+	suite.Equal(res, uint(41))
 
 	decode, _ = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0400000002000000000000")
 	res = DetermineInputLength(decode)
-	assert.Equal(t, res, uint(43))
+	suite.Equal(res, uint(43))
 
 	decode, _ = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000900000000000000000000000000")
 	res = DetermineInputLength(decode)
-	assert.Equal(t, res, uint(50))
+	suite.Equal(res, uint(50))
 
 	decode, _ = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000")
 	res = DetermineInputLength(decode)
-	assert.Equal(t, res, uint(298))
+	suite.Equal(res, uint(298))
 
 }
 
@@ -365,22 +395,22 @@ func TestDetermineInputLength(t *testing.T) {
 //     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xfe01000000ee'));
 //     assert.isTrue(arraysAreEqual);
 //   });
-func TestExtractScriptSig(t *testing.T) {
+func (suite *UtilsSuite) TestExtractScriptSig() {
 	// TODO: first test
 	decodeTest, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
 	res := ExtractScriptSig(decodeTest)
 	decodeAnswer, _ := hex.DecodeString("01ee'")
-	assert.Equal(t, res, decodeAnswer)
+	suite.Equal(res, decodeAnswer)
 
 	decodeTest, _ = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff")
 	res = ExtractScriptSig(decodeTest)
 	decodeAnswer, _ = hex.DecodeString("fd0100ee")
-	assert.Equal(t, res, decodeAnswer)
+	suite.Equal(res, decodeAnswer)
 
 	decodeTest, _ = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff")
 	res = ExtractScriptSig(decodeTest)
 	decodeAnswer, _ = hex.DecodeString("fe01000000ee")
-	assert.Equal(t, res, decodeAnswer)
+	suite.Equal(res, decodeAnswer)
 }
 
 //   it('extracts the length of the VarInt and scriptSig from inputs', () => {
@@ -397,18 +427,18 @@ func TestExtractScriptSig(t *testing.T) {
 //     assert.equal(res.dataLen, BigInt(8));
 //     assert.equal(res.scriptSigLen, BigInt(0));
 //   });
-func TestExtractScriptSigLen(t *testing.T) {
+func (suite *UtilsSuite) TestExtractScriptSigLen() {
 	// TODO: write first test
 
 	decode, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
 	dataLen, scriptSigLen := ExtractScriptSigLen(decode)
-	assert.Equal(t, dataLen, uint(0))
-	assert.Equal(t, scriptSigLen, uint(1))
+	suite.Equal(dataLen, uint(0))
+	suite.Equal(scriptSigLen, uint(1))
 
 	decode, _ = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000FF0000000000000000ffffffff")
 	dataLen, scriptSigLen = ExtractScriptSigLen(decode)
-	assert.Equal(t, dataLen, uint(8))
-	assert.Equal(t, scriptSigLen, uint(0))
+	suite.Equal(dataLen, uint(8))
+	suite.Equal(scriptSigLen, uint(0))
 
 }
 
@@ -435,23 +465,23 @@ func TestExtractScriptSigLen(t *testing.T) {
 //     res = BTCUtils.validateVin(utils.deserializeHex('0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffffEEEEE'));
 //     assert.isFalse(res);
 //   });
-func TestValidateVin(t *testing.T) {
+func (suite *UtilsSuite) TestValidateVin() {
 	// TODO: write first test
 	decode, _ := hex.DecodeString("FF1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff")
 	res := ValidateVin(decode)
-	assert.Equal(t, res, false)
+	suite.Equal(res, false)
 
 	decode, _ = hex.DecodeString("001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff")
 	res = ValidateVin(decode)
-	assert.Equal(t, res, false)
+	suite.Equal(res, false)
 
 	decode, _ = hex.DecodeString("011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffff")
 	res = ValidateVin(decode)
-	assert.Equal(t, res, false)
+	suite.Equal(res, false)
 
 	decode, _ = hex.DecodeString("011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffffEEEEE")
 	res = ValidateVin(decode)
-	assert.Equal(t, res, false)
+	suite.Equal(res, false)
 
 }
 
@@ -478,23 +508,23 @@ func TestValidateVin(t *testing.T) {
 //     res = BTCUtils.validateVout(utils.deserializeHex('0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952111111111111111'));
 //     assert.isFalse(res);
 //   });
-func TestValidateVout(t *testing.T) {
+func (suite *UtilsSuite) TestValidateVout() {
 	// TODO: write first test
 	decode, _ := hex.DecodeString("FF4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211")
 	res := ValidateVin(decode)
-	assert.Equal(t, res, false)
+	suite.Equal(res, false)
 
 	decode, _ = hex.DecodeString("004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211")
 	res = ValidateVin(decode)
-	assert.Equal(t, res, false)
+	suite.Equal(res, false)
 
 	decode, _ = hex.DecodeString("024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952")
 	res = ValidateVin(decode)
-	assert.Equal(t, res, false)
+	suite.Equal(res, false)
 
 	decode, _ = hex.DecodeString("024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952111111111111111")
 	res = ValidateVin(decode)
-	assert.Equal(t, res, false)
+	suite.Equal(res, false)
 
 }
 
@@ -525,30 +555,30 @@ func TestValidateVout(t *testing.T) {
 //       assert.include(e.message, 'Multi-byte VarInts not supported');
 //     }
 //   });
-func TestDetermineOutputLength(t *testing.T) {
+func (suite *UtilsSuite) TestDetermineOutputLength() {
 	decode, _ := hex.DecodeString("00000000000000002200")
 	res := DetermineOutputLength(decode)
-	assert.Equal(t, res, uint(43))
+	suite.Equal(res, uint(43))
 
 	decode, _ = hex.DecodeString("00000000000000001600")
 	res = DetermineOutputLength(decode)
-	assert.Equal(t, res, uint(31))
+	suite.Equal(res, uint(31))
 
 	decode, _ = hex.DecodeString("0000000000000000206a")
 	res = DetermineOutputLength(decode)
-	assert.Equal(t, res, uint(41))
+	suite.Equal(res, uint(41))
 
 	decode, _ = hex.DecodeString("000000000000000002")
 	res = DetermineOutputLength(decode)
-	assert.Equal(t, res, uint(11))
+	suite.Equal(res, uint(11))
 
 	decode, _ = hex.DecodeString("000000000000000000")
 	res = DetermineOutputLength(decode)
-	assert.Equal(t, res, uint(9))
+	suite.Equal(res, uint(9))
 
 	decode, _ = hex.DecodeString("000000000000000088")
 	res = DetermineOutputLength(decode)
-	assert.Equal(t, res, uint(145))
+	suite.Equal(res, uint(145))
 
 	// TODO: write test for error handling
 
@@ -577,8 +607,8 @@ func TestDetermineOutputLength(t *testing.T) {
 //     res = BTCUtils.extractOutputAtIndex(TWO_IN_TX_VOUT, 1);
 //     arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922'));
 //   });
-func TestExtractOutputAtIndex(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestExtractOutputAtIndex() {
+	suite.T().Skip()
 }
 
 //   it('extracts a root from a header', () => {
@@ -587,16 +617,16 @@ func TestExtractOutputAtIndex(t *testing.T) {
 //     const arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
 //     assert.isTrue(arraysAreEqual);
 //   });
-func TestExtractMerkleRootBE(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestExtractMerkleRootBE() {
+	suite.T().Skip()
 }
 
 //   it('extracts the target from a header', () => {
 //     const res = BTCUtils.extractTarget(HEADER_170);
 //     assert.equal(res, BigInt('26959535291011309493156476344723991336010898738574164086137773096960'));
 //   });
-func TestExtractTarget(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestExtractTarget() {
+	suite.T().Skip()
 }
 
 //   it('extracts the prev block hash', () => {
@@ -605,8 +635,8 @@ func TestExtractTarget(t *testing.T) {
 //     const arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
 //     assert.isTrue(arraysAreEqual);
 //   });
-func TestExtractPrevBlockHashBE(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestExtractPrevBlockHashBE() {
+	suite.T().Skip()
 }
 
 //   it('extracts a timestamp from a header', () => {
@@ -614,11 +644,11 @@ func TestExtractPrevBlockHashBE(t *testing.T) {
 //     assert.equal(res, BigInt(1231731025));
 //   });
 // FIXME: sdk.NewInt stuff doesn't work
-func TestExtractTimestamp(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestExtractTimestamp() {
+	suite.T().Skip()
 	decoded, _ := hex.DecodeString("0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70")
 	res := ExtractTimestamp(decoded)
-	assert.Equal(t, res, sdk.NewInt(int64(1231731025)))
+	suite.Equal(res, sdk.NewInt(int64(1231731025)))
 }
 
 //   it('verifies a bitcoin merkle root', () => {
@@ -659,19 +689,19 @@ func TestExtractTimestamp(t *testing.T) {
 //     res = BTCUtils.verifyHash256Merkle(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'), 0);
 //     assert.isFalse(res);
 //   });
-func TestVerifyHash256Merkle(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestVerifyHash256Merkle() {
+	suite.T().Skip()
 }
 
-func TestDetermineVarIntDataLength(t *testing.T) {
+func (suite *UtilsSuite) TestDetermineVarIntDataLength() {
 	res1 := DetermineVarIntDataLength(uint8(0x01))
-	assert.Equal(t, res1, uint8(0))
+	suite.Equal(res1, uint8(0))
 	res2 := DetermineVarIntDataLength(uint8(0xfd))
-	assert.Equal(t, res2, uint8(2))
+	suite.Equal(res2, uint8(2))
 	res3 := DetermineVarIntDataLength(uint8(0xfe))
-	assert.Equal(t, res3, uint8(4))
+	suite.Equal(res3, uint8(4))
 	res4 := DetermineVarIntDataLength(uint8(0xff))
-	assert.Equal(t, res4, uint8(8))
+	suite.Equal(res4, uint8(8))
 }
 
 //   it('calculates consensus-correct retargets', () => {
@@ -703,8 +733,8 @@ func TestDetermineVarIntDataLength(t *testing.T) {
 //       assert.equal(res * BigInt(4) & previousTarget, previousTarget);
 //     }
 //   });
-func TestRetargetAlgorithm(t *testing.T) {
-	t.Skip()
+func (suite *UtilsSuite) TestRetargetAlgorithm() {
+	suite.T().Skip()
 }
 
 //   it('extracts difficulty from a header', () => {
@@ -731,22 +761,22 @@ func TestRetargetAlgorithm(t *testing.T) {
 //     }
 //   });
 // });
-func TestExtractDifficulty(t *testing.T) {
+func (suite *UtilsSuite) TestExtractDifficulty() {
 	// var actual sdk.Int
 	// var expected sdk.Int
-	t.Skip()
+	suite.T().Skip()
 }
 
-func TestCalculateDifficulty(t *testing.T) {
+func (suite *UtilsSuite) TestCalculateDifficulty() {
 	diffOneTarget, _ := sdk.NewIntFromString("0xffff0000000000000000000000000000000000000000000000000000")
 	diff := CalculateDifficulty(diffOneTarget)
-	assert.True(t, diff.Equal(sdk.NewInt(1)))
+	suite.True(diff.Equal(sdk.NewInt(1)))
 
 	diff256, _ := sdk.NewIntFromString("0xffff00000000000000000000000000000000000000000000000000")
 	diff = CalculateDifficulty(diff256)
-	assert.True(t, diff.Equal(sdk.NewInt(256)))
+	suite.True(diff.Equal(sdk.NewInt(256)))
 
 	diff65536, _ := sdk.NewIntFromString("0xffff000000000000000000000000000000000000000000000000")
 	diff = CalculateDifficulty(diff65536)
-	assert.True(t, diff.Equal(sdk.NewInt(65536)))
+	suite.True(diff.Equal(sdk.NewInt(65536)))
 }
