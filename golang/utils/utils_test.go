@@ -16,11 +16,31 @@ import (
 
 type UtilsSuite struct {
 	suite.Suite
-	Constants map[string]interface{}
+	Fixtures map[string]interface{}
 }
 
-func TestUtilsSuite(t *testing.T) {
-	suite.Run(t, new(UtilsSuite))
+// Runs the whole test suite
+func TestBTCUtils(t *testing.T) {
+	jsonFile, err := os.Open("../../testVectors.json")
+	defer jsonFile.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var fixtures map[string]interface{}
+	json.Unmarshal([]byte(byteValue), &fixtures)
+	preprocessFixtures(fixtures)
+
+	utilsSuite := new(UtilsSuite)
+	utilsSuite.Fixtures = fixtures
+
+	suite.Run(t, utilsSuite)
 }
 
 func logIfErr(err error) {
@@ -42,21 +62,33 @@ func strip0xPrefix(s string) string {
 	return s
 }
 
-func (suite *UtilsSuite) SetupTest() {
-	jsonFile, err := os.Open("../../testVectors.json")
-	defer jsonFile.Close()
-
-	if err != nil {
-		log.Fatal(err)
+func preprocessList(l []interface{}) {
+	for i := 0; i < len(l); i++ {
+		switch l[i].(type) {
+		case []interface{}:
+			preprocessList(l[i].([]interface{}))
+		case string:
+			l[i] = decodeHex(l[i].(string))
+		case map[string]interface{}:
+			preprocessFixtures(l[i].(map[string]interface{}))
+		}
 	}
+}
 
-	byteValue, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		log.Fatal(err)
+func preprocessFixtures(m map[string]interface{}) {
+	for k, v := range m {
+		switch v.(type) {
+		case []interface{}:
+			l := v.([]interface{})
+			preprocessList(l)
+		case string:
+			// overwrite the string with a []byte
+			m[k] = decodeHex(v.(string))
+		case map[string]interface{}:
+			// call recursively to preprocess json objects
+			preprocessFixtures(v.(map[string]interface{}))
+		}
 	}
-	var constants map[string]interface{}
-	json.Unmarshal([]byte(byteValue), &constants)
-	suite.Constants = constants
 }
 
 func (suite *UtilsSuite) TestReverseEndianness() {
