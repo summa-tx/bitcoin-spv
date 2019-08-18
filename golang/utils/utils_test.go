@@ -23,6 +23,25 @@ func TestUtilsSuite(t *testing.T) {
 	suite.Run(t, new(UtilsSuite))
 }
 
+func logIfErr(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func decodeHex(s string) []byte {
+	res, err := hex.DecodeString(strip0xPrefix(s))
+	logIfErr(err)
+	return res
+}
+
+func strip0xPrefix(s string) string {
+	if s[0:2] == "0x" {
+		return s[2:]
+	}
+	return s
+}
+
 func (suite *UtilsSuite) SetupTest() {
 	jsonFile, err := os.Open("../../testVectors.json")
 	defer jsonFile.Close()
@@ -37,7 +56,6 @@ func (suite *UtilsSuite) SetupTest() {
 	}
 	var constants map[string]interface{}
 	json.Unmarshal([]byte(byteValue), &constants)
-
 	suite.Constants = constants
 }
 
@@ -45,7 +63,7 @@ func (suite *UtilsSuite) TestReverseEndianness() {
 	testbytes := []byte{1, 2, 3}
 	reversed := ReverseEndianness(testbytes)
 	suite.Equal(reversed, []byte{3, 2, 1})
-	suite.NotEqual(reversed, []byte{1, 2, 3})
+	suite.Equal(testbytes, []byte{1, 2, 3})
 	suite.Equal(len(reversed), len(testbytes))
 }
 
@@ -78,15 +96,8 @@ func (suite *UtilsSuite) TestHash256() {
 	testString := "00"
 	compareString := "1406e05881e299367766d313e26c05564ec91bf721d31726bd6e46e60689539a"
 
-	decodedTest, errTest := hex.DecodeString(testString)
-	if errTest != nil {
-		log.Fatal(errTest)
-	}
-
-	decodedCompare, errCompare := hex.DecodeString(compareString)
-	if errCompare != nil {
-		log.Fatal(errCompare)
-	}
+	decodedTest := decodeHex(testString)
+	decodedCompare := decodeHex(compareString)
 
 	hashed := Hash256(decodedTest)
 
@@ -94,44 +105,48 @@ func (suite *UtilsSuite) TestHash256() {
 }
 
 func (suite *UtilsSuite) TestBytesToUint() {
-	decode, _ := hex.DecodeString("00")
+	decode := decodeHex("00")
 	res := bytesToUint(decode)
 	suite.Equal(res, uint(0))
 
-	decode, _ = hex.DecodeString("ff")
+	decode = decodeHex("ff")
 	res = bytesToUint(decode)
 	suite.Equal(res, uint(255))
 
-	decode, _ = hex.DecodeString("00ff")
+	decode = decodeHex("00ff")
 	res = bytesToUint(decode)
 	suite.Equal(res, uint(255))
 
-	decode, _ = hex.DecodeString("ff00")
+	decode = decodeHex("ff00")
 	res = bytesToUint(decode)
 	suite.Equal(res, uint(65280))
 
-	decode, _ = hex.DecodeString("01")
+	decode = decodeHex("01")
 	res = bytesToUint(decode)
 	suite.Equal(res, uint(1))
 
-	decode, _ = hex.DecodeString("0001")
+	decode = decodeHex("0001")
 	res = bytesToUint(decode)
 	suite.Equal(res, uint(1))
 
-	decode, _ = hex.DecodeString("0100")
+	decode = decodeHex("0100")
 	res = bytesToUint(decode)
 	suite.Equal(res, uint(256))
 }
 
 func (suite *UtilsSuite) TestBytesToBigInt() {
 	hexString := "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-	decoded, _ := hex.DecodeString(hexString)
+	decoded := decodeHex(hexString)
 
 	buf := bytes.Buffer{}
 	buf.WriteString("0x")
 	buf.WriteString(hexString)
 
-	expected, _ := sdk.NewIntFromString(buf.String())
+	expected, ok := sdk.NewIntFromString(buf.String())
+	if !ok {
+		log.Fatal("New int not ok")
+	}
+
 	result := BytesToBigInt(decoded)
 
 	suite.True(expected.Equal(result))
@@ -156,21 +171,18 @@ func (suite *UtilsSuite) TestExtractSequenceLEWitness() {
 }
 
 func (suite *UtilsSuite) TestExtractSequenceLegacy() {
-	decodeTest, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff")
+	decodeTest := decodeHex("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff")
 	res := ExtractSequenceLegacy(decodeTest)
 
 	suite.Equal(res, uint(4294967295))
-
 }
 
 func (suite *UtilsSuite) TestExtractSequenceLELegacy() {
-	decodeTest, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff")
+	decodeTest := decodeHex("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff")
 	res := ExtractSequenceLELegacy(decodeTest)
 
-	decodeAnswer, _ := hex.DecodeString("ffffffff")
-
+	decodeAnswer := decodeHex("ffffffff")
 	suite.Equal(res, decodeAnswer)
-
 }
 
 //   it('extracts an outpoint as bytes', () => {
@@ -348,29 +360,30 @@ func (suite *UtilsSuite) TestExtractInputAtIndex() {
 //   });
 func (suite *UtilsSuite) TestIsLegacyInput() {
 	// TODO: first test
-	decode, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
+	decode := decodeHex("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
+
 	res := IsLegacyInput(decode)
 	suite.Equal(res, true)
 }
 
 func (suite *UtilsSuite) TestDetermineInputLength() {
-	decode, _ := hex.DecodeString("7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff")
+	decode := decodeHex("7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff")
 	res := DetermineInputLength(decode)
 	suite.Equal(res, uint(41))
 
-	decode, _ = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000000000000")
+	decode = decodeHex("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000000000000")
 	res = DetermineInputLength(decode)
 	suite.Equal(res, uint(41))
 
-	decode, _ = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0400000002000000000000")
+	decode = decodeHex("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0400000002000000000000")
 	res = DetermineInputLength(decode)
 	suite.Equal(res, uint(43))
 
-	decode, _ = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000900000000000000000000000000")
+	decode = decodeHex("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000900000000000000000000000000")
 	res = DetermineInputLength(decode)
 	suite.Equal(res, uint(50))
 
-	decode, _ = hex.DecodeString("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000")
+	decode = decodeHex("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000")
 	res = DetermineInputLength(decode)
 	suite.Equal(res, uint(298))
 
@@ -397,19 +410,19 @@ func (suite *UtilsSuite) TestDetermineInputLength() {
 //   });
 func (suite *UtilsSuite) TestExtractScriptSig() {
 	// TODO: first test
-	decodeTest, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
+	decodeTest := decodeHex("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
+	decodeAnswer := decodeHex("01ee")
 	res := ExtractScriptSig(decodeTest)
-	decodeAnswer, _ := hex.DecodeString("01ee'")
 	suite.Equal(res, decodeAnswer)
 
-	decodeTest, _ = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff")
+	decodeTest = decodeHex("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff")
+	decodeAnswer = decodeHex("fd0100ee")
 	res = ExtractScriptSig(decodeTest)
-	decodeAnswer, _ = hex.DecodeString("fd0100ee")
 	suite.Equal(res, decodeAnswer)
 
-	decodeTest, _ = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff")
+	decodeTest = decodeHex("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff")
+	decodeAnswer = decodeHex("fe01000000ee")
 	res = ExtractScriptSig(decodeTest)
-	decodeAnswer, _ = hex.DecodeString("fe01000000ee")
 	suite.Equal(res, decodeAnswer)
 }
 
@@ -429,13 +442,12 @@ func (suite *UtilsSuite) TestExtractScriptSig() {
 //   });
 func (suite *UtilsSuite) TestExtractScriptSigLen() {
 	// TODO: write first test
-
-	decode, _ := hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
+	decode := decodeHex("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
 	dataLen, scriptSigLen := ExtractScriptSigLen(decode)
 	suite.Equal(dataLen, uint(0))
 	suite.Equal(scriptSigLen, uint(1))
 
-	decode, _ = hex.DecodeString("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000FF0000000000000000ffffffff")
+	decode = decodeHex("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000FF0000000000000000ffffffff")
 	dataLen, scriptSigLen = ExtractScriptSigLen(decode)
 	suite.Equal(dataLen, uint(8))
 	suite.Equal(scriptSigLen, uint(0))
