@@ -8,8 +8,6 @@ import (
 	"errors"
 	"math/big"
 
-	// "fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"golang.org/x/crypto/ripemd160"
 )

@@ -23,15 +23,10 @@ type UtilsSuite struct {
 func TestBTCUtils(t *testing.T) {
 	jsonFile, err := os.Open("../../testVectors.json")
 	defer jsonFile.Close()
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	logIfErr(err)
 
 	byteValue, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		log.Fatal(err)
-	}
+	logIfErr(err)
 
 	var fixtures map[string]interface{}
 	json.Unmarshal([]byte(byteValue), &fixtures)
