@@ -12,12 +12,15 @@ const {
   HEADER_170,
   OP_RETURN_PROOF,
   OP_RETURN_INDEX,
-  OUTPOINT,
-  HASH_160,
-  HASH_256,
-  SEQUENCE_WITNESS,
-  SEQUENCE_LEGACY,
-  OUTPUT,
+  extractOutpoint,
+  hash160,
+  hash256,
+  extractSequenceLEWitness,
+  extractSequenceWitness,
+  extractSequenceLELegacy,
+  extractSequenceLegacy,
+  extractOutputScriptLen,
+  extractHash,
   INDEXED_INPUT,
   INDEXED_OUTPUT,
   LEGACY_INPUT,
@@ -39,121 +42,111 @@ const { assert } = chai;
 
 describe('BTCUtils', () => {
   it('implements bitcoin\'s hash160', () => {
-    const res = BTCUtils.hash160(HASH_160[0].INPUT);
-    const u8aValue = HASH_160[0].OUTPUT;
+    const res = BTCUtils.hash160(hash160[0].input);
+    const u8aValue = hash160[0].output;
     const arraysAreEqual = utils.typedArraysAreEqual(res, u8aValue);
     assert.isTrue(arraysAreEqual);
   });
 
   it('implements bitcoin\'s hash256', () => {
-    let res = BTCUtils.hash256(HASH_256[0].INPUT);
-    let arraysAreEqual = utils.typedArraysAreEqual(res, HASH_256[0].OUTPUT);
+    let res = BTCUtils.hash256(hash256[0].input);
+    let arraysAreEqual = utils.typedArraysAreEqual(res, hash256[0].output);
     assert.isTrue(arraysAreEqual);
 
-    res = BTCUtils.hash256(HASH_256[1].INPUT); // 'abc' in utf - 8
-    arraysAreEqual = utils.typedArraysAreEqual(res, HASH_256[1].OUTPUT);
+    res = BTCUtils.hash256(hash256[1].input); // 'abc' in utf - 8
+    arraysAreEqual = utils.typedArraysAreEqual(res, hash256[1].output);
     assert.isTrue(arraysAreEqual);
   });
 
   it('extracts a sequence from a witness input as LE and int', () => {
-    const input = OP_RETURN.INPUTS;
-
-    let res = BTCUtils.extractSequenceLEWitness(input);
-    const arraysAreEqual = utils.typedArraysAreEqual(res, SEQUENCE_WITNESS.LE);
+    let res = BTCUtils.extractSequenceLEWitness(extractSequenceLEWitness[0].input);
+    const arraysAreEqual = utils.typedArraysAreEqual(res, extractSequenceLEWitness[0].output);
     assert.isTrue(arraysAreEqual);
 
-    res = BTCUtils.extractSequenceWitness(input);
-    assert.equal(res, BigInt(SEQUENCE_WITNESS.WITNESS));
+    res = BTCUtils.extractSequenceWitness(extractSequenceWitness[0].input);
+    assert.equal(res, BigInt(extractSequenceWitness[0].output));
   });
 
   it('extracts a sequence from a legacy input as LE and int', () => {
-    const input = LEGACY_INPUT[0];
-
-    let res = BTCUtils.extractSequenceLELegacy(input);
-    const arraysAreEqual = utils.typedArraysAreEqual(res, SEQUENCE_LEGACY.LE);
+    let res = BTCUtils.extractSequenceLELegacy(extractSequenceLELegacy[0].input);
+    const arraysAreEqual = utils.typedArraysAreEqual(res, extractSequenceLELegacy[0].output);
     assert.isTrue(arraysAreEqual);
 
-    res = BTCUtils.extractSequenceLegacy(input);
-    assert.equal(res, BigInt(SEQUENCE_LEGACY.LEGACY));
+    res = BTCUtils.extractSequenceLegacy(extractSequenceLegacy[0].input);
+    assert.equal(res, BigInt(extractSequenceLegacy[0].output));
   });
 
   it('extracts an outpoint as bytes', () => {
-    const res = BTCUtils.extractOutpoint(OP_RETURN.INPUTS);
-    const arraysAreEqual = utils.typedArraysAreEqual(res, OUTPOINT);
+    const res = BTCUtils.extractOutpoint(extractOutpoint[0].input);
+    const arraysAreEqual = utils.typedArraysAreEqual(res, extractOutpoint[0].output);
     assert.isTrue(arraysAreEqual);
   });
 
   /* Witness Output */
   it('extracts the length of the output script', () => {
-    const output = OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
-    const opReturnOutput = OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
+    // const output = OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
+    // const opReturnOutput = OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
 
-    let res = BTCUtils.extractOutputScriptLen(output);
-    assert.equal(res, 0x22);
+    let res = BTCUtils.extractOutputScriptLen(extractOutputScriptLen[0].input);
+    assert.equal(res, extractOutputScriptLen[0].output);
 
-    res = BTCUtils.extractOutputScriptLen(opReturnOutput);
-    assert.equal(res, 0x16);
+    res = BTCUtils.extractOutputScriptLen(extractOutputScriptLen[1].input);
+    assert.equal(res, extractOutputScriptLen[1].output);
   });
 
   it('extracts the hash from an output', () => {
-    const output = OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
-    const opReturnOutput = OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
-
-    let res = BTCUtils.extractHash(output);
-    let arraysAreEqual = utils.typedArraysAreEqual(
-      res,
-      OP_RETURN.INDEXED_OUTPUTS[0].PAYLOAD
-    );
+    let res = BTCUtils.extractHash(extractHash[0].input);
+    let arraysAreEqual = utils.typedArraysAreEqual(res, extractHash[0].output);
     assert.isTrue(arraysAreEqual);
 
     try {
-      BTCUtils.extractHash(opReturnOutput);
+      BTCUtils.extractHash(extractHash[1].input);
       assert(false, 'expected an error');
     } catch (e) {
-      assert.include(e.message, 'Nonstandard, OP_RETURN, or malformatted output');
+      assert.include(e.message, extractHash[1].errorMessage);
     }
 
-    // malformatted witness
-    try {
-      BTCUtils.extractHash(OUTPUT.MALFORMATTED.WITNESS);
-      assert(false, 'expected an error');
-    } catch (e) {
-      assert.include(e.message, 'Maliciously formatted witness output.');
-    }
+    // // malformatted witness
+    // try {
+    //   BTCUtils.extractHash(extractHash[2].input);
+    //   assert(false, 'expected an error');
+    // } catch (e) {
+    //   assert.include(e.message, extractHash[2].errorMessage);
+    // }
 
-    // malformatted p2pkh
-    try {
-      BTCUtils.extractHash(OUTPUT.MALFORMATTED.P2PKH[0]);
-      assert(false, 'expected an error');
-    } catch (e) {
-      assert.include(e.message, 'Maliciously formatted p2pkh output.');
-    }
+    // // malformatted p2pkh
+    // try {
+    //   BTCUtils.extractHash(extractHash[3].input);
+    //   assert(false, 'expected an error');
+    // } catch (e) {
+    //   assert.include(e.message, extractHash[3].errorMessage);
+    // }
 
-    // malformatted p2pkh
-    try {
-      BTCUtils.extractHash(OUTPUT.MALFORMATTED.P2PKH[1]);
-      assert(false, 'expected an error');
-    } catch (e) {
-      assert.include(e.message, 'Maliciously formatted p2pkh output.');
-    }
+    // // malformatted p2pkh
+    // try {
+    //   BTCUtils.extractHash(extractHash[4].input);
+    //   assert(false, 'expected an error');
+    // } catch (e) {
+    //   assert.include(e.message, extractHash[4].errorMessage);
+    // }
 
-    // good p2pkh
-    res = BTCUtils.extractHash(OUTPUT.GOOD.P2PKH);
-    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(`0x${'00'.repeat(20)}`));
-    assert.isTrue(arraysAreEqual);
+    // // good p2pkh
+    // res = BTCUtils.extractHash(extractHash[5].input);
+    // arraysAreEqual = utils.typedArraysAreEqual(res, extractHash[5].output);
+    // assert.isTrue(arraysAreEqual);
 
-    // malformatted p2sh
-    try {
-      BTCUtils.extractHash(OUTPUT.MALFORMATTED.P2SH);
-      assert(false, 'expected an error');
-    } catch (e) {
-      assert.include(e.message, 'Maliciously formatted p2sh output.');
-    }
+    // // malformatted p2sh
+    // try {
+    //   BTCUtils.extractHash(extractHash[6].input);
+    //   assert(false, 'expected an error');
+    // } catch (e) {
+    //   assert.include(e.message, extractHash[6].errorMessage);
+    // }
 
-    // good p2sh
-    res = BTCUtils.extractHash(OUTPUT.GOOD.P2SH);
-    arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex(`0x${'00'.repeat(20)}`));
-    assert.isTrue(arraysAreEqual);
+    // // good p2sh
+    // res = BTCUtils.extractHash(extractHash[7].input);
+    // arraysAreEqual = utils.typedArraysAreEqual(res, extractHash[7].output);
+    // assert.isTrue(arraysAreEqual);
   });
 
   it('extracts the value as LE and int', () => {
