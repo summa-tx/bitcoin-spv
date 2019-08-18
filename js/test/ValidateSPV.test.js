@@ -222,7 +222,7 @@ describe('ValidateSPV', () => {
           )
         );
         assert.equal(validHeader.timestamp, OP_RETURN.INDEXED_HEADERS[0].TIMESTAMP);
-        assert.equal(validHeader.target, OP_RETURN.INDEXED_HEADERS[0].TARGET);
+        assert.equal(validHeader.target, utils.bytesToUint(OP_RETURN.INDEXED_HEADERS[0].TARGET));
         assert.equal(validHeader.nonce, OP_RETURN.INDEXED_HEADERS[0].NONCE);
       });
 
