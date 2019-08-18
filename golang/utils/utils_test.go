@@ -112,20 +112,19 @@ func (suite *UtilsSuite) TestHash160() {
 		test := fixtures[i].(map[string]interface{})
 		expected := test["OUTPUT"].([]byte)
 		actual := Hash160(test["INPUT"].([]byte))
-		suite.Equal(actual, expected)
+		suite.Equal(expected, actual)
 	}
 }
 
 func (suite *UtilsSuite) TestHash256() {
-	testString := "00"
-	compareString := "1406e05881e299367766d313e26c05564ec91bf721d31726bd6e46e60689539a"
+	fixtures := suite.Fixtures["HASH_256"].([]interface{})
 
-	decodedTest := decodeHex(testString)
-	decodedCompare := decodeHex(compareString)
-
-	hashed := Hash256(decodedTest)
-
-	suite.Equal(hashed, decodedCompare)
+	for i := range fixtures {
+		test := fixtures[i].(map[string]interface{})
+		expected := test["OUTPUT"].([]byte)
+		actual := Hash256(test["INPUT"].([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestBytesToUint() {
@@ -725,8 +724,24 @@ func (suite *UtilsSuite) TestExtractTimestamp() {
 //     res = BTCUtils.verifyHash256Merkle(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'), 0);
 //     assert.isFalse(res);
 //   });
+
+func (suite *UtilsSuite) TestHash256MerkleStep() {
+	fixtures := suite.Fixtures["hash256MerkleStep"].([]interface{})
+
+	for i := range fixtures {
+		f := fixtures[i].(map[string]interface{})
+		ins := f["INPUT"].([]interface{})
+		actual := hash256MerkleStep(ins[0].([]byte), ins[1].([]byte))
+		expected := f["OUTPUT"].([]byte)
+		suite.Equal(expected, actual)
+	}
+}
+
 func (suite *UtilsSuite) TestVerifyHash256Merkle() {
-	suite.T().Skip()
+	proof := suite.Fixtures["OP_RETURN_PROOF"].([]byte)
+	index := uint(suite.Fixtures["OP_RETURN_INDEX"].(float64))
+
+	suite.True(VerifyHash256Merkle(proof, index))
 }
 
 func (suite *UtilsSuite) TestDetermineVarIntDataLength() {

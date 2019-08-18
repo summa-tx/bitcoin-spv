@@ -34,19 +34,16 @@ func BytesToBigInt(b []byte) sdk.Int {
 
 // DetermineVarIntDataLength extracts the payload length of a Bitcoin VarInt
 func DetermineVarIntDataLength(flag uint8) uint8 {
-	if flag <= 0xfc {
+	switch flag {
+	case 0xfd:
+		return 2
+	case 0xfe:
+		return 4
+	case 0xff:
+		return 8
+	default:
 		return 0
 	}
-	if flag == 0xfd {
-		return 2
-	}
-	if flag == 0xfe {
-		return 4
-	}
-	if flag == 0xff {
-		return 8
-	}
-	return 0
 }
 
 // ReverseEndianness takes in a byte slice and returns a
@@ -83,13 +80,9 @@ func Hash160(in []byte) []byte {
 
 // Hash256 implements bitcoin's hash256 (double sha2)
 func Hash256(in []byte) []byte {
-	first := sha256.New()
-	first.Write(in)
-
-	second := sha256.New()
-	second.Write(first.Sum(nil))
-
-	return second.Sum(nil)
+	first := sha256.Sum256(in)
+	second := sha256.Sum256(first[:])
+	return second[:]
 }
 
 //
@@ -397,7 +390,10 @@ func ExtractDifficulty(header []byte) sdk.Int {
 }
 
 func hash256MerkleStep(a []byte, b []byte) []byte {
-	return Hash256(append(a[:], b[:]...))
+	c := []byte{}
+	c = append(c, a...)
+	c = append(c, b...)
+	return Hash256(c)
 }
 
 // VerifyHash256Merkle checks a merkle inclusion proof's validity
@@ -419,14 +415,16 @@ func VerifyHash256Merkle(proof []byte, index uint) bool {
 
 	root := proof[proofLength-32:]
 	current := proof[:32]
+	numSteps := (proofLength / 32) - 1
 
-	for i := 1; i < proofLength%32-1; i++ {
+	for i := 1; i < numSteps; i++ {
 		next := proof[i*32 : i*32+32]
 		if idx%2 == 1 {
 			current = hash256MerkleStep(next, current)
 		} else {
 			current = hash256MerkleStep(current, next)
 		}
+		idx >>= 1
 	}
 
 	return bytes.Equal(current, root)
