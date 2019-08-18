@@ -105,24 +105,14 @@ func (suite *UtilsSuite) TestLastBytes() {
 	suite.Equal(last, []byte{4})
 }
 
-// func (suite *UtilsSuite) TestHash160() {
-// 	testString := "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-// 	compareString := "1b60c31dba9403c74d81af255f0c300bfed5faa3"
+func (suite *UtilsSuite) TestHash160() {
+	fixture := suite.Fixtures["HASH160"].([]map[string][]byte)
 
-// 	decodedTest, errTest := hex.DecodeString(testString)
-// 	if errTest != nil {
-// 		log.Fatal(errTest)
-// 	}
-
-// 	decodedCompare, errCompare := hex.DecodeString(compareString)
-// 	if errCompare != nil {
-// 		log.Fatal(errCompare)
-// 	}
-
-// 	hashed := Hash160(decodedTest)
-
-// 	suite.Equal(hashed, decodedCompare)
-// }
+	for i := range fixture {
+		digest := Hash160(fixture[i]["INPUT"])
+		suite.Equal(digest, fixture[i]["OUTPUT"])
+	}
+}
 
 func (suite *UtilsSuite) TestHash256() {
 	testString := "00"
