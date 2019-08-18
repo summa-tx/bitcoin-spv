@@ -6,11 +6,11 @@ import * as vectors from '../../testVectors.json';
 
 const { assert } = chai;
 
-let vectorObj = JSON.parse(JSON.stringify(vectors));
+const vectorObj = JSON.parse(JSON.stringify(vectors));
 
-utils.parseJson(vectorObj)
+utils.parseJson(vectorObj);
 
-let {
+const {
   EMPTY,
   HEADER,
   HEADER_ERR,

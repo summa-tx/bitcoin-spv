@@ -1,4 +1,244 @@
 {
+  "determineVarIntDataLength": [{
+    "input": "",
+    "output": ""
+  }],
+  "hash160": [{
+    "input": "",
+    "output": ""
+  }],
+  "hash256": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractScriptSigLen": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractSequenceLELegacy": [{
+    "input": "",
+    "output": ""
+  }],
+  "determineInputLength": {
+    "INPUT": [
+      "0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff",
+      "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000000000000",
+      "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0400000002000000000000",
+      "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000900000000000000000000000000",
+      "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000"
+    ],
+    "OUTPUT": [ 41, 41, 43, 50, 298 ]
+  },
+  "extractInputAtIndex": [{
+    "input": "",
+    "output": ""
+  }],
+  "isLegacyInput": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractSequenceLegacy": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractScriptSig": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractSequenceLEWitness": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractSequenceWitness": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractOutpoint": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractInputTxIdLE": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractInputTxId": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractTxIndexLE": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractTxIndex": [{
+    "input": "",
+    "output": ""
+  }],
+  "determineOutputLength": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractOutputAtIndex": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractOutputScriptLen": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractValueLE": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractValue": {
+    "OUTPUT": [497480, 0]
+  },
+  "extractOpReturnData": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractHash": [{
+    "input": "",
+    "output": ""
+  }],
+  "validateVin": [{
+    "input": "",
+    "output": ""
+  }],
+  "validateVout": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractMerkleRootLE": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractMerkleRootBE": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractTarget": [{
+    "input": "",
+    "output": ""
+  }],
+  "calculateDifficulty": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractPrevBlockLE": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractPrevBlockBE": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractTimestampLE": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractTimestamp": [{
+    "input": "",
+    "output": ""
+  }],
+  "extractDifficulty": [{
+    "input": "",
+    "output": ""
+  }],
+  "hash256MerkleStep": [{
+    "INPUT": ["0x00", "0x00"],
+    "OUTPUT": "0x407feb4a4b8303baf4f84e29a209e0dcfd62e81f88c8edb7675c5a95d90e5c90"
+  },
+  {
+    "INPUT": ["0x00", "0xff"],
+    "OUTPUT": "0x63e16be7c46701e1275e7e5c79732685b824520343c51a86a7bb48a044878823"
+  }],
+  "verifyHash256Merkle": [{
+    "input": "",
+    "output": ""
+  }],
+  "retargetAlgorithm": [{
+    "input": "",
+    "output": ""
+  }],
+
+  "prove": [{
+    "input": "",
+    "output": ""
+  }],
+  "calculateTxId": [{
+    "input": "",
+    "output": ""
+  }],
+  "parseInput": [{
+    "input": "",
+    "output": ""
+  }],
+  "parseOutput": [{
+    "input": "",
+    "output": ""
+  }],
+  "parseHeader": [{
+    "input": "",
+    "output": ""
+  }],
+  "validateHeaderWork": [{
+    "input": "",
+    "output": ""
+  }],
+  "validateHeaderPrevHash": [{
+    "input": "",
+    "output": ""
+  }],
+  "validateHeaderChain": [{
+    "input": "",
+    "output": ""
+  }],
+
+  "serializeHex": [{
+    "input": "",
+    "output": ""
+  }],
+  "deserializeHex": [{
+    "input": "",
+    "output": ""
+  }],
+  "sha256": [{
+    "input": "",
+    "output": ""
+  }],
+  "ripemd160": [{
+    "input": "",
+    "output": ""
+  }],
+  "typedArraysAreEqual": [{
+    "input": "",
+    "output": ""
+  }],
+  "bytesToUint": [{
+    "input": "",
+    "output": ""
+  }],
+  "safeSlice": [{
+    "input": "",
+    "output": ""
+  }],
+  "concatUint8Arrays": [{
+    "input": "",
+    "output": ""
+  }],
+  "reverseEndianness": [{
+    "input": "",
+    "output": ""
+  }],
+  "lastBytes": [{
+    "input": "",
+    "output": ""
+  }],
+  "parseJson": [{
+    "input": "",
+    "output": ""
+  }],
+
   "EMPTY": "0x0000000000000000000000000000000000000000000000000000000000000000",
   "HEADER_170": "0x0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70",
   "OP_RETURN_TX": "0x010000000001011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211024730440220276e0ec78028582054d86614c65bc4bf85ff5710b9d3a248ca28dd311eb2fa6802202ec950dd2a8c9435ff2d400cc45d7a4854ae085f49e05cc3f503834546d410de012103732783eef3af7e04d3af444430a629b16a9261e4025f52bf4d6d026299c37c7400000000",
@@ -16,14 +256,6 @@
   {
     "INPUT": "0x616263",
     "OUTPUT": "0x4f8b42c22dd3729b519ba6f68d2da7cc5b2d606d05daed5ad5128cc03e6c6358"
-  }],
-  "hash256MerkleStep": [{
-      "INPUT": ["0x00", "0x00"],
-      "OUTPUT": "0x407feb4a4b8303baf4f84e29a209e0dcfd62e81f88c8edb7675c5a95d90e5c90"
-  },
-  {
-      "INPUT": ["0x00", "0xff"],
-      "OUTPUT": "0x63e16be7c46701e1275e7e5c79732685b824520343c51a86a7bb48a044878823"
   }],
   "SEQUENCE_WITNESS": {
     "LE": "0xffffffff",
@@ -58,13 +290,6 @@
   "LEGACY_INPUT": [
     "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff",
     "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff"
-  ],
-  "INPUT_LENGTH": [
-    "0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff",
-    "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000000000000",
-    "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0400000002000000000000",
-    "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000900000000000000000000000000",
-    "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000"
   ],
   "SCRIPT_SIGS": [{
     "SCRIPT_SIG": "0x00"

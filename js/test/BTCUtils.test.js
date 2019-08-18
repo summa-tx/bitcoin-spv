@@ -4,11 +4,11 @@ import * as utils from '../utils/utils';
 import * as BTCUtils from '../src/BTCUtils';
 import * as vectors from '../../testVectors.json';
 
-let vectorObj = JSON.parse(JSON.stringify(vectors));
+const vectorObj = JSON.parse(JSON.stringify(vectors));
 
-utils.parseJson(vectorObj)
+utils.parseJson(vectorObj);
 
-let {
+const {
   HEADER_170,
   OP_RETURN_PROOF,
   OP_RETURN_INDEX,
@@ -21,7 +21,8 @@ let {
   INDEXED_INPUT,
   INDEXED_OUTPUT,
   LEGACY_INPUT,
-  INPUT_LENGTH,
+  extractValue,
+  determineInputLength,
   SCRIPT_SIGS,
   SCRIPT_SIG_LEN,
   INVALID_VIN_LEN,
@@ -167,7 +168,7 @@ describe('BTCUtils', () => {
     assert.isTrue(arraysAreEqual);
 
     res = BTCUtils.extractValue(output);
-    assert.equal(res, BigInt(497480));
+    assert.equal(res, BigInt(extractValue.OUTPUT[0]));
 
     const opReturnOutput = OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
     const opReturnLERes = OP_RETURN.INDEXED_OUTPUTS[1].VALUE_LE;
@@ -177,7 +178,7 @@ describe('BTCUtils', () => {
     assert.isTrue(arraysAreEqual);
 
     res = BTCUtils.extractValue(opReturnOutput);
-    assert.equal(res, BigInt(0));
+    assert.equal(res, BigInt(extractValue.OUTPUT[1]));
   });
 
   it('extracts op_return data blobs', () => {
@@ -227,20 +228,20 @@ describe('BTCUtils', () => {
 
   it('determines input length', () => {
     let res;
-    res = BTCUtils.determineInputLength(INPUT_LENGTH[0]);
-    assert.equal(res, BigInt(41));
+    res = BTCUtils.determineInputLength(determineInputLength.INPUT[0]);
+    assert.equal(res, BigInt(determineInputLength.OUTPUT[0]));
 
-    res = BTCUtils.determineInputLength(INPUT_LENGTH[1]);
-    assert.equal(res, BigInt(41));
+    res = BTCUtils.determineInputLength(determineInputLength.INPUT[1]);
+    assert.equal(res, BigInt(determineInputLength.OUTPUT[1]));
 
-    res = BTCUtils.determineInputLength(INPUT_LENGTH[2]);
-    assert.equal(res, BigInt(43));
+    res = BTCUtils.determineInputLength(determineInputLength.INPUT[2]);
+    assert.equal(res, BigInt(determineInputLength.OUTPUT[2]));
 
-    res = BTCUtils.determineInputLength(INPUT_LENGTH[3]);
-    assert.equal(res, BigInt(50));
+    res = BTCUtils.determineInputLength(determineInputLength.INPUT[3]);
+    assert.equal(res, BigInt(determineInputLength.OUTPUT[3]));
 
-    res = BTCUtils.determineInputLength(INPUT_LENGTH[4]);
-    assert.equal(res, BigInt(298));
+    res = BTCUtils.determineInputLength(determineInputLength.INPUT[4]);
+    assert.equal(res, BigInt(determineInputLength.OUTPUT[4]));
   });
 
   it('extracts the scriptSig from inputs', () => {
