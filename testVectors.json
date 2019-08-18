@@ -17,6 +17,14 @@
     "INPUT": "0x616263",
     "OUTPUT": "0x4f8b42c22dd3729b519ba6f68d2da7cc5b2d606d05daed5ad5128cc03e6c6358"
   }],
+  "hash256MerkleStep": [{
+      "INPUT": ["0x00", "0x00"],
+      "OUTPUT": "0x407feb4a4b8303baf4f84e29a209e0dcfd62e81f88c8edb7675c5a95d90e5c90"
+  },
+  {
+      "INPUT": ["0x00", "0xff"],
+      "OUTPUT": "0x63e16be7c46701e1275e7e5c79732685b824520343c51a86a7bb48a044878823"
+  }],
   "SEQUENCE_WITNESS": {
     "LE": "0xffffffff",
     "WITNESS": 4294967295
