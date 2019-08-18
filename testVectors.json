@@ -3,10 +3,12 @@
     "input": "",
     "output": ""
   }],
+
   "hash160": [{
     "input": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
     "output": "0x1b60c31dba9403c74d81af255f0c300bfed5faa3"
   }],
+
   "hash256": [{
     "input": "0x00",
     "output": "0x1406e05881e299367766d313e26c05564ec91bf721d31726bd6e46e60689539a"
@@ -14,76 +16,106 @@
     "input": "0x616263",
     "output": "0x4f8b42c22dd3729b519ba6f68d2da7cc5b2d606d05daed5ad5128cc03e6c6358"
   }],
+
   "extractScriptSigLen": [{
     "input": "",
     "output": ""
   }],
+
   "extractSequenceLELegacy": [{
     "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff",
     "output": "0xffffffff"
   }],
+
   "extractSequenceLegacy": [{
     "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000203232323232323232323232323232323232323232323232323232323232323232ffffffff",
     "output": 4294967295
   }],
-  "determineInputLength": {
-    "INPUT": [
-      "0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff",
-      "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000000000000",
-      "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0400000002000000000000",
-      "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000900000000000000000000000000",
-      "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000"
-    ],
-    "OUTPUT": [ 41, 41, 43, 50, 298 ]
-  },
+
+  "determineInputLength": [{
+    "input": "0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff",
+    "output": 41
+  }, {
+    "input": "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000000000000",
+    "output": 41
+  }, {
+    "input": "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0400000002000000000000",
+    "output": 43
+  }, {
+    "input": "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000900000000000000000000000000",
+    "output": 50
+  }, {
+    "input": "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000",
+    "output": 298
+  }],
+
   "extractInputAtIndex": [{
-    "input": "",
-    "output": ""
+    "input": "0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
+    "output": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff"
+  }, {
+    "input": "0x027bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff",
+    "output": "0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff"
+  }, {
+    "input": "0x027bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff",
+    "output": "0xaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff"
   }],
+
   "isLegacyInput": [{
-    "input": "",
-    "output": ""
+    "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff"
+  }, {
+    "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff"
   }],
+
   "extractScriptSig": [{
     "input": "",
     "output": ""
   }],
+
   "extractSequenceLEWitness": [{
     "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
     "output": "0xffffffff"
   }],
+
   "extractSequenceWitness": [{
     "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
     "output": 4294967295
   }],
+
   "extractOutpoint": [{
     "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
     "output": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000"
   }],
+
   "extractInputTxIdLE": [{
     "input": "",
     "output": ""
   }],
+
   "extractInputTxId": [{
     "input": "",
     "output": ""
   }],
+
   "extractTxIndexLE": [{
     "input": "",
     "output": ""
   }],
+
   "extractTxIndex": [{
     "input": "",
     "output": ""
   }],
+
   "determineOutputLength": [{
     "input": "",
     "output": ""
   }],
+
   "extractOutputAtIndex": [{
     "input": "",
     "output": ""
   }],
+
   "extractOutputScriptLen": [{
     "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
     "output": "0x22"
@@ -91,17 +123,31 @@
     "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
     "output": "0x16"
   }],
+
   "extractValueLE": [{
-    "input": "",
-    "output": ""
+    "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
+    "output": "0x4897070000000000"
+  }, {
+    "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
+    "output": "0x0000000000000000"
   }],
-  "extractValue": {
-    "OUTPUT": [497480, 0]
-  },
+
+  "extractValue": [{
+    "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
+    "output": 497480
+  }, {
+    "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
+    "output": 0
+  }],
+
   "extractOpReturnData": [{
-    "input": "",
-    "output": ""
+    "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
+    "output": "0xedb1b5c2f39af0fec151732585b1049b07895211"
+  }, {
+    "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
+    "errorMessage": "Malformatted data. Must be an op return."
   }],
+
   "extractHash": [{
     "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
     "output": "0xa4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18"
@@ -127,50 +173,62 @@
     "input": "0x000000000000000017a914000000000000000000000000000000000000000087",
     "output": "0x0000000000000000000000000000000000000000"
   }],
+
   "validateVin": [{
     "input": "",
     "output": ""
   }],
+
   "validateVout": [{
     "input": "",
     "output": ""
   }],
+
   "extractMerkleRootLE": [{
     "input": "",
     "output": ""
   }],
+
   "extractMerkleRootBE": [{
     "input": "",
     "output": ""
   }],
+
   "extractTarget": [{
     "input": "",
     "output": ""
   }],
+
   "calculateDifficulty": [{
     "input": "",
     "output": ""
   }],
+
   "extractPrevBlockLE": [{
     "input": "",
     "output": ""
   }],
+
   "extractPrevBlockBE": [{
     "input": "",
     "output": ""
   }],
+
   "extractTimestampLE": [{
     "input": "",
     "output": ""
   }],
+
   "extractTimestamp": [{
     "input": "",
     "output": ""
   }],
+
   "extractDifficulty": [{
     "input": "",
     "output": ""
   }],
+
   "hash256MerkleStep": [{
     "INPUT": ["0x00", "0x00"],
     "OUTPUT": "0x407feb4a4b8303baf4f84e29a209e0dcfd62e81f88c8edb7675c5a95d90e5c90"
@@ -179,92 +237,116 @@
     "INPUT": ["0x00", "0xff"],
     "OUTPUT": "0x63e16be7c46701e1275e7e5c79732685b824520343c51a86a7bb48a044878823"
   }],
+
   "verifyHash256Merkle": [{
     "input": "",
     "output": ""
   }],
+
   "retargetAlgorithm": [{
     "input": "",
     "output": ""
   }],
 
+
+
   "prove": [{
     "input": "",
     "output": ""
   }],
+
   "calculateTxId": [{
     "input": "",
     "output": ""
   }],
+
   "parseInput": [{
     "input": "",
     "output": ""
   }],
+
   "parseOutput": [{
     "input": "",
     "output": ""
   }],
+
   "parseHeader": [{
     "input": "",
     "output": ""
   }],
+
   "validateHeaderWork": [{
     "input": "",
     "output": ""
   }],
+
   "validateHeaderPrevHash": [{
     "input": "",
     "output": ""
   }],
+
   "validateHeaderChain": [{
     "input": "",
     "output": ""
   }],
 
+
+
   "serializeHex": [{
     "input": "",
     "output": ""
   }],
+
   "deserializeHex": [{
     "input": "",
     "output": ""
   }],
+
   "sha256": [{
     "input": "",
     "output": ""
   }],
+
   "ripemd160": [{
     "input": "",
     "output": ""
   }],
+
   "typedArraysAreEqual": [{
     "input": "",
     "output": ""
   }],
+
   "bytesToUint": [{
     "input": "",
     "output": ""
   }],
+
   "safeSlice": [{
     "input": "",
     "output": ""
   }],
+
   "concatUint8Arrays": [{
     "input": "",
     "output": ""
   }],
+
   "reverseEndianness": [{
     "input": "",
     "output": ""
   }],
+
   "lastBytes": [{
     "input": "",
     "output": ""
   }],
+
   "parseJson": [{
     "input": "",
     "output": ""
   }],
+
 
   "EMPTY": "0x0000000000000000000000000000000000000000000000000000000000000000",
   "HEADER_170": "0x0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70",

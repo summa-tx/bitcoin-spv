@@ -21,9 +21,11 @@ const {
   extractSequenceLegacy,
   extractOutputScriptLen,
   extractHash,
-  INDEXED_INPUT,
+  extractOpReturnData,
+  extractInputAtIndex,
   INDEXED_OUTPUT,
-  LEGACY_INPUT,
+  isLegacyInput,
+  extractValueLE,
   extractValue,
   determineInputLength,
   SCRIPT_SIGS,
@@ -106,135 +108,126 @@ describe('BTCUtils', () => {
       assert.include(e.message, extractHash[1].errorMessage);
     }
 
-    // // malformatted witness
-    // try {
-    //   BTCUtils.extractHash(extractHash[2].input);
-    //   assert(false, 'expected an error');
-    // } catch (e) {
-    //   assert.include(e.message, extractHash[2].errorMessage);
-    // }
+    // malformatted witness
+    try {
+      BTCUtils.extractHash(extractHash[2].input);
+      assert(false, 'expected an error');
+    } catch (e) {
+      assert.include(e.message, extractHash[2].errorMessage);
+    }
 
-    // // malformatted p2pkh
-    // try {
-    //   BTCUtils.extractHash(extractHash[3].input);
-    //   assert(false, 'expected an error');
-    // } catch (e) {
-    //   assert.include(e.message, extractHash[3].errorMessage);
-    // }
+    // malformatted p2pkh
+    try {
+      BTCUtils.extractHash(extractHash[3].input);
+      assert(false, 'expected an error');
+    } catch (e) {
+      assert.include(e.message, extractHash[3].errorMessage);
+    }
 
-    // // malformatted p2pkh
-    // try {
-    //   BTCUtils.extractHash(extractHash[4].input);
-    //   assert(false, 'expected an error');
-    // } catch (e) {
-    //   assert.include(e.message, extractHash[4].errorMessage);
-    // }
+    // malformatted p2pkh
+    try {
+      BTCUtils.extractHash(extractHash[4].input);
+      assert(false, 'expected an error');
+    } catch (e) {
+      assert.include(e.message, extractHash[4].errorMessage);
+    }
 
-    // // good p2pkh
-    // res = BTCUtils.extractHash(extractHash[5].input);
-    // arraysAreEqual = utils.typedArraysAreEqual(res, extractHash[5].output);
-    // assert.isTrue(arraysAreEqual);
+    // good p2pkh
+    res = BTCUtils.extractHash(extractHash[5].input);
+    arraysAreEqual = utils.typedArraysAreEqual(res, extractHash[5].output);
+    assert.isTrue(arraysAreEqual);
 
-    // // malformatted p2sh
-    // try {
-    //   BTCUtils.extractHash(extractHash[6].input);
-    //   assert(false, 'expected an error');
-    // } catch (e) {
-    //   assert.include(e.message, extractHash[6].errorMessage);
-    // }
+    // malformatted p2sh
+    try {
+      BTCUtils.extractHash(extractHash[6].input);
+      assert(false, 'expected an error');
+    } catch (e) {
+      assert.include(e.message, extractHash[6].errorMessage);
+    }
 
-    // // good p2sh
-    // res = BTCUtils.extractHash(extractHash[7].input);
-    // arraysAreEqual = utils.typedArraysAreEqual(res, extractHash[7].output);
-    // assert.isTrue(arraysAreEqual);
+    // good p2sh
+    res = BTCUtils.extractHash(extractHash[7].input);
+    arraysAreEqual = utils.typedArraysAreEqual(res, extractHash[7].output);
+    assert.isTrue(arraysAreEqual);
   });
 
   it('extracts the value as LE and int', () => {
     let res;
     let arraysAreEqual;
 
-    const output = OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
-    const outputLERes = OP_RETURN.INDEXED_OUTPUTS[0].VALUE_LE;
-
-    res = BTCUtils.extractValueLE(output);
-    arraysAreEqual = utils.typedArraysAreEqual(res, outputLERes);
+    res = BTCUtils.extractValueLE(extractValueLE[0].input);
+    arraysAreEqual = utils.typedArraysAreEqual(res, extractValueLE[0].output);
     assert.isTrue(arraysAreEqual);
 
-    res = BTCUtils.extractValue(output);
-    assert.equal(res, BigInt(extractValue.OUTPUT[0]));
+    res = BTCUtils.extractValue(extractValue[0].input);
+    assert.equal(res, BigInt(extractValue[0].output));
 
-    const opReturnOutput = OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
-    const opReturnLERes = OP_RETURN.INDEXED_OUTPUTS[1].VALUE_LE;
-
-    res = BTCUtils.extractValueLE(opReturnOutput);
-    arraysAreEqual = utils.typedArraysAreEqual(res, opReturnLERes);
+    res = BTCUtils.extractValueLE(extractValueLE[1].input);
+    arraysAreEqual = utils.typedArraysAreEqual(res, extractValueLE[1].output);
     assert.isTrue(arraysAreEqual);
 
-    res = BTCUtils.extractValue(opReturnOutput);
-    assert.equal(res, BigInt(extractValue.OUTPUT[1]));
+    res = BTCUtils.extractValue(extractValue[1].input);
+    assert.equal(res, BigInt(extractValue[1].output));
   });
 
   it('extracts op_return data blobs', () => {
-    const output = OP_RETURN.INDEXED_OUTPUTS[0].OUTPUT;
-    const opReturnOutput = OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT;
-
-    const res = BTCUtils.extractOpReturnData(opReturnOutput);
+    const res = BTCUtils.extractOpReturnData(extractOpReturnData[0].input);
     const arraysAreEqual = utils.typedArraysAreEqual(
       res,
-      OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD
+      extractOpReturnData[0].output
     );
     assert.isTrue(arraysAreEqual);
 
     try {
-      BTCUtils.extractOpReturnData(output);
+      BTCUtils.extractOpReturnData(extractOpReturnData[1].input);
       assert(false, 'expected an error');
     } catch (e) {
-      assert.include(e.message, 'Malformatted data. Must be an op return.');
+      assert.include(e.message, extractOpReturnData[1].errorMessage);
     }
   });
 
   it('extracts inputs at specified indices', () => {
-    let res = BTCUtils.extractInputAtIndex(OP_RETURN.VIN, 0);
+    let res = BTCUtils.extractInputAtIndex(extractInputAtIndex[0].input, 0);
     let arraysAreEqual = utils.typedArraysAreEqual(
       res,
-      OP_RETURN.INPUTS
+      extractInputAtIndex[0].output
     );
     assert.isTrue(arraysAreEqual);
 
-    res = BTCUtils.extractInputAtIndex(TWO_IN.TX_VIN, 0);
-    arraysAreEqual = utils.typedArraysAreEqual(res, INDEXED_INPUT[0]);
+    res = BTCUtils.extractInputAtIndex(extractInputAtIndex[1].input, 0);
+    arraysAreEqual = utils.typedArraysAreEqual(res, extractInputAtIndex[1].output);
     assert.isTrue(arraysAreEqual);
 
-    res = BTCUtils.extractInputAtIndex(TWO_IN.TX_VIN, 1);
-    arraysAreEqual = utils.typedArraysAreEqual(res, INDEXED_INPUT[1]);
+    res = BTCUtils.extractInputAtIndex(extractInputAtIndex[2].input, 1);
+    arraysAreEqual = utils.typedArraysAreEqual(res, extractInputAtIndex[2].output);
     assert.isTrue(arraysAreEqual);
   });
 
   it('sorts legacy from witness inputs', () => {
     let res;
-    res = BTCUtils.isLegacyInput(OP_RETURN.INPUTS);
+    res = BTCUtils.isLegacyInput(isLegacyInput[0].input);
     assert.isFalse(res);
 
-    res = BTCUtils.isLegacyInput(LEGACY_INPUT[1]);
+    res = BTCUtils.isLegacyInput(isLegacyInput[1].input);
     assert.isTrue(res);
   });
 
   it('determines input length', () => {
     let res;
-    res = BTCUtils.determineInputLength(determineInputLength.INPUT[0]);
-    assert.equal(res, BigInt(determineInputLength.OUTPUT[0]));
+    res = BTCUtils.determineInputLength(determineInputLength[0].input);
+    assert.equal(res, BigInt(determineInputLength[0].output));
 
-    res = BTCUtils.determineInputLength(determineInputLength.INPUT[1]);
-    assert.equal(res, BigInt(determineInputLength.OUTPUT[1]));
+    res = BTCUtils.determineInputLength(determineInputLength[1].input);
+    assert.equal(res, BigInt(determineInputLength[1].output));
 
-    res = BTCUtils.determineInputLength(determineInputLength.INPUT[2]);
-    assert.equal(res, BigInt(determineInputLength.OUTPUT[2]));
+    res = BTCUtils.determineInputLength(determineInputLength[2].input);
+    assert.equal(res, BigInt(determineInputLength[2].output));
 
-    res = BTCUtils.determineInputLength(determineInputLength.INPUT[3]);
-    assert.equal(res, BigInt(determineInputLength.OUTPUT[3]));
+    res = BTCUtils.determineInputLength(determineInputLength[3].input);
+    assert.equal(res, BigInt(determineInputLength[3].output));
 
-    res = BTCUtils.determineInputLength(determineInputLength.INPUT[4]);
-    assert.equal(res, BigInt(determineInputLength.OUTPUT[4]));
+    res = BTCUtils.determineInputLength(determineInputLength[4].input);
+    assert.equal(res, BigInt(determineInputLength[4].output));
   });
 
   it('extracts the scriptSig from inputs', () => {
