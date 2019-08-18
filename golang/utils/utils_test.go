@@ -106,11 +106,13 @@ func (suite *UtilsSuite) TestLastBytes() {
 }
 
 func (suite *UtilsSuite) TestHash160() {
-	fixture := suite.Fixtures["HASH160"].([]map[string][]byte)
+	fixtures := suite.Fixtures["HASH_160"].([]interface{})
 
-	for i := range fixture {
-		digest := Hash160(fixture[i]["INPUT"])
-		suite.Equal(digest, fixture[i]["OUTPUT"])
+	for i := range fixtures {
+		test := fixtures[i].(map[string]interface{})
+		expected := test["OUTPUT"].([]byte)
+		actual := Hash160(test["INPUT"].([]byte))
+		suite.Equal(actual, expected)
 	}
 }
 
