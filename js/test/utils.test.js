@@ -2,23 +2,38 @@
 
 import * as chai from 'chai';
 import * as utils from '../src/utils';
+import * as vectors from '../../testVectors.json';
+// import { type } from 'os';
+
+const vectorObj = JSON.parse(JSON.stringify(vectors));
+utils.parseJson(vectorObj);
+
+const {
+  lastBytes,
+  reverseEndianness,
+  bytesToUint,
+  sha256,
+  ripemd160,
+  typedArraysAreEqual,
+  safeSlice
+} = vectorObj;
 
 const { assert } = chai;
 
 describe('utils', () => {
   describe('#lastBytes', () => {
     it('gets the last bytes correctly', () => {
-      const res = utils.lastBytes(utils.deserializeHex('0x00112233'), 2);
-      const arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x2233'));
+      const res = utils.lastBytes(lastBytes[0].input.proof, lastBytes[0].input.num);
+      const arraysAreEqual = utils.typedArraysAreEqual(res, lastBytes[0].output);
       assert.isTrue(arraysAreEqual);
     });
 
     it('errors if slice is larger than the bytearray', () => {
       try {
-        utils.lastBytes(utils.deserializeHex('0x00'), 2);
+        utils.lastBytes(lastBytes[1].input.proof, lastBytes[1].input.num);
         assert(false, 'expected an errror');
       } catch (e) {
-        assert.include(e.message, 'Slice must not use negative indexes');
+        assert.include(e.message, lastBytes[1].errorMessage);
       }
     });
   });
@@ -27,41 +42,25 @@ describe('utils', () => {
     it('reverses endianness', () => {
       let res;
       let arraysAreEqual;
-      res = utils.reverseEndianness(utils.deserializeHex('0x00112233'));
-      arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0x33221100'));
+      res = utils.reverseEndianness(reverseEndianness[0].input);
+      arraysAreEqual = utils.typedArraysAreEqual(res, reverseEndianness[0].output);
       assert.isTrue(arraysAreEqual);
 
-      res = utils.reverseEndianness(utils.deserializeHex('0x0123456789abcdef'));
-      arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xefcdab8967452301'));
+      res = utils.reverseEndianness(reverseEndianness[1].input);
+      arraysAreEqual = utils.typedArraysAreEqual(res, reverseEndianness[1].output);
       assert.isTrue(arraysAreEqual);
     });
   });
 
   describe('#bytesToUint', () => {
     it('converts big-endian bytes to integers', () => {
-      let res = utils.bytesToUint(utils.deserializeHex('0x00'));
-      assert.equal(res, BigInt(0));
-
-      res = utils.bytesToUint(utils.deserializeHex('0xff'));
-      assert.equal(res, BigInt(255));
-
-      res = utils.bytesToUint(utils.deserializeHex('0x00ff'));
-      assert.equal(res, BigInt(255));
-
-      res = utils.bytesToUint(utils.deserializeHex('0xff00'));
-      assert.equal(res, BigInt(65280));
-
-      res = utils.bytesToUint(utils.deserializeHex('0x01'));
-      assert.equal(res, BigInt(1));
-
-      res = utils.bytesToUint(utils.deserializeHex('0x0001'));
-      assert.equal(res, BigInt(1));
-
-      res = utils.bytesToUint(utils.deserializeHex('0x0100'));
-      assert.equal(res, BigInt(256));
-
+      let res;
+      for (let i = 0; i < 7; i += 1) {
+        res = utils.bytesToUint(bytesToUint[i].input);
+        assert.equal(res, BigInt(bytesToUint[i].output));
+      }
       // max uint256: (2^256)-1
-      res = utils.bytesToUint(utils.deserializeHex('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'));
+      res = utils.bytesToUint(bytesToUint[7].input);
       assert.equal(res, BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'));
     });
   });
@@ -132,59 +131,47 @@ describe('utils', () => {
 
   describe('#sha256', () => {
     it('returns a sha256 hash', () => {
-      let res;
-      let arraysAreEqual;
-      res = utils.sha256(utils.deserializeHex('0x616263'));
-      arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'));
-      assert.isTrue(arraysAreEqual);
-
-      res = utils.sha256(new Uint8Array([]));
-      arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'));
-      assert.isTrue(arraysAreEqual);
+      for (let i = 0; i < sha256.length; i += 1) {
+        const res = utils.sha256(sha256[i].input);
+        const arraysAreEqual = utils.typedArraysAreEqual(res, sha256[i].output);
+        assert.isTrue(arraysAreEqual);
+      }
     });
   });
 
   describe('#ripemd160', () => {
     it('returns a ripemd160 hash', () => {
-      let res;
-      let arraysAreEqual;
-
-      res = utils.ripemd160(new Uint8Array([0]));
-      arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xc81b94933420221a7ac004a90242d8b1d3e5070d'));
-      assert.isTrue(arraysAreEqual);
-
-      res = utils.ripemd160(utils.deserializeHex('2c415d8f16ce68ede2b3642800883055'));
-      arraysAreEqual = utils.typedArraysAreEqual(res, utils.deserializeHex('0xb09d9089acb3855efacd76960db70d166c32c5e6'));
-      assert.isTrue(arraysAreEqual);
+      for (let i = 0; i < ripemd160.length; i += 1) {
+        const res = utils.ripemd160(ripemd160[i].input);
+        const arraysAreEqual = utils.typedArraysAreEqual(res, ripemd160[i].output);
+        assert.isTrue(arraysAreEqual);
+      }
     });
   });
 
   describe('#typedArraysAreEqual', () => {
     it('returns true if Uint8Arrays are equal', () => {
-      const arr1 = new Uint8Array([255, 255, 255]);
-      const arr2 = new Uint8Array([255, 255, 255]);
+      const { arr1, arr2 } = typedArraysAreEqual[0].input;
       const res = utils.typedArraysAreEqual(arr1, arr2);
       assert.isTrue(res);
     });
     it('returns false if Uint8Arrays are not equal', () => {
-      const arr1 = new Uint8Array([255, 255, 254]);
-      const arr2 = new Uint8Array([255, 255, 255]);
+      const { arr1, arr2 } = typedArraysAreEqual[1].input;
       const res = utils.typedArraysAreEqual(arr1, arr2);
       assert.isFalse(res);
     });
     it('throws error if any arrays are not of type Uint8Array', () => {
-      const arr1 = new Uint8Array([255, 255, 255]);
-      const arr2 = [255, 255, 255];
+      const { arr1 } = typedArraysAreEqual[2].input;
+      const arr2 = Array.from(typedArraysAreEqual[2].input.arr2);
       try {
         utils.typedArraysAreEqual(arr1, arr2);
         assert(false, 'expected an error');
       } catch (e) {
-        assert.include(e.message, 'Arrays must be of type Uint8Array');
+        assert.include(e.message, typedArraysAreEqual[2].errorMessage);
       }
     });
     it('returns false if Uint8Arrays lengths are not equal', () => {
-      const arr1 = new Uint8Array([255, 255]);
-      const arr2 = new Uint8Array([255, 255, 255]);
+      const { arr1, arr2 } = typedArraysAreEqual[3].input;
       const res = utils.typedArraysAreEqual(arr1, arr2);
       assert.isFalse(res);
     });
@@ -192,43 +179,17 @@ describe('utils', () => {
 
   describe('#safeSlice', () => {
     it('returns a safe slice on an array', () => {
-      const arr = new Uint8Array([1, 2, 3, 4, 5]);
-      let res;
-      let arraysAreEqual;
-
-      // regular slice
-      res = utils.safeSlice(arr, 0, 3);
-      arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([1, 2, 3]));
-      assert.isTrue(arraysAreEqual);
-
-      // slice that copies the original array
-      res = utils.safeSlice(arr);
-      arraysAreEqual = utils.typedArraysAreEqual(res, arr);
-      assert.isTrue(arraysAreEqual);
-
-      // slice with start index, but not end index
-      res = utils.safeSlice(arr, 2);
-      arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([3, 4, 5]));
-      assert.isTrue(arraysAreEqual);
-    });
-    it('uses default values', () => {
-      const arr = new Uint8Array([1, 2, 3, 4, 5]);
-      let res;
-      let arraysAreEqual;
-
-      // default end
-      res = utils.safeSlice(arr, 3);
-      arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([4, 5]));
-      assert.isTrue(arraysAreEqual);
-
-      // default start
-      res = utils.safeSlice(arr, null, 3);
-      arraysAreEqual = utils.typedArraysAreEqual(res, new Uint8Array([1, 2, 3]));
-      assert.isTrue(arraysAreEqual);
+      for (let i = 0; i < 5; i += 1) {
+        const { array, start, end } = safeSlice[i].input;
+        const res = utils.safeSlice(array, start, end);
+        const arraysAreEqual = utils.typedArraysAreEqual(res, safeSlice[i].output);
+        assert.isTrue(arraysAreEqual);
+      }
     });
     it('error if passed invalid arguments', () => {
       const arr = [1, 2, 3, 4, 5];
-      const OUT_OF_RANGE = BigInt(Number.MAX_SAFE_INTEGER + 1);
+      // How can I store this value in json?
+      const OUT_OF_RANGE = BigInt(Number.MAX_SAFE_INTEGER) + BigInt(1);
 
       // start is a BigInt and is out of range
       try {
@@ -246,44 +207,14 @@ describe('utils', () => {
         assert.include(e.message, 'BigInt argument out of safe number range');
       }
 
-      // end number is greater than the length of the array
-      try {
-        utils.safeSlice(arr, 0, 6);
-        assert(false, 'expected an error');
-      } catch (e) {
-        assert.include(e.message, 'Tried to slice past end of array');
-      }
-
-      // start is a negative number
-      try {
-        utils.safeSlice(arr, -1, 3);
-        assert(false, 'expected an error');
-      } catch (e) {
-        assert.include(e.message, 'Slice must not use negative indexes');
-      }
-
-      // end is a negative number
-      try {
-        utils.safeSlice(arr, 2, -1);
-        assert(false, 'expected an error');
-      } catch (e) {
-        assert.include(e.message, 'Slice must not use negative indexes');
-      }
-
-      // start is greater than end
-      try {
-        utils.safeSlice(arr, 4, 3);
-        assert(false, 'expected an error');
-      } catch (e) {
-        assert.include(e.message, 'Slice must not have 0 length');
-      }
-
-      // start and end are the same
-      try {
-        utils.safeSlice(arr, 4, 4);
-        assert(false, 'expected an error');
-      } catch (e) {
-        assert.include(e.message, 'Slice must not have 0 length');
+      for (let i = 5; i < safeSlice.length; i += 1) {
+        const { array, start, end } = safeSlice[i].input;
+        try {
+          utils.safeSlice(array, start, end);
+          assert(false, 'expected an error');
+        } catch (e) {
+          assert.include(e.message, safeSlice[i].errorMessage);
+        }
       }
     });
   });
