@@ -140,14 +140,14 @@ describe('ValidateSPV', () => {
   describe('#validateHeaderWork', () => {
     it('returns true if the digest has sufficient work, returns false if insufficient work or empty digest', () => {
       for (let i = 0; i < validateHeaderWork.length; i += 1) {
-        let idx;
-        if (typeof validateHeaderWork[i].index !== 'number') {
-          idx = utils.bytesToUint(validateHeaderWork[i].input.index);
+        let t;
+        if (typeof validateHeaderWork[i].target !== 'number') {
+          t = utils.bytesToUint(validateHeaderWork[i].input.target);
         } else {
-          idx = validateHeaderWork[i].index;
+          t = validateHeaderWork[i].target;
         }
 
-        const res = ValidateSPV.validateHeaderWork(validateHeaderWork[i].input.proof, idx);
+        const res = ValidateSPV.validateHeaderWork(validateHeaderWork[i].input.digest, t);
         if (validateHeaderWork[i].output) {
           assert.isTrue(res);
         } else {
@@ -161,7 +161,7 @@ describe('ValidateSPV', () => {
     it('returns true if header prevHash is valid', () => {
       for (let i = 0; i < validateHeaderPrevHash.length; i += 1) {
         const res = ValidateSPV.validateHeaderPrevHash(
-          validateHeaderPrevHash[i].input.proof,
+          validateHeaderPrevHash[i].input.header,
           validateHeaderPrevHash[i].input.prevHash
         );
         if (validateHeaderPrevHash[i].output) {
