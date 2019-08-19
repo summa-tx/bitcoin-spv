@@ -139,7 +139,9 @@
   }, {
     "input": "0x000000000000000088",
     "output": 145
-  }, {
+  }],
+
+  "determineOutputLengthError": [{
     "input": "0x0000000000000000FF00",
     "errorMessage": "Multi-byte VarInts not supported"
   }],
@@ -197,7 +199,9 @@
   "extractOpReturnData": [{
     "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
     "output": "0xedb1b5c2f39af0fec151732585b1049b07895211"
-  }, {
+  }],
+
+  "extractOpReturnDataError": [{
     "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
     "errorMessage": "Malformatted data. Must be an op return."
   }],
@@ -206,6 +210,14 @@
     "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
     "output": "0xa4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18"
   }, {
+    "input": "0x00000000000000001976a914000000000000000000000000000000000000000088ac",
+    "output": "0x0000000000000000000000000000000000000000"
+  }, {
+    "input": "0x000000000000000017a914000000000000000000000000000000000000000087",
+    "output": "0x0000000000000000000000000000000000000000"
+  }],
+
+  "extractHashError": [{
     "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
     "errorMessage": "Nonstandard, OP_RETURN, or malformatted output"
   }, {
@@ -218,14 +230,8 @@
     "input": "0x00000000000000001976a914FFFF",
     "errorMessage": "Maliciously formatted p2pkh output."
   }, {
-    "input": "0x00000000000000001976a914000000000000000000000000000000000000000088ac",
-    "output": "0x0000000000000000000000000000000000000000"
-  }, {
     "input": "0x000000000000000017a914FF",
     "errorMessage": "Maliciously formatted p2sh output."
-  }, {
-    "input": "0x000000000000000017a914000000000000000000000000000000000000000087",
-    "output": "0x0000000000000000000000000000000000000000"
   }],
 
   "validateVin": [{
@@ -282,7 +288,7 @@
     "output": 1231731025
   }],
 
-  "calculateDifficulty": [{
+  "calculateDifficultyError": [{
     "input": 7,
     "errorMessage": "Argument must be a BigInt"
   }, {
