@@ -299,7 +299,7 @@ func (suite *UtilsSuite) TestExtractInputAtIndex() {
 		testCase := fixture[i]
 		input := testCase.Input.(map[string]interface{})
 		expected := testCase.Output.([]byte)
-		actual := ExtractInputAtIndex(input["proof"].([]byte), uint8(input["index"].(int)))
+		actual := ExtractInputAtIndex(input["vin"].([]byte), uint8(input["index"].(int)))
 		suite.Equal(expected, actual)
 	}
 }
