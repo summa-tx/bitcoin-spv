@@ -176,7 +176,7 @@ describe('BTCUtils', () => {
   it('sorts legacy from witness inputs', () => {
     for (let i = 0; i < isLegacyInput.length; i += 1) {
       const res = BTCUtils.isLegacyInput(isLegacyInput[i].input);
-      assert.strictEqual(res, isLegacyInput[i].output)
+      assert.strictEqual(res, isLegacyInput[i].output);
     }
   });
 
@@ -206,14 +206,14 @@ describe('BTCUtils', () => {
   it('validates vin length based on stated size', () => {
     for (let i = 0; i < validateVin.length; i += 1) {
       const res = BTCUtils.validateVin(validateVin[i].input);
-      assert.strictEqual(res, validateVin[i].output)
+      assert.strictEqual(res, validateVin[i].output);
     }
   });
 
   it('validates vout length based on stated size', () => {
     for (let i = 0; i < validateVout.length; i += 1) {
       const res = BTCUtils.validateVout(validateVout[i].input);
-      assert.strictEqual(res, validateVout[i].output)
+      assert.strictEqual(res, validateVout[i].output);
     }
   });
 
@@ -278,7 +278,7 @@ describe('BTCUtils', () => {
         verifyHash256Merkle[i].input.proof,
         verifyHash256Merkle[i].input.index // 0-indexed
       );
-      assert.strictEqual(res, verifyHash256Merkle[i].output)
+      assert.strictEqual(res, verifyHash256Merkle[i].output);
     }
   });
 

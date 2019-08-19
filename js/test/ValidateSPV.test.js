@@ -31,7 +31,7 @@ describe('ValidateSPV', () => {
         } = prove[i].input;
 
         const res = ValidateSPV.prove(txIdLE, merkleRootLE, proof, index);
-        assert.strictEqual(res, prove[i].output)
+        assert.strictEqual(res, prove[i].output);
       }
     });
   });
@@ -143,7 +143,7 @@ describe('ValidateSPV', () => {
         }
 
         const res = ValidateSPV.validateHeaderWork(validateHeaderWork[i].input.digest, t);
-        assert.strictEqual(res, validateHeaderWork[i].output)
+        assert.strictEqual(res, validateHeaderWork[i].output);
       }
     });
   });
@@ -155,7 +155,7 @@ describe('ValidateSPV', () => {
           validateHeaderPrevHash[i].input.header,
           validateHeaderPrevHash[i].input.prevHash
         );
-        assert.strictEqual(res, validateHeaderPrevHash[i].output)
+        assert.strictEqual(res, validateHeaderPrevHash[i].output);
       }
     });
   });
