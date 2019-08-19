@@ -463,8 +463,8 @@ func (suite *UtilsSuite) TestHash256MerkleStep() {
 
 	for i := range fixtures {
 		testCase := fixtures[i]
-		ins := testCase.Input.([][]byte)
-		actual := hash256MerkleStep(ins[0], ins[1])
+		ins := testCase.Input.([]interface{})
+		actual := hash256MerkleStep(ins[0].([]byte), ins[1].([]byte))
 		expected := testCase.Output.([]byte)
 		suite.Equal(expected, actual)
 	}
