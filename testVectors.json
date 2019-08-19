@@ -130,6 +130,32 @@
     "output": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000"
   }],
 
+  "extractInputTxIdLE": [{
+    "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff",
+    "output": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba30"
+  }],
+
+  "extractInputTxId": [
+    {
+      "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff",
+      "output": "0x30baf9c04bfdefff1ca6b425fff0c458aae1834bc2448f4b49f3007486bd4617"
+    }
+  ],
+
+  "extractTxIndexLE": [
+    {
+      "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff",
+      "output": "0x00000000"
+    }
+  ],
+
+  "extractTxIndex": [
+    {
+      "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff",
+      "output": 0
+    }
+  ],
+
   "determineOutputLength": [{
     "input": "0x00000000000000002200",
     "output": 43

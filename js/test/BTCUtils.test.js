@@ -25,6 +25,10 @@ const {
   isLegacyInput,
   extractValueLE,
   extractValue,
+  extractInputTxIdLE,
+  extractInputTxId,
+  extractTxIndexLE,
+  extractTxIndex,
   determineInputLength,
   extractScriptSig,
   extractScriptSigLen,
@@ -346,6 +350,52 @@ describe('BTCUtils', () => {
         } catch (e) {
           assert.include(e.message, calculateDifficultyError[i].errorMessage);
         }
+      }
+    });
+  });
+
+  describe('#extractInputTxIdLE', () => {
+    it('extracts the LE  oupoint index from an input', () => {
+      let res;
+      let equalArrays;
+      for (let i = 0; i < extractInputTxIdLE.length; i += 1) {
+        res = BTCUtils.extractInputTxIdLE(extractInputTxIdLE[i].input);
+        equalArrays = utils.typedArraysAreEqual(res, extractInputTxIdLE[i].output);
+        assert.isTrue(equalArrays);
+      }
+    });
+  });
+
+  describe('#extractInputTxId', () => {
+    it('extracts the oupoint index from an input', () => {
+      let res;
+      let equalArrays;
+      for (let i = 0; i < extractInputTxId.length; i += 1) {
+        res = BTCUtils.extractInputTxId(extractInputTxId[i].input);
+        equalArrays = utils.typedArraysAreEqual(res, extractInputTxId[i].output);
+        assert.isTrue(equalArrays);
+      }
+    });
+  });
+
+  describe('#extractTxIndexLE', () => {
+    it('extracts the LE tx input index from the input in a tx', () => {
+      let res;
+      let equalArrays;
+      for (let i = 0; i < extractTxIndexLE.length; i += 1) {
+        res = BTCUtils.extractTxIndexLE(extractTxIndexLE[i].input);
+        equalArrays = utils.typedArraysAreEqual(res, extractTxIndexLE[i].output);
+        assert.isTrue(equalArrays);
+      }
+    });
+  });
+
+  describe('#extractTxIndex', () => {
+    it('extracts the tx input index from the input in a tx', () => {
+      let res;
+      for (let i = 0; i < extractTxIndex.length; i += 1) {
+        res = BTCUtils.extractTxIndex(extractTxIndex[i].input);
+        assert.strictEqual(res, BigInt(extractTxIndex[i].output));
       }
     });
   });
