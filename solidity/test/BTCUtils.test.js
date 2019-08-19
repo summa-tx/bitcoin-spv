@@ -39,8 +39,7 @@ const {
   extractTimestamp,
   verifyHash256Merkle,
   determineVarIntDataLength,
-  retargetAlgorithm,
-  calculateDifficultyError
+  retargetAlgorithm
 } = JSON.parse(JSON.stringify(vectors));
 
 const BTCUtilsDelegate = artifacts.require('BTCUtilsTest');
@@ -104,6 +103,16 @@ contract('BTCUtils', () => {
     }
   });
 
+  it('implements hash256MerkleStep', async () => {
+    for (let i = 0; i < hash256MerkleStep.length; i += 1) {
+      const res = await instance._hash256MerkleStep(
+        hash256MerkleStep[i].input[0],
+        hash256MerkleStep[i].input[1]
+      );
+      assert.equal(res, hash256MerkleStep[i].output)
+    }
+  });
+
   it('extracts a sequence from a witness input as LE and int', async () => {
     for (let i = 0; i < extractSequenceLEWitness.length; i += 1) {
       const res = await instance.extractSequenceLEWitness(extractSequenceLEWitness[i].input);
@@ -164,6 +173,13 @@ contract('BTCUtils', () => {
     for (let i = 0; i < extractValue.length; i += 1) {
       res = await instance.extractValue(extractValue[i].input);
       assert(res.eq(new BN(extractValue[i].output, 16)));
+    }
+  });
+
+  it('determines input length', async () => {
+    for (let i = 0; i < determineInputLength.length; i += 1) {
+      const res = await instance.determineInputLength(determineInputLength[i].input);
+      assert.equal(res, determineInputLength[i].output);
     }
   });
 
