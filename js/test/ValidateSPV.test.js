@@ -111,80 +111,69 @@ describe('ValidateSPV', () => {
   describe('#parseOutput', () => {
     it('returns the tx output value, output type, and payload for an OP_RETURN output', () => {
       const output = parseOutput[0].input;
-      const value = BigInt(parseOutput[0].output.value);
+      const { value, type, payload } = parseOutput[0].output;
       // const type = parseOutput[0].output.type;
-      const payload = parseOutput[0].output.payload;
 
       const opReturnTxOut = ValidateSPV.parseOutput(output);
 
-      assert.equal(opReturnTxOut.value, value);
-      assert.equal(opReturnTxOut.outputType, utils.OUTPUT_TYPES.OP_RETURN);
+      assert.equal(opReturnTxOut.value, BigInt(value));
+      assert.equal(opReturnTxOut.outputType, utils.OUTPUT_TYPES[type]);
       assert.isTrue(utils.typedArraysAreEqual(opReturnTxOut.payload, payload));
     });
 
     it('returns the tx output value, output type, and payload for an WPKH output', () => {
       const output = parseOutput[1].input;
-      const value = BigInt(parseOutput[1].output.value);
-      // const type = parseOutput[1].output.type;
-      const payload = parseOutput[1].output.payload;
+      const { value, type, payload } = parseOutput[1].output;
 
       const wpkhOutput = ValidateSPV.parseOutput(output);
 
-      assert.equal(wpkhOutput.value, value);
-      assert.equal(wpkhOutput.outputType, utils.OUTPUT_TYPES.WPKH);
+      assert.equal(wpkhOutput.value, BigInt(value));
+      assert.equal(wpkhOutput.outputType, utils.OUTPUT_TYPES[type]);
       assert.isTrue(utils.typedArraysAreEqual(wpkhOutput.payload, payload));
     });
 
     it('returns the tx output value, output type, and payload for an WSH output', () => {
       const output = parseOutput[2].input;
-      const value = BigInt(parseOutput[2].output.value);
-      // const type = parseOutput[2].output.type;
-      const payload = parseOutput[2].output.payload;
+      const { value, type, payload } = parseOutput[2].output;
 
       const wshOutput = ValidateSPV.parseOutput(output);
 
-      assert.equal(wshOutput.value, value);
-      assert.equal(wshOutput.outputType, utils.OUTPUT_TYPES.WSH);
+      assert.equal(wshOutput.value, BigInt(value));
+      assert.equal(wshOutput.outputType, utils.OUTPUT_TYPES[type]);
       assert.isTrue(utils.typedArraysAreEqual(wshOutput.payload, payload));
     });
 
     it('shows non-standard if the tx output type is not identifiable', () => {
       const output = parseOutput[3].input;
-      const value = BigInt(parseOutput[3].output.value);
-      // const type = parseOutput[3].output.type;
-      const payload = parseOutput[3].output.payload;
+      const { value, type, payload } = parseOutput[3].output;
 
       // Changes 0x6a (OP_RETURN) to 0x7a to create error
       const nonstandardOutput = ValidateSPV.parseOutput(output);
 
-      assert.equal(nonstandardOutput.value, value);
-      assert.equal(nonstandardOutput.outputType, utils.OUTPUT_TYPES.NONSTANDARD);
+      assert.equal(nonstandardOutput.value, BigInt(value));
+      assert.equal(nonstandardOutput.outputType, utils.OUTPUT_TYPES[type]);
       assert.isTrue(utils.typedArraysAreEqual(nonstandardOutput.payload, payload)); // new Uint8Array([])
     });
 
     it('returns the tx output value, output type, and payload for an SH output', () => {
       const output = parseOutput[4].input;
-      const value = BigInt(parseOutput[4].output.value);
-      // const type = parseOutput[4].output.type;
-      const payload = parseOutput[4].output.payload;
+      const { value, type, payload } = parseOutput[4].output;
 
       const shOutput = ValidateSPV.parseOutput(output);
 
-      assert.equal(shOutput.value, value);
-      assert.equal(shOutput.outputType, utils.OUTPUT_TYPES.SH);
+      assert.equal(shOutput.value, BigInt(value));
+      assert.equal(shOutput.outputType, utils.OUTPUT_TYPES[type]);
       assert.isTrue(utils.typedArraysAreEqual(shOutput.payload, payload));
     });
 
     it('returns the tx output value, output type, and payload for an PKH output', () => {
       const output = parseOutput[5].input;
-      const value = BigInt(parseOutput[5].output.value);
-      // const type = parseOutput[5].output.type;
-      const payload = parseOutput[5].output.payload;
+      const { value, type, payload } = parseOutput[5].output;
 
       const pkhOutput = ValidateSPV.parseOutput(output);
 
-      assert.equal(pkhOutput.value, value);
-      assert.equal(pkhOutput.outputType, utils.OUTPUT_TYPES.PKH);
+      assert.equal(pkhOutput.value, BigInt(value));
+      assert.equal(pkhOutput.outputType, utils.OUTPUT_TYPES[type]);
       assert.isTrue(utils.typedArraysAreEqual(pkhOutput.payload, payload));
     });
   });
