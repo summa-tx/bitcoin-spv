@@ -11,6 +11,7 @@ const {
   extractOutpoint,
   hash160,
   hash256,
+  hash256MerkleStep,
   extractSequenceLEWitness,
   extractSequenceWitness,
   extractSequenceLELegacy,
@@ -57,6 +58,17 @@ describe('BTCUtils', () => {
     for (let i = 0; i < hash256.length; i += 1) {
       const res = BTCUtils.hash256(hash256[i].input);
       const arraysAreEqual = utils.typedArraysAreEqual(res, hash256[i].output);
+      assert.isTrue(arraysAreEqual);
+    }
+  });
+
+  it('implements hash256MerkleStep', () => {
+    for (let i = 0; i < hash256MerkleStep.length; i += 1) {
+      const res = BTCUtils.hash256MerkleStep(
+        hash256MerkleStep[i].input[0],
+        hash256MerkleStep[i].input[1]
+      );
+      const arraysAreEqual = utils.typedArraysAreEqual(res, hash256MerkleStep[i].output);
       assert.isTrue(arraysAreEqual);
     }
   });

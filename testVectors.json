@@ -26,6 +26,15 @@
     "output": "0x4f8b42c22dd3729b519ba6f68d2da7cc5b2d606d05daed5ad5128cc03e6c6358"
   }],
 
+  "hash256MerkleStep": [{
+    "input": ["0x00", "0x00"],
+    "output": "0x407feb4a4b8303baf4f84e29a209e0dcfd62e81f88c8edb7675c5a95d90e5c90"
+  },
+  {
+    "input": ["0x00", "0xff"],
+    "output": "0x63e16be7c46701e1275e7e5c79732685b824520343c51a86a7bb48a044878823"
+  }],
+
   "extractScriptSigLen": [{
     "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
     "output": [0, 0]
