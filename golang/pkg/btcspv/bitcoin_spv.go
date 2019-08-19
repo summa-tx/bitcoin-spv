@@ -92,7 +92,7 @@ func ExtractInputAtIndex(vin []byte, index uint8) []byte {
 	var len uint
 	offset := uint(1)
 
-	for i := uint8(0); i < index; i++ {
+	for i := uint8(0); i <= index; i++ {
 		remaining := vin[offset:]
 		len = DetermineInputLength(remaining)
 		if i != index {
