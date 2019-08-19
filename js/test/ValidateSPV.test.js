@@ -11,49 +11,44 @@ const vectorObj = JSON.parse(JSON.stringify(vectors));
 utils.parseJson(vectorObj);
 
 const {
-  EMPTY,
-  HEADER,
-  HEADER_ERR,
-  OUTPUT_TYPE,
-  PARSE_INPUT,
-  OP_RETURN
+  prove,
+  calculateTxId,
+  parseInput,
+  parseOutput,
+  parseHeader,
+  validateHeaderChain,
+  validateHeaderWork,
+  validateHeaderPrevHash
 } = vectorObj;
-
-const INPUT_TYPES = {
-  NONE: 0,
-  LEGACY: 1,
-  COMPATIBILITY: 2,
-  WITNESS: 3
-};
 
 describe('ValidateSPV', () => {
   describe('#prove', () => {
     it('returns true if proof is valid', () => {
       const res = ValidateSPV.prove(
-        OP_RETURN.TXID_LE,
-        OP_RETURN.INDEXED_HEADERS[0].MERKLE_ROOT_LE,
-        OP_RETURN.PROOF,
-        OP_RETURN.PROOF_INDEX
+        prove[0].input.txIdLE,
+        prove[0].input.merkleRootLE,
+        prove[0].input.proof,
+        prove[0].input.index
       );
       assert.isTrue(res);
     });
 
     it('shortcuts the coinbase special case', () => {
       const res = ValidateSPV.prove(
-        OP_RETURN.TXID_LE,
-        OP_RETURN.TXID_LE,
-        new Uint8Array(),
-        0
+        prove[1].input.txIdLE,
+        prove[1].input.merkleRootLE,
+        prove[1].input.proof,
+        prove[1].input.index
       );
       assert.isTrue(res);
     });
 
     it('returns false if Merkle root is invalid', () => {
       const res = ValidateSPV.prove(
-        OP_RETURN.TXID_LE,
-        OP_RETURN.TXID_LE,
-        OP_RETURN.PROOF,
-        OP_RETURN.PROOF_INDEX
+        prove[2].input.txIdLE,
+        prove[2].input.merkleRootLE,
+        prove[2].input.proof,
+        prove[2].input.index
       );
       assert.isFalse(res);
     });
@@ -62,85 +57,76 @@ describe('ValidateSPV', () => {
   describe('#calculateTxId', () => {
     it('returns the transaction hash', () => {
       const res = ValidateSPV.calculateTxId(
-        OP_RETURN.VERSION,
-        OP_RETURN.VIN,
-        OP_RETURN.VOUT,
-        OP_RETURN.LOCKTIME_LE
+        calculateTxId[0].input.version,
+        calculateTxId[0].input.vin,
+        calculateTxId[0].input.vout,
+        calculateTxId[0].input.locktime
       );
       const arraysAreEqual = utils.typedArraysAreEqual(
         res,
-        OP_RETURN.TXID_LE
+        calculateTxId[0].output
       );
       assert.isTrue(arraysAreEqual);
     });
   });
 
   describe('#parseInput', () => {
-    const input = PARSE_INPUT.INPUT;
-    const legacyInput = PARSE_INPUT.LEGACY_INPUT;
-    const compatibilityWSHInput = PARSE_INPUT.COMPATIBILITY_WSH_INPUT;
-    const compatibilityWPKHInput = PARSE_INPUT.COMPATIBILITY_WPKH_INPUT;
-    const sequence = BigInt(PARSE_INPUT.SEQUENCE);
-    const index = BigInt(PARSE_INPUT.INDEX);
-    const outpointTxId = PARSE_INPUT.OUTPOINT_TX_ID;
-
     it('returns the tx input sequence and outpoint', () => {
-      const txIn = ValidateSPV.parseInput(input);
+      const txIn = ValidateSPV.parseInput(parseInput[0].input);
 
-      assert.equal(txIn.sequence, sequence);
-      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, outpointTxId));
-      assert.equal(txIn.inputIndex, index);
-      assert.equal(txIn.inputType, INPUT_TYPES.WITNESS);
+      assert.equal(txIn.sequence, parseInput[0].output.sequence);
+      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, parseInput[0].output.txId));
+      assert.equal(txIn.inputIndex, parseInput[0].output.index);
+      assert.equal(txIn.inputType, parseInput[0].output.type);
     });
 
     it('handles Legacy inputs', () => {
-      const txIn = ValidateSPV.parseInput(legacyInput);
+      const txIn = ValidateSPV.parseInput(parseInput[1].input);
 
-      assert.equal(txIn.sequence, sequence);
-      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, outpointTxId));
-      assert.equal(txIn.inputIndex, index);
-      assert.equal(txIn.inputType, INPUT_TYPES.LEGACY);
+      assert.equal(txIn.sequence, parseInput[1].output.sequence);
+      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, parseInput[1].output.txId));
+      assert.equal(txIn.inputIndex, parseInput[1].output.index);
+      assert.equal(txIn.inputType, parseInput[1].output.type);
     });
 
     it('handles p2wpkh-via-p2sh compatibility inputs', () => {
-      const txIn = ValidateSPV.parseInput(compatibilityWPKHInput);
+      const txIn = ValidateSPV.parseInput(parseInput[2].input);
 
-      assert.equal(txIn.sequence, sequence);
-      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, outpointTxId));
-      assert.equal(txIn.inputIndex, index);
-      assert.equal(txIn.inputType, INPUT_TYPES.COMPATIBILITY);
+      assert.equal(txIn.sequence, parseInput[2].output.sequence);
+      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, parseInput[2].output.txId));
+      assert.equal(txIn.inputIndex, parseInput[2].output.index);
+      assert.equal(txIn.inputType, parseInput[2].output.type);
     });
 
     it('handles p2wsh-via-p2sh compatibility inputs', () => {
-      const txIn = ValidateSPV.parseInput(compatibilityWSHInput);
+      const txIn = ValidateSPV.parseInput(parseInput[3].input);
 
-      assert.equal(txIn.sequence, sequence);
-      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, outpointTxId));
-      assert.equal(txIn.inputIndex, index);
-      assert.equal(txIn.inputType, INPUT_TYPES.COMPATIBILITY);
+      assert.equal(txIn.sequence, parseInput[3].output.sequence);
+      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, parseInput[3].output.txId));
+      assert.equal(txIn.inputIndex, parseInput[3].output.index);
+      assert.equal(txIn.inputType, parseInput[3].output.type);
     });
   });
 
   describe('#parseOutput', () => {
     it('returns the tx output value, output type, and payload for an OP_RETURN output', () => {
-      const opReturnTxOut = ValidateSPV.parseOutput(OP_RETURN.INDEXED_OUTPUTS[1].OUTPUT);
+      const output = parseOutput[0].input;
+      const value = BigInt(parseOutput[0].output.value);
+      // const type = parseOutput[0].output.type;
+      const payload = parseOutput[0].output.payload;
 
-      const value = OP_RETURN.INDEXED_OUTPUTS[1].VALUE;
+      const opReturnTxOut = ValidateSPV.parseOutput(output);
 
       assert.equal(opReturnTxOut.value, value);
       assert.equal(opReturnTxOut.outputType, utils.OUTPUT_TYPES.OP_RETURN);
-      assert.isTrue(
-        utils.typedArraysAreEqual(
-          opReturnTxOut.payload,
-          OP_RETURN.INDEXED_OUTPUTS[1].PAYLOAD
-        )
-      );
+      assert.isTrue(utils.typedArraysAreEqual(opReturnTxOut.payload, payload));
     });
 
     it('returns the tx output value, output type, and payload for an WPKH output', () => {
-      const output = OUTPUT_TYPE.WPKH.OUTPUT;
-      const value = BigInt(OUTPUT_TYPE.WPKH.VALUE);
-      const payload = OUTPUT_TYPE.WPKH.PAYLOAD;
+      const output = parseOutput[1].input;
+      const value = BigInt(parseOutput[1].output.value);
+      // const type = parseOutput[1].output.type;
+      const payload = parseOutput[1].output.payload;
 
       const wpkhOutput = ValidateSPV.parseOutput(output);
 
@@ -150,9 +136,10 @@ describe('ValidateSPV', () => {
     });
 
     it('returns the tx output value, output type, and payload for an WSH output', () => {
-      const output = OUTPUT_TYPE.WSH.OUTPUT;
-      const value = BigInt(OUTPUT_TYPE.WSH.VALUE);
-      const payload = OUTPUT_TYPE.WSH.PAYLOAD;
+      const output = parseOutput[2].input;
+      const value = BigInt(parseOutput[2].output.value);
+      // const type = parseOutput[2].output.type;
+      const payload = parseOutput[2].output.payload;
 
       const wshOutput = ValidateSPV.parseOutput(output);
 
@@ -162,18 +149,24 @@ describe('ValidateSPV', () => {
     });
 
     it('shows non-standard if the tx output type is not identifiable', () => {
-      // Changes 0x6a (OP_RETURN) to 0x7a to create error
-      const nonstandardOutput = ValidateSPV.parseOutput(OUTPUT_TYPE.NONSTANDARD);
+      const output = parseOutput[3].input;
+      const value = BigInt(parseOutput[3].output.value);
+      // const type = parseOutput[3].output.type;
+      const payload = parseOutput[3].output.payload;
 
-      assert.equal(BigInt(0), nonstandardOutput.value);
+      // Changes 0x6a (OP_RETURN) to 0x7a to create error
+      const nonstandardOutput = ValidateSPV.parseOutput(output);
+
+      assert.equal(nonstandardOutput.value, value);
       assert.equal(nonstandardOutput.outputType, utils.OUTPUT_TYPES.NONSTANDARD);
-      assert.isTrue(utils.typedArraysAreEqual(nonstandardOutput.payload, new Uint8Array([])));
+      assert.isTrue(utils.typedArraysAreEqual(nonstandardOutput.payload, payload)); // new Uint8Array([])
     });
 
     it('returns the tx output value, output type, and payload for an SH output', () => {
-      const output = OUTPUT_TYPE.SH.OUTPUT;
-      const value = BigInt(OUTPUT_TYPE.SH.VALUE);
-      const payload = OUTPUT_TYPE.SH.PAYLOAD;
+      const output = parseOutput[4].input;
+      const value = BigInt(parseOutput[4].output.value);
+      // const type = parseOutput[4].output.type;
+      const payload = parseOutput[4].output.payload;
 
       const shOutput = ValidateSPV.parseOutput(output);
 
@@ -183,9 +176,10 @@ describe('ValidateSPV', () => {
     });
 
     it('returns the tx output value, output type, and payload for an PKH output', () => {
-      const output = OUTPUT_TYPE.PKH.OUTPUT;
-      const value = BigInt(OUTPUT_TYPE.PKH.VALUE);
-      const payload = OUTPUT_TYPE.PKH.PAYLOAD;
+      const output = parseOutput[5].input;
+      const value = BigInt(parseOutput[5].output.value);
+      // const type = parseOutput[5].output.type;
+      const payload = parseOutput[5].output.payload;
 
       const pkhOutput = ValidateSPV.parseOutput(output);
 
@@ -198,94 +192,89 @@ describe('ValidateSPV', () => {
   describe('#parseHeader', () => {
     it('returns the header digest, version, prevHash, merkleRoot, timestamp, target, and nonce',
       () => {
-        const validHeader = ValidateSPV.parseHeader(
-          OP_RETURN.INDEXED_HEADERS[0].HEADER
-        );
+        const validHeader = ValidateSPV.parseHeader(parseHeader[0].input);
 
         assert.isTrue(
-          utils.typedArraysAreEqual(
-            validHeader.digest,
-            OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE
-          )
+          utils.typedArraysAreEqual(validHeader.digest, parseHeader[0].output.digest)
         );
-        assert.equal(validHeader.version, OP_RETURN.INDEXED_HEADERS[0].VERSION);
+        assert.equal(validHeader.version, parseHeader[0].output.version);
         assert.isTrue(
-          utils.typedArraysAreEqual(
-            validHeader.prevHash,
-            OP_RETURN.INDEXED_HEADERS[0].PREV_HASH_LE
-          )
+          utils.typedArraysAreEqual(validHeader.prevHash, parseHeader[0].output.prevHash)
         );
         assert.isTrue(
-          utils.typedArraysAreEqual(
-            validHeader.merkleRoot,
-            OP_RETURN.INDEXED_HEADERS[0].MERKLE_ROOT_LE
-          )
+          utils.typedArraysAreEqual(validHeader.merkleRoot, parseHeader[0].output.merkleRoot)
         );
-        assert.equal(validHeader.timestamp, OP_RETURN.INDEXED_HEADERS[0].TIMESTAMP);
-        assert.equal(validHeader.target, utils.bytesToUint(OP_RETURN.INDEXED_HEADERS[0].TARGET));
-        assert.equal(validHeader.nonce, OP_RETURN.INDEXED_HEADERS[0].NONCE);
+        assert.equal(validHeader.timestamp, parseHeader[0].output.timestamp);
+        assert.equal(validHeader.target, utils.bytesToUint(parseHeader[0].output.target));
+        assert.equal(validHeader.nonce, parseHeader[0].output.nonce);
       });
 
     it('throws errors if input header is not 80 bytes', () => {
       // Removed a byte from the header version to create error
       try {
-        ValidateSPV.parseHeader(HEADER_ERR.HEADER_0_LEN);
+        ValidateSPV.parseHeader(parseHeader[1].input);
         assert(false, 'expected an error');
       } catch (e) {
-        assert.include(e.message, 'Malformatted header. Must be exactly 80 bytes.');
+        assert.include(e.message, parseHeader[1].errorMessage);
       }
     });
   });
 
   describe('#validateHeaderChain', () => {
     it('returns true if header chain is valid', () => {
-      const res = ValidateSPV.validateHeaderChain(OP_RETURN.HEADER_CHAIN);
-      assert.equal(res, BigInt('49134394618239'));
+      const res = ValidateSPV.validateHeaderChain(validateHeaderChain[0].input);
+      assert.equal(res, BigInt(validateHeaderChain[0].output));
     });
 
     it('throws Error("Header bytes not multiple of 80.") if header chain is not divisible by 80', () => {
       try {
-        ValidateSPV.validateHeaderChain(HEADER_ERR.HEADER_CHAIN_INVALID_LEN);
+        ValidateSPV.validateHeaderChain(validateHeaderChain[1].input);
         assert(false, 'expected an error');
       } catch (e) {
-        assert.include(e.message, 'Header bytes not multiple of 80.');
+        assert.include(e.message, validateHeaderChain[1].errorMessage);
       }
     });
 
     it('throws Error("Header bytes not a valid chain.") if header chain prevHash is invalid', () => {
       try {
-        ValidateSPV.validateHeaderChain(HEADER_ERR.HEADER_CHAIN_INVALID_PREVHASH);
+        ValidateSPV.validateHeaderChain(validateHeaderChain[2].input);
         assert(false, 'expected an error');
       } catch (e) {
-        assert.include(e.message, 'Header bytes not a valid chain.');
+        assert.include(e.message, validateHeaderChain[2].errorMessage);
       }
     });
 
     it('throws Error("Header does not meet its own difficulty target.) if a header does not meet its target', () => {
       try {
-        ValidateSPV.validateHeaderChain(HEADER_ERR.HEADER_CHAIN_LOW_WORK);
+        ValidateSPV.validateHeaderChain(validateHeaderChain[3].input);
         assert(false, 'expected an error');
       } catch (e) {
-        assert.include(e.message, 'Header does not meet its own difficulty target.');
+        assert.include(e.message, validateHeaderChain[3].errorMessage);
       }
     });
   });
 
   describe('#validateHeaderWork', () => {
     it('returns false on an empty digest', () => {
-      const res = ValidateSPV.validateHeaderWork(EMPTY, 1);
+      const res = ValidateSPV.validateHeaderWork(
+        validateHeaderWork[0].input.proof,
+        validateHeaderWork[0].input.index
+      );
       assert.isFalse(res);
     });
 
     it('returns false if the digest has insufficient work', () => {
-      const res = ValidateSPV.validateHeaderWork(HEADER.VALIDATE_WORK[0], 1);
+      const res = ValidateSPV.validateHeaderWork(
+        validateHeaderWork[1].input.proof,
+        validateHeaderWork[1].input.index
+      );
       assert.isFalse(res);
     });
 
     it('returns true if the digest has sufficient work', () => {
       const res = ValidateSPV.validateHeaderWork(
-        OP_RETURN.INDEXED_HEADERS[0].DIGEST_BE,
-        BigInt(HEADER.VALIDATE_WORK[1])
+        validateHeaderWork[2].input.proof,
+        utils.bytesToUint(validateHeaderWork[2].input.index)
       );
       assert.isTrue(res);
     });
@@ -294,16 +283,16 @@ describe('ValidateSPV', () => {
   describe('#validateHeaderPrevHash', () => {
     it('returns true if header prevHash is valid', () => {
       const res = ValidateSPV.validateHeaderPrevHash(
-        OP_RETURN.INDEXED_HEADERS[1].HEADER,
-        OP_RETURN.INDEXED_HEADERS[0].DIGEST_LE
+        validateHeaderPrevHash[0].input.proof,
+        validateHeaderPrevHash[0].input.prevHash
       );
       assert.isTrue(res);
     });
 
     it('returns false if header prevHash is invalid', () => {
       const res = ValidateSPV.validateHeaderPrevHash(
-        OP_RETURN.INDEXED_HEADERS[1].HEADER,
-        OP_RETURN.INDEXED_HEADERS[1].DIGEST_LE
+        validateHeaderPrevHash[1].input.proof,
+        validateHeaderPrevHash[1].input.prevHash
       );
       assert.isFalse(res);
     });
