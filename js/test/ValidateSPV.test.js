@@ -62,10 +62,10 @@ describe('ValidateSPV', () => {
           sequence, txId, index, type
         } = parseInput[i].output;
 
-        assert.equal(txIn.sequence, sequence);
+        assert.strictEqual(txIn.sequence, BigInt(sequence));
         assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, txId));
-        assert.equal(txIn.inputIndex, index);
-        assert.equal(txIn.inputType, type);
+        assert.strictEqual(txIn.inputIndex, BigInt(index));
+        assert.strictEqual(txIn.inputType, BigInt(type));
       }
     });
   });
@@ -78,8 +78,8 @@ describe('ValidateSPV', () => {
 
         const TxOut = ValidateSPV.parseOutput(output);
 
-        assert.equal(TxOut.value, BigInt(value));
-        assert.equal(TxOut.outputType, utils.OUTPUT_TYPES[type]);
+        assert.strictEqual(TxOut.value, BigInt(value));
+        assert.strictEqual(TxOut.outputType, utils.OUTPUT_TYPES[type]);
         assert.isTrue(utils.typedArraysAreEqual(TxOut.payload, payload));
       }
     });
@@ -95,12 +95,12 @@ describe('ValidateSPV', () => {
           } = parseHeader[i].output;
 
           assert.isTrue(utils.typedArraysAreEqual(validHeader.digest, digest));
-          assert.equal(validHeader.version, version);
+          assert.strictEqual(validHeader.version, BigInt(version));
           assert.isTrue(utils.typedArraysAreEqual(validHeader.prevHash, prevHash));
           assert.isTrue(utils.typedArraysAreEqual(validHeader.merkleRoot, merkleRoot));
-          assert.equal(validHeader.timestamp, timestamp);
-          assert.equal(validHeader.target, utils.bytesToUint(target));
-          assert.equal(validHeader.nonce, nonce);
+          assert.strictEqual(validHeader.timestamp, BigInt(timestamp));
+          assert.strictEqual(validHeader.target, BigInt(utils.bytesToUint(target)));
+          assert.strictEqual(validHeader.nonce, BigInt(nonce));
         }
       });
 
@@ -121,7 +121,7 @@ describe('ValidateSPV', () => {
     it('returns true if header chain is valid', () => {
       for (let i = 0; i < validateHeaderChain.length; i += 1) {
         const res = ValidateSPV.validateHeaderChain(validateHeaderChain[i].input);
-        assert.equal(res, BigInt(validateHeaderChain[i].output));
+        assert.strictEqual(res, BigInt(validateHeaderChain[i].output));
       }
     });
 

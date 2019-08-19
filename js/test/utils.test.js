@@ -60,13 +60,13 @@ describe('utils', () => {
       let res;
       for (let i = 0; i < 7; i += 1) {
         res = utils.bytesToUint(bytesToUint[i].input);
-        assert.equal(res, BigInt(bytesToUint[i].output));
+        assert.strictEqual(res, BigInt(bytesToUint[i].output));
       }
       // max uint256: (2^256)-1
       res = utils.bytesToUint(bytesToUint[7].input);
       // cannot store this value in store and have it test correctly
       // because I have to use bytesToUint to convert.
-      assert.equal(res, BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'));
+      assert.strictEqual(res, BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'));
     });
   });
 
@@ -75,13 +75,13 @@ describe('utils', () => {
       let res;
 
       res = utils.serializeHex(new Uint8Array([]));
-      assert.equal(res, '');
+      assert.strictEqual(res, '');
 
       res = utils.serializeHex();
-      assert.equal(res, '');
+      assert.strictEqual(res, '');
 
       res = utils.serializeHex(new Uint8Array([0, 1, 2, 42, 100, 101, 102, 255]));
-      assert.equal(res, '0x0001022a646566ff');
+      assert.strictEqual(res, '0x0001022a646566ff');
     });
     it('errors if passed anything other than a Uint8Array', () => {
       try {

@@ -82,7 +82,7 @@ describe('BTCUtils', () => {
 
     for (let i = 0; i < extractSequenceWitness.length; i += 1) {
       const res = BTCUtils.extractSequenceWitness(extractSequenceWitness[i].input);
-      assert.equal(res, BigInt(extractSequenceWitness[i].output));
+      assert.strictEqual(res, BigInt(extractSequenceWitness[i].output));
     }
   });
 
@@ -95,7 +95,7 @@ describe('BTCUtils', () => {
 
     for (let i = 0; i < extractSequenceLegacy.length; i += 1) {
       const res = BTCUtils.extractSequenceLegacy(extractSequenceLegacy[i].input);
-      assert.equal(res, BigInt(extractSequenceLegacy[i].output));
+      assert.strictEqual(res, BigInt(extractSequenceLegacy[i].output));
     }
   });
 
@@ -111,7 +111,7 @@ describe('BTCUtils', () => {
   it('extracts the length of the output script', () => {
     for (let i = 0; i < extractOutputScriptLen.length; i += 1) {
       const res = BTCUtils.extractOutputScriptLen(extractOutputScriptLen[i].input);
-      assert.equal(res, extractOutputScriptLen[i].output);
+      assert.strictEqual(res, extractOutputScriptLen[i].output[0]);
     }
   });
 
@@ -141,7 +141,7 @@ describe('BTCUtils', () => {
 
     for (let i = 0; i < extractValue.length; i += 1) {
       const res = BTCUtils.extractValue(extractValue[i].input);
-      assert.equal(res, BigInt(extractValue[i].output));
+      assert.strictEqual(res, BigInt(extractValue[i].output));
     }
   });
 
@@ -187,7 +187,7 @@ describe('BTCUtils', () => {
   it('determines input length', () => {
     for (let i = 0; i < determineInputLength.length; i += 1) {
       const res = BTCUtils.determineInputLength(determineInputLength[i].input);
-      assert.equal(res, BigInt(determineInputLength[i].output));
+      assert.strictEqual(res, BigInt(determineInputLength[i].output));
     }
   });
 
@@ -202,8 +202,8 @@ describe('BTCUtils', () => {
   it('extracts the length of the VarInt and scriptSig from inputs', () => {
     for (let i = 0; i < extractScriptSigLen.length; i += 1) {
       const res = BTCUtils.extractScriptSigLen(extractScriptSigLen[i].input);
-      assert.equal(res.dataLen, BigInt(extractScriptSigLen[i].output[0]));
-      assert.equal(res.scriptSigLen, BigInt(extractScriptSigLen[i].output[1]));
+      assert.strictEqual(res.dataLen, BigInt(extractScriptSigLen[i].output[0]));
+      assert.strictEqual(res.scriptSigLen, BigInt(extractScriptSigLen[i].output[1]));
     }
   });
 
@@ -232,7 +232,7 @@ describe('BTCUtils', () => {
   it('determines output length properly', () => {
     for (let i = 0; i < determineOutputLength.length; i += 1) {
       const res = BTCUtils.determineOutputLength(determineOutputLength[i].input);
-      assert.equal(res, BigInt(determineOutputLength[i].output));
+      assert.strictEqual(res, BigInt(determineOutputLength[i].output));
     }
 
     for (let i = 0; i < determineOutputLengthError.length; i += 1) {
@@ -266,7 +266,7 @@ describe('BTCUtils', () => {
 
   it('extracts the target from a header', () => {
     const res = BTCUtils.extractTarget(extractTarget[0].input);
-    assert.equal(res, BigInt(26959535291011309493156476344723991336010898738574164086137773096960));
+    assert.strictEqual(res, BigInt(26959535291011309493156476344723991336010898738574164086137773096960));
     // this isn't working
     // assert.equal(res, utils.bytesToUint(extractTarget[0].output));
   });
@@ -282,7 +282,7 @@ describe('BTCUtils', () => {
   it('extracts a timestamp from a header', () => {
     for (let i = 0; i < extractTimestamp.length; i += 1) {
       const res = BTCUtils.extractTimestamp(extractTimestamp[i].input);
-      assert.equal(res, BigInt(extractTimestamp[i].output));
+      assert.strictEqual(res, BigInt(extractTimestamp[i].output));
     }
   });
 
@@ -305,13 +305,13 @@ describe('BTCUtils', () => {
 
     // How can I store 0x01 in json?
     res = BTCUtils.determineVarIntDataLength(0x01);
-    assert.equal(res, determineVarIntDataLength[0].output);
+    assert.strictEqual(res, determineVarIntDataLength[0].output);
     res = BTCUtils.determineVarIntDataLength(0xfd);
-    assert.equal(res, determineVarIntDataLength[1].output);
+    assert.strictEqual(res, determineVarIntDataLength[1].output);
     res = BTCUtils.determineVarIntDataLength(0xfe);
-    assert.equal(res, determineVarIntDataLength[2].output);
+    assert.strictEqual(res, determineVarIntDataLength[2].output);
     res = BTCUtils.determineVarIntDataLength(0xff);
-    assert.equal(res, determineVarIntDataLength[3].output);
+    assert.strictEqual(res, determineVarIntDataLength[3].output);
   });
 
   it('calculates consensus-correct retargets', () => {
@@ -332,15 +332,15 @@ describe('BTCUtils', () => {
       res = BTCUtils.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
       // (response & expected) == expected
       // this converts our full-length target into truncated block target
-      assert.equal(res & expectedNewTarget, expectedNewTarget);
+      assert.strictEqual(res & expectedNewTarget, expectedNewTarget);
 
       secondTimestamp = firstTimestamp + 5 * 2016 * 10 * 60; // longer than 4x
       res = BTCUtils.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-      assert.equal(res / BigInt(4) & previousTarget, previousTarget);
+      assert.strictEqual(res / BigInt(4) & previousTarget, previousTarget);
 
       secondTimestamp = firstTimestamp + 2016 * 10 * 14; // shorter than 1/4x
       res = BTCUtils.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-      assert.equal(res * BigInt(4) & previousTarget, previousTarget);
+      assert.strictEqual(res * BigInt(4) & previousTarget, previousTarget);
     }
   });
 
@@ -349,16 +349,16 @@ describe('BTCUtils', () => {
     let expected;
     for (let i = 0; i < retargetAlgorithm.length; i += 1) {
       actual = BTCUtils.extractDifficulty(retargetAlgorithm[i][0].hex);
-      expected = retargetAlgorithm[i][0].difficulty;
-      assert.equal(actual, expected);
+      expected = BigInt(retargetAlgorithm[i][0].difficulty);
+      assert.strictEqual(actual, expected);
 
       actual = BTCUtils.extractDifficulty(retargetAlgorithm[i][1].hex);
-      expected = retargetAlgorithm[i][1].difficulty;
-      assert.equal(actual, expected);
+      expected = BigInt(retargetAlgorithm[i][1].difficulty);
+      assert.strictEqual(actual, expected);
 
       actual = BTCUtils.extractDifficulty(retargetAlgorithm[i][2].hex);
-      expected = retargetAlgorithm[i][2].difficulty;
-      assert.equal(actual, expected);
+      expected = BigInt(retargetAlgorithm[i][2].difficulty);
+      assert.strictEqual(actual, expected);
     }
   });
 
