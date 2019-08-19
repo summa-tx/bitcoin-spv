@@ -17,7 +17,8 @@ const {
   ripemd160,
   typedArraysAreEqual,
   typedArraysAreEqualError,
-  safeSlice
+  safeSlice,
+  safeSliceError
 } = vectorObj;
 
 const { assert } = chai;
@@ -210,13 +211,13 @@ describe('utils', () => {
         assert.include(e.message, 'BigInt argument out of safe number range');
       }
 
-      for (let i = 5; i < safeSlice.length; i += 1) {
-        const { array, start, end } = safeSlice[i].input;
+      for (let i = 0; i < safeSliceError.length; i += 1) {
+        const { array, start, end } = safeSliceError[i].input;
         try {
           utils.safeSlice(array, start, end);
           assert(false, 'expected an error');
         } catch (e) {
-          assert.include(e.message, safeSlice[i].errorMessage);
+          assert.include(e.message, safeSliceError[i].errorMessage);
         }
       }
     });
