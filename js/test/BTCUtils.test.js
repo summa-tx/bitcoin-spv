@@ -5,7 +5,6 @@ import * as BTCUtils from '../src/BTCUtils';
 import * as vectors from '../../testVectors.json';
 
 const vectorObj = JSON.parse(JSON.stringify(vectors));
-
 utils.parseJson(vectorObj);
 
 const {
@@ -44,52 +43,61 @@ const { assert } = chai;
 
 describe('BTCUtils', () => {
   it('implements bitcoin\'s hash160', () => {
-    const res = BTCUtils.hash160(hash160[0].input);
-    const arraysAreEqual = utils.typedArraysAreEqual(res, hash160[0].output);
-    assert.isTrue(arraysAreEqual);
+    for (let i = 0; i < hash160.length; i += 1) {
+      const res = BTCUtils.hash160(hash160[i].input);
+      const arraysAreEqual = utils.typedArraysAreEqual(res, hash160[i].output);
+      assert.isTrue(arraysAreEqual);
+    }
   });
 
   it('implements bitcoin\'s hash256', () => {
-    let res = BTCUtils.hash256(hash256[0].input);
-    let arraysAreEqual = utils.typedArraysAreEqual(res, hash256[0].output);
-    assert.isTrue(arraysAreEqual);
-
-    res = BTCUtils.hash256(hash256[1].input); // 'abc' in utf - 8
-    arraysAreEqual = utils.typedArraysAreEqual(res, hash256[1].output);
-    assert.isTrue(arraysAreEqual);
+    for (let i = 0; i < hash256.length; i += 1) {
+      const res = BTCUtils.hash256(hash256[i].input);
+      const arraysAreEqual = utils.typedArraysAreEqual(res, hash256[i].output);
+      assert.isTrue(arraysAreEqual);
+    }
   });
 
   it('extracts a sequence from a witness input as LE and int', () => {
-    let res = BTCUtils.extractSequenceLEWitness(extractSequenceLEWitness[0].input);
-    const arraysAreEqual = utils.typedArraysAreEqual(res, extractSequenceLEWitness[0].output);
-    assert.isTrue(arraysAreEqual);
+    for (let i = 0; i < extractSequenceLEWitness.length; i += 1) {
+      const res = BTCUtils.extractSequenceLEWitness(extractSequenceLEWitness[i].input);
+      const arraysAreEqual = utils.typedArraysAreEqual(res, extractSequenceLEWitness[i].output);
+      assert.isTrue(arraysAreEqual);
+    }
 
-    res = BTCUtils.extractSequenceWitness(extractSequenceWitness[0].input);
-    assert.equal(res, BigInt(extractSequenceWitness[0].output));
+    for (let i = 0; i < extractSequenceWitness.length; i += 1) {
+      const res = BTCUtils.extractSequenceWitness(extractSequenceWitness[i].input);
+      assert.equal(res, BigInt(extractSequenceWitness[i].output));
+    }
   });
 
   it('extracts a sequence from a legacy input as LE and int', () => {
-    let res = BTCUtils.extractSequenceLELegacy(extractSequenceLELegacy[0].input);
-    const arraysAreEqual = utils.typedArraysAreEqual(res, extractSequenceLELegacy[0].output);
-    assert.isTrue(arraysAreEqual);
+    for (let i = 0; i < extractSequenceLELegacy.length; i += 1) {
+      const res = BTCUtils.extractSequenceLELegacy(extractSequenceLELegacy[i].input);
+      const arraysAreEqual = utils.typedArraysAreEqual(res, extractSequenceLELegacy[i].output);
+      assert.isTrue(arraysAreEqual);
+    }
 
-    res = BTCUtils.extractSequenceLegacy(extractSequenceLegacy[0].input);
-    assert.equal(res, BigInt(extractSequenceLegacy[0].output));
+    for (let i = 0; i < extractSequenceLegacy.length; i += 1) {
+      const res = BTCUtils.extractSequenceLegacy(extractSequenceLegacy[i].input);
+      assert.equal(res, BigInt(extractSequenceLegacy[i].output));
+    }
   });
 
   it('extracts an outpoint as bytes', () => {
-    const res = BTCUtils.extractOutpoint(extractOutpoint[0].input);
-    const arraysAreEqual = utils.typedArraysAreEqual(res, extractOutpoint[0].output);
-    assert.isTrue(arraysAreEqual);
+    for (let i = 0; i < extractOutpoint.length; i += 1) {
+      const res = BTCUtils.extractOutpoint(extractOutpoint[i].input);
+      const arraysAreEqual = utils.typedArraysAreEqual(res, extractOutpoint[i].output);
+      assert.isTrue(arraysAreEqual);
+    }
   });
 
   /* Witness Output */
   it('extracts the length of the output script', () => {
-    let res = BTCUtils.extractOutputScriptLen(extractOutputScriptLen[0].input);
-    assert.equal(res, extractOutputScriptLen[0].output);
-
-    res = BTCUtils.extractOutputScriptLen(extractOutputScriptLen[1].input);
-    assert.equal(res, extractOutputScriptLen[1].output);
+    for (let i = 0; i < extractOutputScriptLen.length; i += 1) {
+      const res = BTCUtils.extractOutputScriptLen(extractOutputScriptLen[i].input);
+      assert.equal(res, extractOutputScriptLen[i].output);
+    }
   });
 
   it('extracts the hash from an output', () => {
@@ -148,22 +156,16 @@ describe('BTCUtils', () => {
   });
 
   it('extracts the value as LE and int', () => {
-    let res;
-    let arraysAreEqual;
+    for (let i = 0; i < extractValueLE.length; i += 1) {
+      const res = BTCUtils.extractValueLE(extractValueLE[i].input);
+      const arraysAreEqual = utils.typedArraysAreEqual(res, extractValueLE[i].output);
+      assert.isTrue(arraysAreEqual);
+    }
 
-    res = BTCUtils.extractValueLE(extractValueLE[0].input);
-    arraysAreEqual = utils.typedArraysAreEqual(res, extractValueLE[0].output);
-    assert.isTrue(arraysAreEqual);
-
-    res = BTCUtils.extractValue(extractValue[0].input);
-    assert.equal(res, BigInt(extractValue[0].output));
-
-    res = BTCUtils.extractValueLE(extractValueLE[1].input);
-    arraysAreEqual = utils.typedArraysAreEqual(res, extractValueLE[1].output);
-    assert.isTrue(arraysAreEqual);
-
-    res = BTCUtils.extractValue(extractValue[1].input);
-    assert.equal(res, BigInt(extractValue[1].output));
+    for (let i = 0; i < extractValue.length; i += 1) {
+      const res = BTCUtils.extractValue(extractValue[i].input);
+      assert.equal(res, BigInt(extractValue[i].output));
+    }
   });
 
   it('extracts op_return data blobs', () => {
@@ -180,161 +182,80 @@ describe('BTCUtils', () => {
   });
 
   it('extracts inputs at specified indices', () => {
-    let res = BTCUtils.extractInputAtIndex(
-      extractInputAtIndex[0].input.proof,
-      extractInputAtIndex[0].input.index
-    );
-    let arraysAreEqual = utils.typedArraysAreEqual(res, extractInputAtIndex[0].output);
-    assert.isTrue(arraysAreEqual);
-
-    res = BTCUtils.extractInputAtIndex(
-      extractInputAtIndex[1].input.proof,
-      extractInputAtIndex[1].input.index
-    );
-    arraysAreEqual = utils.typedArraysAreEqual(res, extractInputAtIndex[1].output);
-    assert.isTrue(arraysAreEqual);
-
-    res = BTCUtils.extractInputAtIndex(
-      extractInputAtIndex[2].input.proof,
-      extractInputAtIndex[2].input.index
-    );
-    arraysAreEqual = utils.typedArraysAreEqual(res, extractInputAtIndex[2].output);
-    assert.isTrue(arraysAreEqual);
+    for (let i = 0; i < extractInputAtIndex.length; i += 1) {
+      const res = BTCUtils.extractInputAtIndex(
+        extractInputAtIndex[i].input.proof,
+        extractInputAtIndex[i].input.index
+      );
+      const arraysAreEqual = utils.typedArraysAreEqual(res, extractInputAtIndex[i].output);
+      assert.isTrue(arraysAreEqual);
+    }
   });
 
   it('sorts legacy from witness inputs', () => {
-    let res;
-    res = BTCUtils.isLegacyInput(isLegacyInput[0].input);
-    assert.isFalse(res);
-
-    res = BTCUtils.isLegacyInput(isLegacyInput[1].input);
-    assert.isTrue(res);
+    for (let i = 0; i < isLegacyInput.length; i += 1) {
+      const res = BTCUtils.isLegacyInput(isLegacyInput[i].input);
+      if (isLegacyInput[i].output) {
+        assert.isTrue(res);
+      } else {
+        assert.isFalse(res);
+      }
+    }
   });
 
   it('determines input length', () => {
-    let res;
-    res = BTCUtils.determineInputLength(determineInputLength[0].input);
-    assert.equal(res, BigInt(determineInputLength[0].output));
-
-    res = BTCUtils.determineInputLength(determineInputLength[1].input);
-    assert.equal(res, BigInt(determineInputLength[1].output));
-
-    res = BTCUtils.determineInputLength(determineInputLength[2].input);
-    assert.equal(res, BigInt(determineInputLength[2].output));
-
-    res = BTCUtils.determineInputLength(determineInputLength[3].input);
-    assert.equal(res, BigInt(determineInputLength[3].output));
-
-    res = BTCUtils.determineInputLength(determineInputLength[4].input);
-    assert.equal(res, BigInt(determineInputLength[4].output));
+    for (let i = 0; i < determineInputLength.length; i += 1) {
+      const res = BTCUtils.determineInputLength(determineInputLength[i].input);
+      assert.equal(res, BigInt(determineInputLength[i].output));
+    }
   });
 
   it('extracts the scriptSig from inputs', () => {
-    let res;
-    let arraysAreEqual;
-    res = BTCUtils.extractScriptSig(extractScriptSig[0].input);
-    arraysAreEqual = utils.typedArraysAreEqual(res, extractScriptSig[0].output);
-    assert.isTrue(arraysAreEqual);
-
-    res = BTCUtils.extractScriptSig(extractScriptSig[1].input);
-    arraysAreEqual = utils.typedArraysAreEqual(res, extractScriptSig[1].output);
-    assert.isTrue(arraysAreEqual);
-
-    res = BTCUtils.extractScriptSig(extractScriptSig[2].input);
-    arraysAreEqual = utils.typedArraysAreEqual(res, extractScriptSig[2].output);
-    assert.isTrue(arraysAreEqual);
-
-    res = BTCUtils.extractScriptSig(extractScriptSig[3].input);
-    arraysAreEqual = utils.typedArraysAreEqual(res, extractScriptSig[3].output);
-    assert.isTrue(arraysAreEqual);
+    for (let i = 0; i < extractScriptSig.length; i += 1) {
+      const res = BTCUtils.extractScriptSig(extractScriptSig[i].input);
+      const arraysAreEqual = utils.typedArraysAreEqual(res, extractScriptSig[i].output);
+      assert.isTrue(arraysAreEqual);
+    }
   });
 
   it('extracts the length of the VarInt and scriptSig from inputs', () => {
-    let res;
-    res = BTCUtils.extractScriptSigLen(extractScriptSigLen[0].input);
-    assert.equal(res.dataLen, BigInt(extractScriptSigLen[0].output[0]));
-    assert.equal(res.scriptSigLen, BigInt(extractScriptSigLen[0].output[1]));
-
-    res = BTCUtils.extractScriptSigLen(extractScriptSigLen[1].input);
-    assert.equal(res.dataLen, BigInt(extractScriptSigLen[1].output[0]));
-    assert.equal(res.scriptSigLen, BigInt(extractScriptSigLen[1].output[1]));
-
-    res = BTCUtils.extractScriptSigLen(extractScriptSigLen[2].input);
-    assert.equal(res.dataLen, BigInt(extractScriptSigLen[2].output[0]));
-    assert.equal(res.scriptSigLen, BigInt(extractScriptSigLen[2].output[1]));
+    for (let i = 0; i < extractScriptSigLen.length; i += 1) {
+      const res = BTCUtils.extractScriptSigLen(extractScriptSigLen[i].input);
+      assert.equal(res.dataLen, BigInt(extractScriptSigLen[i].output[0]));
+      assert.equal(res.scriptSigLen, BigInt(extractScriptSigLen[i].output[1]));
+    }
   });
 
   it('validates vin length based on stated size', () => {
-    let res;
-
-    // valid
-    res = BTCUtils.validateVin(validateVin[0].input);
-    assert.isTrue(res);
-
-    // too many inputs stated
-    res = BTCUtils.validateVin(validateVin[1].input);
-    assert.isFalse(res);
-
-    // no inputs stated
-    res = BTCUtils.validateVin(validateVin[2].input);
-    assert.isFalse(res);
-
-    // fewer bytes in vin than stated
-    res = BTCUtils.validateVin(validateVin[3].input);
-    assert.isFalse(res);
-
-    // more bytes in vin than stated
-    res = BTCUtils.validateVin(validateVin[4].input);
-    assert.isFalse(res);
+    for (let i = 0; i < validateVin.length; i += 1) {
+      const res = BTCUtils.validateVin(validateVin[i].input);
+      if (validateVin[i].output) {
+        assert.isTrue(res);
+      } else {
+        assert.isFalse(res);
+      }
+    }
   });
 
   it('validates vout length based on stated size', () => {
-    let res;
-
-    // valid
-    res = BTCUtils.validateVout(validateVout[0].input);
-    assert.isTrue(res);
-
-    // too many outputs stated
-    res = BTCUtils.validateVout(validateVout[1].input);
-    assert.isFalse(res);
-
-    // no outputs stated
-    res = BTCUtils.validateVout(validateVout[2].input);
-    assert.isFalse(res);
-
-    // fewer bytes in vout than stated
-    res = BTCUtils.validateVout(validateVout[3].input);
-    assert.isFalse(res);
-
-    // more bytes in vout than stated
-    res = BTCUtils.validateVout(validateVout[4].input);
-    assert.isFalse(res);
+    for (let i = 0; i < validateVout.length; i += 1) {
+      const res = BTCUtils.validateVout(validateVout[i].input);
+      if (validateVout[i].output) {
+        assert.isTrue(res);
+      } else {
+        assert.isFalse(res);
+      }
+    }
   });
 
   it('determines output length properly', () => {
-    let res;
-
-    res = BTCUtils.determineOutputLength(determineOutputLength[0].input);
-    assert.equal(res, BigInt(determineOutputLength[0].output));
-
-    res = BTCUtils.determineOutputLength(determineOutputLength[1].input);
-    assert.equal(res, BigInt(determineOutputLength[1].output));
-
-    res = BTCUtils.determineOutputLength(determineOutputLength[2].input);
-    assert.equal(res, BigInt(determineOutputLength[2].output));
-
-    res = BTCUtils.determineOutputLength(determineOutputLength[3].input);
-    assert.equal(res, BigInt(determineOutputLength[3].output));
-
-    res = BTCUtils.determineOutputLength(determineOutputLength[4].input);
-    assert.equal(res, BigInt(determineOutputLength[4].output));
-
-    res = BTCUtils.determineOutputLength(determineOutputLength[5].input);
-    assert.equal(res, BigInt(determineOutputLength[5].output));
+    for (let i = 0; i < determineOutputLength.length - 1; i += 1) {
+      const res = BTCUtils.determineOutputLength(determineOutputLength[i].input);
+      assert.equal(res, BigInt(determineOutputLength[i].output));
+    }
 
     try {
-      res = BTCUtils.determineOutputLength(determineOutputLength[6].input);
+      BTCUtils.determineOutputLength(determineOutputLength[6].input);
       assert(false, 'Expected an error');
     } catch (e) {
       assert.include(e.message, determineOutputLength[6].errorMessage);
@@ -342,115 +263,64 @@ describe('BTCUtils', () => {
   });
 
   it('extracts outputs at specified indices', () => {
-    let res;
-    let arraysAreEqual;
-    res = BTCUtils.extractOutputAtIndex(
-      extractOutputAtIndex[0].input.proof,
-      extractOutputAtIndex[0].input.index
-    );
-    arraysAreEqual = utils.typedArraysAreEqual(res, extractOutputAtIndex[0].output);
-    assert.isTrue(arraysAreEqual);
-
-    res = BTCUtils.extractOutputAtIndex(
-      extractOutputAtIndex[1].input.proof,
-      extractOutputAtIndex[1].input.index
-    );
-    arraysAreEqual = utils.typedArraysAreEqual(res, extractOutputAtIndex[1].output);
-    assert.isTrue(arraysAreEqual);
-
-    res = BTCUtils.extractOutputAtIndex(
-      extractOutputAtIndex[2].input.proof,
-      extractOutputAtIndex[2].input.index
-    );
-    arraysAreEqual = utils.typedArraysAreEqual(res, extractOutputAtIndex[2].output);
-
-    res = BTCUtils.extractOutputAtIndex(
-      extractOutputAtIndex[3].input.proof,
-      extractOutputAtIndex[3].input.index
-    );
-    arraysAreEqual = utils.typedArraysAreEqual(res, extractOutputAtIndex[3].output);
+    for (let i = 0; i < extractOutputAtIndex.length; i += 1) {
+      const res = BTCUtils.extractOutputAtIndex(
+        extractOutputAtIndex[i].input.proof,
+        extractOutputAtIndex[i].input.index
+      );
+      const arraysAreEqual = utils.typedArraysAreEqual(res, extractOutputAtIndex[i].output);
+      assert.isTrue(arraysAreEqual);
+    }
   });
 
   it('extracts a root from a header', () => {
-    const res = BTCUtils.extractMerkleRootBE(extractMerkleRootBE[0].input);
-    const arraysAreEqual = utils.typedArraysAreEqual(res, extractMerkleRootBE[0].output);
-    assert.isTrue(arraysAreEqual);
+    for (let i = 0; i < extractMerkleRootBE.length; i += 1) {
+      const res = BTCUtils.extractMerkleRootBE(extractMerkleRootBE[i].input);
+      const arraysAreEqual = utils.typedArraysAreEqual(res, extractMerkleRootBE[i].output);
+      assert.isTrue(arraysAreEqual);
+    }
   });
 
   it('extracts the target from a header', () => {
     const res = BTCUtils.extractTarget(extractTarget[0].input);
     assert.equal(res, BigInt(26959535291011309493156476344723991336010898738574164086137773096960));
+    // this isn't working
     // assert.equal(res, utils.bytesToUint(extractTarget[0].output));
   });
 
   it('extracts the prev block hash', () => {
-    const res = BTCUtils.extractPrevBlockBE(extractPrevBlockBE[0].input);
-    const arraysAreEqual = utils.typedArraysAreEqual(res, extractPrevBlockBE[0].output);
-    assert.isTrue(arraysAreEqual);
+    for (let i = 0; i < BTCUtils.extractPrevBlockBE.length; i += 1) {
+      const res = BTCUtils.extractPrevBlockBE(extractPrevBlockBE[i].input);
+      const arraysAreEqual = utils.typedArraysAreEqual(res, extractPrevBlockBE[i].output);
+      assert.isTrue(arraysAreEqual);
+    }
   });
 
   it('extracts a timestamp from a header', () => {
-    const res = BTCUtils.extractTimestamp(extractTimestamp[0].input);
-    assert.equal(res, BigInt(extractTimestamp[0].output));
+    for (let i = 0; i < extractTimestamp.length; i += 1) {
+      const res = BTCUtils.extractTimestamp(extractTimestamp[i].input);
+      assert.equal(res, BigInt(extractTimestamp[i].output));
+    }
   });
 
   it('verifies a bitcoin merkle root', () => {
-    let res;
-    res = BTCUtils.verifyHash256Merkle(
-      verifyHash256Merkle[0].input.proof,
-      verifyHash256Merkle[0].input.index // 0-indexed
-    );
-    assert.isTrue(res);
-
-    res = BTCUtils.verifyHash256Merkle(
-      verifyHash256Merkle[1].input.proof,
-      verifyHash256Merkle[1].input.index // 0-indexed
-    );
-    assert.isTrue(res);
-
-    res = BTCUtils.verifyHash256Merkle(
-      verifyHash256Merkle[2].input.proof,
-      verifyHash256Merkle[2].input.index // 0-indexed
-    );
-    assert.isTrue(res);
-
-    res = BTCUtils.verifyHash256Merkle(
-      verifyHash256Merkle[3].input.proof,
-      verifyHash256Merkle[3].input.index
-    );
-    assert.isTrue(res);
-
-    res = BTCUtils.verifyHash256Merkle(
-      verifyHash256Merkle[4].input.proof,
-      verifyHash256Merkle[4].input.index
-    );
-    assert.isTrue(res);
-
-    // not evenly divisible by 32
-    res = BTCUtils.verifyHash256Merkle(
-      verifyHash256Merkle[5].input.proof,
-      verifyHash256Merkle[5].input.index
-    );
-    assert.isFalse(res);
-
-    // 1-hash special case
-    res = BTCUtils.verifyHash256Merkle(
-      verifyHash256Merkle[6].input.proof,
-      verifyHash256Merkle[6].input.index
-    );
-    assert.isTrue(res);
-
-    // 2-hash special case
-    res = BTCUtils.verifyHash256Merkle(
-      verifyHash256Merkle[7].input.proof,
-      verifyHash256Merkle[7].input.index
-    );
-    assert.isFalse(res);
+    for (let i = 0; i < verifyHash256Merkle.length; i += 1) {
+      const res = BTCUtils.verifyHash256Merkle(
+        verifyHash256Merkle[i].input.proof,
+        verifyHash256Merkle[i].input.index // 0-indexed
+      );
+      if (verifyHash256Merkle[i].output) {
+        assert.isTrue(res);
+      } else {
+        assert.isFalse(res);
+      }
+    }
   });
 
   it('determines VarInt data lengths correctly', () => {
     let res;
 
+    // How can I store 0x01 in json?
     res = BTCUtils.determineVarIntDataLength(0x01);
     assert.equal(res, determineVarIntDataLength[0].output);
     res = BTCUtils.determineVarIntDataLength(0xfd);
@@ -511,29 +381,13 @@ describe('BTCUtils', () => {
 
   describe('#calculateDifficulty', () => {
     it('throws if passed the wrong type', () => {
-      try {
-        BTCUtils.calculateDifficulty(calculateDifficulty[0].input);
-        assert(false, 'expected an error');
-      } catch (e) {
-        assert.include(e.message, calculateDifficulty[0].errorMessage);
-      }
-      try {
-        BTCUtils.calculateDifficulty(calculateDifficulty[1].input);
-        assert(false, 'expected an error');
-      } catch (e) {
-        assert.include(e.message, calculateDifficulty[1].errorMessage);
-      }
-      try {
-        BTCUtils.calculateDifficulty(calculateDifficulty[2].input);
-        assert(false, 'expected an error');
-      } catch (e) {
-        assert.include(e.message, calculateDifficulty[2].errorMessage);
-      }
-      try {
-        BTCUtils.calculateDifficulty({});
-        assert(false, 'expected an error');
-      } catch (e) {
-        assert.include(e.message, 'Argument must be a BigInt');
+      for (let i = 0; i < calculateDifficulty.length; i += 1) {
+        try {
+          BTCUtils.calculateDifficulty(calculateDifficulty[i].input);
+          assert(false, 'expected an error');
+        } catch (e) {
+          assert.include(e.message, calculateDifficulty[i].errorMessage);
+        }
       }
     });
   });

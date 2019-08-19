@@ -334,7 +334,7 @@
       "proof": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "index": 0
     },
-    "output": false
+    "output": true
   }, {
     "input": {
       "proof": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
@@ -525,59 +525,176 @@
 
 
 
-  "serializeHex": [{
-    "input": "",
-    "output": ""
-  }],
-
-  "deserializeHex": [{
-    "input": "",
-    "output": ""
-  }],
-
-  "sha256": [{
-    "input": "",
-    "output": ""
-  }],
-
-  "ripemd160": [{
-    "input": "",
-    "output": ""
-  }],
-
-  "typedArraysAreEqual": [{
-    "input": "",
-    "output": ""
-  }],
-
-  "bytesToUint": [{
-    "input": "",
-    "output": ""
-  }],
-
-  "safeSlice": [{
-    "input": "",
-    "output": ""
-  }],
-
-  "concatUint8Arrays": [{
-    "input": "",
-    "output": ""
+  "lastBytes": [{
+    "input": {
+      "proof": "0x00112233",
+      "num": 2
+    },
+    "output": "0x2233"
+  }, {
+    "input": {
+      "proof": "0x00",
+      "num": 2
+    },
+    "errorMessage": "Slice must not use negative indexes"
   }],
 
   "reverseEndianness": [{
-    "input": "",
-    "output": ""
+    "input": "0x00112233",
+    "output": "0x33221100"
+  }, {
+    "input": "0x0123456789abcdef",
+    "output": "0xefcdab8967452301"
   }],
 
-  "lastBytes": [{
-    "input": "",
-    "output": ""
+  "bytesToUint": [{
+    "input": "0x00",
+    "output": 0
+  }, {
+    "input": "0xff",
+    "output": 255
+  }, {
+    "input": "0x00ff",
+    "output": 255
+  }, {
+    "input": "0xff00",
+    "output": 65280
+  }, {
+    "input": "0x01",
+    "output": 1
+  }, {
+    "input": "0x0001",
+    "output": 1
+  }, {
+    "input": "0x0100",
+    "output": 256
+  }, {
+    "input": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "output": "0x313135373932303839323337333136313935343233353730393835303038363837393037383533323639393834363635363430353634303339343537353834303037393133313239363339393335"
   }],
 
-  "parseJson": [{
-    "input": "",
-    "output": ""
+  "sha256": [{
+    "input": "0x616263",
+    "output": "0xba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+  }, {
+    "input": "0x",
+    "output": "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }],
+
+  "ripemd160": [{
+    "input": "0x00",
+    "output": "0xc81b94933420221a7ac004a90242d8b1d3e5070d"
+  }, {
+    "input": "0x2c415d8f16ce68ede2b3642800883055",
+    "output": "0xb09d9089acb3855efacd76960db70d166c32c5e6"
+  }],
+
+  "typedArraysAreEqual": [{
+    "input": {
+      "arr1": "0xffffff",
+      "arr2": "0xffffff"
+    },
+    "output": true
+  }, {
+    "input": {
+      "arr1": "0xfffffe",
+      "arr2": "0xffffff"
+    },
+    "output": false
+  }, {
+    "input": {
+      "arr1": "0xffffff",
+      "arr2": "0xffffff"
+    },
+    "errorMessage": "Arrays must be of type Uint8Array"
+  }, {
+    "input": {
+      "arr1": "0xffff",
+      "arr2": "0xffffff"
+    },
+    "output": false
+  }],
+
+  "safeSlice": [{
+    "input": {
+      "array": "0x0102030405",
+      "start": 0,
+      "end": 3
+    },
+    "output": "0x010203"
+  }, {
+    "input": {
+      "array": "0x0102030405"
+    },
+    "output": "0x0102030405"
+  }, {
+    "input": {
+      "array": "0x0102030405",
+      "start": 2
+    },
+    "output": "0x030405"
+  }, {
+    "input": {
+      "array": "0x0102030405",
+      "start": 3
+    },
+    "output": "0x0405"
+  }, {
+    "input": {
+      "array": "0x0102030405",
+      "start": null,
+      "end": 3
+    },
+    "output": "0x010203"
+  }, {
+    "input": {
+      "array": "0x0102030405",
+      "start": 0,
+      "end": 6
+    },
+    "errorMessage": "Tried to slice past end of array"
+  }, {
+    "input": {
+      "array": "0x0102030405",
+      "start": -1,
+      "end": 3
+    },
+    "errorMessage": "Slice must not use negative indexes"
+  }, {
+    "input": {
+      "array": "0x0102030405",
+      "start": 2,
+      "end": -1
+    },
+    "errorMessage": "Slice must not use negative indexes"
+  }, {
+    "input": {
+      "array": "0x0102030405",
+      "start": 4,
+      "end": 3
+    },
+    "errorMessage": "Slice must not have 0 length"
+  }, {
+    "input": {
+      "array": "0x0102030405",
+      "start": 4,
+      "end": 4
+    },
+    "errorMessage": "Slice must not have 0 length"
+  }],
+
+  "concatUint8Arrays": [{
+    "input": {
+      "arr1": "0xffffff",
+      "arr2": "0x000000",
+      "arr3": "0x1746bd"
+    },
+    "output": "0xffffff0000001746bd"
+  }, {
+    "input": {
+      "arr1": "0xffffff"
+    },
+    "output": "0xffffff"
   }],
 
 

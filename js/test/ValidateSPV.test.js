@@ -7,7 +7,6 @@ import * as vectors from '../../testVectors.json';
 const { assert } = chai;
 
 const vectorObj = JSON.parse(JSON.stringify(vectors));
-
 utils.parseJson(vectorObj);
 
 const {
