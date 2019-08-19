@@ -209,10 +209,10 @@
 
   "extractOutputScriptLen": [{
     "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
-    "output": "0x22"
+    "output": 34
   }, {
     "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-    "output": "0x16"
+    "output": 22
   }],
 
   "extractValueLE": [{

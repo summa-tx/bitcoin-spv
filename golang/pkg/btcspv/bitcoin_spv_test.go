@@ -177,33 +177,14 @@ func (suite *UtilsSuite) TestHash256() {
 }
 
 func (suite *UtilsSuite) TestBytesToUint() {
-	decode := decodeIfHex("00")
-	res := bytesToUint(decode)
-	suite.Equal(res, uint(0))
+	fixtures := suite.Fixtures["bytesToUint"]
 
-	decode = decodeIfHex("ff")
-	res = bytesToUint(decode)
-	suite.Equal(res, uint(255))
-
-	decode = decodeIfHex("00ff")
-	res = bytesToUint(decode)
-	suite.Equal(res, uint(255))
-
-	decode = decodeIfHex("ff00")
-	res = bytesToUint(decode)
-	suite.Equal(res, uint(65280))
-
-	decode = decodeIfHex("01")
-	res = bytesToUint(decode)
-	suite.Equal(res, uint(1))
-
-	decode = decodeIfHex("0001")
-	res = bytesToUint(decode)
-	suite.Equal(res, uint(1))
-
-	decode = decodeIfHex("0100")
-	res = bytesToUint(decode)
-	suite.Equal(res, uint(256))
+	for i := range fixtures {
+		testCase := fixtures[i]
+		expected := uint(testCase.Output.(int))
+		actual := bytesToUint(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestBytesToBigInt() {
@@ -269,15 +250,47 @@ func (suite *UtilsSuite) TestExtractSequenceLELegacy() {
 }
 
 func (suite *UtilsSuite) TestExtractOutpoint() {
-	suite.T().Skip()
+	fixture := suite.Fixtures["extractOutpoint"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.([]byte)
+		actual := ExtractOutpoint(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractOuputScriptLen() {
-	suite.T().Skip()
+	fixture := suite.Fixtures["extractOutputScriptLen"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := uint(testCase.Output.(int))
+		actual := ExtractOutputScriptLen(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractHash() {
-	suite.T().Skip()
+	fixture := suite.Fixtures["extractHash"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.([]byte)
+		actual, err := ExtractHash(testCase.Input.([]byte))
+		suite.Nil(err)
+		suite.Equal(expected, actual)
+	}
+
+	fixtureError := suite.Fixtures["extractHashError"]
+
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		expected := testCase.ErrorMessage.(string)
+		actual, err := ExtractHash(testCase.Input.([]byte))
+		suite.Nil(actual)
+		suite.Equal(expected, err)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractValue() {
@@ -405,6 +418,22 @@ func (suite *UtilsSuite) TestValidateVout() {
 	res = ValidateVin(decode)
 	suite.Equal(res, false)
 
+}
+
+func (suite *UtilsSuite) TestExtractInputTxIdLE() {
+	suite.T().Skip()
+}
+
+func (suite *UtilsSuite) TestextractInputTxId() {
+	suite.T().Skip()
+}
+
+func (suite *UtilsSuite) TestExtractIndexLE() {
+	suite.T().Skip()
+}
+
+func (suite *UtilsSuite) TestextractTxIndex() {
+	suite.T().Skip()
 }
 
 func (suite *UtilsSuite) TestDetermineOutputLength() {
