@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 // Ben F Rayfield offers this js file opensource MIT license
 // https://github.com/benrayfield/jsutils/blob/master/src/sha256.js
 //

@@ -15,7 +15,7 @@
  */
 
 import * as BTCUtils from './BTCUtils';
-import * as utils from '../utils/utils';
+import * as utils from './utils';
 
 
 /**
@@ -157,13 +157,13 @@ export function parseHeader(header) {
     throw new TypeError('Malformatted header. Must be exactly 80 bytes.');
   }
 
-  const digest = BTCUtils.reverseEndianness(BTCUtils.hash256(header));
-  const version = utils.bytesToUint(BTCUtils.reverseEndianness(utils.safeSlice(header, 0, 4)));
+  const digest = utils.reverseEndianness(BTCUtils.hash256(header));
+  const version = utils.bytesToUint(utils.reverseEndianness(utils.safeSlice(header, 0, 4)));
   const prevHash = BTCUtils.extractPrevBlockLE(header);
   const merkleRoot = BTCUtils.extractMerkleRootLE(header);
   const timestamp = BTCUtils.extractTimestamp(header);
   const target = BTCUtils.extractTarget(header);
-  const nonce = utils.bytesToUint(BTCUtils.reverseEndianness(utils.safeSlice(header, 76, 80)));
+  const nonce = utils.bytesToUint(utils.reverseEndianness(utils.safeSlice(header, 76, 80)));
 
   return {
     digest, version, prevHash, merkleRoot, timestamp, target, nonce
@@ -179,7 +179,7 @@ export function parseHeader(header) {
  * @returns {Boolean}     True if header work is valid, false otherwise
  */
 export function validateHeaderWork(digest, target) {
-  if (digest === 0) {
+  if (utils.typedArraysAreEqual(digest, new Uint8Array(Array(32).fill(0)))) {
     return false;
   }
   return utils.bytesToUint(digest) < target;
@@ -191,7 +191,7 @@ export function validateHeaderWork(digest, target) {
  *
  * @dev                   Compares current header prevHash to previous header's digest
  * @param {Uint8Array}    header The raw bytes header
- * @param {Uint8Array}    prevHeaderDigest The previous header's digest
+ * @param {BigInt}    prevHeaderDigest The previous header's digest
  * @returns {Boolean}     True if header chain is valid, false otherwise
  */
 export function validateHeaderPrevHash(header, prevHeaderDigest) {
@@ -242,7 +242,7 @@ export function validateHeaderChain(headers) {
 
     // Require that the header has sufficient work
     digest = BTCUtils.hash256(header);
-    if (!validateHeaderWork(BTCUtils.reverseEndianness(digest), target)) {
+    if (!validateHeaderWork(utils.reverseEndianness(digest), target)) {
       throw new Error('Header does not meet its own difficulty target.');
     }
 
