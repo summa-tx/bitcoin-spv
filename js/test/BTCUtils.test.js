@@ -184,30 +184,21 @@ describe('BTCUtils', () => {
       extractInputAtIndex[0].input.proof,
       extractInputAtIndex[0].input.index
     );
-    let arraysAreEqual = utils.typedArraysAreEqual(
-      res,
-      extractInputAtIndex[0].output
-    );
+    let arraysAreEqual = utils.typedArraysAreEqual(res, extractInputAtIndex[0].output);
     assert.isTrue(arraysAreEqual);
 
     res = BTCUtils.extractInputAtIndex(
       extractInputAtIndex[1].input.proof,
       extractInputAtIndex[1].input.index
     );
-    arraysAreEqual = utils.typedArraysAreEqual(
-      res,
-      extractInputAtIndex[1].output
-    );
+    arraysAreEqual = utils.typedArraysAreEqual(res, extractInputAtIndex[1].output);
     assert.isTrue(arraysAreEqual);
 
     res = BTCUtils.extractInputAtIndex(
       extractInputAtIndex[2].input.proof,
       extractInputAtIndex[2].input.index
     );
-    arraysAreEqual = utils.typedArraysAreEqual(
-      res,
-      extractInputAtIndex[2].output
-    );
+    arraysAreEqual = utils.typedArraysAreEqual(res, extractInputAtIndex[2].output);
     assert.isTrue(arraysAreEqual);
   });
 
@@ -353,18 +344,30 @@ describe('BTCUtils', () => {
   it('extracts outputs at specified indices', () => {
     let res;
     let arraysAreEqual;
-    res = BTCUtils.extractOutputAtIndex(extractOutputAtIndex[0].input, 0);
+    res = BTCUtils.extractOutputAtIndex(
+      extractOutputAtIndex[0].input.proof,
+      extractOutputAtIndex[0].input.index
+    );
     arraysAreEqual = utils.typedArraysAreEqual(res, extractOutputAtIndex[0].output);
     assert.isTrue(arraysAreEqual);
 
-    res = BTCUtils.extractOutputAtIndex(extractOutputAtIndex[1].input, 1);
+    res = BTCUtils.extractOutputAtIndex(
+      extractOutputAtIndex[1].input.proof,
+      extractOutputAtIndex[1].input.index
+    );
     arraysAreEqual = utils.typedArraysAreEqual(res, extractOutputAtIndex[1].output);
     assert.isTrue(arraysAreEqual);
 
-    res = BTCUtils.extractOutputAtIndex(extractOutputAtIndex[2].input, 0);
+    res = BTCUtils.extractOutputAtIndex(
+      extractOutputAtIndex[2].input.proof,
+      extractOutputAtIndex[2].input.index
+    );
     arraysAreEqual = utils.typedArraysAreEqual(res, extractOutputAtIndex[2].output);
 
-    res = BTCUtils.extractOutputAtIndex(extractOutputAtIndex[3].input, 1);
+    res = BTCUtils.extractOutputAtIndex(
+      extractOutputAtIndex[3].input.proof,
+      extractOutputAtIndex[3].input.index
+    );
     arraysAreEqual = utils.typedArraysAreEqual(res, extractOutputAtIndex[3].output);
   });
 
@@ -448,14 +451,14 @@ describe('BTCUtils', () => {
   it('determines VarInt data lengths correctly', () => {
     let res;
 
-    res = BTCUtils.determineVarIntDataLength(determineVarIntDataLength[0].input);
+    res = BTCUtils.determineVarIntDataLength(0x01);
     assert.equal(res, determineVarIntDataLength[0].output);
-    res = BTCUtils.determineVarIntDataLength(determineVarIntDataLength[0].input);
-    assert.equal(res, determineVarIntDataLength[0].output);
-    res = BTCUtils.determineVarIntDataLength(determineVarIntDataLength[0].input);
-    assert.equal(res, determineVarIntDataLength[0].output);
-    res = BTCUtils.determineVarIntDataLength(determineVarIntDataLength[0].input);
-    assert.equal(res, determineVarIntDataLength[0].output);
+    res = BTCUtils.determineVarIntDataLength(0xfd);
+    assert.equal(res, determineVarIntDataLength[1].output);
+    res = BTCUtils.determineVarIntDataLength(0xfe);
+    assert.equal(res, determineVarIntDataLength[2].output);
+    res = BTCUtils.determineVarIntDataLength(0xff);
+    assert.equal(res, determineVarIntDataLength[3].output);
   });
 
   it('calculates consensus-correct retargets', () => {
@@ -492,21 +495,15 @@ describe('BTCUtils', () => {
     let actual;
     let expected;
     for (let i = 0; i < retargetAlgorithm.length; i += 1) {
-      actual = BTCUtils.extractDifficulty(
-        retargetAlgorithm[i][0].hex
-      );
+      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i][0].hex);
       expected = retargetAlgorithm[i][0].difficulty;
       assert.equal(actual, expected);
 
-      actual = BTCUtils.extractDifficulty(
-        retargetAlgorithm[i][1].hex
-      );
+      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i][1].hex);
       expected = retargetAlgorithm[i][1].difficulty;
       assert.equal(actual, expected);
 
-      actual = BTCUtils.extractDifficulty(
-        retargetAlgorithm[i][2].hex
-      );
+      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i][2].hex);
       expected = retargetAlgorithm[i][2].difficulty;
       assert.equal(actual, expected);
     }
