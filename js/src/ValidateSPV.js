@@ -15,7 +15,7 @@
  */
 
 import * as BTCUtils from './BTCUtils';
-import * as utils from '../utils/utils';
+import * as utils from './utils';
 
 
 /**
