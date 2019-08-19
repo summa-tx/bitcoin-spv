@@ -191,7 +191,7 @@ export function validateHeaderWork(digest, target) {
  *
  * @dev                   Compares current header prevHash to previous header's digest
  * @param {Uint8Array}    header The raw bytes header
- * @param {Uint8Array}    prevHeaderDigest The previous header's digest
+ * @param {BigInt}    prevHeaderDigest The previous header's digest
  * @returns {Boolean}     True if header chain is valid, false otherwise
  */
 export function validateHeaderPrevHash(header, prevHeaderDigest) {

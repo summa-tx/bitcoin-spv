@@ -24,18 +24,14 @@ const {
 
 describe('ValidateSPV', () => {
   describe('#prove', () => {
-    it('returns true if proof is valid', () => {
+    it('returns true if proof is valid, false if otherwise', () => {
       for (let i = 0; i < prove.length; i += 1) {
         const {
           txIdLE, merkleRootLE, proof, index
         } = prove[i].input;
 
         const res = ValidateSPV.prove(txIdLE, merkleRootLE, proof, index);
-        if (prove[i].output) {
-          assert.isTrue(res);
-        } else {
-          assert.isFalse(res);
-        }
+        assert.strictEqual(res, prove[i].output);
       }
     });
   });
@@ -62,10 +58,10 @@ describe('ValidateSPV', () => {
           sequence, txId, index, type
         } = parseInput[i].output;
 
-        assert.equal(txIn.sequence, sequence);
+        assert.strictEqual(txIn.sequence, BigInt(sequence));
         assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, txId));
-        assert.equal(txIn.inputIndex, index);
-        assert.equal(txIn.inputType, type);
+        assert.strictEqual(txIn.inputIndex, BigInt(index));
+        assert.strictEqual(txIn.inputType, BigInt(type));
       }
     });
   });
@@ -78,8 +74,8 @@ describe('ValidateSPV', () => {
 
         const TxOut = ValidateSPV.parseOutput(output);
 
-        assert.equal(TxOut.value, BigInt(value));
-        assert.equal(TxOut.outputType, utils.OUTPUT_TYPES[type]);
+        assert.strictEqual(TxOut.value, BigInt(value));
+        assert.strictEqual(TxOut.outputType, utils.OUTPUT_TYPES[type]);
         assert.isTrue(utils.typedArraysAreEqual(TxOut.payload, payload));
       }
     });
@@ -95,17 +91,16 @@ describe('ValidateSPV', () => {
           } = parseHeader[i].output;
 
           assert.isTrue(utils.typedArraysAreEqual(validHeader.digest, digest));
-          assert.equal(validHeader.version, version);
+          assert.strictEqual(validHeader.version, BigInt(version));
           assert.isTrue(utils.typedArraysAreEqual(validHeader.prevHash, prevHash));
           assert.isTrue(utils.typedArraysAreEqual(validHeader.merkleRoot, merkleRoot));
-          assert.equal(validHeader.timestamp, timestamp);
-          assert.equal(validHeader.target, utils.bytesToUint(target));
-          assert.equal(validHeader.nonce, nonce);
+          assert.strictEqual(validHeader.timestamp, BigInt(timestamp));
+          assert.strictEqual(validHeader.target, BigInt(utils.bytesToUint(target)));
+          assert.strictEqual(validHeader.nonce, BigInt(nonce));
         }
       });
 
-    it('throws errors if input header is not 80 bytes', () => {
-      // Removed a byte from the header version to create error
+    it('throws error if input header is not valid', () => {
       for (let i = 0; i < parseHeaderError.length; i += 1) {
         try {
           ValidateSPV.parseHeader(parseHeaderError[i].input);
@@ -121,11 +116,11 @@ describe('ValidateSPV', () => {
     it('returns true if header chain is valid', () => {
       for (let i = 0; i < validateHeaderChain.length; i += 1) {
         const res = ValidateSPV.validateHeaderChain(validateHeaderChain[i].input);
-        assert.equal(res, BigInt(validateHeaderChain[i].output));
+        assert.strictEqual(res, BigInt(validateHeaderChain[i].output));
       }
     });
 
-    it('throws Error("Header bytes not multiple of 80.") if header chain is not divisible by 80', () => {
+    it('throws error if header chain is not valid', () => {
       for (let i = 0; i < validateHeaderChainError.length; i += 1) {
         try {
           ValidateSPV.validateHeaderChain(validateHeaderChainError[i].input);
@@ -138,37 +133,29 @@ describe('ValidateSPV', () => {
   });
 
   describe('#validateHeaderWork', () => {
-    it('returns true if the digest has sufficient work, returns false if insufficient work or empty digest', () => {
+    it('returns true if the digest has sufficient work, false if otherwise', () => {
       for (let i = 0; i < validateHeaderWork.length; i += 1) {
         let t;
-        if (typeof validateHeaderWork[i].target !== 'number') {
-          t = utils.bytesToUint(validateHeaderWork[i].input.target);
+        if (typeof validateHeaderWork[i].target === 'number') {
+          t = BigInt(validateHeaderWork[i].target);
         } else {
-          t = validateHeaderWork[i].target;
+          t = utils.bytesToUint(validateHeaderWork[i].input.target);
         }
 
         const res = ValidateSPV.validateHeaderWork(validateHeaderWork[i].input.digest, t);
-        if (validateHeaderWork[i].output) {
-          assert.isTrue(res);
-        } else {
-          assert.isFalse(res);
-        }
+        assert.strictEqual(res, validateHeaderWork[i].output);
       }
     });
   });
 
   describe('#validateHeaderPrevHash', () => {
-    it('returns true if header prevHash is valid', () => {
+    it('returns true if header prevHash is valid, false if otherwise', () => {
       for (let i = 0; i < validateHeaderPrevHash.length; i += 1) {
         const res = ValidateSPV.validateHeaderPrevHash(
           validateHeaderPrevHash[i].input.header,
           validateHeaderPrevHash[i].input.prevHash
         );
-        if (validateHeaderPrevHash[i].output) {
-          assert.isTrue(res);
-        } else {
-          assert.isFalse(res);
-        }
+        assert.strictEqual(res, validateHeaderPrevHash[i].output);
       }
     });
   });
