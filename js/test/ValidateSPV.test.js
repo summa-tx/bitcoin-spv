@@ -152,7 +152,7 @@ describe('ValidateSPV', () => {
 
       assert.equal(nonstandardOutput.value, BigInt(value));
       assert.equal(nonstandardOutput.outputType, utils.OUTPUT_TYPES[type]);
-      assert.isTrue(utils.typedArraysAreEqual(nonstandardOutput.payload, payload)); // new Uint8Array([])
+      assert.isTrue(utils.typedArraysAreEqual(nonstandardOutput.payload, payload));
     });
 
     it('returns the tx output value, output type, and payload for an SH output', () => {
