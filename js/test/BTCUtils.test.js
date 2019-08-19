@@ -254,12 +254,7 @@ describe('BTCUtils', () => {
 
   it('extracts the target from a header', () => {
     const res = BTCUtils.extractTarget(extractTarget[0].input);
-    assert.strictEqual(
-      res,
-      BigInt(26959535291011309493156476344723991336010898738574164086137773096960)
-    );
-    // this isn't working
-    // assert.equal(res, utils.bytesToUint(extractTarget[0].output));
+    assert.strictEqual(res, utils.bytesToUint(extractTarget[0].output));
   });
 
   it('extracts the prev block hash', () => {
@@ -288,17 +283,10 @@ describe('BTCUtils', () => {
   });
 
   it('determines VarInt data lengths correctly', () => {
-    let res;
-
-    // How can I store 0x01 in json?
-    res = BTCUtils.determineVarIntDataLength(0x01);
-    assert.strictEqual(res, determineVarIntDataLength[0].output);
-    res = BTCUtils.determineVarIntDataLength(0xfd);
-    assert.strictEqual(res, determineVarIntDataLength[1].output);
-    res = BTCUtils.determineVarIntDataLength(0xfe);
-    assert.strictEqual(res, determineVarIntDataLength[2].output);
-    res = BTCUtils.determineVarIntDataLength(0xff);
-    assert.strictEqual(res, determineVarIntDataLength[3].output);
+    for (let i = 0; i < determineVarIntDataLength.length; i += 1) {
+      const res = BTCUtils.determineVarIntDataLength(determineVarIntDataLength[i].input);
+      assert.strictEqual(res, determineVarIntDataLength[i].output);
+    }
   });
 
   it('calculates consensus-correct retargets', () => {
