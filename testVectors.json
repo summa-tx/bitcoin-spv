@@ -669,7 +669,9 @@
       "end": 3
     },
     "output": "0x010203"
-  }, {
+  }],
+
+  "safeSliceError": [{
     "input": {
       "array": "0x0102030405",
       "start": 0,

@@ -17,7 +17,8 @@ const {
   ripemd160,
   typedArraysAreEqual,
   typedArraysAreEqualError,
-  safeSlice
+  safeSlice,
+  safeSliceError
 } = vectorObj;
 
 const { assert } = chai;
@@ -181,7 +182,7 @@ describe('utils', () => {
 
   describe('#safeSlice', () => {
     it('returns a safe slice on an array', () => {
-      for (let i = 0; i < 5; i += 1) {
+      for (let i = 0; i < safeSlice.length; i += 1) {
         const { array, start, end } = safeSlice[i].input;
         const res = utils.safeSlice(array, start, end);
         const arraysAreEqual = utils.typedArraysAreEqual(res, safeSlice[i].output);
@@ -190,7 +191,6 @@ describe('utils', () => {
     });
     it('error if passed invalid arguments', () => {
       const arr = [1, 2, 3, 4, 5];
-      // How can I store this value in json?
       const OUT_OF_RANGE = BigInt(Number.MAX_SAFE_INTEGER) + BigInt(1);
 
       // start is a BigInt and is out of range
@@ -209,13 +209,13 @@ describe('utils', () => {
         assert.include(e.message, 'BigInt argument out of safe number range');
       }
 
-      for (let i = 5; i < safeSlice.length; i += 1) {
-        const { array, start, end } = safeSlice[i].input;
+      for (let i = 0; i < safeSliceError.length; i += 1) {
+        const { array, start, end } = safeSliceError[i].input;
         try {
           utils.safeSlice(array, start, end);
           assert(false, 'expected an error');
         } catch (e) {
-          assert.include(e.message, safeSlice[i].errorMessage);
+          assert.include(e.message, safeSliceError[i].errorMessage);
         }
       }
     });
