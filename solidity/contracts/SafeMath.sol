@@ -62,7 +62,7 @@ library SafeMath {
      * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
      */
     function sub(uint256 _a, uint256 _b) internal pure returns (uint256) {
-        require(_b <= _a, "Underflow during subtraction.");
+        require(_b <= _a, "Slice must not use negative indexes");
         return _a - _b;
     }
 

@@ -5,7 +5,7 @@ import * as BTCUtils from '../src/BTCUtils';
 import * as vectors from '../../testVectors.json';
 
 const vectorObj = JSON.parse(JSON.stringify(vectors));
-utils.parseJson(vectorObj);
+utils.updateJson(vectorObj);
 
 const {
   extractOutpoint,

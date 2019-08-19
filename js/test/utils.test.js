@@ -1,12 +1,11 @@
 /* global BigInt describe it */
-
 import * as chai from 'chai';
 import * as utils from '../src/utils';
 import * as vectors from '../../testVectors.json';
 // import { type } from 'os';
 
 const vectorObj = JSON.parse(JSON.stringify(vectors));
-utils.parseJson(vectorObj);
+utils.updateJson(vectorObj);
 
 const {
   lastBytes,
@@ -120,7 +119,8 @@ describe('utils', () => {
 
       res = utils.deserializeHex('0x0001022a646566ff');
       arraysAreEqual = utils.typedArraysAreEqual(
-        res, new Uint8Array([0, 1, 2, 42, 100, 101, 102, 255])
+        res,
+        new Uint8Array([0, 1, 2, 42, 100, 101, 102, 255])
       );
       assert.isTrue(arraysAreEqual);
     });
