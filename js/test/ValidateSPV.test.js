@@ -24,48 +24,41 @@ const {
 describe('ValidateSPV', () => {
   describe('#prove', () => {
     it('returns true if proof is valid', () => {
-      const res = ValidateSPV.prove(
-        prove[0].input.txIdLE,
-        prove[0].input.merkleRootLE,
-        prove[0].input.proof,
-        prove[0].input.index
-      );
+      const {
+        txIdLE, merkleRootLE, proof, index
+      } = prove[0].input;
+
+      const res = ValidateSPV.prove(txIdLE, merkleRootLE, proof, index);
       assert.isTrue(res);
     });
 
     it('shortcuts the coinbase special case', () => {
-      const res = ValidateSPV.prove(
-        prove[1].input.txIdLE,
-        prove[1].input.merkleRootLE,
-        prove[1].input.proof,
-        prove[1].input.index
-      );
+      const {
+        txIdLE, merkleRootLE, proof, index
+      } = prove[1].input;
+
+      const res = ValidateSPV.prove(txIdLE, merkleRootLE, proof, index);
       assert.isTrue(res);
     });
 
     it('returns false if Merkle root is invalid', () => {
-      const res = ValidateSPV.prove(
-        prove[2].input.txIdLE,
-        prove[2].input.merkleRootLE,
-        prove[2].input.proof,
-        prove[2].input.index
-      );
+      const {
+        txIdLE, merkleRootLE, proof, index
+      } = prove[2].input;
+
+      const res = ValidateSPV.prove(txIdLE, merkleRootLE, proof, index);
       assert.isFalse(res);
     });
   });
 
   describe('#calculateTxId', () => {
     it('returns the transaction hash', () => {
-      const res = ValidateSPV.calculateTxId(
-        calculateTxId[0].input.version,
-        calculateTxId[0].input.vin,
-        calculateTxId[0].input.vout,
-        calculateTxId[0].input.locktime
-      );
-      const arraysAreEqual = utils.typedArraysAreEqual(
-        res,
-        calculateTxId[0].output
-      );
+      const {
+        version, vin, vout, locktime
+      } = calculateTxId[0].input;
+
+      const res = ValidateSPV.calculateTxId(version, vin, vout, locktime);
+      const arraysAreEqual = utils.typedArraysAreEqual(res, calculateTxId[0].output);
       assert.isTrue(arraysAreEqual);
     });
   });
@@ -73,38 +66,50 @@ describe('ValidateSPV', () => {
   describe('#parseInput', () => {
     it('returns the tx input sequence and outpoint', () => {
       const txIn = ValidateSPV.parseInput(parseInput[0].input);
+      const {
+        sequence, txId, index, type
+      } = parseInput[0].output;
 
-      assert.equal(txIn.sequence, parseInput[0].output.sequence);
-      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, parseInput[0].output.txId));
-      assert.equal(txIn.inputIndex, parseInput[0].output.index);
-      assert.equal(txIn.inputType, parseInput[0].output.type);
+      assert.equal(txIn.sequence, sequence);
+      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, txId));
+      assert.equal(txIn.inputIndex, index);
+      assert.equal(txIn.inputType, type);
     });
 
     it('handles Legacy inputs', () => {
       const txIn = ValidateSPV.parseInput(parseInput[1].input);
+      const {
+        sequence, txId, index, type
+      } = parseInput[1].output;
 
-      assert.equal(txIn.sequence, parseInput[1].output.sequence);
-      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, parseInput[1].output.txId));
-      assert.equal(txIn.inputIndex, parseInput[1].output.index);
-      assert.equal(txIn.inputType, parseInput[1].output.type);
+      assert.equal(txIn.sequence, sequence);
+      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, txId));
+      assert.equal(txIn.inputIndex, index);
+      assert.equal(txIn.inputType, type);
     });
 
     it('handles p2wpkh-via-p2sh compatibility inputs', () => {
       const txIn = ValidateSPV.parseInput(parseInput[2].input);
+      const {
+        sequence, txId, index, type
+      } = parseInput[2].output;
 
-      assert.equal(txIn.sequence, parseInput[2].output.sequence);
-      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, parseInput[2].output.txId));
-      assert.equal(txIn.inputIndex, parseInput[2].output.index);
-      assert.equal(txIn.inputType, parseInput[2].output.type);
+      assert.equal(txIn.sequence, sequence);
+      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, txId));
+      assert.equal(txIn.inputIndex, index);
+      assert.equal(txIn.inputType, type);
     });
 
     it('handles p2wsh-via-p2sh compatibility inputs', () => {
       const txIn = ValidateSPV.parseInput(parseInput[3].input);
+      const {
+        sequence, txId, index, type
+      } = parseInput[3].output;
 
-      assert.equal(txIn.sequence, parseInput[3].output.sequence);
-      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, parseInput[3].output.txId));
-      assert.equal(txIn.inputIndex, parseInput[3].output.index);
-      assert.equal(txIn.inputType, parseInput[3].output.type);
+      assert.equal(txIn.sequence, sequence);
+      assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, txId));
+      assert.equal(txIn.inputIndex, index);
+      assert.equal(txIn.inputType, type);
     });
   });
 
@@ -112,7 +117,6 @@ describe('ValidateSPV', () => {
     it('returns the tx output value, output type, and payload for an OP_RETURN output', () => {
       const output = parseOutput[0].input;
       const { value, type, payload } = parseOutput[0].output;
-      // const type = parseOutput[0].output.type;
 
       const opReturnTxOut = ValidateSPV.parseOutput(output);
 
@@ -182,20 +186,23 @@ describe('ValidateSPV', () => {
     it('returns the header digest, version, prevHash, merkleRoot, timestamp, target, and nonce',
       () => {
         const validHeader = ValidateSPV.parseHeader(parseHeader[0].input);
+        const {
+          digest, version, prevHash, merkleRoot, timestamp, target, nonce
+        } = parseHeader[0].output;
 
         assert.isTrue(
-          utils.typedArraysAreEqual(validHeader.digest, parseHeader[0].output.digest)
+          utils.typedArraysAreEqual(validHeader.digest, digest)
         );
-        assert.equal(validHeader.version, parseHeader[0].output.version);
+        assert.equal(validHeader.version, version);
         assert.isTrue(
-          utils.typedArraysAreEqual(validHeader.prevHash, parseHeader[0].output.prevHash)
+          utils.typedArraysAreEqual(validHeader.prevHash, prevHash)
         );
         assert.isTrue(
-          utils.typedArraysAreEqual(validHeader.merkleRoot, parseHeader[0].output.merkleRoot)
+          utils.typedArraysAreEqual(validHeader.merkleRoot, merkleRoot)
         );
-        assert.equal(validHeader.timestamp, parseHeader[0].output.timestamp);
-        assert.equal(validHeader.target, utils.bytesToUint(parseHeader[0].output.target));
-        assert.equal(validHeader.nonce, parseHeader[0].output.nonce);
+        assert.equal(validHeader.timestamp, timestamp);
+        assert.equal(validHeader.target, utils.bytesToUint(target));
+        assert.equal(validHeader.nonce, nonce);
       });
 
     it('throws errors if input header is not 80 bytes', () => {
