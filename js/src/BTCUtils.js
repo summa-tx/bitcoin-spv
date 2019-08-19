@@ -246,7 +246,6 @@ export function extractOutpoint(input) {
  * @param {Uint8Array}    input The input
  * @returns {Uint8Array}  The tx id (little-endian bytes)
  */
-// TODO: no test, check against function that uses this
 export function extractInputTxIdLE(input) {
   return utils.safeSlice(input, 0, 32);
 }
@@ -259,7 +258,6 @@ export function extractInputTxIdLE(input) {
  * @param {Uint8Array}    input The input
  * @returns {Uint8Array}  The tx id (big-endian bytes)
  */
-// TODO: no test, check against function that uses this
 export function extractInputTxId(input) {
   const leId = extractInputTxIdLE(input);
   return utils.reverseEndianness(leId);
@@ -273,7 +271,6 @@ export function extractInputTxId(input) {
  * @param {Uint8Array}    input The input
  * @returns {Uint8Array}  The tx index (little-endian bytes)
  */
-// TODO: no test, check against function that uses this
 export function extractTxIndexLE(input) {
   return utils.safeSlice(input, 32, 36);
 }
@@ -286,7 +283,6 @@ export function extractTxIndexLE(input) {
  * @param {Uint8Array}    input The input
  * @returns {BigInt}      The tx index (big-endian uint)
  */
-// TODO: no test, check against function that uses this
 export function extractTxIndex(input) {
   const leIndex = extractTxIndexLE(input);
   const beIndex = utils.reverseEndianness(leIndex);
