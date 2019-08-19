@@ -63,7 +63,8 @@ describe('utils', () => {
       }
       // max uint256: (2^256)-1
       res = utils.bytesToUint(bytesToUint[7].input);
-      // cannot store this value in store and have it test correctly because I have to use bytesToUint to convert.
+      // cannot store this value in store and have it test correctly
+      // because I have to use bytesToUint to convert.
       assert.equal(res, BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'));
     });
   });
