@@ -1,6 +1,6 @@
 /* global describe it BigInt */
 import * as chai from 'chai';
-import * as utils from '../utils/utils';
+import * as utils from '../src/utils';
 import * as ValidateSPV from '../src/ValidateSPV';
 import * as vectors from '../../testVectors.json';
 

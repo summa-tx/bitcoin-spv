@@ -241,16 +241,19 @@ export function parseJson(element) {
     for (let i = 0; i < element.length; i += 1) {
       // may want to refine this if statement to check if it's a hex value in the actual function
       if (typeof element[i] === 'string' && element[i].slice(0, 2) === '0x') {
+        /* eslint-disable-next-line */
         element[i] = deserializeHex(element[i]);
       } else {
         parseJson(element[i]);
       }
     }
   } else if (typeof element === 'object') {
+    /* eslint-disable-next-line */
     for (const prop in element) {
       if (typeof element[prop] === 'object') {
         parseJson(element[prop]);
       } else if (typeof element[prop] === 'string' && element[prop].slice(0, 2) === '0x') {
+        /* eslint-disable-next-line */
         element[prop] = deserializeHex(element[prop]);
       }
     }

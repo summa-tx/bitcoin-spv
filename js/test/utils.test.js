@@ -1,7 +1,7 @@
 /* global BigInt describe it */
 
 import * as chai from 'chai';
-import * as utils from '../utils/utils';
+import * as utils from '../src/utils';
 
 const { assert } = chai;
 
