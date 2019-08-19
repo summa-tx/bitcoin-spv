@@ -239,17 +239,21 @@ export function lastBytes(arr, num) {
 export function updateJson(element) {
   if (Array.isArray(element)) {
     for (let i = 0; i < element.length; i += 1) {
-      if (typeof element[i] === 'string') {
+      // may want to refine this if statement to check if it's a hex value in the actual function
+      if (typeof element[i] === 'string' && element[i].slice(0, 2) === '0x') {
+        /* eslint-disable-next-line */
         element[i] = deserializeHex(element[i]);
       } else {
         updateJson(element[i]);
       }
     }
   } else if (typeof element === 'object') {
+    /* eslint-disable-next-line */
     for (const prop in element) {
       if (typeof element[prop] === 'object') {
         updateJson(element[prop]);
-      } else if (typeof element[prop] === 'string') {
+      } else if (typeof element[prop] === 'string' && element[prop].slice(0, 2) === '0x') {
+        /* eslint-disable-next-line */
         element[prop] = deserializeHex(element[prop]);
       }
     }

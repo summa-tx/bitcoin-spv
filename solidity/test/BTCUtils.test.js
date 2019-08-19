@@ -51,7 +51,7 @@ contract('BTCUtils', () => {
       await instance.lastBytes('0x00', 2);
       assert(false, 'expected an errror');
     } catch (e) {
-      assert.include(e.message, 'Slice must not use negative indexes');
+      assert.include(e.message, 'Underflow during subtraction.');
     }
   });
 

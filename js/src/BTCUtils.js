@@ -14,7 +14,7 @@
  *
  */
 
-import * as utils from '../utils/utils';
+import * as utils from './utils';
 
 /**
  * @const {BigInt}
