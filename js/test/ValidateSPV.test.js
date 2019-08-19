@@ -105,7 +105,6 @@ describe('ValidateSPV', () => {
       });
 
     it('throws errors if input header is not 80 bytes', () => {
-      // Removed a byte from the header version to create error
       for (let i = 0; i < parseHeaderError.length; i += 1) {
         try {
           ValidateSPV.parseHeader(parseHeaderError[i].input);
@@ -141,10 +140,10 @@ describe('ValidateSPV', () => {
     it('returns true if the digest has sufficient work, returns false if insufficient work or empty digest', () => {
       for (let i = 0; i < validateHeaderWork.length; i += 1) {
         let t;
-        if (typeof validateHeaderWork[i].target !== 'number') {
-          t = utils.bytesToUint(validateHeaderWork[i].input.target);
+        if (typeof validateHeaderWork[i].target === 'number') {
+          t = BigInt(validateHeaderWork[i].target);
         } else {
-          t = validateHeaderWork[i].target;
+          t = utils.bytesToUint(validateHeaderWork[i].input.target);
         }
 
         const res = ValidateSPV.validateHeaderWork(validateHeaderWork[i].input.digest, t);

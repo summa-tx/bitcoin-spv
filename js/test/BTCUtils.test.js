@@ -266,7 +266,10 @@ describe('BTCUtils', () => {
 
   it('extracts the target from a header', () => {
     const res = BTCUtils.extractTarget(extractTarget[0].input);
-    assert.strictEqual(res, BigInt(26959535291011309493156476344723991336010898738574164086137773096960));
+    assert.strictEqual(
+      res,
+      BigInt(26959535291011309493156476344723991336010898738574164086137773096960)
+    );
     // this isn't working
     // assert.equal(res, utils.bytesToUint(extractTarget[0].output));
   });
