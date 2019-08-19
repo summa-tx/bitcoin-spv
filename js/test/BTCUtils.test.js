@@ -338,7 +338,7 @@ describe('BTCUtils', () => {
   });
 
   describe('#calculateDifficulty', () => {
-    it('throws if passed the wrong type', () => {
+    it('throws error if passed the wrong type', () => {
       for (let i = 0; i < calculateDifficultyError.length; i += 1) {
         try {
           BTCUtils.calculateDifficulty(calculateDifficultyError[i].input);

@@ -24,7 +24,7 @@ const {
 
 describe('ValidateSPV', () => {
   describe('#prove', () => {
-    it('returns true if proof is valid', () => {
+    it('returns true if proof is valid, false if otherwise', () => {
       for (let i = 0; i < prove.length; i += 1) {
         const {
           txIdLE, merkleRootLE, proof, index
@@ -100,7 +100,7 @@ describe('ValidateSPV', () => {
         }
       });
 
-    it('throws errors if input header is not 80 bytes', () => {
+    it('throws error if input header is not valid', () => {
       for (let i = 0; i < parseHeaderError.length; i += 1) {
         try {
           ValidateSPV.parseHeader(parseHeaderError[i].input);
@@ -120,7 +120,7 @@ describe('ValidateSPV', () => {
       }
     });
 
-    it('throws Error("Header bytes not multiple of 80.") if header chain is not divisible by 80', () => {
+    it('throws error if header chain is not valid', () => {
       for (let i = 0; i < validateHeaderChainError.length; i += 1) {
         try {
           ValidateSPV.validateHeaderChain(validateHeaderChainError[i].input);
@@ -133,7 +133,7 @@ describe('ValidateSPV', () => {
   });
 
   describe('#validateHeaderWork', () => {
-    it('returns true if the digest has sufficient work, returns false if insufficient work or empty digest', () => {
+    it('returns true if the digest has sufficient work, false if otherwise', () => {
       for (let i = 0; i < validateHeaderWork.length; i += 1) {
         let t;
         if (typeof validateHeaderWork[i].target === 'number') {
@@ -149,7 +149,7 @@ describe('ValidateSPV', () => {
   });
 
   describe('#validateHeaderPrevHash', () => {
-    it('returns true if header prevHash is valid', () => {
+    it('returns true if header prevHash is valid, false if otherwise', () => {
       for (let i = 0; i < validateHeaderPrevHash.length; i += 1) {
         const res = ValidateSPV.validateHeaderPrevHash(
           validateHeaderPrevHash[i].input.header,
