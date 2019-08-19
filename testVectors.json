@@ -257,16 +257,16 @@
     "errorMessage": "Nonstandard, OP_RETURN, or malformatted output"
   }, {
     "input": "0x0000000000000000220017",
-    "errorMessage": "Maliciously formatted witness output."
+    "errorMessage": "Maliciously formatted witness output"
   }, {
     "input": "0x00000000000000001976a912",
-    "errorMessage": "Maliciously formatted p2pkh output."
+    "errorMessage": "Maliciously formatted p2pkh output"
   }, {
     "input": "0x00000000000000001976a914FFFF",
-    "errorMessage": "Maliciously formatted p2pkh output."
+    "errorMessage": "Maliciously formatted p2pkh output"
   }, {
     "input": "0x000000000000000017a914FF",
-    "errorMessage": "Maliciously formatted p2sh output."
+    "errorMessage": "Maliciously formatted p2sh output"
   }],
 
   "validateVin": [{

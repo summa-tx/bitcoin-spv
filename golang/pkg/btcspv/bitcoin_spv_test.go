@@ -15,8 +15,9 @@ import (
 )
 
 type TestCase struct {
-	Input  interface{} `json:"input"`
-	Output interface{} `json:"output"`
+	Input        interface{} `json:"input"`
+	Output       interface{} `json:"output"`
+	ErrorMessage interface{} `json:"errorMessage"`
 }
 
 func (t *TestCase) UnmarshalJSON(b []byte) error {
@@ -45,6 +46,15 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 		t.Output = int(data["output"].(float64))
 	default:
 		preprocessTestCase(t.Output)
+	}
+
+	switch data["errorMessage"].(type) {
+	case string:
+		t.ErrorMessage = data["errorMessage"].(string)
+	case float64:
+		t.ErrorMessage = int(data["errorMessage"].(float64))
+	default:
+		preprocessTestCase(t.ErrorMessage)
 	}
 
 	return nil
@@ -289,7 +299,7 @@ func (suite *UtilsSuite) TestExtractHash() {
 		expected := testCase.ErrorMessage.(string)
 		actual, err := ExtractHash(testCase.Input.([]byte))
 		suite.Nil(actual)
-		suite.Equal(expected, err)
+		suite.EqualError(err, expected)
 	}
 }
 
