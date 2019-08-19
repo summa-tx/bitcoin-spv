@@ -165,7 +165,7 @@ describe('BTCUtils', () => {
   it('extracts inputs at specified indices', () => {
     for (let i = 0; i < extractInputAtIndex.length; i += 1) {
       const res = BTCUtils.extractInputAtIndex(
-        extractInputAtIndex[i].input.proof,
+        extractInputAtIndex[i].input.vin,
         extractInputAtIndex[i].input.index
       );
       const arraysAreEqual = utils.typedArraysAreEqual(res, extractInputAtIndex[i].output);
@@ -248,7 +248,7 @@ describe('BTCUtils', () => {
   it('extracts outputs at specified indices', () => {
     for (let i = 0; i < extractOutputAtIndex.length; i += 1) {
       const res = BTCUtils.extractOutputAtIndex(
-        extractOutputAtIndex[i].input.proof,
+        extractOutputAtIndex[i].input.vout,
         extractOutputAtIndex[i].input.index
       );
       const arraysAreEqual = utils.typedArraysAreEqual(res, extractOutputAtIndex[i].output);

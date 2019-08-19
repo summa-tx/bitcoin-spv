@@ -10,11 +10,13 @@ utils.parseJson(vectorObj);
 
 const {
   lastBytes,
+  lastBytesError,
   reverseEndianness,
   bytesToUint,
   sha256,
   ripemd160,
   typedArraysAreEqual,
+  typedArraysAreEqualError,
   safeSlice
 } = vectorObj;
 
@@ -23,32 +25,32 @@ const { assert } = chai;
 describe('utils', () => {
   describe('#lastBytes', () => {
     it('gets the last bytes correctly', () => {
-      const res = utils.lastBytes(lastBytes[0].input.proof, lastBytes[0].input.num);
-      const arraysAreEqual = utils.typedArraysAreEqual(res, lastBytes[0].output);
-      assert.isTrue(arraysAreEqual);
+      for (let i = 0; i < lastBytes.length; i += 1) {
+        const res = utils.lastBytes(lastBytes[i].input.bytes, lastBytes[i].input.num);
+        const arraysAreEqual = utils.typedArraysAreEqual(res, lastBytes[i].output);
+        assert.isTrue(arraysAreEqual);
+      }
     });
 
     it('errors if slice is larger than the bytearray', () => {
-      try {
-        utils.lastBytes(lastBytes[1].input.proof, lastBytes[1].input.num);
-        assert(false, 'expected an errror');
-      } catch (e) {
-        assert.include(e.message, lastBytes[1].errorMessage);
+      for (let i = 0; i < lastBytesError.length; i += 1) {
+        try {
+          utils.lastBytes(lastBytesError[i].input.bytes, lastBytesError[i].input.num);
+          assert(false, 'expected an errror');
+        } catch (e) {
+          assert.include(e.message, lastBytesError[i].errorMessage);
+        }
       }
     });
   });
 
   describe('reverseEndianness', () => {
     it('reverses endianness', () => {
-      let res;
-      let arraysAreEqual;
-      res = utils.reverseEndianness(reverseEndianness[0].input);
-      arraysAreEqual = utils.typedArraysAreEqual(res, reverseEndianness[0].output);
-      assert.isTrue(arraysAreEqual);
-
-      res = utils.reverseEndianness(reverseEndianness[1].input);
-      arraysAreEqual = utils.typedArraysAreEqual(res, reverseEndianness[1].output);
-      assert.isTrue(arraysAreEqual);
+      for (let i = 0; i < reverseEndianness.length; i += 1) {
+        const res = utils.reverseEndianness(reverseEndianness[i].input);
+        const arraysAreEqual = utils.typedArraysAreEqual(res, reverseEndianness[i].output);
+        assert.isTrue(arraysAreEqual);
+      }
     });
   });
 
@@ -61,6 +63,7 @@ describe('utils', () => {
       }
       // max uint256: (2^256)-1
       res = utils.bytesToUint(bytesToUint[7].input);
+      // cannot store this value in store and have it test correctly because I have to use bytesToUint to convert.
       assert.equal(res, BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'));
     });
   });
@@ -151,29 +154,27 @@ describe('utils', () => {
 
   describe('#typedArraysAreEqual', () => {
     it('returns true if Uint8Arrays are equal', () => {
-      const { arr1, arr2 } = typedArraysAreEqual[0].input;
-      const res = utils.typedArraysAreEqual(arr1, arr2);
-      assert.isTrue(res);
-    });
-    it('returns false if Uint8Arrays are not equal', () => {
-      const { arr1, arr2 } = typedArraysAreEqual[1].input;
-      const res = utils.typedArraysAreEqual(arr1, arr2);
-      assert.isFalse(res);
-    });
-    it('throws error if any arrays are not of type Uint8Array', () => {
-      const { arr1 } = typedArraysAreEqual[2].input;
-      const arr2 = Array.from(typedArraysAreEqual[2].input.arr2);
-      try {
-        utils.typedArraysAreEqual(arr1, arr2);
-        assert(false, 'expected an error');
-      } catch (e) {
-        assert.include(e.message, typedArraysAreEqual[2].errorMessage);
+      for (let i = 0; i < typedArraysAreEqual.length; i += 1) {
+        const { arr1, arr2 } = typedArraysAreEqual[i].input;
+        const res = utils.typedArraysAreEqual(arr1, arr2);
+        if (typedArraysAreEqual[i].output) {
+          assert.isTrue(res);
+        } else {
+          assert.isFalse(res);
+        }
       }
     });
-    it('returns false if Uint8Arrays lengths are not equal', () => {
-      const { arr1, arr2 } = typedArraysAreEqual[3].input;
-      const res = utils.typedArraysAreEqual(arr1, arr2);
-      assert.isFalse(res);
+    it('throws error if any arrays are not of type Uint8Array', () => {
+      for (let i = 0; i < typedArraysAreEqualError.length; i += 1) {
+        const { arr1 } = typedArraysAreEqualError[i].input;
+        const arr2 = Array.from(typedArraysAreEqualError[i].input.arr2);
+        try {
+          utils.typedArraysAreEqual(arr1, arr2);
+          assert(false, 'expected an error');
+        } catch (e) {
+          assert.include(e.message, typedArraysAreEqualError[i].errorMessage);
+        }
+      }
     });
   });
 
