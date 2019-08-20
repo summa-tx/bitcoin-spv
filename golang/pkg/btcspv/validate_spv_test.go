@@ -48,7 +48,6 @@ func (suite *UtilsSuite) TestCalculateTxId() {
 
 func (suite *UtilsSuite) TestParseInput() {
 	fixture := suite.Fixtures["parseInput"]
-	output := suite.Fixtures["OUTPUT_TYPES"][0].Output.(map[string]interface{})
 
 	for i := range fixture {
 		testCase := fixture[i]
@@ -56,35 +55,51 @@ func (suite *UtilsSuite) TestParseInput() {
 		expectedSequence := uint(expected["sequence"].(int))
 		expectedTxId := expected["txId"].([]byte)
 		expectedIndex := uint(expected["index"].(int))
-		expectedType := expected["type"].(string)
+		expectedType := INPUT_TYPE(expected["type"].(string))
 		input := testCase.Input.([]byte)
 		actualSequence, actualTxId, actualIndex, actualType := ParseInput(input)
 		suite.Equal(expectedSequence, actualSequence)
 		suite.Equal(expectedTxId, actualTxId)
 		suite.Equal(expectedIndex, actualIndex)
-		suite.Equal(output[expectedType], uint(actualType))
+		suite.Equal(expectedType, actualType)
 	}
 }
 
-// func (suite *UtilsSuite) TestParseOutput() {
-// 	suite.T().Skip()
-// 	fixture := suite.Fixtures["parseOutput"]
+func (suite *UtilsSuite) TestParseOutput() {
+	suite.T().Skip()
+	fixture := suite.Fixtures["parseOutput"]
 
-// for i := range fixture {
-// 	testCase := fixture[i]
-// 	actual := ParseOutput()
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.(map[string]interface{})
+		expectedValue := uint(expected["value"].(int))
+		// expectedType := expected["type"].(string)
+		expectedPayload := expected["payload"].([]byte)
+		input := testCase.Input.([]byte)
+		actualValue, actualOutputType, actualPayload := ParseOutput(input)
+		suite.Equal(expectedValue, actualValue)
+		suite.Equal(expectedPayload, actualPayload)
+		// // suite.Equal(expectedType, actualType)
+	}
+}
 
-// func (suite *UtilsSuite) TestParseHeader() {
-// 	suite.T().Skip()
-// 	fixture := suite.Fixtures["parseHeader"]
+func (suite *UtilsSuite) TestParseHeader() {
+	suite.T().Skip()
+	fixture := suite.Fixtures["parseHeader"]
 
-// for i := range fixture {
-// 	testCase := fixture[i]
-// 	actual := ParseHeader()
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.(map[string]interface{})
+		// expected := expected
+		// expected := expected
+		// expected := expected
+		// expected := expected
+		// expected := expected
+		// expected := expected
+		// expected := expected
+		// actual := ParseHeader()
+	}
+}
 
 // func (suite *UtilsSuite) TestValidateHeaderWork() {
 // 	suite.T().Skip()
