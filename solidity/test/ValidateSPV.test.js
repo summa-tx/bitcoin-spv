@@ -122,7 +122,6 @@ contract('ValidateSPV', () => {
         }
       });
 
-    // not working...
     it('bubble up errors if input header is not 80 bytes', async () => {
       for (let i = 0; i < parseHeaderSolErr.length; i += 1) {
         const invalidHeader = await instance.parseHeader(parseHeaderSolErr[i].input);
