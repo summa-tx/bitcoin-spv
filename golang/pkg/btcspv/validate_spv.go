@@ -114,9 +114,9 @@ func ParseOutput(output []byte) (uint, uint, []byte) {
 }
 
 // Parses a block header struct from a bytestring
-func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Int, uint, error) {
+func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Uint, uint, error) {
 	if len(header) != 80 {
-		return nil, 0, nil, nil, 0, sdk.NewInt(0), 0, errors.New("Malformatted header. Must be exactly 80 bytes.")
+		return nil, 0, nil, nil, 0, sdk.NewUint(0), 0, errors.New("Malformatted header. Must be exactly 80 bytes.")
 	}
 
 	digest := ReverseEndianness(Hash256(header))
@@ -131,7 +131,7 @@ func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Int, ui
 }
 
 // Checks validity of header work
-func ValidateHeaderWork(digest []byte, target sdk.Int) bool {
+func ValidateHeaderWork(digest []byte, target sdk.Uint) bool {
 	if bytes.Equal(digest, bytes.Repeat([]byte("0x00"), 32)) {
 		return false
 	}
@@ -152,15 +152,15 @@ func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
 }
 
 // Checks validity of header chain
-func ValidateHeaderChain(headers []byte) (sdk.Int, error) {
+func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 	// // Check header chain length
 
 	if len(headers)%80 != 0 {
-		return sdk.NewInt(0), errors.New("Header bytes not multiple of 80.")
+		return sdk.NewUint(0), errors.New("Header bytes not multiple of 80.")
 	}
 
 	var digest []byte
-	totalDifficulty := sdk.NewInt(0)
+	totalDifficulty := sdk.NewUint(0)
 
 	for i := 0; i < len(headers); i++ {
 		start := i * 80
@@ -169,7 +169,7 @@ func ValidateHeaderChain(headers []byte) (sdk.Int, error) {
 		// After the first header, check that headers are in a chain
 		if i != 0 {
 			if !ValidateHeaderPrevHash(header, digest) {
-				return sdk.NewInt(0), errors.New("Header bytes not a valid chain.")
+				return sdk.NewUint(0), errors.New("Header bytes not a valid chain.")
 			}
 		}
 
@@ -179,7 +179,7 @@ func ValidateHeaderChain(headers []byte) (sdk.Int, error) {
 		// Require that the header has sufficient work
 		digest = Hash256(header)
 		if !ValidateHeaderWork(ReverseEndianness(digest), target) {
-			return sdk.NewInt(0), errors.New("Header does not meet its own difficulty target.")
+			return sdk.NewUint(0), errors.New("Header does not meet its own difficulty target.")
 		}
 
 		totalDifficulty = totalDifficulty.Add(CalculateDifficulty(target))

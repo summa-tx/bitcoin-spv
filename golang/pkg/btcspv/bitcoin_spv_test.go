@@ -205,10 +205,10 @@ func (suite *UtilsSuite) TestBytesToBigInt() {
 	buf.WriteString("0x")
 	buf.WriteString(hexString)
 
-	expected, ok := sdk.NewIntFromString(buf.String())
-	if !ok {
-		log.Fatal("New int not ok")
-	}
+	expected := sdk.NewUintFromString(buf.String())
+	// if !ok {
+	// 	log.Fatal("New int not ok")
+	// }
 
 	result := BytesToBigInt(decoded)
 
@@ -687,8 +687,8 @@ func (suite *UtilsSuite) TestCalculateDifficulty() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := testCase.Output.(sdk.Int)
-		actual := CalculateDifficulty(testCase.Input.(sdk.Int))
+		expected := testCase.Output.(sdk.Uint)
+		actual := CalculateDifficulty(testCase.Input.(sdk.Uint))
 		suite.Equal(expected, actual)
 	}
 }

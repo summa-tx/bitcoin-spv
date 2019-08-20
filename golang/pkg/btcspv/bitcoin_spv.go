@@ -25,16 +25,10 @@ func BytesToUint(b []byte) uint {
 }
 
 // BytesToBigInt converts a bytestring to a cosmos-sdk Int
-func BytesToBigInt(b []byte) sdk.Int {
-	ret, _ := sdk.NewIntFromString("0x" + hex.EncodeToString(b))
+func BytesToBigInt(b []byte) sdk.Uint {
+	ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
 	return ret
 }
-
-// TODO: Update to sdk.Uint in many places
-// func BytesToBigInt(b []byte) sdk.Uint {
-// 	ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
-// 	return ret
-// }
 
 // DetermineVarIntDataLength extracts the payload length of a Bitcoin VarInt
 func DetermineVarIntDataLength(flag uint8) uint8 {
@@ -342,19 +336,19 @@ func ExtractMerkleRootBE(header []byte) []byte {
 }
 
 // ExtractTarget returns the target from a given block hedaer
-func ExtractTarget(header []byte) sdk.Int {
+func ExtractTarget(header []byte) sdk.Uint {
 	// nBits encoding. 3 byte mantissa, 1 byte exponent
 	m := header[72:75]
 	e := sdk.NewInt(int64(header[75]))
 
-	mantissa, _ := sdk.NewIntFromString("0x" + hex.EncodeToString(ReverseEndianness(m)))
+	mantissa := sdk.NewUintFromString("0x" + hex.EncodeToString(ReverseEndianness(m)))
 	exponent := e.Sub(sdk.NewInt(3))
 
 	// Have to convert to underlying big.Int as the sdk does not expose exponentiation
 	base := big.NewInt(256)
 	base.Exp(base, exponent.BigInt(), nil)
 
-	exponentTerm := sdk.NewIntFromBigInt(base)
+	exponentTerm := sdk.NewUintFromBigInt(base)
 
 	return mantissa.Mul(exponentTerm)
 }
@@ -362,8 +356,8 @@ func ExtractTarget(header []byte) sdk.Int {
 // CalculateDifficulty calculates difficulty from the difficulty 1 target and current target
 // Difficulty 1 is 0x1d00ffff on mainnet and testnet
 // Difficulty 1 is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
-func CalculateDifficulty(target sdk.Int) sdk.Int {
-	diffOneTarget, _ := sdk.NewIntFromString("0xffff0000000000000000000000000000000000000000000000000000")
+func CalculateDifficulty(target sdk.Uint) sdk.Uint {
+	diffOneTarget := sdk.NewUintFromString("0xffff0000000000000000000000000000000000000000000000000000")
 	return diffOneTarget.Quo(target)
 }
 
@@ -393,7 +387,7 @@ func ExtractTimestamp(header []byte) uint {
 }
 
 // ExtractDifficulty calculates the difficulty of a header
-func ExtractDifficulty(header []byte) sdk.Int {
+func ExtractDifficulty(header []byte) sdk.Uint {
 	return CalculateDifficulty(ExtractTarget(header))
 }
 
@@ -440,16 +434,16 @@ func VerifyHash256Merkle(proof []byte, index uint) bool {
 
 // RetargetAlgorithm performs Bitcoin consensus retargets
 func RetargetAlgorithm(
-	previousTarget sdk.Int,
+	previousTarget sdk.Uint,
 	firstTimestamp uint,
-	secondTimestamp uint) sdk.Int {
+	secondTimestamp uint) sdk.Uint {
 
-	retargetPeriod := sdk.NewInt(1209600)
-	lowerBound := retargetPeriod.Quo(sdk.NewInt(4))
-	upperBound := retargetPeriod.Mul(sdk.NewInt(4))
+	retargetPeriod := sdk.NewUint(1209600)
+	lowerBound := retargetPeriod.Quo(sdk.NewUint(4))
+	upperBound := retargetPeriod.Mul(sdk.NewUint(4))
 
-	first := sdk.NewInt(int64(firstTimestamp))
-	second := sdk.NewInt(int64(secondTimestamp))
+	first := sdk.NewUint(uint64(firstTimestamp))
+	second := sdk.NewUint(uint64(secondTimestamp))
 
 	elapsedTime := second.Sub(first)
 
