@@ -1,42 +1,6 @@
-const createHash = require('create-hash');
 const BN = require('bn.js');
 
 module.exports = {
-
-  getPreimageAndHash: function* getPreimageAndHash() {
-    const buff = Buffer.alloc(32);
-    for (let j = 31; j >= 0; j -= 1) {
-      for (let i = 1; i < 256; i += 1) {
-        let hexString = buff.toString('hex');
-        const digest = this.sha256(hexString);
-        hexString = `0x${hexString}`;
-        buff[j] = i;
-        yield [hexString, digest];
-      }
-    }
-  },
-
-  hash160: function hash160(hexString) {
-    const buffer = Buffer.from(hexString, 'hex');
-    const t = createHash('sha256').update(buffer).digest();
-    const u = createHash('rmd160').update(t).digest();
-    return `0x${u.toString('hex')}`;
-  },
-
-  sha256: function sha256(hexString) {
-    const buffer = Buffer.from(hexString, 'hex');
-    const t = createHash('sha256').update(buffer).digest();
-    return `0x${t.toString('hex')}`;
-  },
-
-  duration: {
-    seconds(val) { return val; },
-    minutes(val) { return val * this.seconds(60); },
-    hours(val) { return val * this.minutes(60); },
-    days(val) { return val * this.hours(24); },
-    weeks(val) { return val * this.days(7); },
-    years(val) { return val * this.days(365); }
-  },
 
   OUTPUT_TYPES: {
     NONE: new BN(0, 10),

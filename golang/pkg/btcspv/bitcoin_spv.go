@@ -1,10 +1,12 @@
-package utils
+package btcspv
 
 import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
+	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"golang.org/x/crypto/ripemd160"
@@ -12,31 +14,34 @@ import (
 
 // bytesToUint converts 1, 2, 3, or 4-byte numbers to uints
 func bytesToUint(b []byte) uint {
-	var total uint
+	total := uint(0)
 	length := uint(len(b))
 
-	for i := uint(0); i >= length; i++ {
-		total += uint(b[i]) << (length - i - 1) * 8
+	for i := uint(0); i < length; i++ {
+		total += uint(b[i]) << ((length - i - 1) * 8)
 	}
 
 	return total
 }
 
+// BytesToBigInt converts a bytestring to a cosmos-sdk Int
+func BytesToBigInt(b []byte) sdk.Int {
+	ret, _ := sdk.NewIntFromString("0x" + hex.EncodeToString(b))
+	return ret
+}
+
 // DetermineVarIntDataLength extracts the payload length of a Bitcoin VarInt
 func DetermineVarIntDataLength(flag uint8) uint8 {
-	if flag <= 0xfc {
+	switch flag {
+	case 0xfd:
+		return 2
+	case 0xfe:
+		return 4
+	case 0xff:
+		return 8
+	default:
 		return 0
 	}
-	if flag == 0xfd {
-		return 2
-	}
-	if flag == 0xfe {
-		return 4
-	}
-	if flag == 0xff {
-		return 8
-	}
-	return 0
 }
 
 // ReverseEndianness takes in a byte slice and returns a
@@ -62,24 +67,20 @@ func LastBytes(in []byte, num int) []byte {
 
 // Hash160 takes a byte slice and returns a hashed byte slice.
 func Hash160(in []byte) []byte {
-	r := ripemd160.New()
-	r.Write(in)
-	sum := r.Sum(nil)
-
 	sha := sha256.New()
-	sha.Write(sum)
-	return sha.Sum(nil)
+	sha.Write(in)
+	sum := sha.Sum(nil)
+
+	r := ripemd160.New()
+	r.Write(sum)
+	return r.Sum(nil)
 }
 
 // Hash256 implements bitcoin's hash256 (double sha2)
 func Hash256(in []byte) []byte {
-	first := sha256.New()
-	first.Write(in)
-
-	second := sha256.New()
-	second.Write(first.Sum(nil))
-
-	return second.Sum(nil)
+	first := sha256.Sum256(in)
+	second := sha256.Sum256(first[:])
+	return second[:]
 }
 
 //
@@ -91,7 +92,7 @@ func ExtractInputAtIndex(vin []byte, index uint8) []byte {
 	var len uint
 	offset := uint(1)
 
-	for i := uint8(0); i < index; i++ {
+	for i := uint8(0); i <= index; i++ {
 		remaining := vin[offset:]
 		len = DetermineInputLength(remaining)
 		if i != index {
@@ -163,13 +164,13 @@ func ExtractOutpoint(input []byte) []byte {
 }
 
 // ExtractInputTxIDLE returns the LE tx input index from the input in a tx
-func ExtractInputTxIDLE(input []byte) []byte {
+func ExtractInputTxIdLE(input []byte) []byte {
 	return input[0:32]
 }
 
 // ExtractTxID returns the input tx id from the input in a tx
 // Returns the tx id as a big-endian []byte
-func ExtractTxID(input []byte) []byte {
+func ExtractInputTxId(input []byte) []byte {
 	return ReverseEndianness(input[0:32])
 }
 
@@ -189,9 +190,12 @@ func ExtractTxIndex(input []byte) uint {
 //
 
 // DetermineOutputLength returns the length of an output
-func DetermineOutputLength(output []byte) uint {
+func DetermineOutputLength(output []byte) (uint, error) {
 	length := uint(output[8])
-	return length
+	if length > 0xfd {
+		return 0, errors.New("Multi-byte VarInts not supported")
+	}
+	return length + uint(9), nil
 }
 
 // ExtractOutputAtIndex returns the output at a given index in the TxIns vector
@@ -201,7 +205,7 @@ func ExtractOutputAtIndex(vout []byte, index uint8) ([]byte, error) {
 
 	for i := uint8(0); i <= index; i++ {
 		remaining := vout[offset:]
-		length := DetermineOutputLength(remaining)
+		length, _ := DetermineOutputLength(remaining)
 		if i != index {
 			offset += length
 		}
@@ -229,7 +233,7 @@ func ExtractValue(output []byte) uint {
 // Value is an 8byte little endian number
 func ExtractOpReturnData(output []byte) ([]byte, error) {
 	if output[9] != 0x6a {
-		return nil, errors.New("Not an op return output")
+		return nil, errors.New("Malformatted data. Must be an op return.")
 	}
 
 	dataLen := output[10]
@@ -305,7 +309,8 @@ func ValidateVout(vout []byte) bool {
 	}
 
 	for i := uint(0); i < nOuts; i++ {
-		offset += DetermineOutputLength(vout[offset:])
+		output, _ := DetermineOutputLength(vout[offset:])
+		offset += output
 		if offset > vLength {
 			return false
 		}
@@ -332,19 +337,20 @@ func ExtractMerkleRootBE(header []byte) []byte {
 
 // ExtractTarget returns the target from a given block hedaer
 func ExtractTarget(header []byte) sdk.Int {
+	// nBits encoding. 3 byte mantissa, 1 byte exponent
 	m := header[72:75]
 	e := sdk.NewInt(int64(header[75]))
 
-	mantissa := sdk.NewInt(int64(bytesToUint(ReverseEndianness(m))))
+	mantissa, _ := sdk.NewIntFromString("0x" + hex.EncodeToString(ReverseEndianness(m)))
 	exponent := e.Sub(sdk.NewInt(3))
-	base := sdk.NewInt(256)
 
-	result := sdk.NewInt(0).BigInt()
-	result.Exp(base.BigInt(), exponent.BigInt(), nil)
+	// Have to convert to underlying big.Int as the sdk does not expose exponentiation
+	base := big.NewInt(256)
+	base.Exp(base, exponent.BigInt(), nil)
 
-	sdkResult := sdk.NewIntFromBigInt(result)
+	exponentTerm := sdk.NewIntFromBigInt(base)
 
-	return sdkResult.Mul(mantissa)
+	return mantissa.Mul(exponentTerm)
 }
 
 // CalculateDifficulty calculates difficulty from the difficulty 1 target and current target
@@ -386,7 +392,10 @@ func ExtractDifficulty(header []byte) sdk.Int {
 }
 
 func hash256MerkleStep(a []byte, b []byte) []byte {
-	return Hash256(append(a[:], b[:]...))
+	c := []byte{}
+	c = append(c, a...)
+	c = append(c, b...)
+	return Hash256(c)
 }
 
 // VerifyHash256Merkle checks a merkle inclusion proof's validity
@@ -408,14 +417,16 @@ func VerifyHash256Merkle(proof []byte, index uint) bool {
 
 	root := proof[proofLength-32:]
 	current := proof[:32]
+	numSteps := (proofLength / 32) - 1
 
-	for i := 1; i < proofLength%32-1; i++ {
+	for i := 1; i < numSteps; i++ {
 		next := proof[i*32 : i*32+32]
 		if idx%2 == 1 {
 			current = hash256MerkleStep(next, current)
 		} else {
 			current = hash256MerkleStep(current, next)
 		}
+		idx >>= 1
 	}
 
 	return bytes.Equal(current, root)

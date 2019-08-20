@@ -4,21 +4,21 @@
   "description": "bitcoin SPV proofs in Solidity",
   "scripts": {
     "compile": "truffle compile",
-    "coverage": "npx solidity-coverage",
+    "test": "cp ../testVectors.json test/ && truffle test",
+    "test:coverage": "cp ../testVectors.json test/ && npx solidity-coverage",
     "lint": "solium -d contracts/ && eslint ./test",
-    "lint:fix": "solium --fix -d contracts/ && eslint --fix ./test",
-    "test": "truffle test"
+    "lint:fix": "solium --fix -d contracts/ && eslint --fix ./test"
   },
   "author": "",
   "license": "LGPLv3",
   "devDependencies": {
-    "eslint": "^5.16.0",
     "bn.js": "^5.0.0",
-    "solium": "^1.2.4",
+    "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.2.0",
     "eslint-plugin-import": "^2.18.0",
     "eth-gas-reporter": "^0.2.8",
     "solidity-coverage": "^0.6.3",
-    "solidity-docgen": "^0.3.0-beta.4"
+    "solidity-docgen": "^0.3.0-beta.4",
+    "solium": "^1.2.4"
   }
 }

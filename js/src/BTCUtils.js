@@ -14,7 +14,7 @@
  *
  */
 
-import * as utils from '../utils/utils';
+import * as utils from './utils';
 
 /**
  * @const {BigInt}
@@ -51,47 +51,6 @@ export function determineVarIntDataLength(flag) {
   }
 
   return 0; // flag is data
-}
-
-/**
- *
- * Changes the endianness of a byte array
- * Returns a new, backwards, byte array
- *
- * @param {Uint8Array}    uint8Arr The array to reverse
- * @returns {Uint8Array}  The reversed array
- */
-export function reverseEndianness(uint8Arr) {
-  const newArr = utils.safeSlice(uint8Arr);
-  return new Uint8Array(newArr.reverse());
-}
-
-/**
- *
- * Converts big-endian array to a uint
- * Traverses the byte array and sums the bytes
- *
- * @param {Uint8Array}    uint8Arr The big-endian array-encoded integer
- * @returns {BigInt}      The integer representation
- */
-export function bytesToUint(uint8Arr) {
-  let total = BigInt(0);
-  for (let i = 0; i < uint8Arr.length; i += 1) {
-    total += BigInt(uint8Arr[i]) << (BigInt(uint8Arr.length - i - 1) * BigInt(8));
-  }
-  return total;
-}
-
-/**
- *
- * Get the last num bytes from a byte array
- * The byte array to slice
- *
- * @param {Uint8Array}     uint8Arr The big-endian array-encoded integer
- * @returns {Uint8Array}   The last `num` bytes of the bytearray
- */
-export function lastBytes(arr, num) {
-  return utils.safeSlice(arr, arr.length - num);
 }
 
 /**
@@ -138,7 +97,7 @@ export function extractScriptSigLen(input) {
     len = varIntTag;
   } else {
     const varIntData = utils.safeSlice(input, 37, 37 + varIntDataLen);
-    len = utils.bytesToUint(reverseEndianness(varIntData));
+    len = utils.bytesToUint(utils.reverseEndianness(varIntData));
   }
   return { dataLen: BigInt(varIntDataLen), scriptSigLen: BigInt(len) };
 }
@@ -173,9 +132,10 @@ export function determineInputLength(input) {
 /**
  *
  * Extracts the nth input from the vin (0-indexed)
- * Iterates over the vin. If you need to extract several,
  *
- *                        write a custom function
+ * Iterates over the vin. If you need to extract several,
+ * write a custom function
+ *
  * @param {Uint8Array}    vinArr The vin as a tightly-packed uint8array
  * @param {index}         index The 0-indexed location of the input to extract
  * @returns {Uint8Array}  The input as a u8a
@@ -217,7 +177,7 @@ export function isLegacyInput(input) {
  */
 export function extractSequenceLegacy(input) {
   const leSeqence = extractSequenceLELegacy(input);
-  const beSequence = reverseEndianness(leSeqence);
+  const beSequence = utils.reverseEndianness(leSeqence);
   return utils.bytesToUint(beSequence);
 }
 
@@ -262,7 +222,7 @@ export function extractSequenceLEWitness(input) {
  */
 export function extractSequenceWitness(input) {
   const leSeqence = extractSequenceLEWitness(input);
-  const inputSequence = reverseEndianness(leSeqence);
+  const inputSequence = utils.reverseEndianness(leSeqence);
   return utils.bytesToUint(inputSequence);
 }
 
@@ -286,7 +246,6 @@ export function extractOutpoint(input) {
  * @param {Uint8Array}    input The input
  * @returns {Uint8Array}  The tx id (little-endian bytes)
  */
-// TODO: no test, check against function that uses this
 export function extractInputTxIdLE(input) {
   return utils.safeSlice(input, 0, 32);
 }
@@ -299,10 +258,9 @@ export function extractInputTxIdLE(input) {
  * @param {Uint8Array}    input The input
  * @returns {Uint8Array}  The tx id (big-endian bytes)
  */
-// TODO: no test, check against function that uses this
 export function extractInputTxId(input) {
   const leId = extractInputTxIdLE(input);
-  return reverseEndianness(leId);
+  return utils.reverseEndianness(leId);
 }
 
 /**
@@ -313,7 +271,6 @@ export function extractInputTxId(input) {
  * @param {Uint8Array}    input The input
  * @returns {Uint8Array}  The tx index (little-endian bytes)
  */
-// TODO: no test, check against function that uses this
 export function extractTxIndexLE(input) {
   return utils.safeSlice(input, 32, 36);
 }
@@ -326,10 +283,9 @@ export function extractTxIndexLE(input) {
  * @param {Uint8Array}    input The input
  * @returns {BigInt}      The tx index (big-endian uint)
  */
-// TODO: no test, check against function that uses this
 export function extractTxIndex(input) {
   const leIndex = extractTxIndexLE(input);
-  const beIndex = reverseEndianness(leIndex);
+  const beIndex = utils.reverseEndianness(leIndex);
   return utils.bytesToUint(beIndex);
 }
 
@@ -358,9 +314,10 @@ export function determineOutputLength(output) {
 /**
  *
  * Extracts the output at a given index in the TxIns vector
- * Iterates over the vout. If you need to extract multiple,
  *
- *                        write a custom function
+ * Iterates over the vout. If you need to extract multiple,
+ * write a custom function
+ *
  * @param {Uint8Array}    vout The vout to extract from
  * @param {number}        index The 0-indexed location of the output to extract
  * @returns {Uint8Array}  The specified output
@@ -414,7 +371,7 @@ export function extractValueLE(output) {
  */
 export function extractValue(output) {
   const leValue = extractValueLE(output);
-  const beValue = reverseEndianness(leValue);
+  const beValue = utils.reverseEndianness(leValue);
   return utils.bytesToUint(beValue);
 }
 
@@ -428,7 +385,7 @@ export function extractValue(output) {
  * @throws {TypeError}    When passed something other than an op return output
  */
 export function extractOpReturnData(output) {
-  if (output[9] !== 106) {
+  if (output[9] !== 0x6a) {
     throw new TypeError('Malformatted data. Must be an op return.');
   }
   const dataLen = output[10];
@@ -575,7 +532,7 @@ export function extractMerkleRootLE(header) {
  * @returns {Uint8Array}  The serialized merkle root (big-endian)
  */
 export function extractMerkleRootBE(header) {
-  return reverseEndianness(
+  return utils.reverseEndianness(
     extractMerkleRootLE(header)
   );
 }
@@ -583,9 +540,10 @@ export function extractMerkleRootBE(header) {
 /**
  *
  * Extracts the target from a block header
- * Target is a 256 bit number encoded as a 3-byte mantissa
  *
- *                         and 1 byte exponent
+ * Target is a 256 bit number encoded as a 3-byte mantissa
+ * and 1 byte exponent
+ *
  * @param {Uint8Array}     header
  * @returns {BigInt}       The target threshold
  */
@@ -593,7 +551,7 @@ export function extractTarget(header) {
   const m = utils.safeSlice(header, 72, 75);
   const e = BigInt(header[75]);
 
-  const mantissa = utils.bytesToUint(reverseEndianness(m));
+  const mantissa = utils.bytesToUint(utils.reverseEndianness(m));
 
   const exponent = e - BigInt(3);
 
@@ -609,13 +567,11 @@ export function extractTarget(header) {
  * @returns {BigInt}      The block difficulty (bdiff)
  */
 export function calculateDifficulty(target) {
-  let t = target;
-
   /* eslint-disable-next-line valid-typeof */
   if (typeof target !== 'bigint') {
-    t = BigInt(target);
+    throw new Error('Argument must be a BigInt');
   }
-  return DIFF_ONE_TARGET / t;
+  return DIFF_ONE_TARGET / target;
 }
 
 /**
@@ -639,7 +595,7 @@ export function extractPrevBlockLE(header) {
  * @returns {Uint8Array}  The previous block's hash (big-endian)
  */
 export function extractPrevBlockBE(header) {
-  return reverseEndianness(
+  return utils.reverseEndianness(
     extractPrevBlockLE(header)
   );
 }
@@ -666,7 +622,7 @@ export function extractTimestampLE(header) {
  */
 export function extractTimestamp(header) {
   return utils.bytesToUint(
-    reverseEndianness(extractTimestampLE(header))
+    utils.reverseEndianness(extractTimestampLE(header))
   );
 }
 
@@ -701,7 +657,7 @@ export function hash256MerkleStep(a, b) {
  * Verifies a Bitcoin-style merkle tree
  * Leaves are 1-indexed.
  *
- * @param {Uint8Array}     proof The proof. Tightly packed LE sha256 hashes.
+ * @param {Uint8Array}    proof The proof. Tightly packed LE sha256 hashes.
  *                        The last hash is the root
  * @param {Number}        index The index of the leaf
  * @returns {Boolean}     True if the proof is value, else false
