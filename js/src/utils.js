@@ -236,7 +236,7 @@ export function lastBytes(arr, num) {
   return safeSlice(arr, arr.length - num);
 }
 
-export function updateJson(element) {
+export function updateJSON(element) {
   if (Array.isArray(element)) {
     for (let i = 0; i < element.length; i += 1) {
       // may want to refine this if statement to check if it's a hex value in the actual function
@@ -244,14 +244,14 @@ export function updateJson(element) {
         /* eslint-disable-next-line */
         element[i] = deserializeHex(element[i]);
       } else {
-        updateJson(element[i]);
+        updateJSON(element[i]);
       }
     }
   } else if (typeof element === 'object') {
     /* eslint-disable-next-line */
     for (const prop in element) {
       if (typeof element[prop] === 'object') {
-        updateJson(element[prop]);
+        updateJSON(element[prop]);
       } else if (typeof element[prop] === 'string' && element[prop].slice(0, 2) === '0x') {
         /* eslint-disable-next-line */
         element[prop] = deserializeHex(element[prop]);
