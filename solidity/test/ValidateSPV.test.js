@@ -2,6 +2,8 @@
 /* eslint-disable no-underscore-dangle */
 const BN = require('bn.js');
 const utils = require('./utils');
+
+/* eslint-disable-next-line no-unresolved */
 const vectors = require('./testVectors.json');
 
 const ValidateSPV = artifacts.require('ValidateSPVTest');

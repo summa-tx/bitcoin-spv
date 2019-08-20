@@ -1,6 +1,5 @@
 /* global artifacts contract describe before it assert */
 const constants = require('./constants');
-const vectors = require('./testVectors.json');
 
 const CheckBitcoinSigs = artifacts.require('CheckBitcoinSigsTest');
 

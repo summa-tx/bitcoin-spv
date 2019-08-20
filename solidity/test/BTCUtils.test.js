@@ -1,5 +1,7 @@
 /* global artifacts contract before it assert */
 const BN = require('bn.js');
+
+/* eslint-disable-next-line no-unresolved */
 const vectors = require('./testVectors.json');
 
 const BTCUtilsDelegate = artifacts.require('BTCUtilsTest');
