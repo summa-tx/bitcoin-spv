@@ -190,12 +190,14 @@ func ExtractTxIndex(input []byte) uint {
 //
 
 // DetermineOutputLength returns the length of an output
-func DetermineOutputLength(output []byte) (uint, error) {
+func DetermineOutputLength(output []byte) uint {
+// func DetermineOutputLength(output []byte) (uint, error) {
 	length := uint(output[8])
-	if length > 0xfd {
-		return 0, errors.New("Multi-byte VarInts not supported")
-	}
-	return length + uint(9), nil
+	// if length > 0xfd {
+	// 	return 0, errors.New("Multi-byte VarInts not supported")
+	// }
+	return length + uint(9)
+	// return length + uint(9), nil
 }
 
 // ExtractOutputAtIndex returns the output at a given index in the TxIns vector
@@ -205,7 +207,8 @@ func ExtractOutputAtIndex(vout []byte, index uint8) ([]byte, error) {
 
 	for i := uint8(0); i <= index; i++ {
 		remaining := vout[offset:]
-		length, _ := DetermineOutputLength(remaining)
+		length := DetermineOutputLength(remaining)
+		// length, _ := DetermineOutputLength(remaining)
 		if i != index {
 			offset += length
 		}
@@ -309,7 +312,8 @@ func ValidateVout(vout []byte) bool {
 	}
 
 	for i := uint(0); i < nOuts; i++ {
-		output, _ := DetermineOutputLength(vout[offset:])
+		output := DetermineOutputLength(vout[offset:])
+		// output, _ := DetermineOutputLength(vout[offset:])
 		offset += output
 		if offset > vLength {
 			return false

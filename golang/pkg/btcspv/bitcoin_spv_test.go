@@ -9,6 +9,8 @@ import (
 	"os"
 	"testing"
 
+	// "fmt"
+
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -476,20 +478,21 @@ func (suite *UtilsSuite) TestDetermineOutputLength() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := uint(testCase.Output.(int))
-		actual, err := DetermineOutputLength(testCase.Input.([]byte))
-		suite.Nil(err)
+		actual := DetermineOutputLength(testCase.Input.([]byte))
+		// actual, err := DetermineOutputLength(testCase.Input.([]byte))
+		// suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
 
-	fixtureError := suite.Fixtures["determineOutputLengthError"]
+	// fixtureError := suite.Fixtures["determineOutputLengthError"]
 
-	for i := range fixtureError {
-		testCase := fixtureError[i]
-		expected := testCase.ErrorMessage.(string)
-		actual, err := DetermineOutputLength(testCase.Input.([]byte))
-		suite.Equal(actual, uint(0))
-		suite.EqualError(err, expected)
-	}
+	// for i := range fixtureError {
+	// 	testCase := fixtureError[i]
+	// 	expected := testCase.ErrorMessage.(string)
+	// 	actual, err := DetermineOutputLength(testCase.Input.([]byte))
+	// 	suite.Equal(actual, uint(0))
+	// 	suite.EqualError(err, expected)
+	// }
 }
 
 func (suite *UtilsSuite) TestExtractOutputAtIndex() {
@@ -503,7 +506,12 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 		inputs := testCase.Input.(map[string]interface{})
 		vout := inputs["vout"].([]byte)
 		index := inputs["index"].(int)
-		actual, _ := ExtractOutputAtIndex(vout, uint8(index))
+		actual, err := ExtractOutputAtIndex(vout, uint8(index))
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Fatal(err)
+		// suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
 }

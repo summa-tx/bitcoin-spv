@@ -1,19 +1,21 @@
 package btcspv
 
-// import (
+import (
 // 	"bytes"
 // 	"crypto/sha256"
 // 	"encoding/binary"
 // 	"encoding/hex"
 // 	"errors"
 // 	"math/big"
+	"fmt"
 
 // 	sdk "github.com/cosmos/cosmos-sdk/types"
 // 	"golang.org/x/crypto/ripemd160"
-// )
+)
 
-func prove(txid []byte, merkleRoot []byte, intermediateNodes []byte, index uint) bool {
+func Prove(txid []byte, merkleRoot []byte, intermediateNodes []byte, index uint) bool {
 	// Shortcut the empty-block case
+	fmt.Println(txid, merkleRoot)
 	if txid == merkleRoot && index == 0 && len(intermediateNodes) == 0 {
 		return true
 	}
@@ -32,20 +34,20 @@ func calculateTxId(version, vin, vout, locktime []byte) []byte {
 	txid = append(txid, vin...)
 	txid = append(txid, vout...)
 	txid = append(txid, locktime...)
-	return Hash256(txId)
+	return Hash256(txid)
 }
 
-func parseInput(input []byte) (uint, []byte, uint, uint) {
-	// NB: If the scriptsig is exactly 00, we are WITNESS.
-	// Otherwise we are Compatibility or LEGACY
-	// let sequence;
-	// let witnessTag;
-	// let inputType;
+// func parseInput(input []byte) (uint, []byte, uint, uint) {
+// 	// NB: If the scriptsig is exactly 00, we are WITNESS.
+// 	// Otherwise we are Compatibility or LEGACY
+// 	// let sequence;
+// 	// let witnessTag;
+// 	// let inputType;
 
-	if input[36] != 0 {
-		sequence := ExtractSequenceLegacy(input)
-		witnessTag := input[36:39]
-	}
+// 	if input[36] != 0 {
+// 		sequence := ExtractSequenceLegacy(input)
+// 		witnessTag := input[36:39]
+// 	}
 	// if (input[36] !== 0) {
 	//   sequence = BTCUtils.extractSequenceLegacy(input);
 	//   witnessTag = utils.safeSlice(input, 36, 39);
@@ -67,7 +69,7 @@ func parseInput(input []byte) (uint, []byte, uint, uint) {
 	// return {
 	//   sequence, inputId, inputIndex, inputType
 	// };
-}
+// }
 
 // func parseOutput() {
 
