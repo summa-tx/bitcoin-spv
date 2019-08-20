@@ -190,30 +190,34 @@ func ExtractTxIndex(input []byte) uint {
 //
 
 // DetermineOutputLength returns the length of an output
-func DetermineOutputLength(output []byte) uint {
-// func DetermineOutputLength(output []byte) (uint, error) {
+// func DetermineOutputLength(output []byte) uint {
+func DetermineOutputLength(output []byte) (uint, error) {
 	length := uint(output[8])
-	// if length > 0xfd {
-	// 	return 0, errors.New("Multi-byte VarInts not supported")
-	// }
-	return length + uint(9)
-	// return length + uint(9), nil
+	if length > 0xfd {
+		return 0, errors.New("Multi-byte VarInts not supported")
+	}
+	// return length + uint(9)
+	return length + uint(9), nil
 }
 
 // ExtractOutputAtIndex returns the output at a given index in the TxIns vector
 func ExtractOutputAtIndex(vout []byte, index uint8) ([]byte, error) {
-	var length uint
-	var offset uint = 1
+    var length uint
+    var offset uint = 1
 
-	for i := uint8(0); i <= index; i++ {
-		remaining := vout[offset:]
-		length := DetermineOutputLength(remaining)
-		// length, _ := DetermineOutputLength(remaining)
-		if i != index {
-			offset += length
-		}
-	}
-	return vout[offset : offset+length], nil
+    for i := uint8(0); i <= index; i++ {
+        remaining := vout[offset:]
+        l, err := DetermineOutputLength(remaining)
+        length = l
+        if err != nil {
+            return []byte{}, err
+        }
+        if i != index {
+            offset += l
+        }
+    }
+    output := vout[offset : offset+length]
+    return output, nil
 }
 
 // ExtractOutputScriptLen extracts the output script length
@@ -312,8 +316,8 @@ func ValidateVout(vout []byte) bool {
 	}
 
 	for i := uint(0); i < nOuts; i++ {
-		output := DetermineOutputLength(vout[offset:])
-		// output, _ := DetermineOutputLength(vout[offset:])
+		// output := DetermineOutputLength(vout[offset:])
+		output, _ := DetermineOutputLength(vout[offset:])
 		offset += output
 		if offset > vLength {
 			return false

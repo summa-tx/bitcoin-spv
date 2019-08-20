@@ -29,3 +29,21 @@ func (suite *UtilsSuite) TestProve() {
 		suite.Equal(expected, actual)
 	}
 }
+
+func (suite *UtilsSuite) TestCalculateTxId() {
+	fixture := suite.Fixtures["calculateTxId"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.([]byte)
+		inputs := testCase.Input.(map[string]interface{})
+		version := inputs["version"].([]byte)
+		vin := inputs["vin"].([]byte)
+		vout := inputs["vout"].([]byte)
+		locktime := inputs["locktime"].([]byte)
+		actual := CalculateTxId(version, vin, vout, locktime)
+		suite.Equal(expected, actual)
+	}
+}
+
+// func (suite *UtilsSuite)

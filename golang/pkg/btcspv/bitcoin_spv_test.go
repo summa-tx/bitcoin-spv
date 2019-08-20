@@ -478,26 +478,26 @@ func (suite *UtilsSuite) TestDetermineOutputLength() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := uint(testCase.Output.(int))
-		actual := DetermineOutputLength(testCase.Input.([]byte))
-		// actual, err := DetermineOutputLength(testCase.Input.([]byte))
-		// suite.Nil(err)
+		// actual := DetermineOutputLength(testCase.Input.([]byte))
+		actual, err := DetermineOutputLength(testCase.Input.([]byte))
+		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
 
-	// fixtureError := suite.Fixtures["determineOutputLengthError"]
+	fixtureError := suite.Fixtures["determineOutputLengthError"]
 
-	// for i := range fixtureError {
-	// 	testCase := fixtureError[i]
-	// 	expected := testCase.ErrorMessage.(string)
-	// 	actual, err := DetermineOutputLength(testCase.Input.([]byte))
-	// 	suite.Equal(actual, uint(0))
-	// 	suite.EqualError(err, expected)
-	// }
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		expected := testCase.ErrorMessage.(string)
+		actual, err := DetermineOutputLength(testCase.Input.([]byte))
+		suite.Equal(actual, uint(0))
+		suite.EqualError(err, expected)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 	// FIXME:
-	suite.T().Skip()
+	// suite.T().Skip()
 	fixture := suite.Fixtures["extractOutputAtIndex"]
 
 	for i := range fixture {
@@ -510,8 +510,8 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Fatal(err)
-		// suite.Nil(err)
+		// log.Fatal(err)
+		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
 }
