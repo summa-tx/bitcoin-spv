@@ -28,8 +28,7 @@ const (
 	NONSTANDARD OUTPUT_TYPE = 6
 )
 
-// Validates a tx inclusion in the block
-func prove(txid []byte, merkleRoot []byte, intermediateNodes []byte, index uint) bool {
+func Prove(txid []byte, merkleRoot []byte, intermediateNodes []byte, index uint) bool {
 	// Shortcut the empty-block case
 	if bytes.Equal(txid, merkleRoot) && index == 0 && len(intermediateNodes) == 0 {
 		return true
@@ -53,26 +52,25 @@ func CalculateTxId(version, vin, vout, locktime []byte) []byte {
 	return Hash256(txid)
 }
 
-// Parses a tx input from raw input bytes
-func ParseInput(input []byte) (uint, []byte, uint, uint) {
+func ParseInput(input []byte) (uint, []byte, uint, INPUT_TYPE) {
 	// NB: If the scriptsig is exactly 00, we are WITNESS.
 	// Otherwise we are Compatibility or LEGACY
 	var sequence uint
 	var witnessTag []byte
-	var inputType uint
+	var inputType INPUT_TYPE
 
 	if input[36] != 0 {
 		sequence = ExtractSequenceLegacy(input)
 		witnessTag = input[36:39]
 
 		if bytes.Equal(witnessTag, []byte{34, 0, 32}) || bytes.Equal(witnessTag, []byte{32, 0, 20}) {
-			inputType = uint(COMPATIBILITY)
+			inputType = COMPATIBILITY
 		} else {
-			inputType = uint(LEGACY)
+			inputType = LEGACY
 		}
 	} else {
 		sequence = ExtractSequenceWitness(input)
-		inputType = uint(WITNESS)
+		inputType = WITNESS
 	}
 
 	inputId := ExtractInputTxId(input)
@@ -81,31 +79,30 @@ func ParseInput(input []byte) (uint, []byte, uint, uint) {
 	return sequence, inputId, inputIndex, inputType
 }
 
-// Parses a tx output from raw output bytes
-func ParseOutput(output []byte) (uint, uint, []byte) {
+func ParseOutput(output []byte) (uint, OUTPUT_TYPE, []byte) {
 	value := ExtractValue(output)
-	var outputType uint
+	var outputType OUTPUT_TYPE
 	var payload []byte
 
 	if output[9] == 0x6a {
-		outputType = uint(OP_RETURN)
+		outputType = OP_RETURN
 		payload, _ = ExtractOpReturnData(output)
 	} else {
 		prefixHash := output[8:10]
 		if bytes.Equal(prefixHash, []byte{34, 0}) {
-			outputType = uint(WSH)
+			outputType = WSH
 			payload = output[11:43]
 		} else if bytes.Equal(prefixHash, []byte{22, 0}) {
-			outputType = uint(WPKH)
+			outputType = WPKH
 			payload = output[11:31]
 		} else if bytes.Equal(prefixHash, []byte{25, 118}) {
-			outputType = uint(PKH)
+			outputType = PKH
 			payload = output[12:32]
 		} else if bytes.Equal(prefixHash, []byte{23, 169}) {
-			outputType = uint(SH)
+			outputType = SH
 			payload = output[11:31]
 		} else {
-			outputType = uint(NONSTANDARD)
+			outputType = NONSTANDARD
 			payload = []byte{}
 		}
 	}

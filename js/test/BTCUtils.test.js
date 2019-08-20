@@ -115,7 +115,7 @@ describe('BTCUtils', () => {
   it('extracts the length of the output script', () => {
     for (let i = 0; i < extractOutputScriptLen.length; i += 1) {
       const res = BTCUtils.extractOutputScriptLen(extractOutputScriptLen[i].input);
-      assert.strictEqual(res, extractOutputScriptLen[i].output[0]);
+      assert.strictEqual(res, extractOutputScriptLen[i].output);
     }
   });
 

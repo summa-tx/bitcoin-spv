@@ -1,5 +1,11 @@
 {
-  "OUTPUT_TYPES": {
+  "INPUT_TYPES": {
+    "NONE": 0,
+    "LEGACY": 1,
+    "COMPATIBILITY": 2,
+    "WITNESS": 3
+  },
+  "OUTPUT_TYPES": [{
     "NONE": 0,
     "WPKH": 1,
     "WSH": 2,
@@ -7,14 +13,7 @@
     "PKH": 4,
     "SH": 5,
     "NONSTANDARD": 6
-  },
-
-  "INPUT_TYPES": {
-    "NONE": 0,
-    "LEGACY": 1,
-    "COMPATIBILITY": 2,
-    "WITNESS": 3
-  },
+  }],
 
   "determineVarIntDataLength": [{
     "input": 1,
@@ -226,10 +225,12 @@
 
   "extractOutputScriptLen": [{
     "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
-    "output": 34
+    "output": 34,
+    "solOutput": "0x22"
   }, {
     "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-    "output": 22
+    "output": 22,
+    "solOutput": "0x16"
   }],
 
   "extractValueLE": [{
@@ -457,7 +458,7 @@
       "sequence": 4294967295,
       "txId": "0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b",
       "index": 0,
-      "type": "OP_RETURN"
+      "type": 3
     }
   }, {
     "input": "0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab375000000000101ffffffff",
@@ -465,7 +466,7 @@
       "sequence": 4294967295,
       "txId": "0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b",
       "index": 0,
-      "type": "WPKH"
+      "type": 1
     }
   }, {
     "input": "0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000160014eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff",
@@ -473,7 +474,7 @@
       "sequence": 4294967295,
       "txId": "0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b",
       "index": 0,
-      "type": "WSH"
+      "type": 2
     }
   }, {
     "input": "0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000220020eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff",
@@ -481,7 +482,7 @@
       "sequence": 4294967295,
       "txId": "0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b",
       "index": 0,
-      "type": "WSH"
+      "type": 2
     }
   }],
 
@@ -489,42 +490,42 @@
     "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
     "output": {
       "value": 0,
-      "type": "OP_RETURN",
+      "type": 3,
       "payload": "0xedb1b5c2f39af0fec151732585b1049b07895211"
     }
   }, {
     "input": "0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c",
     "output": {
       "value": 1000001000,
-      "type": "WPKH",
+      "type": 1,
       "payload": "0x7849e6bf5e4b1ba7235572d1b0cbc094f0213e6c"
     }
   }, {
     "input": "0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922",
     "output": {
       "value": 1000000,
-      "type": "WSH",
+      "type": 2,
       "payload": "0xaedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922"
     }
   }, {
     "input": "0x0000000000000000167a14edb1b5c2f39af0fec151732585b1049b07895211",
     "output": {
       "value": 0,
-      "type": "NONSTANDARD",
+      "type": 6,
       "payload": "0x"
     }
   }, {
     "input": "0xe8df05000000000017a914a654ebafa7a37e04a7ec3f684e34897e48f0496287",
     "output": {
       "value": 385000,
-      "type": "SH",
+      "type": 5,
       "payload": "0xa654ebafa7a37e04a7ec3f684e34897e48f04962"
     }
   }, {
     "input": "0x88080000000000001976a9141458514240d7287e5254af48cd292eb876cb07eb88ac",
     "output": {
       "value": 2184,
-      "type": "PKH",
+      "type": 4,
       "payload": "0x1458514240d7287e5254af48cd292eb876cb07eb"
     }
   }],

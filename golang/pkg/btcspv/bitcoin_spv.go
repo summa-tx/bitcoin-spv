@@ -200,17 +200,22 @@ func DetermineOutputLength(output []byte) (uint, error) {
 
 // ExtractOutputAtIndex returns the output at a given index in the TxIns vector
 func ExtractOutputAtIndex(vout []byte, index uint8) ([]byte, error) {
-	var length uint
-	var offset uint = 1
+    var length uint
+    var offset uint = 1
 
-	for i := uint8(0); i <= index; i++ {
-		remaining := vout[offset:]
-		length, _ := DetermineOutputLength(remaining)
-		if i != index {
-			offset += length
-		}
-	}
-	return vout[offset : offset+length], nil
+    for i := uint8(0); i <= index; i++ {
+        remaining := vout[offset:]
+        l, err := DetermineOutputLength(remaining)
+        length = l
+        if err != nil {
+            return []byte{}, err
+        }
+        if i != index {
+            offset += l
+        }
+    }
+    output := vout[offset : offset+length]
+    return output, nil
 }
 
 // ExtractOutputScriptLen extracts the output script length

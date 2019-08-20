@@ -9,6 +9,8 @@ import (
 	"os"
 	"testing"
 
+	// "fmt"
+
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -493,8 +495,6 @@ func (suite *UtilsSuite) TestDetermineOutputLength() {
 }
 
 func (suite *UtilsSuite) TestExtractOutputAtIndex() {
-	// FIXME:
-	suite.T().Skip()
 	fixture := suite.Fixtures["extractOutputAtIndex"]
 
 	for i := range fixture {
@@ -503,7 +503,11 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 		inputs := testCase.Input.(map[string]interface{})
 		vout := inputs["vout"].([]byte)
 		index := inputs["index"].(int)
-		actual, _ := ExtractOutputAtIndex(vout, uint8(index))
+		actual, err := ExtractOutputAtIndex(vout, uint8(index))
+		if err != nil {
+			log.Fatal(err)
+		}
+		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
 }
