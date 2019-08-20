@@ -63,7 +63,7 @@ contract('ValidateSPV', () => {
           version, vin, vout, locktime
         } = calculateTxId[i].input;
         const res = await instance.calculateTxId(version, vin, vout, locktime);
-        assert.equal(res, calculateTxId[i].output);
+        assert.strictEqual(res, calculateTxId[i].output);
       }
     });
   });
@@ -77,7 +77,7 @@ contract('ValidateSPV', () => {
         } = parseInput[i].output;
 
         assert(txIn._sequence.eq(new BN(sequence, 10)));
-        assert.equal(txIn._hash, txId);
+        assert.strictEqual(txIn._hash, txId);
         assert(txIn._index.eq(new BN(index, 10)));
         assert(txIn._inputType.eq(utils.OUTPUT_TYPES[type]));
       }
@@ -99,7 +99,7 @@ contract('ValidateSPV', () => {
 
         assert(txOut._value.eq(new BN(value, 10)));
         assert(txOut._outputType.eq(utils.OUTPUT_TYPES[type]));
-        assert.equal(txOut._payload, payload);
+        assert.strictEqual(txOut._payload, payload);
       }
     });
   });
@@ -164,7 +164,7 @@ contract('ValidateSPV', () => {
         const { digest, target } = validateHeaderWork[i].input;
         // Is this right?
         const res = await instance.validateHeaderWork(digest, target);
-        assert.equal(res, validateHeaderWork[i].output);
+        assert.strictEqual(res, validateHeaderWork[i].output);
       }
     });
   });
@@ -176,7 +176,7 @@ contract('ValidateSPV', () => {
           validateHeaderPrevHash[i].input.header,
           validateHeaderPrevHash[i].input.prevHash
         );
-        assert.equal(res, validateHeaderPrevHash[i].output);
+        assert.strictEqual(res, validateHeaderPrevHash[i].output);
       }
     });
   });
