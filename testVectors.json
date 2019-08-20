@@ -1,4 +1,21 @@
 {
+  "OUTPUT_TYPES": {
+    "NONE": 0,
+    "WPKH": 1,
+    "WSH": 2,
+    "OP_RETURN": 3,
+    "PKH": 4,
+    "SH": 5,
+    "NONSTANDARD": 6
+  },
+
+  "INPUT_TYPES": {
+    "NONE": 0,
+    "LEGACY": 1,
+    "COMPATIBILITY": 2,
+    "WITNESS": 3
+  },
+
   "determineVarIntDataLength": [{
     "input": 1,
     "output": 0
