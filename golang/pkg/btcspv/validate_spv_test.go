@@ -72,7 +72,7 @@ func (suite *UtilsSuite) TestParseOutput() {
 		testCase := fixture[i]
 		expected := testCase.Output.(map[string]interface{})
 		expectedValue := uint(expected["value"].(int))
-		expectedOutputType := INPUT_TYPE(expected["type"].(int))
+		expectedOutputType := OUTPUT_TYPE(expected["type"].(int))
 		expectedPayload := expected["payload"].([]byte)
 		input := testCase.Input.([]byte)
 		actualValue, actualOutputType, actualPayload := ParseOutput(input)
