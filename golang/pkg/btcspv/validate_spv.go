@@ -62,25 +62,25 @@ func CalculateTxId(version, vin, vout, locktime []byte) []byte {
 	return Hash256(txid)
 }
 
-func ParseInput(input []byte) (uint, []byte, uint, uint) {
+func ParseInput(input []byte) (uint, []byte, uint, INPUT_TYPE) {
 	// NB: If the scriptsig is exactly 00, we are WITNESS.
 	// Otherwise we are Compatibility or LEGACY
 	var sequence uint
 	var witnessTag []byte
-	var inputType uint
+	var inputType INPUT_TYPE
 
 	if input[36] != 0 {
 		sequence = ExtractSequenceLegacy(input)
 		witnessTag = input[36:39]
 
 		if bytes.Equal(witnessTag, []byte{34, 0, 32}) || bytes.Equal(witnessTag, []byte{32, 0, 20}) {
-			inputType = uint(COMPATIBILITY)
+			inputType = COMPATIBILITY
 		} else {
-			inputType = uint(LEGACY)
+			inputType = LEGACY
 		}
 	} else {
 		sequence = ExtractSequenceWitness(input)
-		inputType = uint(WITNESS)
+		inputType = WITNESS
 	}
 
 	inputId := ExtractInputTxId(input)
@@ -89,30 +89,30 @@ func ParseInput(input []byte) (uint, []byte, uint, uint) {
 	return sequence, inputId, inputIndex, inputType
 }
 
-func ParseOutput(output []byte) (uint, uint, []byte) {
+func ParseOutput(output []byte) (uint, OUTPUT_TYPE, []byte) {
 	value := ExtractValue(output)
-	var outputType uint
+	var outputType OUTPUT_TYPE
 	var payload []byte
 
 	if output[9] == 0x6a {
-		outputType = uint(OP_RETURN)
+		outputType = OP_RETURN
 		payload, _ = ExtractOpReturnData(output)
 	} else {
 		prefixHash := output[8:10]
 		if bytes.Equal(prefixHash, []byte{34, 0}) {
-			outputType = uint(WSH)
+			outputType = WSH
 			payload = output[11:43]
 		} else if bytes.Equal(prefixHash, []byte{22, 0}) {
-			outputType = uint(WPKH)
+			outputType = WPKH
 			payload = output[11:31]
 		} else if bytes.Equal(prefixHash, []byte{25, 118}) {
-			outputType = uint(PKH)
+			outputType = PKH
 			payload = output[12:32]
 		} else if bytes.Equal(prefixHash, []byte{23, 169}) {
-			outputType = uint(SH)
+			outputType = SH
 			payload = output[11:31]
 		} else {
-			outputType = uint(NONSTANDARD)
+			outputType = NONSTANDARD
 			payload = []byte{}
 		}
 	}
@@ -136,9 +136,40 @@ func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Int, ui
 	return digest, version, prevHash, merkleRoot, timestamp, target, nonce, nil
 }
 
-// func ValidateHeaderWork() {
+func ValidateHeaderChain(headers []byte) (uint, error) {
+	// // Check header chain length
 
-// }
+	if len(headers)%80 != 0 {
+			return 0, errors.New("Header bytes not multiple of 80.")
+	}
+
+	var digest []byte
+	totalDifficulty := sdk.NewInt(0)
+
+	for i := 0; i < len(headers); i++ {
+			start := i * 80
+			header := headers[start : start+80]
+
+			// After the first header, check that headers are in a chain
+			// if i != 0 {
+			// 		if !ValidateHeaderPrevHash(header, digest) {
+			// 				return 0, errors.New("Header bytes not a valid chain.")
+			// 		}
+			// }
+
+			// ith header target
+			target := ExtractTarget(header)
+
+			// // Require that the header has sufficient work
+			// digest = Hash256(header)
+			// if !ValidateHeaderWork(ReverseEndianness(digest), target) {
+			// 		return 0, errors.New("Header does not meet its own difficulty target.")
+			// }
+
+			totalDifficulty += CalculateDifficulty(target)
+	}
+	return totalDifficulty, nil
+}
 
 // func ValidateHeaderPrevHash() {
 

@@ -66,52 +66,52 @@ func (suite *UtilsSuite) TestParseInput() {
 	}
 }
 
-func (suite *UtilsSuite) TestParseOutput() {
-	suite.T().Skip()
-	fixture := suite.Fixtures["parseOutput"]
+// func (suite *UtilsSuite) TestParseOutput() {
+// 	suite.T().Skip()
+// 	fixture := suite.Fixtures["parseOutput"]
 
-for i := range fixture {
-	testCase := fixture[i]
-	actual := ParseOutput()
-	}
-}
+// for i := range fixture {
+// 	testCase := fixture[i]
+// 	actual := ParseOutput()
+// 	}
+// }
 
-func (suite *UtilsSuite) TestParseHeader() {
-	suite.T().Skip()
-	fixture := suite.Fixtures["parseHeader"]
+// func (suite *UtilsSuite) TestParseHeader() {
+// 	suite.T().Skip()
+// 	fixture := suite.Fixtures["parseHeader"]
 
-for i := range fixture {
-	testCase := fixture[i]
-	actual := ParseHeader()
-	}
-}
+// for i := range fixture {
+// 	testCase := fixture[i]
+// 	actual := ParseHeader()
+// 	}
+// }
 
-func (suite *UtilsSuite) TestValidateHeaderWork() {
-	suite.T().Skip()
-	fixture := suite.Fixtures["validateHeaderWork"]
+// func (suite *UtilsSuite) TestValidateHeaderWork() {
+// 	suite.T().Skip()
+// 	fixture := suite.Fixtures["validateHeaderWork"]
 
-for i := range fixture {
-	testCase := fixture[i]
-	actual := ValidateHeaderWork()
-	}
-}
+// for i := range fixture {
+// 	testCase := fixture[i]
+// 	actual := ValidateHeaderWork()
+// 	}
+// }
 
-func (suite *UtilsSuite) TestValidateHeaderPrevHash() {
-	suite.T().Skip()
-	fixture := suite.Fixtures["validateHeaderPrevHash"]
+// func (suite *UtilsSuite) TestValidateHeaderPrevHash() {
+// 	suite.T().Skip()
+// 	fixture := suite.Fixtures["validateHeaderPrevHash"]
 
-for i := range fixture {
-	testCase := fixture[i]
-	actual := ValidateHeaderPrevHash()
-	}
-}
+// for i := range fixture {
+// 	testCase := fixture[i]
+// 	actual := ValidateHeaderPrevHash()
+// 	}
+// }
 
-func (suite *UtilsSuite) TestValidateHeaderChain() {
-	suite.T().Skip()
-	fixture := suite.Fixtures["validateHeaderChain"]
+// func (suite *UtilsSuite) TestValidateHeaderChain() {
+// 	suite.T().Skip()
+// 	fixture := suite.Fixtures["validateHeaderChain"]
 
-for i := range fixture {
-	testCase := fixture[i]
-	actual := ValidateHeaderChain()
-	}
-}
+// for i := range fixture {
+// 	testCase := fixture[i]
+// 	actual := ValidateHeaderChain()
+// 	}
+// }
