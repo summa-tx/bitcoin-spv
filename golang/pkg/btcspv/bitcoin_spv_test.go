@@ -546,7 +546,7 @@ func (suite *UtilsSuite) TestExtractTimestamp() {
 
 	for i:= range fixture {
 		testCase := fixture[i]
-		expected := testCase.Output.([]byte)
+		expected := uint(testCase.Output.(int))
 		actual := ExtractTimestamp(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -606,6 +606,37 @@ func (suite *UtilsSuite) TestDetermineVarIntDataLength() {
 //   });
 func (suite *UtilsSuite) TestRetargetAlgorithm() {
 	suite.T().Skip()
+	// FIXME:
+	// fixtures := suite.Fixtures["retargetAlgorithm"]
+
+	// for i := range fixtures {
+	// 	testCase := fixtures [i]
+
+		// testCaseFirst := testCase[0]
+		// testCaseSecond := testCase[1]
+		// testCaseExpected := testCase[2]
+		// firstTimestamp := testCaseFirst["timestamp"]
+		// secondTimestamp := testCaseSecond["timestamp"]
+		// previousTarget := ExtractTarget(testCaseSecond["hex"])
+		// expectedNewTarget := ExtractTarget(testCaseExpected["hex"])
+
+		// data := testCase.()
+		// firstTimestamp := data[0]["timestamp"]
+		// secondTimestamp := data[1]["timestamp"]
+		// previousTarget := ExtractTarget(data[1].hex)
+		// expectedNewTarget := ExtractTarget(data[2].hex)
+
+		// expected := RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
+		// suite.Equal(expected & expectedNewTarget, expectedNewTarget)
+
+		// secondTimestamp = firstTimestamp + (5 * 2016 * 10 * 60)
+		// expected = RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
+		// suite.Equal(expected / sdk.NewInt(4) & previousTarget, previousTarget)
+
+		// secondTimestamp = firstTimestamp + (2016 * 10 * 14)
+		// expected = RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
+		// suite.Equal(expected * sdk.NewInt(4) & previousTarget, previousTarget)
+	// }
 }
 
 //   it('extracts difficulty from a header', () => {
@@ -636,18 +667,28 @@ func (suite *UtilsSuite) TestExtractDifficulty() {
 	// var actual sdk.Int
 	// var expected sdk.Int
 	suite.T().Skip()
+	// need to figure out how to work with data in "retargetAlgorithm" in testVectors.json
 }
 
 func (suite *UtilsSuite) TestCalculateDifficulty() {
-	diffOneTarget, _ := sdk.NewIntFromString("0xffff0000000000000000000000000000000000000000000000000000")
-	diff := CalculateDifficulty(diffOneTarget)
-	suite.True(diff.Equal(sdk.NewInt(1)))
+	// diffOneTarget, _ := sdk.NewIntFromString("0xffff0000000000000000000000000000000000000000000000000000")
+	// diff := CalculateDifficulty(diffOneTarget)
+	// suite.True(diff.Equal(sdk.NewInt(1)))
 
-	diff256, _ := sdk.NewIntFromString("0xffff00000000000000000000000000000000000000000000000000")
-	diff = CalculateDifficulty(diff256)
-	suite.True(diff.Equal(sdk.NewInt(256)))
+	// diff256, _ := sdk.NewIntFromString("0xffff00000000000000000000000000000000000000000000000000")
+	// diff = CalculateDifficulty(diff256)
+	// suite.True(diff.Equal(sdk.NewInt(256)))
 
-	diff65536, _ := sdk.NewIntFromString("0xffff000000000000000000000000000000000000000000000000")
-	diff = CalculateDifficulty(diff65536)
-	suite.True(diff.Equal(sdk.NewInt(65536)))
+	// diff65536, _ := sdk.NewIntFromString("0xffff000000000000000000000000000000000000000000000000")
+	// diff = CalculateDifficulty(diff65536)
+	// suite.True(diff.Equal(sdk.NewInt(65536)))
+
+	fixture := suite.Fixtures["calculateDifficulty"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.(sdk.Int)
+		actual := CalculateDifficulty(testCase.Input.(sdk.Int))
+		suite.Equal(expected, actual)
+	}
 }
