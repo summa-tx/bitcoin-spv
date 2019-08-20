@@ -15,8 +15,7 @@ const {
   parseInput,
   parseOutput,
   parseHeader,
-  // parseHeaderSolErr,
-  // parseHeaderError,
+  parseHeaderSolErr,
   validateHeaderChain,
   validateHeaderChainError,
   validateHeaderWork,
@@ -129,12 +128,12 @@ contract('ValidateSPV', () => {
         const invalidHeader = await instance.parseHeader(parseHeaderSolErr[i].input);
         const {
           digest, version, prevHash, merkleRoot, timestamp, target, nonce
-        } = parseHeader[i].output;
+        } = parseHeaderSolErr[i].output;
 
-        assert.equal(digest, invalidHeader._digest);
+        assert.strictEqual(digest, invalidHeader._digest);
         assert(new BN(version, 10).eq(invalidHeader._version));
-        assert.equal(prevHash, invalidHeader._prevHash);
-        assert.equal(merkleRoot, invalidHeader._merkleRoot);
+        assert.strictEqual(prevHash, invalidHeader._prevHash);
+        assert.strictEqual(merkleRoot, invalidHeader._merkleRoot);
         assert(new BN(timestamp, 10).eq(invalidHeader._timestamp));
         assert(new BN(target, 10).eq(invalidHeader._target));
         assert(new BN(nonce, 10).eq(invalidHeader._nonce));
