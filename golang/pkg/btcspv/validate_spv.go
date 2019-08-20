@@ -7,17 +7,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// import (
-// 	"bytes"
-// 	// "crypto/sha256"
-// 	// "encoding/binary"
-// 	// "encoding/hex"
-// 	// "errors"
-// 	// "math/big"
-// 	// sdk "github.com/cosmos/cosmos-sdk/types"
-// 	// "golang.org/x/crypto/ripemd160"
-// )
-
 type INPUT_TYPE int
 
 const (
@@ -53,6 +42,7 @@ func Prove(txid []byte, merkleRoot []byte, intermediateNodes []byte, index uint)
 	return VerifyHash256Merkle(proof, index)
 }
 
+// Hashes transaction to get txid
 func CalculateTxId(version, vin, vout, locktime []byte) []byte {
 	txid := []byte{}
 	txid = append(txid, version...)
@@ -120,29 +110,32 @@ func ParseOutput(output []byte) (uint, OUTPUT_TYPE, []byte) {
 	return value, outputType, payload
 }
 
+// Parses a block header struct from a bytestring
 func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Int, uint, error) {
 	if len(header) != 80 {
 		return nil, 0, nil, nil, 0, sdk.NewInt(0), 0, errors.New("Malformatted header. Must be exactly 80 bytes.")
 	}
 
 	digest := ReverseEndianness(Hash256(header))
-	version := bytesToUint(ReverseEndianness(header[0:4]))
+	version := BytesToUint(ReverseEndianness(header[0:4]))
 	prevHash := ExtractPrevBlockHashLE(header)
 	merkleRoot := ExtractMerkleRootLE(header)
 	timestamp := ExtractTimestamp(header)
 	target := ExtractTarget(header)
-	nonce := bytesToUint(ReverseEndianness(header[76:80]))
+	nonce := BytesToUint(ReverseEndianness(header[76:80]))
 
 	return digest, version, prevHash, merkleRoot, timestamp, target, nonce, nil
 }
 
+// Checks validity of header work
 func ValidateHeaderWork(digest []byte, target sdk.Int) bool {
 	if bytes.Equal(digest, bytes.Repeat([]byte("0x00"), 32)) {
 		return false
 	}
-	return bytesToUint(digest) < target
+	return BytesToBigInt(digest).LT(target)
 }
 
+// Checks validity of header chain
 func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
 	// Extract prevHash of current header
 	prevHash := ExtractPrevBlockHashLE(header)
@@ -155,6 +148,7 @@ func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
 	return true
 }
 
+// Checks validity of header chain
 func ValidateHeaderChain(headers []byte) (sdk.Int, error) {
 	// // Check header chain length
 

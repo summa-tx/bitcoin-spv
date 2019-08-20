@@ -13,7 +13,7 @@ import (
 )
 
 // bytesToUint converts 1, 2, 3, or 4-byte numbers to uints
-func bytesToUint(b []byte) uint {
+func BytesToUint(b []byte) uint {
 	total := uint(0)
 	length := uint(len(b))
 
@@ -29,6 +29,12 @@ func BytesToBigInt(b []byte) sdk.Int {
 	ret, _ := sdk.NewIntFromString("0x" + hex.EncodeToString(b))
 	return ret
 }
+
+// TODO: Update to sdk.Uint in many places
+// func BytesToBigInt(b []byte) sdk.Uint {
+// 	ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
+// 	return ret
+// }
 
 // DetermineVarIntDataLength extracts the payload length of a Bitcoin VarInt
 func DetermineVarIntDataLength(flag uint8) uint8 {
@@ -141,7 +147,7 @@ func ExtractScriptSigLen(input []byte) (uint, uint) {
 
 	length := uint(varIntTag)
 	if varIntDataLen != 0 {
-		length = bytesToUint(ReverseEndianness(input[37 : 37+varIntDataLen]))
+		length = BytesToUint(ReverseEndianness(input[37 : 37+varIntDataLen]))
 	}
 
 	return uint(varIntDataLen), length
@@ -154,7 +160,7 @@ func ExtractSequenceLEWitness(input []byte) []byte {
 
 // ExtractSequenceWitness extracts the sequence integer from a witness input
 func ExtractSequenceWitness(input []byte) uint {
-	return bytesToUint(ExtractSequenceLEWitness(input))
+	return BytesToUint(ExtractSequenceLEWitness(input))
 }
 
 // ExtractOutpoint returns the outpoint from the in input in a tx
@@ -182,7 +188,7 @@ func ExtractTxIndexLE(input []byte) []byte {
 
 // ExtractTxIndex extracts the tx input index from the input in a tx
 func ExtractTxIndex(input []byte) uint {
-	return bytesToUint(ReverseEndianness(ExtractTxIndexLE(input)))
+	return BytesToUint(ReverseEndianness(ExtractTxIndexLE(input)))
 }
 
 //
@@ -231,7 +237,7 @@ func ExtractValueLE(output []byte) []byte {
 
 // ExtractValue extracts the value from the output in a tx
 func ExtractValue(output []byte) uint {
-	return bytesToUint(ReverseEndianness(ExtractValueLE(output)))
+	return BytesToUint(ReverseEndianness(ExtractValueLE(output)))
 }
 
 // ExtractOpReturnData returns the value from the output in a tx
@@ -388,7 +394,7 @@ func ExtractTimestampLE(header []byte) []byte {
 // ExtractTimestamp returns the timestamp from a block header as a uint
 // Time is not 100% reliable
 func ExtractTimestamp(header []byte) uint {
-	return bytesToUint(ReverseEndianness(ExtractTimestampLE(header)))
+	return BytesToUint(ReverseEndianness(ExtractTimestampLE(header)))
 }
 
 // ExtractDifficulty calculates the difficulty of a header
