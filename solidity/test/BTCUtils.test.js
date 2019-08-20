@@ -1,7 +1,6 @@
 /* global artifacts contract before it assert */
 const BN = require('bn.js');
-// const constants = require('./constants');
-let vectors = require('../../testVectors.json');
+const vectors = require('../../testVectors.json');
 
 const {
   lastBytes,
@@ -40,7 +39,7 @@ const {
   verifyHash256Merkle,
   determineVarIntDataLength,
   retargetAlgorithm
-} = JSON.parse(JSON.stringify(vectors));
+} = vectors;
 
 const BTCUtilsDelegate = artifacts.require('BTCUtilsTest');
 
@@ -71,19 +70,19 @@ contract('BTCUtils', () => {
 
   it('reverses endianness', async () => {
     for (let i = 0; i < reverseEndianness.length; i += 1) {
-      let res = await instance.reverseEndianness(reverseEndianness[i].input);
+      const res = await instance.reverseEndianness(reverseEndianness[i].input);
       assert.strictEqual(res, reverseEndianness[i].output);
     }
   });
 
   it('converts big-endian bytes to integers', async () => {
     for (let i = 0; i < bytesToUint.length; i += 1) {
-      let res = await instance.bytesToUint(bytesToUint[i].input);
+      const res = await instance.bytesToUint(bytesToUint[i].input);
       assert(res, new BN(bytesToUint[i].output, 10));
     }
 
     // max uint256: (2^256)-1
-    res = await instance.bytesToUint(`0x${'ff'.repeat(32)}`);
+    const res = await instance.bytesToUint(`0x${'ff'.repeat(32)}`);
     assert(
       res, new BN('115792089237316195423570985008687907853269984665640564039457584007913129639935', 10)
     );
@@ -105,11 +104,12 @@ contract('BTCUtils', () => {
 
   it('implements hash256MerkleStep', async () => {
     for (let i = 0; i < hash256MerkleStep.length; i += 1) {
+      /* eslint-disable-next-line */
       const res = await instance._hash256MerkleStep(
         hash256MerkleStep[i].input[0],
         hash256MerkleStep[i].input[1]
       );
-      assert.strictEqual(res, hash256MerkleStep[i].output)
+      assert.strictEqual(res, hash256MerkleStep[i].output);
     }
   });
 
@@ -120,7 +120,7 @@ contract('BTCUtils', () => {
     }
 
     for (let i = 0; i < extractSequenceWitness.length; i += 1) {
-      res = await instance.extractSequenceWitness(extractSequenceWitness[i].input);
+      const res = await instance.extractSequenceWitness(extractSequenceWitness[i].input);
       assert(res.eq(new BN(extractSequenceWitness[i].output, 16)));
     }
   });
@@ -132,7 +132,7 @@ contract('BTCUtils', () => {
     }
 
     for (let i = 0; i < extractSequenceLegacy.length; i += 1) {
-      res = await instance.extractSequenceLegacy(extractSequenceLegacy[i].input);
+      const res = await instance.extractSequenceLegacy(extractSequenceLegacy[i].input);
       assert(res.eq(new BN(extractSequenceLegacy[i].output, 16)));
     }
   });
@@ -159,7 +159,7 @@ contract('BTCUtils', () => {
     }
 
     for (let i = 0; i < extractHashError.length; i += 1) {
-      res = await instance.extractHash(extractHashError[i].input);
+      const res = await instance.extractHash(extractHashError[i].input);
       assert.isNull(res);
     }
   });
@@ -171,7 +171,7 @@ contract('BTCUtils', () => {
     }
 
     for (let i = 0; i < extractValue.length; i += 1) {
-      res = await instance.extractValue(extractValue[i].input);
+      const res = await instance.extractValue(extractValue[i].input);
       assert(res.eq(new BN(extractValue[i].output, 16)));
     }
   });
@@ -185,27 +185,29 @@ contract('BTCUtils', () => {
 
   it('extracts op_return data blobs', async () => {
     for (let i = 0; i < extractOpReturnData.length; i += 1) {
-      let res = await instance.extractOpReturnData(extractOpReturnData[i].input);
+      const res = await instance.extractOpReturnData(extractOpReturnData[i].input);
       assert.strictEqual(res, extractOpReturnData[i].output);
     }
 
     for (let i = 0; i < extractOpReturnDataError.length; i += 1) {
-      res = await instance.extractOpReturnData(extractOpReturnDataError[i].input);
+      const res = await instance.extractOpReturnData(extractOpReturnDataError[i].input);
       assert.isNull(res);
     }
   });
 
   it('extracts inputs at specified indices', async () => {
     for (let i = 0; i < extractInputAtIndex.length; i += 1) {
-      const res = await instance.extractInputAtIndex(extractInputAtIndex[i].input.vin, extractInputAtIndex[i].input.index);
+      const res = await instance.extractInputAtIndex(
+        extractInputAtIndex[i].input.vin,
+        extractInputAtIndex[i].input.index
+      );
       assert.strictEqual(res, extractInputAtIndex[i].output);
     }
   });
 
   it('sorts legacy from witness inputs', async () => {
     for (let i = 0; i < isLegacyInput.length; i += 1) {
-      let res;
-      res = await instance.isLegacyInput(isLegacyInput[i].input);
+      const res = await instance.isLegacyInput(isLegacyInput[i].input);
       assert.strictEqual(res, isLegacyInput[i].output);
     }
   });
@@ -257,7 +259,10 @@ contract('BTCUtils', () => {
 
   it('extracts outputs at specified indices', async () => {
     for (let i = 0; i < extractOutputAtIndex.length; i += 1) {
-      const res = await instance.extractOutputAtIndex(extractOutputAtIndex[i].input.vout, extractOutputAtIndex[i].input.index);
+      const res = await instance.extractOutputAtIndex(
+        extractOutputAtIndex[i].input.vout,
+        extractOutputAtIndex[i].input.index
+      );
       assert.strictEqual(res, extractOutputAtIndex[i].output);
     }
   });
