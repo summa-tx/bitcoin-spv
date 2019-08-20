@@ -1,6 +1,8 @@
 /* global artifacts contract before it assert */
 const BN = require('bn.js');
-const vectors = require('../../testVectors.json');
+const vectors = require('./testVectors.json');
+
+const BTCUtilsDelegate = artifacts.require('BTCUtilsTest');
 
 const {
   lastBytes,
@@ -40,8 +42,6 @@ const {
   determineVarIntDataLength,
   retargetAlgorithm
 } = vectors;
-
-const BTCUtilsDelegate = artifacts.require('BTCUtilsTest');
 
 contract('BTCUtils', () => {
   let instance;

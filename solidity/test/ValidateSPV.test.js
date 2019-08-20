@@ -1,10 +1,10 @@
 /* global artifacts contract describe before it assert */
 /* eslint-disable no-underscore-dangle */
 const BN = require('bn.js');
+const utils = require('./utils');
+const vectors = require('./testVectors.json');
 
 const ValidateSPV = artifacts.require('ValidateSPVTest');
-const utils = require('./utils');
-const vectors = require('../../testVectors.json');
 
 const {
   getErrBadLength,

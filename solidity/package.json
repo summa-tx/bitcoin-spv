@@ -4,7 +4,7 @@
   "description": "bitcoin SPV proofs in Solidity",
   "scripts": {
     "compile": "truffle compile",
-    "coverage": "npx solidity-coverage",
+    "test:coverage": "cp ../testVectors.json test/ && npx solidity-coverage",
     "lint": "solium -d contracts/ && eslint ./test",
     "lint:fix": "solium --fix -d contracts/ && eslint --fix ./test",
     "test": "truffle test"
