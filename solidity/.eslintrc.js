@@ -16,6 +16,7 @@ module.exports = {
   },
   rules: {
     "comma-dangle": 'off',
-    "no-bitwise": 'off'
+    "no-bitwise": 'off',
+    "no-await-in-loop": 'off'
   },
 };

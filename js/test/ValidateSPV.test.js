@@ -61,7 +61,7 @@ describe('ValidateSPV', () => {
         assert.strictEqual(txIn.sequence, BigInt(sequence));
         assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, txId));
         assert.strictEqual(txIn.inputIndex, BigInt(index));
-        assert.strictEqual(txIn.inputType, BigInt(type));
+        assert.strictEqual(txIn.inputType, BigInt(utils.OUTPUT_TYPES[type]));
       }
     });
   });
