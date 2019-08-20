@@ -164,13 +164,13 @@ func ExtractOutpoint(input []byte) []byte {
 }
 
 // ExtractInputTxIDLE returns the LE tx input index from the input in a tx
-func ExtractInputTxIDLE(input []byte) []byte {
+func ExtractInputTxIdLE(input []byte) []byte {
 	return input[0:32]
 }
 
 // ExtractTxID returns the input tx id from the input in a tx
 // Returns the tx id as a big-endian []byte
-func ExtractTxID(input []byte) []byte {
+func ExtractInputTxId(input []byte) []byte {
 	return ReverseEndianness(input[0:32])
 }
 
@@ -190,9 +190,12 @@ func ExtractTxIndex(input []byte) uint {
 //
 
 // DetermineOutputLength returns the length of an output
-func DetermineOutputLength(output []byte) uint {
+func DetermineOutputLength(output []byte) (uint, error) {
 	length := uint(output[8])
-	return length + uint(9)
+	if length > 0xfd {
+		return 0, errors.New("Multi-byte VarInts not supported")
+	}
+	return length + uint(9), nil
 }
 
 // ExtractOutputAtIndex returns the output at a given index in the TxIns vector
@@ -202,7 +205,7 @@ func ExtractOutputAtIndex(vout []byte, index uint8) ([]byte, error) {
 
 	for i := uint8(0); i <= index; i++ {
 		remaining := vout[offset:]
-		length := DetermineOutputLength(remaining)
+		length, _ := DetermineOutputLength(remaining)
 		if i != index {
 			offset += length
 		}
@@ -230,7 +233,7 @@ func ExtractValue(output []byte) uint {
 // Value is an 8byte little endian number
 func ExtractOpReturnData(output []byte) ([]byte, error) {
 	if output[9] != 0x6a {
-		return nil, errors.New("Not an op return output")
+		return nil, errors.New("Malformatted data. Must be an op return.")
 	}
 
 	dataLen := output[10]
@@ -306,7 +309,8 @@ func ValidateVout(vout []byte) bool {
 	}
 
 	for i := uint(0); i < nOuts; i++ {
-		offset += DetermineOutputLength(vout[offset:])
+		output, _ := DetermineOutputLength(vout[offset:])
+		offset += output
 		if offset > vLength {
 			return false
 		}

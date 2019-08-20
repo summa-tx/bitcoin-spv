@@ -304,15 +304,47 @@ func (suite *UtilsSuite) TestExtractHash() {
 }
 
 func (suite *UtilsSuite) TestExtractValue() {
-	suite.T().Skip()
+	fixture := suite.Fixtures["extractValue"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := uint(testCase.Output.(int))
+		actual := ExtractValue(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractValueLE() {
-	suite.T().Skip()
+	fixture := suite.Fixtures["extractValueLE"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.([]byte)
+		actual := ExtractValueLE(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractOpReturnData() {
-	suite.T().Skip()
+	fixture := suite.Fixtures["extractOpReturnData"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.([]byte)
+		actual, err := ExtractOpReturnData(testCase.Input.([]byte))
+		suite.Nil(err)
+		suite.Equal(expected, actual)
+	}
+
+	fixtureError := suite.Fixtures["extractOpReturnDataError"]
+
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		expected := testCase.ErrorMessage.(string)
+		actual, err := ExtractOpReturnData(testCase.Input.([]byte))
+		suite.Nil(actual)
+		suite.EqualError(err, expected)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractInputAtIndex() {
@@ -328,173 +360,196 @@ func (suite *UtilsSuite) TestExtractInputAtIndex() {
 }
 
 func (suite *UtilsSuite) TestIsLegacyInput() {
-	// TODO: first test
-	decode := decodeIfHex("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
+	fixture := suite.Fixtures["isLegacyInput"]
 
-	res := IsLegacyInput(decode)
-	suite.Equal(res, true)
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.(bool)
+		actual := IsLegacyInput(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestDetermineInputLength() {
-	decode := decodeIfHex("7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff")
-	res := DetermineInputLength(decode)
-	suite.Equal(res, uint(41))
+	fixture := suite.Fixtures["determineInputLength"]
 
-	decode = decodeIfHex("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000000000000")
-	res = DetermineInputLength(decode)
-	suite.Equal(res, uint(41))
-
-	decode = decodeIfHex("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0400000002000000000000")
-	res = DetermineInputLength(decode)
-	suite.Equal(res, uint(43))
-
-	decode = decodeIfHex("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd040000000900000000000000000000000000")
-	res = DetermineInputLength(decode)
-	suite.Equal(res, uint(50))
-
-	decode = decodeIfHex("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd04000000fdff0000000000")
-	res = DetermineInputLength(decode)
-	suite.Equal(res, uint(298))
-
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := uint(testCase.Output.(int))
+		actual := DetermineInputLength(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractScriptSig() {
-	// TODO: first test
-	decodeTest := decodeIfHex("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
-	decodeAnswer := decodeIfHex("01ee")
-	res := ExtractScriptSig(decodeTest)
-	suite.Equal(res, decodeAnswer)
+	fixture := suite.Fixtures["extractScriptSig"]
 
-	decodeTest = decodeIfHex("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff")
-	decodeAnswer = decodeIfHex("fd0100ee")
-	res = ExtractScriptSig(decodeTest)
-	suite.Equal(res, decodeAnswer)
-
-	decodeTest = decodeIfHex("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff")
-	decodeAnswer = decodeIfHex("fe01000000ee")
-	res = ExtractScriptSig(decodeTest)
-	suite.Equal(res, decodeAnswer)
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.([]byte)
+		actual := ExtractScriptSig(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractScriptSigLen() {
-	// TODO: write first test
-	decode := decodeIfHex("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff")
-	dataLen, scriptSigLen := ExtractScriptSigLen(decode)
-	suite.Equal(dataLen, uint(0))
-	suite.Equal(scriptSigLen, uint(1))
+	fixture := suite.Fixtures["extractScriptSigLen"]
 
-	decode = decodeIfHex("1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000FF0000000000000000ffffffff")
-	dataLen, scriptSigLen = ExtractScriptSigLen(decode)
-	suite.Equal(dataLen, uint(8))
-	suite.Equal(scriptSigLen, uint(0))
-
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.([]interface{})
+		actualDataLen, actualScriptSigLen := ExtractScriptSigLen(testCase.Input.([]byte))
+		suite.Equal(uint(expected[0].(int)), uint(actualDataLen))
+		suite.Equal(uint(expected[1].(int)), uint(actualScriptSigLen))
+	}
 }
 
 func (suite *UtilsSuite) TestValidateVin() {
-	// TODO: write first test
-	decode, _ := hex.DecodeString("FF1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff")
-	res := ValidateVin(decode)
-	suite.Equal(res, false)
+	fixture := suite.Fixtures["validateVin"]
 
-	decode, _ = hex.DecodeString("001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff")
-	res = ValidateVin(decode)
-	suite.Equal(res, false)
-
-	decode, _ = hex.DecodeString("011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffff")
-	res = ValidateVin(decode)
-	suite.Equal(res, false)
-
-	decode, _ = hex.DecodeString("011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffffEEEEE")
-	res = ValidateVin(decode)
-	suite.Equal(res, false)
-
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.(bool)
+		actual := ValidateVin(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestValidateVout() {
-	// TODO: write first test
-	decode, _ := hex.DecodeString("FF4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211")
-	res := ValidateVin(decode)
-	suite.Equal(res, false)
+	fixture := suite.Fixtures["validateVout"]
 
-	decode, _ = hex.DecodeString("004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211")
-	res = ValidateVin(decode)
-	suite.Equal(res, false)
-
-	decode, _ = hex.DecodeString("024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952")
-	res = ValidateVin(decode)
-	suite.Equal(res, false)
-
-	decode, _ = hex.DecodeString("024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952111111111111111")
-	res = ValidateVin(decode)
-	suite.Equal(res, false)
-
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.(bool)
+		actual := ValidateVout(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractInputTxIdLE() {
-	suite.T().Skip()
+	fixture := suite.Fixtures["extractInputTxIdLE"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.([]byte)
+		actual := ExtractInputTxIdLE(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
-func (suite *UtilsSuite) TestextractInputTxId() {
-	suite.T().Skip()
+func (suite *UtilsSuite) TestExtractInputTxId() {
+	fixture := suite.Fixtures["extractInputTxId"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.([]byte)
+		actual := ExtractInputTxId(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
-func (suite *UtilsSuite) TestExtractIndexLE() {
-	suite.T().Skip()
+func (suite *UtilsSuite) TestExtractTxIndexLE() {
+	fixture := suite.Fixtures["extractTxIndexLE"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.([]byte)
+		actual := ExtractTxIndexLE(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
-func (suite *UtilsSuite) TestextractTxIndex() {
-	suite.T().Skip()
+func (suite *UtilsSuite) TestExtractTxIndex() {
+	fixture := suite.Fixtures["extractTxIndex"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := uint(testCase.Output.(int))
+		actual := ExtractTxIndex(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestDetermineOutputLength() {
-	decode, _ := hex.DecodeString("00000000000000002200")
-	res := DetermineOutputLength(decode)
-	suite.Equal(res, uint(43))
+	fixture := suite.Fixtures["determineOutputLength"]
 
-	decode, _ = hex.DecodeString("00000000000000001600")
-	res = DetermineOutputLength(decode)
-	suite.Equal(res, uint(31))
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := uint(testCase.Output.(int))
+		actual, err := DetermineOutputLength(testCase.Input.([]byte))
+		suite.Nil(err)
+		suite.Equal(expected, actual)
+	}
 
-	decode, _ = hex.DecodeString("0000000000000000206a")
-	res = DetermineOutputLength(decode)
-	suite.Equal(res, uint(41))
+	fixtureError := suite.Fixtures["determineOutputLengthError"]
 
-	decode, _ = hex.DecodeString("000000000000000002")
-	res = DetermineOutputLength(decode)
-	suite.Equal(res, uint(11))
-
-	decode, _ = hex.DecodeString("000000000000000000")
-	res = DetermineOutputLength(decode)
-	suite.Equal(res, uint(9))
-
-	decode, _ = hex.DecodeString("000000000000000088")
-	res = DetermineOutputLength(decode)
-	suite.Equal(res, uint(145))
-
-	// TODO: write test for error handling
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		expected := testCase.ErrorMessage.(string)
+		actual, err := DetermineOutputLength(testCase.Input.([]byte))
+		suite.Equal(actual, uint(0))
+		suite.EqualError(err, expected)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractOutputAtIndex() {
+	// FIXME:
 	suite.T().Skip()
+	fixture := suite.Fixtures["extractOutputAtIndex"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.([]byte)
+		inputs := testCase.Input.(map[string]interface{})
+		vout := inputs["vout"].([]byte)
+		index := inputs["index"].(int)
+		actual, _ := ExtractOutputAtIndex(vout, uint8(index))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractMerkleRootBE() {
-	suite.T().Skip()
+	fixture := suite.Fixtures["extractMerkleRootBE"]
+
+	for i:= range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.([]byte)
+		actual := ExtractMerkleRootBE(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractTarget() {
-	suite.T().Skip()
+	fixture := suite.Fixtures["extractTarget"]
+
+	for i:= range fixture {
+		testCase := fixture[i]
+		expected := BytesToBigInt(testCase.Output.([]byte))
+		actual := ExtractTarget(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractPrevBlockHashBE() {
-	suite.T().Skip()
+	fixture := suite.Fixtures["extractPrevBlockHashBE"]
+
+	for i:= range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.([]byte)
+		actual := ExtractPrevBlockHashBE(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractTimestamp() {
-	suite.T().Skip()
-	decoded, _ := hex.DecodeString("0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70")
-	res := ExtractTimestamp(decoded)
-	suite.Equal(res, sdk.NewInt(int64(1231731025)))
+	fixture := suite.Fixtures["extractTimestamp"]
+
+	for i:= range fixture {
+		testCase := fixture[i]
+		expected := uint(testCase.Output.(int))
+		actual := ExtractTimestamp(testCase.Input.([]byte))
+		suite.Equal(expected, actual)
+	}
 }
 
 func (suite *UtilsSuite) TestHash256MerkleStep() {
@@ -551,6 +606,37 @@ func (suite *UtilsSuite) TestDetermineVarIntDataLength() {
 //   });
 func (suite *UtilsSuite) TestRetargetAlgorithm() {
 	suite.T().Skip()
+	// FIXME:
+	// fixtures := suite.Fixtures["retargetAlgorithm"]
+
+	// for i := range fixtures {
+	// 	testCase := fixtures [i]
+
+		// testCaseFirst := testCase[0]
+		// testCaseSecond := testCase[1]
+		// testCaseExpected := testCase[2]
+		// firstTimestamp := testCaseFirst["timestamp"]
+		// secondTimestamp := testCaseSecond["timestamp"]
+		// previousTarget := ExtractTarget(testCaseSecond["hex"])
+		// expectedNewTarget := ExtractTarget(testCaseExpected["hex"])
+
+		// data := testCase.()
+		// firstTimestamp := data[0]["timestamp"]
+		// secondTimestamp := data[1]["timestamp"]
+		// previousTarget := ExtractTarget(data[1].hex)
+		// expectedNewTarget := ExtractTarget(data[2].hex)
+
+		// expected := RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
+		// suite.Equal(expected & expectedNewTarget, expectedNewTarget)
+
+		// secondTimestamp = firstTimestamp + (5 * 2016 * 10 * 60)
+		// expected = RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
+		// suite.Equal(expected / sdk.NewInt(4) & previousTarget, previousTarget)
+
+		// secondTimestamp = firstTimestamp + (2016 * 10 * 14)
+		// expected = RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
+		// suite.Equal(expected * sdk.NewInt(4) & previousTarget, previousTarget)
+	// }
 }
 
 //   it('extracts difficulty from a header', () => {
@@ -581,18 +667,28 @@ func (suite *UtilsSuite) TestExtractDifficulty() {
 	// var actual sdk.Int
 	// var expected sdk.Int
 	suite.T().Skip()
+	// need to figure out how to work with data in "retargetAlgorithm" in testVectors.json
 }
 
 func (suite *UtilsSuite) TestCalculateDifficulty() {
-	diffOneTarget, _ := sdk.NewIntFromString("0xffff0000000000000000000000000000000000000000000000000000")
-	diff := CalculateDifficulty(diffOneTarget)
-	suite.True(diff.Equal(sdk.NewInt(1)))
+	// diffOneTarget, _ := sdk.NewIntFromString("0xffff0000000000000000000000000000000000000000000000000000")
+	// diff := CalculateDifficulty(diffOneTarget)
+	// suite.True(diff.Equal(sdk.NewInt(1)))
 
-	diff256, _ := sdk.NewIntFromString("0xffff00000000000000000000000000000000000000000000000000")
-	diff = CalculateDifficulty(diff256)
-	suite.True(diff.Equal(sdk.NewInt(256)))
+	// diff256, _ := sdk.NewIntFromString("0xffff00000000000000000000000000000000000000000000000000")
+	// diff = CalculateDifficulty(diff256)
+	// suite.True(diff.Equal(sdk.NewInt(256)))
 
-	diff65536, _ := sdk.NewIntFromString("0xffff000000000000000000000000000000000000000000000000")
-	diff = CalculateDifficulty(diff65536)
-	suite.True(diff.Equal(sdk.NewInt(65536)))
+	// diff65536, _ := sdk.NewIntFromString("0xffff000000000000000000000000000000000000000000000000")
+	// diff = CalculateDifficulty(diff65536)
+	// suite.True(diff.Equal(sdk.NewInt(65536)))
+
+	fixture := suite.Fixtures["calculateDifficulty"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output.(sdk.Int)
+		actual := CalculateDifficulty(testCase.Input.(sdk.Int))
+		suite.Equal(expected, actual)
+	}
 }
