@@ -5,7 +5,7 @@ import * as vectors from '../../testVectors.json';
 // import { type } from 'os';
 
 const vectorObj = JSON.parse(JSON.stringify(vectors));
-utils.updateJson(vectorObj);
+utils.updateJSON(vectorObj);
 
 const {
   lastBytes,

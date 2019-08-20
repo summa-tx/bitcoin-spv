@@ -7,7 +7,7 @@ import * as vectors from '../../testVectors.json';
 const { assert } = chai;
 
 const vectorObj = JSON.parse(JSON.stringify(vectors));
-utils.parseJson(vectorObj);
+utils.updateJSON(vectorObj);
 
 const {
   prove,
@@ -61,7 +61,7 @@ describe('ValidateSPV', () => {
         assert.strictEqual(txIn.sequence, BigInt(sequence));
         assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, txId));
         assert.strictEqual(txIn.inputIndex, BigInt(index));
-        assert.strictEqual(txIn.inputType, BigInt(type));
+        assert.strictEqual(txIn.inputType, BigInt(utils.OUTPUT_TYPES[type]));
       }
     });
   });
