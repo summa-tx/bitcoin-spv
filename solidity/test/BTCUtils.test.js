@@ -152,7 +152,11 @@ contract('BTCUtils', () => {
   it('extracts the length of the output script', async () => {
     for (let i = 0; i < extractOutputScriptLen.length; i += 1) {
       const res = await instance.extractOutputScriptLen(extractOutputScriptLen[i].input);
-      assert.strictEqual(res, extractOutputScriptLen[i].output);
+      if (extractOutputScriptLen[i].hasOwnProperty('solOutput')) {
+        assert.strictEqual(res, extractOutputScriptLen[i].solOutput);
+      } else {
+        assert.strictEqual(res, extractOutputScriptLen[i].output);
+      }
     }
   });
 

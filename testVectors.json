@@ -1,45 +1,18 @@
 {
-  // "OUTPUT_TYPES": {
-  //   "NONE": 0,
-  //   "WPKH": 1,
-  //   "WSH": 2,
-  //   "OP_RETURN": 3,
-  //   "PKH": 4,
-  //   "SH": 5,
-  //   "NONSTANDARD": 6
-  // },
-
-  // "INPUT_TYPES": {
-  //   "NONE": 0,
-  //   "LEGACY": 1,
-  //   "COMPATIBILITY": 2,
-  //   "WITNESS": 3
-  // },
-  // "OUTPUT_TYPES": [{
-  //   "NONE": 0,
-  //   "WPKH": 1,
-  //   "WSH": 2,
-  //   "OP_RETURN": 3,
-  //   "PKH": 4,
-  //   "SH": 5,
-  //   "NONSTANDARD": 6
-  // }],
-  "OUTPUT_TYPES": [{
-    "output": {
-      "NONE": 0,
-      "WPKH": 1,
-      "WSH": 2,
-      "OP_RETURN": 3,
-      "PKH": 4,
-      "SH": 5,
-      "NONSTANDARD": 6
-    }
-  }],
-  "INPUT_TYPES": [{
+  "INPUT_TYPES": {
     "NONE": 0,
     "LEGACY": 1,
     "COMPATIBILITY": 2,
     "WITNESS": 3
+  },
+  "OUTPUT_TYPES": [{
+    "NONE": 0,
+    "WPKH": 1,
+    "WSH": 2,
+    "OP_RETURN": 3,
+    "PKH": 4,
+    "SH": 5,
+    "NONSTANDARD": 6
   }],
 
   "determineVarIntDataLength": [{
@@ -252,10 +225,12 @@
 
   "extractOutputScriptLen": [{
     "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
-    "output": 34
+    "output": 34,
+    "solOutput": "0x22"
   }, {
     "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-    "output": 22
+    "output": 22,
+    "solOutput": "0x16"
   }],
 
   "extractValueLE": [{
@@ -522,7 +497,7 @@
     "input": "0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c",
     "output": {
       "value": 1000001000,
-      "type": "WPKH",
+      "type": 1,
       "payload": "0x7849e6bf5e4b1ba7235572d1b0cbc094f0213e6c"
     }
   }, {

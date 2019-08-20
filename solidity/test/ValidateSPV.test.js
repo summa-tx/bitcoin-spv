@@ -80,7 +80,7 @@ contract('ValidateSPV', () => {
         assert(txIn._sequence.eq(new BN(sequence, 10)));
         assert.strictEqual(txIn._hash, txId);
         assert(txIn._index.eq(new BN(index, 10)));
-        assert(txIn._inputType.eq(utils.OUTPUT_TYPES[type]));
+        assert(txIn._inputType.eq(new BN(type, 10)));
       }
     });
   });
@@ -99,7 +99,7 @@ contract('ValidateSPV', () => {
         const txOut = await instance.parseOutput(parseOutput[i].input);
 
         assert(txOut._value.eq(new BN(value, 10)));
-        assert(txOut._outputType.eq(utils.OUTPUT_TYPES[type]));
+        assert(txOut._outputType.eq(new BN(type, 10)));
         assert.strictEqual(txOut._payload, payload);
       }
     });
