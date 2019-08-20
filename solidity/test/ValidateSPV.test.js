@@ -124,22 +124,22 @@ contract('ValidateSPV', () => {
       });
 
     // not working...
-    // it('bubble up errors if input header is not 80 bytes', async () => {
-    //   for (let i = 0; i < parseHeaderSolErr.length; i += 1) {
-    //     const invalidHeader = await instance.parseHeader(parseHeaderSolErr[i].input);
-    //     const {
-    //       digest, version, prevHash, merkleRoot, timestamp, target, nonce
-    //     } = parseHeader[i].output;
+    it('bubble up errors if input header is not 80 bytes', async () => {
+      for (let i = 0; i < parseHeaderSolErr.length; i += 1) {
+        const invalidHeader = await instance.parseHeader(parseHeaderSolErr[i].input);
+        const {
+          digest, version, prevHash, merkleRoot, timestamp, target, nonce
+        } = parseHeader[i].output;
 
-    //     assert.equal(digest, invalidHeader._digest);
-    //     assert(new BN(version, 10).eq(invalidHeader._version));
-    //     assert.equal(prevHash, invalidHeader._prevHash);
-    //     assert.equal(merkleRoot, invalidHeader._merkleRoot);
-    //     assert(new BN(timestamp, 10).eq(invalidHeader._timestamp));
-    //     assert(new BN(target, 10).eq(invalidHeader._target));
-    //     assert(new BN(nonce, 10).eq(invalidHeader._nonce));
-    //   }
-    // });
+        assert.equal(digest, invalidHeader._digest);
+        assert(new BN(version, 10).eq(invalidHeader._version));
+        assert.equal(prevHash, invalidHeader._prevHash);
+        assert.equal(merkleRoot, invalidHeader._merkleRoot);
+        assert(new BN(timestamp, 10).eq(invalidHeader._timestamp));
+        assert(new BN(target, 10).eq(invalidHeader._target));
+        assert(new BN(nonce, 10).eq(invalidHeader._nonce));
+      }
+    });
   });
 
   describe('#validateHeaderChain', async () => {
