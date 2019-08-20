@@ -93,7 +93,7 @@ func (suite *UtilsSuite) TestParseHeader() {
 		expectedPrevHash := expected["prevHash"].([]byte)
 		expectedMerkleRoot := expected["merkleRoot"].([]byte)
 		expectedTimestamp := uint(expected["timestamp"].(int))
-		expectedTarget := sdk.NewInt(expected["target"].(int64))
+		expectedTarget := sdk.NewUint(expected["target"].(uint64))
 		expectedNonce := uint(expected["nonce"].(int))
 		input := testCase.Input.([]byte)
 		actualDigest, actualVersion, actualPrevHash, actualMerkleRoot, actualTimestamp, actualTarget, actualNonce, err := ParseHeader(input)
@@ -116,7 +116,7 @@ func (suite *UtilsSuite) TestValidateHeaderWork() {
 		expected := testCase.Output.(bool)
 		inputs := testCase.Input.(map[string]interface{})
 		digest := inputs["digest"].([]byte)
-		target := sdk.NewInt(inputs["target"].(int64))
+		target := sdk.NewUint(inputs["target"].(uint64))
 		actual := ValidateHeaderWork(digest, target)
 		suite.Equal(expected, actual)
 	}
@@ -141,7 +141,7 @@ func (suite *UtilsSuite) TestValidateHeaderChain() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := sdk.NewInt(testCase.Output.(int64))
+		expected := sdk.NewUint(testCase.Output.(uint64))
 		actual, err := ValidateHeaderChain(testCase.Input.([]byte))
 		suite.Nil(err)
 		suite.Equal(expected, actual)
