@@ -136,14 +136,56 @@ func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Int, ui
 	return digest, version, prevHash, merkleRoot, timestamp, target, nonce, nil
 }
 
-// func ValidateHeaderWork() {
+func ValidateHeaderWork(digest []byte, target sdk.Int) bool {
+	if bytes.Equal(digest, bytes.Repeat([]byte("0x00"), 32)) {
+		return false
+	}
+	return bytesToUint(digest) < target
+}
 
-// }
+func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
+	// Extract prevHash of current header
+	prevHash := ExtractPrevBlockHashLE(header)
 
-// func ValidateHeaderPrevHash() {
+	// Compare prevHash of current header to previous header's digest
+	if !bytes.Equal(prevHash, prevHeaderDigest) {
+		return false
+	}
 
-// }
+	return true
+}
 
-// func ValidateHeaderChain() {
+func ValidateHeaderChain(headers []byte) (sdk.Int, error) {
+	// // Check header chain length
 
-// }
+	if len(headers)%80 != 0 {
+		return sdk.NewInt(0), errors.New("Header bytes not multiple of 80.")
+	}
+
+	var digest []byte
+	totalDifficulty := sdk.NewInt(0)
+
+	for i := 0; i < len(headers); i++ {
+		start := i * 80
+		header := headers[start : start+80]
+
+		// After the first header, check that headers are in a chain
+		if i != 0 {
+			if !ValidateHeaderPrevHash(header, digest) {
+				return sdk.NewInt(0), errors.New("Header bytes not a valid chain.")
+			}
+		}
+
+		// ith header target
+		target := ExtractTarget(header)
+
+		// Require that the header has sufficient work
+		digest = Hash256(header)
+		if !ValidateHeaderWork(ReverseEndianness(digest), target) {
+			return sdk.NewInt(0), errors.New("Header does not meet its own difficulty target.")
+		}
+
+		totalDifficulty = totalDifficulty.Add(CalculateDifficulty(target))
+	}
+	return totalDifficulty, nil
+}
