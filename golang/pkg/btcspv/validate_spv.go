@@ -7,17 +7,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// import (
-// 	"bytes"
-// 	// "crypto/sha256"
-// 	// "encoding/binary"
-// 	// "encoding/hex"
-// 	// "errors"
-// 	// "math/big"
-// 	// sdk "github.com/cosmos/cosmos-sdk/types"
-// 	// "golang.org/x/crypto/ripemd160"
-// )
-
 type INPUT_TYPE int
 
 const (
@@ -39,6 +28,7 @@ const (
 	NONSTANDARD OUTPUT_TYPE = 6
 )
 
+// Validates a tx inclusion in the block
 func prove(txid []byte, merkleRoot []byte, intermediateNodes []byte, index uint) bool {
 	// Shortcut the empty-block case
 	if bytes.Equal(txid, merkleRoot) && index == 0 && len(intermediateNodes) == 0 {
@@ -53,6 +43,7 @@ func prove(txid []byte, merkleRoot []byte, intermediateNodes []byte, index uint)
 	return VerifyHash256Merkle(proof, index)
 }
 
+// Hashes transaction to get txid
 func CalculateTxId(version, vin, vout, locktime []byte) []byte {
 	txid := []byte{}
 	txid = append(txid, version...)
@@ -62,6 +53,7 @@ func CalculateTxId(version, vin, vout, locktime []byte) []byte {
 	return Hash256(txid)
 }
 
+// Parses a tx input from raw input bytes
 func ParseInput(input []byte) (uint, []byte, uint, uint) {
 	// NB: If the scriptsig is exactly 00, we are WITNESS.
 	// Otherwise we are Compatibility or LEGACY
@@ -89,6 +81,7 @@ func ParseInput(input []byte) (uint, []byte, uint, uint) {
 	return sequence, inputId, inputIndex, inputType
 }
 
+// Parses a tx output from raw output bytes
 func ParseOutput(output []byte) (uint, uint, []byte) {
 	value := ExtractValue(output)
 	var outputType uint
@@ -120,6 +113,7 @@ func ParseOutput(output []byte) (uint, uint, []byte) {
 	return value, outputType, payload
 }
 
+// Parses a block header struct from a bytestring
 func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Int, uint, error) {
 	if len(header) != 80 {
 		return nil, 0, nil, nil, 0, sdk.NewInt(0), 0, errors.New("Malformatted header. Must be exactly 80 bytes.")
@@ -136,6 +130,7 @@ func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Int, ui
 	return digest, version, prevHash, merkleRoot, timestamp, target, nonce, nil
 }
 
+// Checks validity of header work
 func ValidateHeaderWork(digest []byte, target sdk.Int) bool {
 	if bytes.Equal(digest, bytes.Repeat([]byte("0x00"), 32)) {
 		return false
@@ -143,6 +138,7 @@ func ValidateHeaderWork(digest []byte, target sdk.Int) bool {
 	return BytesToBigInt(digest).LT(target)
 }
 
+// Checks validity of header chain
 func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
 	// Extract prevHash of current header
 	prevHash := ExtractPrevBlockHashLE(header)
@@ -155,6 +151,7 @@ func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
 	return true
 }
 
+// Checks validity of header chain
 func ValidateHeaderChain(headers []byte) (sdk.Int, error) {
 	// // Check header chain length
 
