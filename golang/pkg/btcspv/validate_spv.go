@@ -1,28 +1,45 @@
 package btcspv
 
-// import "bytes"
-
 import (
 	"bytes"
-	// "crypto/sha256"
-	// "encoding/binary"
-	// "encoding/hex"
-	// "errors"
-	// "math/big"
-	// sdk "github.com/cosmos/cosmos-sdk/types"
-	// "golang.org/x/crypto/ripemd160"
+	"errors"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+// import (
+// 	"bytes"
+// 	// "crypto/sha256"
+// 	// "encoding/binary"
+// 	// "encoding/hex"
+// 	// "errors"
+// 	// "math/big"
+// 	// sdk "github.com/cosmos/cosmos-sdk/types"
+// 	// "golang.org/x/crypto/ripemd160"
+// )
 
 type INPUT_TYPE int
 
 const (
-	NONE          INPUT_TYPE = 0
+	INPUT_NONE    INPUT_TYPE = 0
 	LEGACY        INPUT_TYPE = 1
 	COMPATIBILITY INPUT_TYPE = 2
 	WITNESS       INPUT_TYPE = 3
 )
 
-func Prove(txid []byte, merkleRoot []byte, intermediateNodes []byte, index uint) bool {
+type OUTPUT_TYPE int
+
+const (
+	OUTPUT_NONE OUTPUT_TYPE = 0
+	WPKH        OUTPUT_TYPE = 1
+	WSH         OUTPUT_TYPE = 2
+	OP_RETURN   OUTPUT_TYPE = 3
+	PKH         OUTPUT_TYPE = 4
+	SH          OUTPUT_TYPE = 5
+	NONSTANDARD OUTPUT_TYPE = 6
+)
+
+func prove(txid []byte, merkleRoot []byte, intermediateNodes []byte, index uint) bool {
 	// Shortcut the empty-block case
 	if bytes.Equal(txid, merkleRoot) && index == 0 && len(intermediateNodes) == 0 {
 		return true
@@ -72,45 +89,52 @@ func ParseInput(input []byte) (uint, []byte, uint, uint) {
 	return sequence, inputId, inputIndex, inputType
 }
 
-// func ParseOutput(output []byte) (uint, uint, []byte) {
-// 	value := ExtractValue(output)
-// 	var outputType int
-// 	var payload []byte
+func ParseOutput(output []byte) (uint, uint, []byte) {
+	value := ExtractValue(output)
+	var outputType uint
+	var payload []byte
 
-// 	// if (output[9] === 0x6a) {
-// 	//   // OP_RETURN
-// 	//   outputType = utils.OUTPUT_TYPES.OP_RETURN;
-// 	//   payload = BTCUtils.extractOpReturnData(output);
-// 	// } else {
-// 	//   const prefixHash = utils.safeSlice(output, 8, 10);
-// 	//   if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([0x22, 0x00]))) {
-// 	//     // P2WSH
-// 	//     outputType = utils.OUTPUT_TYPES.WSH;
-// 	//     payload = utils.safeSlice(output, 11, 43);
-// 	//   } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([0x16, 0x00]))) {
-// 	//     // P2WPKH
-// 	//     outputType = utils.OUTPUT_TYPES.WPKH;
-// 	//     payload = utils.safeSlice(output, 11, 31);
-// 	//   } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([0x19, 0x76]))) {
-// 	//     // PKH
-// 	//     outputType = utils.OUTPUT_TYPES.PKH;
-// 	//     payload = utils.safeSlice(output, 12, 32);
-// 	//   } else if (utils.typedArraysAreEqual(prefixHash, new Uint8Array([0x17, 0xa9]))) {
-// 	//     // SH
-// 	//     outputType = utils.OUTPUT_TYPES.SH;
-// 	//     payload = utils.safeSlice(output, 11, 31);
-// 	//   } else {
-// 	//     outputType = utils.OUTPUT_TYPES.NONSTANDARD;
-// 	//     payload = new Uint8Array([]);
-// 	//   }
-// 	// }
+	if output[9] == 0x6a {
+		outputType = uint(OP_RETURN)
+		payload, _ = ExtractOpReturnData(output)
+	} else {
+		prefixHash := output[8:10]
+		if bytes.Equal(prefixHash, []byte{34, 0}) {
+			outputType = uint(WSH)
+			payload = output[11:43]
+		} else if bytes.Equal(prefixHash, []byte{22, 0}) {
+			outputType = uint(WPKH)
+			payload = output[11:31]
+		} else if bytes.Equal(prefixHash, []byte{25, 118}) {
+			outputType = uint(PKH)
+			payload = output[12:32]
+		} else if bytes.Equal(prefixHash, []byte{23, 169}) {
+			outputType = uint(SH)
+			payload = output[11:31]
+		} else {
+			outputType = uint(NONSTANDARD)
+			payload = []byte{}
+		}
+	}
 
-// 	// return { value, outputType, payload };
-// }
+	return value, outputType, payload
+}
 
-// func ParseHeader() {
+func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Int, uint, error) {
+	if len(header) != 80 {
+		return nil, 0, nil, nil, 0, sdk.NewInt(0), 0, errors.New("Malformatted header. Must be exactly 80 bytes.")
+	}
 
-// }
+	digest := ReverseEndianness(Hash256(header))
+	version := bytesToUint(ReverseEndianness(header[0:4]))
+	prevHash := ExtractPrevBlockHashLE(header)
+	merkleRoot := ExtractMerkleRootLE(header)
+	timestamp := ExtractTimestamp(header)
+	target := ExtractTarget(header)
+	nonce := bytesToUint(ReverseEndianness(header[76:80]))
+
+	return digest, version, prevHash, merkleRoot, timestamp, target, nonce, nil
+}
 
 // func ValidateHeaderWork() {
 
