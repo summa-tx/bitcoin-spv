@@ -1,6 +1,11 @@
 package btcspv
 
-import "bytes"
+import (
+	"bytes"
+	"errors"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
 
 // import (
 // 	"bytes"
@@ -115,23 +120,21 @@ func ParseOutput(output []byte) (uint, uint, []byte) {
 	return value, outputType, payload
 }
 
-// func ParseHeader() {
-// 	// if (header.length !== 80) {
-//   //   throw new TypeError('Malformatted header. Must be exactly 80 bytes.');
-//   // }
+func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Int, uint, error) {
+	if len(header) != 80 {
+		return nil, 0, nil, nil, 0, sdk.NewInt(0), 0, errors.New("Malformatted header. Must be exactly 80 bytes.")
+	}
 
-//   // const digest = utils.reverseEndianness(BTCUtils.hash256(header));
-//   // const version = utils.bytesToUint(utils.reverseEndianness(utils.safeSlice(header, 0, 4)));
-//   // const prevHash = BTCUtils.extractPrevBlockLE(header);
-//   // const merkleRoot = BTCUtils.extractMerkleRootLE(header);
-//   // const timestamp = BTCUtils.extractTimestamp(header);
-//   // const target = BTCUtils.extractTarget(header);
-//   // const nonce = utils.bytesToUint(utils.reverseEndianness(utils.safeSlice(header, 76, 80)));
+	digest := ReverseEndianness(Hash256(header))
+	version := bytesToUint(ReverseEndianness(header[0:4]))
+	prevHash := ExtractPrevBlockHashLE(header)
+	merkleRoot := ExtractMerkleRootLE(header)
+	timestamp := ExtractTimestamp(header)
+	target := ExtractTarget(header)
+	nonce := bytesToUint(ReverseEndianness(header[76:80]))
 
-//   // return {
-//   //   digest, version, prevHash, merkleRoot, timestamp, target, nonce
-//   // };
-// }
+	return digest, version, prevHash, merkleRoot, timestamp, target, nonce, nil
+}
 
 // func ValidateHeaderWork() {
 
