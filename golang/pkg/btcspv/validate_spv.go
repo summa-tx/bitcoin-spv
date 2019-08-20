@@ -1,12 +1,9 @@
 package btcspv
 
-<<<<<<< HEAD
+// import "bytes"
+
 import (
 	"bytes"
-
-	// "fmt"
-
-	// "github.com/stretchr/testify/suite"
 	// "crypto/sha256"
 	// "encoding/binary"
 	// "encoding/hex"
@@ -14,19 +11,7 @@ import (
 	// "math/big"
 	// sdk "github.com/cosmos/cosmos-sdk/types"
 	// "golang.org/x/crypto/ripemd160"
-=======
-import "bytes"
-
-// import (
-// 	"bytes"
-// 	// "crypto/sha256"
-// 	// "encoding/binary"
-// 	// "encoding/hex"
-// 	// "errors"
-// 	// "math/big"
-// 	// sdk "github.com/cosmos/cosmos-sdk/types"
-// 	// "golang.org/x/crypto/ripemd160"
-// )
+)
 
 type INPUT_TYPE int
 
@@ -35,7 +20,6 @@ const (
 	LEGACY        INPUT_TYPE = 1
 	COMPATIBILITY INPUT_TYPE = 2
 	WITNESS       INPUT_TYPE = 3
->>>>>>> cb3f293c723d81924d6dc3153dd8686cc64c8dee
 )
 
 func Prove(txid []byte, merkleRoot []byte, intermediateNodes []byte, index uint) bool {

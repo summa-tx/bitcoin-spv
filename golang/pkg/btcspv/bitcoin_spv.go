@@ -190,13 +190,11 @@ func ExtractTxIndex(input []byte) uint {
 //
 
 // DetermineOutputLength returns the length of an output
-// func DetermineOutputLength(output []byte) uint {
 func DetermineOutputLength(output []byte) (uint, error) {
 	length := uint(output[8])
 	if length > 0xfd {
 		return 0, errors.New("Multi-byte VarInts not supported")
 	}
-	// return length + uint(9)
 	return length + uint(9), nil
 }
 
@@ -316,7 +314,6 @@ func ValidateVout(vout []byte) bool {
 	}
 
 	for i := uint(0); i < nOuts; i++ {
-		// output := DetermineOutputLength(vout[offset:])
 		output, _ := DetermineOutputLength(vout[offset:])
 		offset += output
 		if offset > vLength {

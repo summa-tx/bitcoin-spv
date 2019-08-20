@@ -15,16 +15,27 @@
   //   "COMPATIBILITY": 2,
   //   "WITNESS": 3
   // },
+  // "OUTPUT_TYPES": [{
+  //   "NONE": 0,
+  //   "WPKH": 1,
+  //   "WSH": 2,
+  //   "OP_RETURN": 3,
+  //   "PKH": 4,
+  //   "SH": 5,
+  //   "NONSTANDARD": 6
+  // }],
   "OUTPUT_TYPES": [{
-    "NONE": 0,
-    "WPKH": 1,
-    "WSH": 2,
-    "OP_RETURN": 3,
-    "PKH": 4,
-    "SH": 5,
-    "NONSTANDARD": 6
+    "output": {
+      "NONE": 0,
+      "WPKH": 1,
+      "WSH": 2,
+      "OP_RETURN": 3,
+      "PKH": 4,
+      "SH": 5,
+      "NONSTANDARD": 6
+    }
   }],
-"INPUT_TYPES": [{
+  "INPUT_TYPES": [{
     "NONE": 0,
     "LEGACY": 1,
     "COMPATIBILITY": 2,
