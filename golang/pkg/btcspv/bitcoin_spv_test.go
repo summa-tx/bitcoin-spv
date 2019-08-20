@@ -187,12 +187,12 @@ func (suite *UtilsSuite) TestHash256() {
 }
 
 func (suite *UtilsSuite) TestBytesToUint() {
-	fixtures := suite.Fixtures["bytesToUint"]
+	fixtures := suite.Fixtures["BytesToUint"]
 
 	for i := range fixtures {
 		testCase := fixtures[i]
 		expected := uint(testCase.Output.(int))
-		actual := bytesToUint(testCase.Input.([]byte))
+		actual := BytesToUint(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
 }
@@ -511,7 +511,7 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 func (suite *UtilsSuite) TestExtractMerkleRootBE() {
 	fixture := suite.Fixtures["extractMerkleRootBE"]
 
-	for i:= range fixture {
+	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output.([]byte)
 		actual := ExtractMerkleRootBE(testCase.Input.([]byte))
@@ -522,7 +522,7 @@ func (suite *UtilsSuite) TestExtractMerkleRootBE() {
 func (suite *UtilsSuite) TestExtractTarget() {
 	fixture := suite.Fixtures["extractTarget"]
 
-	for i:= range fixture {
+	for i := range fixture {
 		testCase := fixture[i]
 		expected := BytesToBigInt(testCase.Output.([]byte))
 		actual := ExtractTarget(testCase.Input.([]byte))
@@ -533,7 +533,7 @@ func (suite *UtilsSuite) TestExtractTarget() {
 func (suite *UtilsSuite) TestExtractPrevBlockHashBE() {
 	fixture := suite.Fixtures["extractPrevBlockHashBE"]
 
-	for i:= range fixture {
+	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output.([]byte)
 		actual := ExtractPrevBlockHashBE(testCase.Input.([]byte))
@@ -544,7 +544,7 @@ func (suite *UtilsSuite) TestExtractPrevBlockHashBE() {
 func (suite *UtilsSuite) TestExtractTimestamp() {
 	fixture := suite.Fixtures["extractTimestamp"]
 
-	for i:= range fixture {
+	for i := range fixture {
 		testCase := fixture[i]
 		expected := uint(testCase.Output.(int))
 		actual := ExtractTimestamp(testCase.Input.([]byte))
@@ -612,30 +612,30 @@ func (suite *UtilsSuite) TestRetargetAlgorithm() {
 	// for i := range fixtures {
 	// 	testCase := fixtures [i]
 
-		// testCaseFirst := testCase[0]
-		// testCaseSecond := testCase[1]
-		// testCaseExpected := testCase[2]
-		// firstTimestamp := testCaseFirst["timestamp"]
-		// secondTimestamp := testCaseSecond["timestamp"]
-		// previousTarget := ExtractTarget(testCaseSecond["hex"])
-		// expectedNewTarget := ExtractTarget(testCaseExpected["hex"])
+	// testCaseFirst := testCase[0]
+	// testCaseSecond := testCase[1]
+	// testCaseExpected := testCase[2]
+	// firstTimestamp := testCaseFirst["timestamp"]
+	// secondTimestamp := testCaseSecond["timestamp"]
+	// previousTarget := ExtractTarget(testCaseSecond["hex"])
+	// expectedNewTarget := ExtractTarget(testCaseExpected["hex"])
 
-		// data := testCase.()
-		// firstTimestamp := data[0]["timestamp"]
-		// secondTimestamp := data[1]["timestamp"]
-		// previousTarget := ExtractTarget(data[1].hex)
-		// expectedNewTarget := ExtractTarget(data[2].hex)
+	// data := testCase.()
+	// firstTimestamp := data[0]["timestamp"]
+	// secondTimestamp := data[1]["timestamp"]
+	// previousTarget := ExtractTarget(data[1].hex)
+	// expectedNewTarget := ExtractTarget(data[2].hex)
 
-		// expected := RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
-		// suite.Equal(expected & expectedNewTarget, expectedNewTarget)
+	// expected := RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
+	// suite.Equal(expected & expectedNewTarget, expectedNewTarget)
 
-		// secondTimestamp = firstTimestamp + (5 * 2016 * 10 * 60)
-		// expected = RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
-		// suite.Equal(expected / sdk.NewInt(4) & previousTarget, previousTarget)
+	// secondTimestamp = firstTimestamp + (5 * 2016 * 10 * 60)
+	// expected = RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
+	// suite.Equal(expected / sdk.NewInt(4) & previousTarget, previousTarget)
 
-		// secondTimestamp = firstTimestamp + (2016 * 10 * 14)
-		// expected = RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
-		// suite.Equal(expected * sdk.NewInt(4) & previousTarget, previousTarget)
+	// secondTimestamp = firstTimestamp + (2016 * 10 * 14)
+	// expected = RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
+	// suite.Equal(expected * sdk.NewInt(4) & previousTarget, previousTarget)
 	// }
 }
 

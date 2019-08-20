@@ -126,12 +126,12 @@ func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Int, ui
 	}
 
 	digest := ReverseEndianness(Hash256(header))
-	version := bytesToUint(ReverseEndianness(header[0:4]))
+	version := BytesToUint(ReverseEndianness(header[0:4]))
 	prevHash := ExtractPrevBlockHashLE(header)
 	merkleRoot := ExtractMerkleRootLE(header)
 	timestamp := ExtractTimestamp(header)
 	target := ExtractTarget(header)
-	nonce := bytesToUint(ReverseEndianness(header[76:80]))
+	nonce := BytesToUint(ReverseEndianness(header[76:80]))
 
 	return digest, version, prevHash, merkleRoot, timestamp, target, nonce, nil
 }
@@ -140,7 +140,7 @@ func ValidateHeaderWork(digest []byte, target sdk.Int) bool {
 	if bytes.Equal(digest, bytes.Repeat([]byte("0x00"), 32)) {
 		return false
 	}
-	return bytesToUint(digest) < target
+	return BytesToBigInt(digest).LT(target)
 }
 
 func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
