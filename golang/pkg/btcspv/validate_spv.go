@@ -63,7 +63,7 @@ func ParseInput(input []byte) (uint, []byte, uint, INPUT_TYPE) {
 		sequence = ExtractSequenceLegacy(input)
 		witnessTag = input[36:39]
 
-		if bytes.Equal(witnessTag, []byte{34, 0, 32}) || bytes.Equal(witnessTag, []byte{32, 0, 20}) {
+		if bytes.Equal(witnessTag, []byte{34, 0, 32}) || bytes.Equal(witnessTag, []byte{22, 0, 20}) {
 			inputType = COMPATIBILITY
 		} else {
 			inputType = LEGACY

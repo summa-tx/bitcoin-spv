@@ -8,7 +8,7 @@ import (
 	// "log"
 	// "os"
 	// "testing"
-
+	"fmt"
 	// "github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -58,6 +58,7 @@ func (suite *UtilsSuite) TestParseInput() {
 		expectedType := INPUT_TYPE(expected["type"].(int))
 		input := testCase.Input.([]byte)
 		actualSequence, actualTxId, actualIndex, actualType := ParseInput(input)
+		fmt.Println(expected["type"])
 		suite.Equal(expectedSequence, actualSequence)
 		suite.Equal(expectedTxId, actualTxId)
 		suite.Equal(expectedIndex, actualIndex)
@@ -93,7 +94,7 @@ func (suite *UtilsSuite) TestParseHeader() {
 		expectedPrevHash := expected["prevHash"].([]byte)
 		expectedMerkleRoot := expected["merkleRoot"].([]byte)
 		expectedTimestamp := uint(expected["timestamp"].(int))
-		expectedTarget := sdk.NewInt(expected["target"].(int64))
+		expectedTarget := int64(expected["target"].(int))
 		expectedNonce := uint(expected["nonce"].(int))
 		input := testCase.Input.([]byte)
 		actualDigest, actualVersion, actualPrevHash, actualMerkleRoot, actualTimestamp, actualTarget, actualNonce, err := ParseHeader(input)
@@ -103,8 +104,25 @@ func (suite *UtilsSuite) TestParseHeader() {
 		suite.Equal(expectedPrevHash, actualPrevHash)
 		suite.Equal(expectedMerkleRoot, actualMerkleRoot)
 		suite.Equal(expectedTimestamp, actualTimestamp)
-		suite.Equal(expectedTarget, actualTarget)
+		suite.Equal(sdk.NewInt(expectedTarget), actualTarget)
 		suite.Equal(expectedNonce, actualNonce)
+	}
+
+	fixture = suite.Fixtures["parseHeaderError"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.ErrorMessage.(string)
+		input := testCase.Input.([]byte)
+		digest, version, prevHash, merkleRoot, timestamp, target, nonce, err := ParseHeader(input)
+		suite.Equal(digest, nil)
+		suite.Equal(version, uint(0))
+		suite.Equal(prevHash, nil)
+		suite.Equal(merkleRoot, nil)
+		suite.Equal(timestamp, uint(0))
+		suite.Equal(target, sdk.NewInt(0))
+		suite.Equal(nonce, uint(0))
+		suite.EqualError(err, expected)
 	}
 }
 
