@@ -132,7 +132,7 @@ func ValidateHeaderWork(digest []byte, target sdk.Int) bool {
 	if bytes.Equal(digest, bytes.Repeat([]byte("0x00"), 32)) {
 		return false
 	}
-	return BytesToBigInt(digest).LT(target)
+	return (BytesToBigInt(digest)).LT(target)
 }
 
 // Checks validity of header chain
@@ -161,7 +161,7 @@ func ValidateHeaderChain(headers []byte) (sdk.Int, error) {
 
 	for i := 0; i < len(headers); i++ {
 		start := i * 80
-		header := headers[start : start+80]
+		header := headers[start : start + 80]
 
 		// After the first header, check that headers are in a chain
 		if i != 0 {
