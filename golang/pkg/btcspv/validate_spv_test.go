@@ -169,7 +169,7 @@ func (suite *UtilsSuite) TestValidateHeaderChain() {
 	// TODO: add error logic
 	fixture = suite.Fixtures["validateHeaderChainError"]
 
-	for i:= range fixture {
+	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.ErrorMessage.(string)
 		actual, err := ValidateHeaderChain(testCase.Input.([]byte))
