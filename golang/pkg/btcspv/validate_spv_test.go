@@ -8,7 +8,7 @@ import (
 	// "log"
 	// "os"
 	// "testing"
-	// "fmt"
+	"fmt"
 	// "reflect"
 	// "github.com/stretchr/testify/suite"
 
@@ -127,6 +127,7 @@ func (suite *UtilsSuite) TestParseHeader() {
 }
 
 func (suite *UtilsSuite) TestValidateHeaderWork() {
+	// suite.T().Skip()
 	fixture := suite.Fixtures["validateHeaderWork"]
 
 	for i := range fixture {
@@ -163,5 +164,17 @@ func (suite *UtilsSuite) TestValidateHeaderChain() {
 		actual, err := ValidateHeaderChain(testCase.Input.([]byte))
 		suite.Nil(err)
 		suite.Equal(expected, actual)
+	}
+
+	// TODO: add error logic
+	fixture = suite.Fixtures["validateHeaderChainError"]
+
+	for i:= range fixture {
+		testCase := fixture[i]
+		expected := testCase.ErrorMessage.(string)
+		actual, err := ValidateHeaderChain(testCase.Input.([]byte))
+		fmt.Println(actual, err, expected)
+		suite.EqualError(err, expected)
+		suite.Equal(actual, sdk.NewInt(0))
 	}
 }
