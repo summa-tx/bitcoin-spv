@@ -199,7 +199,7 @@ func (suite *UtilsSuite) TestBytesToUint() {
 	}
 }
 
-func (suite *UtilsSuite) TestBytesToBigInt() {
+func (suite *UtilsSuite) TestBytesToBigUint() {
 	hexString := "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 	decoded := decodeIfHex(hexString)
 
@@ -212,7 +212,7 @@ func (suite *UtilsSuite) TestBytesToBigInt() {
 	// 	log.Fatal("New int not ok")
 	// }
 
-	result := BytesToBigInt(decoded)
+	result := BytesToBigUint(decoded)
 
 	suite.True(expected.Equal(result))
 }
@@ -528,7 +528,7 @@ func (suite *UtilsSuite) TestExtractTarget() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := BytesToBigInt(testCase.Output.([]byte))
+		expected := BytesToBigUint(testCase.Output.([]byte))
 		actual := ExtractTarget(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}

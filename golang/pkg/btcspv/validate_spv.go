@@ -132,7 +132,7 @@ func ValidateHeaderWork(digest []byte, target sdk.Uint) bool {
 	if bytes.Equal(digest, bytes.Repeat([]byte{0}, 32)) {
 		return false
 	}
-	return BytesToBigInt(digest).LT(target)
+	return BytesToBigUint(digest).LT(sdk.Uint(target))
 }
 
 // Checks validity of header chain

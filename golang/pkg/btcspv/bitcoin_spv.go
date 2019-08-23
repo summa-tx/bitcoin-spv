@@ -24,8 +24,8 @@ func BytesToUint(b []byte) uint {
 	return total
 }
 
-// BytesToBigInt converts a bytestring to a cosmos-sdk Int
-func BytesToBigInt(b []byte) sdk.Uint {
+// BytesToBigUint converts a bytestring to a cosmos-sdk Int
+func BytesToBigUint(b []byte) sdk.Uint {
 	ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
 	return ret
 }

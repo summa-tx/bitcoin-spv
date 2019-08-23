@@ -5,8 +5,6 @@ import (
 	// "reflect"
 	// "github.com/stretchr/testify/suite"
 
-	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -85,13 +83,12 @@ func (suite *UtilsSuite) TestParseHeader() {
 		testCase := fixture[i]
 		expected := testCase.Output.(map[string]interface{})
 		expectedDigest := expected["digest"].([]byte)
-		expectedVersion := uint(expected["version"].(int))
+		expectedVersion := uint(expected["version"].(uint))
 		expectedPrevHash := expected["prevHash"].([]byte)
 		expectedMerkleRoot := expected["merkleRoot"].([]byte)
-		expectedTimestamp := uint(expected["timestamp"].(int))
+		expectedTimestamp := uint(expected["timestamp"].(uint))
 		expectedTarget := sdk.NewUint(uint64(expected["target"].(uint64)))
-		// expectedTarget := BytesToBigInt(expected["target"].([]byte))
-		expectedNonce := uint(expected["nonce"].(int))
+		expectedNonce := uint(expected["nonce"].(uint))
 		input := testCase.Input.([]byte)
 		actualDigest, actualVersion, actualPrevHash, actualMerkleRoot, actualTimestamp, actualTarget, actualNonce, err := ParseHeader(input)
 		suite.Nil(err)
@@ -116,7 +113,7 @@ func (suite *UtilsSuite) TestParseHeader() {
 		suite.Nil(prevHash)
 		suite.Nil(merkleRoot)
 		suite.Equal(timestamp, uint(0))
-		suite.Equal(target, sdk.NewInt(0))
+		suite.Equal(target, sdk.NewUint(0))
 		suite.Equal(nonce, uint(0))
 		suite.EqualError(err, expected)
 	}
@@ -130,8 +127,13 @@ func (suite *UtilsSuite) TestValidateHeaderWork() {
 		expected := testCase.Output.(bool)
 		inputs := testCase.Input.(map[string]interface{})
 		digest := inputs["digest"].([]byte)
-		target := sdk.NewUint(uint64(inputs["target"].(uint64)))
-		// target := sdk.NewInt(int64(inputs["target"].(int)))
+		targetInt, okInt := inputs["target"].(int)
+		target := sdk.NewUint(0)
+		if okInt {
+			target = sdk.NewUint(uint64(targetInt))
+		} else {
+			target = BytesToBigUint(inputs["target"].([]byte))
+		}
 		actual := ValidateHeaderWork(digest, target)
 		suite.Equal(expected, actual)
 	}
@@ -156,22 +158,18 @@ func (suite *UtilsSuite) TestValidateHeaderChain() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := sdk.NewUint(uint64(testCase.Output.(uint64)))
-		// expected := sdk.NewInt(int64(testCase.Output.(int)))
-		actual, err := ValidateHeaderChain(testCase.Input.([]byte))
-		suite.Nil(err)
+		expected := sdk.NewUint(uint64(testCase.Output.(uint)))
+		actual, _ := ValidateHeaderChain(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
 
-	// TODO: add error logic
 	fixture = suite.Fixtures["validateHeaderChainError"]
 
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.ErrorMessage.(string)
 		actual, err := ValidateHeaderChain(testCase.Input.([]byte))
-		fmt.Println(actual, err, expected)
 		suite.EqualError(err, expected)
-		suite.Equal(actual, sdk.NewInt(0))
+		suite.Equal(actual, sdk.NewUint(0))
 	}
 }
