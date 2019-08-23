@@ -63,7 +63,7 @@ func ParseInput(input []byte) (uint, []byte, uint, INPUT_TYPE) {
 		sequence = ExtractSequenceLegacy(input)
 		witnessTag = input[36:39]
 
-		if bytes.Equal(witnessTag, []byte{34, 0, 32}) || bytes.Equal(witnessTag, []byte{32, 0, 20}) {
+		if bytes.Equal(witnessTag, []byte{34, 0, 32}) || bytes.Equal(witnessTag, []byte{22, 0, 20}) {
 			inputType = COMPATIBILITY
 		} else {
 			inputType = LEGACY
@@ -129,7 +129,7 @@ func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Uint, u
 
 // Checks validity of header work
 func ValidateHeaderWork(digest []byte, target sdk.Uint) bool {
-	if bytes.Equal(digest, bytes.Repeat([]byte("0x00"), 32)) {
+	if bytes.Equal(digest, bytes.Repeat([]byte{0}, 32)) {
 		return false
 	}
 	return BytesToBigInt(digest).LT(target)
@@ -150,7 +150,7 @@ func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
 
 // Checks validity of header chain
 func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
-	// // Check header chain length
+	// Check header chain length
 
 	if len(headers)%80 != 0 {
 		return sdk.NewUint(0), errors.New("Header bytes not multiple of 80.")
@@ -159,7 +159,7 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 	var digest []byte
 	totalDifficulty := sdk.NewUint(0)
 
-	for i := 0; i < len(headers); i++ {
+	for i := 0; i < len(headers)/80; i++ {
 		start := i * 80
 		header := headers[start : start+80]
 
