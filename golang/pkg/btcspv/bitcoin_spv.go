@@ -31,10 +31,10 @@ func BytesToBigInt(b []byte) sdk.Int {
 }
 
 // TODO: Update to sdk.Uint in many places
-// func BytesToBigInt(b []byte) sdk.Uint {
-// 	ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
-// 	return ret
-// }
+func BytesToBigUint(b []byte) sdk.Uint {
+	ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
+	return ret
+}
 
 // DetermineVarIntDataLength extracts the payload length of a Bitcoin VarInt
 func DetermineVarIntDataLength(flag uint8) uint8 {
@@ -206,22 +206,22 @@ func DetermineOutputLength(output []byte) (uint, error) {
 
 // ExtractOutputAtIndex returns the output at a given index in the TxIns vector
 func ExtractOutputAtIndex(vout []byte, index uint8) ([]byte, error) {
-    var length uint
-    var offset uint = 1
+	var length uint
+	var offset uint = 1
 
-    for i := uint8(0); i <= index; i++ {
-        remaining := vout[offset:]
-        l, err := DetermineOutputLength(remaining)
-        length = l
-        if err != nil {
-            return []byte{}, err
-        }
-        if i != index {
-            offset += l
-        }
-    }
-    output := vout[offset : offset+length]
-    return output, nil
+	for i := uint8(0); i <= index; i++ {
+		remaining := vout[offset:]
+		l, err := DetermineOutputLength(remaining)
+		length = l
+		if err != nil {
+			return []byte{}, err
+		}
+		if i != index {
+			offset += l
+		}
+	}
+	output := vout[offset : offset+length]
+	return output, nil
 }
 
 // ExtractOutputScriptLen extracts the output script length

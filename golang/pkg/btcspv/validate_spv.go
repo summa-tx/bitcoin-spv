@@ -130,9 +130,13 @@ func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Int, ui
 // Checks validity of header work
 func ValidateHeaderWork(digest []byte, target sdk.Int) bool {
 	if bytes.Equal(digest, bytes.Repeat([]byte{0}, 32)) {
+<<<<<<< HEAD
 			return false
+=======
+		return false
+>>>>>>> f11db1bf3a9cfe2c26f8954a3d21f150e8a23a8d
 	}
-	return (BytesToBigInt(digest)).LT(target)
+	return BytesToBigUint(digest).LT(sdk.Uint(target))
 }
 
 // Checks validity of header chain
@@ -150,8 +154,7 @@ func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
 
 // Checks validity of header chain
 func ValidateHeaderChain(headers []byte) (sdk.Int, error) {
-	// // Check header chain length
-
+	// Check header chain length
 	if len(headers)%80 != 0 {
 		return sdk.NewInt(0), errors.New("Header bytes not multiple of 80.")
 	}
@@ -159,9 +162,9 @@ func ValidateHeaderChain(headers []byte) (sdk.Int, error) {
 	var digest []byte
 	totalDifficulty := sdk.NewInt(0)
 
-	for i := 0; i < len(headers); i++ {
+	for i := 0; i < len(headers)/80; i++ {
 		start := i * 80
-		header := headers[start : start + 80]
+		header := headers[start : start+80]
 
 		// After the first header, check that headers are in a chain
 		if i != 0 {
