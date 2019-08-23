@@ -128,15 +128,14 @@ func (suite *UtilsSuite) TestValidateHeaderWork() {
 		inputs := testCase.Input.(map[string]interface{})
 		digest := inputs["digest"].([]byte)
 		targetInt, okInt := inputs["target"].(int)
+		target := sdk.NewInt(0)
 		if okInt {
-			target := sdk.NewInt(int64(targetInt))
-			actual := ValidateHeaderWork(digest, target)
-			suite.Equal(expected, actual)
+			target = sdk.NewInt(int64(targetInt))
 		} else {
-			target := BytesToBigInt(inputs["target"].([]byte))
-			actual := ValidateHeaderWork(digest, target)
-			suite.Equal(expected, actual)
+			target = BytesToBigInt(inputs["target"].([]byte))
 		}
+		actual := ValidateHeaderWork(digest, target)
+		suite.Equal(expected, actual)
 	}
 }
 
