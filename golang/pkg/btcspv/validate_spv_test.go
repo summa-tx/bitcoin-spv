@@ -1,16 +1,11 @@
 package btcspv
 
 import (
-	// "bytes"
-	// "encoding/hex"
-	// "encoding/json"
-	// "io/ioutil"
-	// "log"
-	// "os"
-	// "testing"
-	"fmt"
+
 	// "reflect"
 	// "github.com/stretchr/testify/suite"
+
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -127,7 +122,6 @@ func (suite *UtilsSuite) TestParseHeader() {
 }
 
 func (suite *UtilsSuite) TestValidateHeaderWork() {
-	// suite.T().Skip()
 	fixture := suite.Fixtures["validateHeaderWork"]
 
 	for i := range fixture {
