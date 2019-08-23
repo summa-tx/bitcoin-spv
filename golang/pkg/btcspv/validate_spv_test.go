@@ -129,10 +129,16 @@ func (suite *UtilsSuite) TestValidateHeaderWork() {
 		expected := testCase.Output.(bool)
 		inputs := testCase.Input.(map[string]interface{})
 		digest := inputs["digest"].([]byte)
-		target := sdk.NewInt(int64(inputs["target"].(int)))
-		actual := ValidateHeaderWork(digest, target)
-		fmt.Println(expected, digest, target, actual)
-		suite.Equal(expected, actual)
+		targetInt, okInt := inputs["target"].(int)
+		if okInt {
+			target := sdk.NewInt(int64(targetInt))
+			actual := ValidateHeaderWork(digest, target)
+			suite.Equal(expected, actual)
+		} else {
+			target := BytesToBigInt(inputs["target"].([]byte))
+			actual := ValidateHeaderWork(digest, target)
+			suite.Equal(expected, actual)
+		}
 	}
 }
 
@@ -157,12 +163,9 @@ func (suite *UtilsSuite) TestValidateHeaderChain() {
 		testCase := fixture[i]
 		expected := sdk.NewInt(int64(testCase.Output.(int)))
 		actual, _  := ValidateHeaderChain(testCase.Input.([]byte))
-		fmt.Println(actual, expected)
-		// suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
 
-	// TODO: add error logic
 	fixture = suite.Fixtures["validateHeaderChainError"]
 
 	for i := range fixture {
