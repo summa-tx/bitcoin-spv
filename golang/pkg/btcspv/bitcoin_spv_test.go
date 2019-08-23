@@ -36,7 +36,7 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 	case string:
 		t.Input = decodeIfHex(data["input"].(string))
 	case float64:
-		t.Input = int(data["input"].(float64))
+		t.Input = uint(data["input"].(float64))
 	default:
 		preprocessTestCase(t.Input)
 	}
@@ -45,7 +45,7 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 	case string:
 		t.Output = decodeIfHex(data["output"].(string))
 	case float64:
-		t.Output = int(data["output"].(float64))
+		t.Output = uint(data["output"].(float64))
 	default:
 		preprocessTestCase(t.Output)
 	}
@@ -54,7 +54,7 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 	case string:
 		t.ErrorMessage = data["errorMessage"].(string)
 	case float64:
-		t.ErrorMessage = int(data["errorMessage"].(float64))
+		t.ErrorMessage = uint(data["errorMessage"].(float64))
 	default:
 		preprocessTestCase(t.ErrorMessage)
 	}
@@ -80,7 +80,7 @@ func preprocessList(l []interface{}) {
 		case string:
 			l[i] = decodeIfHex(l[i].(string))
 		case float64:
-			l[i] = int(l[i].(float64))
+			l[i] = uint(l[i].(float64))
 		case map[string]interface{}:
 			preprocessObject(l[i].(map[string]interface{}))
 		}
@@ -97,7 +97,7 @@ func preprocessObject(m map[string]interface{}) {
 			// overwrite the string with a []byte
 			m[k] = decodeIfHex(v.(string))
 		case float64:
-			m[k] = int(v.(float64))
+			m[k] = uint(v.(float64))
 		case map[string]interface{}:
 			// call recursively to preprocess json objects
 			preprocessObject(v.(map[string]interface{}))
@@ -193,7 +193,7 @@ func (suite *UtilsSuite) TestBytesToUint() {
 
 	for i := range fixtures {
 		testCase := fixtures[i]
-		expected := uint(testCase.Output.(int))
+		expected := uint(testCase.Output.(uint))
 		actual := BytesToUint(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -222,7 +222,7 @@ func (suite *UtilsSuite) TestExtractSequenceWitness() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := uint(testCase.Output.(int))
+		expected := uint(testCase.Output.(uint))
 		actual := ExtractSequenceWitness(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -244,7 +244,7 @@ func (suite *UtilsSuite) TestExtractSequenceLegacy() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := uint(testCase.Output.(int))
+		expected := uint(testCase.Output.(uint))
 		actual := ExtractSequenceLegacy(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -277,7 +277,7 @@ func (suite *UtilsSuite) TestExtractOuputScriptLen() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := uint(testCase.Output.(int))
+		expected := uint(testCase.Output.(uint))
 		actual := ExtractOutputScriptLen(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -310,7 +310,7 @@ func (suite *UtilsSuite) TestExtractValue() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := uint(testCase.Output.(int))
+		expected := uint(testCase.Output.(uint))
 		actual := ExtractValue(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -356,7 +356,7 @@ func (suite *UtilsSuite) TestExtractInputAtIndex() {
 		testCase := fixture[i]
 		input := testCase.Input.(map[string]interface{})
 		expected := testCase.Output.([]byte)
-		actual := ExtractInputAtIndex(input["vin"].([]byte), uint8(input["index"].(int)))
+		actual := ExtractInputAtIndex(input["vin"].([]byte), uint8(input["index"].(uint)))
 		suite.Equal(expected, actual)
 	}
 }
@@ -377,7 +377,7 @@ func (suite *UtilsSuite) TestDetermineInputLength() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := uint(testCase.Output.(int))
+		expected := uint(testCase.Output.(uint))
 		actual := DetermineInputLength(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -401,8 +401,8 @@ func (suite *UtilsSuite) TestExtractScriptSigLen() {
 		testCase := fixture[i]
 		expected := testCase.Output.([]interface{})
 		actualDataLen, actualScriptSigLen := ExtractScriptSigLen(testCase.Input.([]byte))
-		suite.Equal(uint(expected[0].(int)), uint(actualDataLen))
-		suite.Equal(uint(expected[1].(int)), uint(actualScriptSigLen))
+		suite.Equal(uint(expected[0].(uint)), uint(actualDataLen))
+		suite.Equal(uint(expected[1].(uint)), uint(actualScriptSigLen))
 	}
 }
 
@@ -466,7 +466,7 @@ func (suite *UtilsSuite) TestExtractTxIndex() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := uint(testCase.Output.(int))
+		expected := uint(testCase.Output.(uint))
 		actual := ExtractTxIndex(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -477,7 +477,7 @@ func (suite *UtilsSuite) TestDetermineOutputLength() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := uint(testCase.Output.(int))
+		expected := uint(testCase.Output.(uint))
 		actual, err := DetermineOutputLength(testCase.Input.([]byte))
 		suite.Nil(err)
 		suite.Equal(expected, actual)
@@ -502,7 +502,7 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 		expected := testCase.Output.([]byte)
 		inputs := testCase.Input.(map[string]interface{})
 		vout := inputs["vout"].([]byte)
-		index := inputs["index"].(int)
+		index := inputs["index"].(uint)
 		actual, err := ExtractOutputAtIndex(vout, uint8(index))
 		if err != nil {
 			log.Fatal(err)
@@ -550,7 +550,7 @@ func (suite *UtilsSuite) TestExtractTimestamp() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := uint(testCase.Output.(int))
+		expected := uint(testCase.Output.(uint))
 		actual := ExtractTimestamp(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}

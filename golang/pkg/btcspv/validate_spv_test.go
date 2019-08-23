@@ -18,7 +18,7 @@ func (suite *UtilsSuite) TestProve() {
 		txIdLE := inputs["txIdLE"].([]byte)
 		merkleRootLE := inputs["merkleRootLE"].([]byte)
 		proof := inputs["proof"].([]byte)
-		index := uint(inputs["index"].(int))
+		index := uint(inputs["index"].(uint))
 		actual := Prove(txIdLE, merkleRootLE, proof, index)
 		suite.Equal(expected, actual)
 	}
@@ -46,10 +46,10 @@ func (suite *UtilsSuite) TestParseInput() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output.(map[string]interface{})
-		expectedSequence := uint(expected["sequence"].(int))
+		expectedSequence := uint(expected["sequence"].(uint))
 		expectedTxId := expected["txId"].([]byte)
-		expectedIndex := uint(expected["index"].(int))
-		expectedType := INPUT_TYPE(expected["type"].(int))
+		expectedIndex := uint(expected["index"].(uint))
+		expectedType := INPUT_TYPE(expected["type"].(uint))
 		input := testCase.Input.([]byte)
 		actualSequence, actualTxId, actualIndex, actualType := ParseInput(input)
 		suite.Equal(expectedSequence, actualSequence)
@@ -65,8 +65,8 @@ func (suite *UtilsSuite) TestParseOutput() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output.(map[string]interface{})
-		expectedValue := uint(expected["value"].(int))
-		expectedOutputType := OUTPUT_TYPE(expected["type"].(int))
+		expectedValue := uint(expected["value"].(uint))
+		expectedOutputType := OUTPUT_TYPE(expected["type"].(uint))
 		expectedPayload := expected["payload"].([]byte)
 		input := testCase.Input.([]byte)
 		actualValue, actualOutputType, actualPayload := ParseOutput(input)
@@ -127,7 +127,7 @@ func (suite *UtilsSuite) TestValidateHeaderWork() {
 		expected := testCase.Output.(bool)
 		inputs := testCase.Input.(map[string]interface{})
 		digest := inputs["digest"].([]byte)
-		targetInt, okInt := inputs["target"].(int)
+		targetInt, okInt := inputs["target"].(uint)
 		target := sdk.NewUint(0)
 		if okInt {
 			target = sdk.NewUint(uint64(targetInt))
