@@ -87,7 +87,7 @@ func (suite *UtilsSuite) TestParseHeader() {
 		expectedPrevHash := expected["prevHash"].([]byte)
 		expectedMerkleRoot := expected["merkleRoot"].([]byte)
 		expectedTimestamp := uint(expected["timestamp"].(uint))
-		expectedTarget := sdk.NewUint(uint64(expected["target"].(uint64)))
+		expectedTarget := BytesToBigUint(expected["target"].([]byte))
 		expectedNonce := uint(expected["nonce"].(uint))
 		input := testCase.Input.([]byte)
 		actualDigest, actualVersion, actualPrevHash, actualMerkleRoot, actualTimestamp, actualTarget, actualNonce, err := ParseHeader(input)
