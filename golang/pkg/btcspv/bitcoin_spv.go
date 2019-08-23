@@ -31,10 +31,10 @@ func BytesToBigInt(b []byte) sdk.Int {
 }
 
 // TODO: Update to sdk.Uint in many places
-// func BytesToBigInt(b []byte) sdk.Uint {
-// 	ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
-// 	return ret
-// }
+func BytesToBigUint(b []byte) sdk.Uint {
+	ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
+	return ret
+}
 
 // DetermineVarIntDataLength extracts the payload length of a Bitcoin VarInt
 func DetermineVarIntDataLength(flag uint8) uint8 {
