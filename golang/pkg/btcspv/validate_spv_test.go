@@ -5,8 +5,6 @@ import (
 	// "reflect"
 	// "github.com/stretchr/testify/suite"
 
-	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -162,7 +160,7 @@ func (suite *UtilsSuite) TestValidateHeaderChain() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := sdk.NewInt(int64(testCase.Output.(int)))
-		actual, _  := ValidateHeaderChain(testCase.Input.([]byte))
+		actual, _ := ValidateHeaderChain(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
 
