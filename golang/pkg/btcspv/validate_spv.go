@@ -130,11 +130,7 @@ func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Int, ui
 // Checks validity of header work
 func ValidateHeaderWork(digest []byte, target sdk.Int) bool {
 	if bytes.Equal(digest, bytes.Repeat([]byte{0}, 32)) {
-<<<<<<< HEAD
-			return false
-=======
 		return false
->>>>>>> f11db1bf3a9cfe2c26f8954a3d21f150e8a23a8d
 	}
 	return BytesToBigUint(digest).LT(sdk.Uint(target))
 }
