@@ -110,7 +110,7 @@ func ParseOutput(output []byte) (uint, OUTPUT_TYPE, []byte) {
 	return value, outputType, payload
 }
 
-// Parses a block header struct from a bytestring
+// ParseHeader parses a block header struct from a bytestring
 func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Uint, uint, error) {
 	if len(header) != 80 {
 		return nil, 0, nil, nil, 0, sdk.NewUint(0), 0, errors.New("Malformatted header. Must be exactly 80 bytes.")
@@ -127,7 +127,7 @@ func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Uint, u
 	return digest, version, prevHash, merkleRoot, timestamp, target, nonce, nil
 }
 
-// Checks validity of header work
+// ValidateHeaderWork checks validity of header work
 func ValidateHeaderWork(digest []byte, target sdk.Uint) bool {
 	if bytes.Equal(digest, bytes.Repeat([]byte{0}, 32)) {
 		return false
@@ -135,7 +135,7 @@ func ValidateHeaderWork(digest []byte, target sdk.Uint) bool {
 	return BytesToBigUint(digest).LT(sdk.Uint(target))
 }
 
-// Checks validity of header chain
+// ValidateHeaderPrevHash checks validity of header chain
 func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
 	// Extract prevHash of current header
 	prevHash := ExtractPrevBlockHashLE(header)
@@ -148,10 +148,9 @@ func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
 	return true
 }
 
-// Checks validity of header chain
+// ValidateHeaderChain checks validity of header chain
 func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 	// Check header chain length
-
 	if len(headers)%80 != 0 {
 		return sdk.NewUint(0), errors.New("Header bytes not multiple of 80.")
 	}

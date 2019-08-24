@@ -12,7 +12,7 @@ import (
 	"golang.org/x/crypto/ripemd160"
 )
 
-// bytesToUint converts 1, 2, 3, or 4-byte numbers to uints
+// BytesToUint converts 1, 2, 3, or 4-byte numbers to uints
 func BytesToUint(b []byte) uint {
 	total := uint(0)
 	length := uint(len(b))
@@ -24,7 +24,13 @@ func BytesToUint(b []byte) uint {
 	return total
 }
 
-// BytesToBigUint converts a bytestring to a cosmos-sdk Int
+// BytesToBigInt converts a bytestring to a cosmos-sdk Int
+func BytesToBigInt(b []byte) sdk.Uint {
+	ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
+	return ret
+}
+
+// BytesToBigUint converts a bytestring of up to 32 bytes to a cosmos sdk uint
 func BytesToBigUint(b []byte) sdk.Uint {
 	ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
 	return ret
@@ -347,7 +353,7 @@ func ExtractTarget(header []byte) sdk.Uint {
 	e := sdk.NewInt(int64(header[75]))
 
 	mantissa := sdk.NewUintFromString("0x" + hex.EncodeToString(ReverseEndianness(m)))
-	exponent := e.Sub(sdk.NewInt(3))
+	exponent := e.SubRaw(3)
 
 	// Have to convert to underlying big.Int as the sdk does not expose exponentiation
 	base := big.NewInt(256)
@@ -444,8 +450,8 @@ func RetargetAlgorithm(
 	secondTimestamp uint) sdk.Uint {
 
 	retargetPeriod := sdk.NewUint(1209600)
-	lowerBound := retargetPeriod.Quo(sdk.NewUint(4))
-	upperBound := retargetPeriod.Mul(sdk.NewUint(4))
+	lowerBound := retargetPeriod.QuoUint64(4)
+	upperBound := retargetPeriod.MulUint64(4)
 
 	first := sdk.NewUint(uint64(firstTimestamp))
 	second := sdk.NewUint(uint64(secondTimestamp))
