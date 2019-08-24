@@ -321,7 +321,6 @@ contract('BTCUtils', () => {
   });
 
   it('calculates consensus-correct retargets', async () => {
-    /* eslint-disable no-await-in-loop */
     let firstTimestamp;
     let secondTimestamp;
     let previousTarget;
@@ -345,13 +344,11 @@ contract('BTCUtils', () => {
       res = await instance.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
       assert(res.muln(4).uand(previousTarget).eq(previousTarget));
     }
-    /* eslint-enable no-await-in-loop */
   });
 
   it('extracts difficulty from a header', async () => {
     let actual;
     let expected;
-    /* eslint-disable no-await-in-loop */
     for (let i = 0; i < retargetAlgorithm.length; i += 1) {
       actual = await instance.extractDifficulty(retargetAlgorithm[i][0].hex);
       expected = new BN(retargetAlgorithm[i][0].difficulty, 10);
@@ -365,6 +362,5 @@ contract('BTCUtils', () => {
       expected = new BN(retargetAlgorithm[i][2].difficulty, 10);
       assert(actual.eq(expected));
     }
-    /* eslint-enable no-await-in-loop */
   });
 });
