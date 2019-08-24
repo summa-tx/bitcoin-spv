@@ -132,7 +132,7 @@ func ValidateHeaderWork(digest []byte, target sdk.Uint) bool {
 	if bytes.Equal(digest, bytes.Repeat([]byte{0}, 32)) {
 		return false
 	}
-	return BytesToBigUint(digest).LT(sdk.Uint(target))
+	return BytesToBigUint(digest).LT(target)
 }
 
 // ValidateHeaderPrevHash checks validity of header chain
@@ -152,11 +152,11 @@ func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
 func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 	// Check header chain length
 	if len(headers)%80 != 0 {
-		return sdk.NewUint(0), errors.New("Header bytes not multiple of 80.")
+		return sdk.ZeroUint(), errors.New("Header bytes not multiple of 80.")
 	}
 
 	var digest []byte
-	totalDifficulty := sdk.NewUint(0)
+	totalDifficulty := sdk.ZeroUint()
 
 	for i := 0; i < len(headers)/80; i++ {
 		start := i * 80
@@ -165,7 +165,7 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 		// After the first header, check that headers are in a chain
 		if i != 0 {
 			if !ValidateHeaderPrevHash(header, digest) {
-				return sdk.NewUint(0), errors.New("Header bytes not a valid chain.")
+				return sdk.ZeroUint(), errors.New("Header bytes not a valid chain.")
 			}
 		}
 
@@ -175,7 +175,7 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 		// Require that the header has sufficient work
 		digest = Hash256(header)
 		if !ValidateHeaderWork(ReverseEndianness(digest), target) {
-			return sdk.NewUint(0), errors.New("Header does not meet its own difficulty target.")
+			return sdk.ZeroUint(), errors.New("Header does not meet its own difficulty target.")
 		}
 
 		totalDifficulty = totalDifficulty.Add(CalculateDifficulty(target))

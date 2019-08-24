@@ -200,7 +200,7 @@ func (suite *UtilsSuite) TestBytesToUint() {
 }
 
 func (suite *UtilsSuite) TestBytesToBigInt() {
-	hexString := "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+	hexString := "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 	decoded := decodeIfHex(hexString)
 
 	buf := bytes.Buffer{}
