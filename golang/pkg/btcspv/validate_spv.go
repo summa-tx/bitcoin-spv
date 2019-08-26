@@ -7,27 +7,32 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type INPUT_TYPE int
+// InputType an enum of types of bitcoin inputs
+type InputType int
 
+// possible input types
 const (
-	INPUT_NONE    INPUT_TYPE = 0
-	LEGACY        INPUT_TYPE = 1
-	COMPATIBILITY INPUT_TYPE = 2
-	WITNESS       INPUT_TYPE = 3
+	INPUT_NONE    InputType = 0
+	LEGACY        InputType = 1
+	COMPATIBILITY InputType = 2
+	WITNESS       InputType = 3
 )
 
-type OUTPUT_TYPE int
+// OutputType an enum of types of bitcoin outputs
+type OutputType int
 
+// possible output types
 const (
-	OUTPUT_NONE OUTPUT_TYPE = 0
-	WPKH        OUTPUT_TYPE = 1
-	WSH         OUTPUT_TYPE = 2
-	OP_RETURN   OUTPUT_TYPE = 3
-	PKH         OUTPUT_TYPE = 4
-	SH          OUTPUT_TYPE = 5
-	NONSTANDARD OUTPUT_TYPE = 6
+	OUTPUT_NONE OutputType = 0
+	WPKH        OutputType = 1
+	WSH         OutputType = 2
+	OP_RETURN   OutputType = 3
+	PKH         OutputType = 4
+	SH          OutputType = 5
+	NONSTANDARD OutputType = 6
 )
 
+// Prove checks the validity of a merkle proof
 func Prove(txid []byte, merkleRoot []byte, intermediateNodes []byte, index uint) bool {
 	// Shortcut the empty-block case
 	if bytes.Equal(txid, merkleRoot) && index == 0 && len(intermediateNodes) == 0 {
@@ -53,12 +58,12 @@ func CalculateTxID(version, vin, vout, locktime []byte) []byte {
 }
 
 // ParseInput returns human-readable information about an input
-func ParseInput(input []byte) (uint, []byte, uint, INPUT_TYPE) {
+func ParseInput(input []byte) (uint, []byte, uint, InputType) {
 	// NB: If the scriptsig is exactly 00, we are WITNESS.
 	// Otherwise we are Compatibility or LEGACY
 	var sequence uint
 	var witnessTag []byte
-	var inputType INPUT_TYPE
+	var inputType InputType
 
 	if input[36] != 0 {
 		sequence = ExtractSequenceLegacy(input)
@@ -80,9 +85,10 @@ func ParseInput(input []byte) (uint, []byte, uint, INPUT_TYPE) {
 	return sequence, inputID, inputIndex, inputType
 }
 
-func ParseOutput(output []byte) (uint, OUTPUT_TYPE, []byte) {
+// ParseOutput extracts human-readable information from an output
+func ParseOutput(output []byte) (uint, OutputType, []byte) {
 	value := ExtractValue(output)
-	var outputType OUTPUT_TYPE
+	var outputType OutputType
 	var payload []byte
 
 	if output[9] == 0x6a {

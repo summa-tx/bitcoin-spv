@@ -15,11 +15,11 @@ func (suite *UtilsSuite) TestProve() {
 		testCase := fixture[i]
 		expected := testCase.Output.(bool)
 		inputs := testCase.Input.(map[string]interface{})
-		txIdLE := inputs["txIdLE"].([]byte)
+		txIDLE := inputs["txIdLE"].([]byte)
 		merkleRootLE := inputs["merkleRootLE"].([]byte)
 		proof := inputs["proof"].([]byte)
 		index := uint(inputs["index"].(int))
-		actual := Prove(txIdLE, merkleRootLE, proof, index)
+		actual := Prove(txIDLE, merkleRootLE, proof, index)
 		suite.Equal(expected, actual)
 	}
 }
@@ -47,13 +47,13 @@ func (suite *UtilsSuite) TestParseInput() {
 		testCase := fixture[i]
 		expected := testCase.Output.(map[string]interface{})
 		expectedSequence := uint(expected["sequence"].(int))
-		expectedTxId := expected["txId"].([]byte)
+		expectedTxID := expected["txId"].([]byte)
 		expectedIndex := uint(expected["index"].(int))
-		expectedType := INPUT_TYPE(expected["type"].(int))
+		expectedType := InputType(expected["type"].(int))
 		input := testCase.Input.([]byte)
-		actualSequence, actualTxId, actualIndex, actualType := ParseInput(input)
+		actualSequence, actualTxID, actualIndex, actualType := ParseInput(input)
 		suite.Equal(expectedSequence, actualSequence)
-		suite.Equal(expectedTxId, actualTxId)
+		suite.Equal(expectedTxID, actualTxID)
 		suite.Equal(expectedIndex, actualIndex)
 		suite.Equal(expectedType, actualType)
 	}
@@ -66,7 +66,7 @@ func (suite *UtilsSuite) TestParseOutput() {
 		testCase := fixture[i]
 		expected := testCase.Output.(map[string]interface{})
 		expectedValue := uint(expected["value"].(int))
-		expectedOutputType := OUTPUT_TYPE(expected["type"].(int))
+		expectedOutputType := OutputType(expected["type"].(int))
 		expectedPayload := expected["payload"].([]byte)
 		input := testCase.Input.([]byte)
 		actualValue, actualOutputType, actualPayload := ParseOutput(input)
