@@ -170,13 +170,12 @@ func ExtractOutpoint(input []byte) []byte {
 }
 
 // ExtractInputTxIDLE returns the LE tx input index from the input in a tx
-func ExtractInputTxIdLE(input []byte) []byte {
+func ExtractInputTxIDLE(input []byte) []byte {
 	return input[0:32]
 }
 
-// ExtractTxID returns the input tx id from the input in a tx
-// Returns the tx id as a big-endian []byte
-func ExtractInputTxId(input []byte) []byte {
+// ExtractInputTxID returns the input tx id bytes
+func ExtractInputTxID(input []byte) []byte {
 	return ReverseEndianness(input[0:32])
 }
 

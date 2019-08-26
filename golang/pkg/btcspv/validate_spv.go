@@ -42,8 +42,8 @@ func Prove(txid []byte, merkleRoot []byte, intermediateNodes []byte, index uint)
 	return VerifyHash256Merkle(proof, index)
 }
 
-// Hashes transaction to get txid
-func CalculateTxId(version, vin, vout, locktime []byte) []byte {
+// CalculateTxID hashes transaction to get txid
+func CalculateTxID(version, vin, vout, locktime []byte) []byte {
 	txid := []byte{}
 	txid = append(txid, version...)
 	txid = append(txid, vin...)
@@ -52,6 +52,7 @@ func CalculateTxId(version, vin, vout, locktime []byte) []byte {
 	return Hash256(txid)
 }
 
+// ParseInput returns human-readable information about an input
 func ParseInput(input []byte) (uint, []byte, uint, INPUT_TYPE) {
 	// NB: If the scriptsig is exactly 00, we are WITNESS.
 	// Otherwise we are Compatibility or LEGACY
@@ -73,10 +74,10 @@ func ParseInput(input []byte) (uint, []byte, uint, INPUT_TYPE) {
 		inputType = WITNESS
 	}
 
-	inputId := ExtractInputTxId(input)
+	inputID := ExtractInputTxID(input)
 	inputIndex := ExtractTxIndex(input)
 
-	return sequence, inputId, inputIndex, inputType
+	return sequence, inputID, inputIndex, inputType
 }
 
 func ParseOutput(output []byte) (uint, OUTPUT_TYPE, []byte) {

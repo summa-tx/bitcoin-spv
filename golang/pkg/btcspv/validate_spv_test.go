@@ -35,7 +35,7 @@ func (suite *UtilsSuite) TestCalculateTxId() {
 		vin := inputs["vin"].([]byte)
 		vout := inputs["vout"].([]byte)
 		locktime := inputs["locktime"].([]byte)
-		actual := CalculateTxId(version, vin, vout, locktime)
+		actual := CalculateTxID(version, vin, vout, locktime)
 		suite.Equal(expected, actual)
 	}
 }

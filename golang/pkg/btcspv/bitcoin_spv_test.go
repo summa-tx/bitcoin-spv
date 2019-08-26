@@ -425,24 +425,24 @@ func (suite *UtilsSuite) TestValidateVout() {
 	}
 }
 
-func (suite *UtilsSuite) TestExtractInputTxIdLE() {
+func (suite *UtilsSuite) TestExtractInputTxIDLE() {
 	fixture := suite.Fixtures["extractInputTxIdLE"]
 
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output.([]byte)
-		actual := ExtractInputTxIdLE(testCase.Input.([]byte))
+		actual := ExtractInputTxIDLE(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
 }
 
-func (suite *UtilsSuite) TestExtractInputTxId() {
+func (suite *UtilsSuite) TestExtractInputTxID() {
 	fixture := suite.Fixtures["extractInputTxId"]
 
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output.([]byte)
-		actual := ExtractInputTxId(testCase.Input.([]byte))
+		actual := ExtractInputTxID(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
 }
@@ -566,14 +566,15 @@ func (suite *UtilsSuite) TestHash256MerkleStep() {
 }
 
 func (suite *UtilsSuite) TestDetermineVarIntDataLength() {
-	res1 := DetermineVarIntDataLength(uint8(0x01))
-	suite.Equal(res1, uint8(0))
-	res2 := DetermineVarIntDataLength(uint8(0xfd))
-	suite.Equal(res2, uint8(2))
-	res3 := DetermineVarIntDataLength(uint8(0xfe))
-	suite.Equal(res3, uint8(4))
-	res4 := DetermineVarIntDataLength(uint8(0xff))
-	suite.Equal(res4, uint8(8))
+	res1 := DetermineVarIntDataLength(0x01)
+	suite.Equal(uint8(0), res1)
+	res2 := DetermineVarIntDataLength(0xfd)
+	suite.Equal(uint8(2), res2)
+	res3 := DetermineVarIntDataLength(0xfe)
+	suite.Equal(uint8(4), res3)
+	res4 := DetermineVarIntDataLength(0xff)
+	suite.Equal(uint8(8), res4)
+	// res
 }
 
 //   it('calculates consensus-correct retargets', () => {
@@ -640,50 +641,15 @@ func (suite *UtilsSuite) TestRetargetAlgorithm() {
 	// }
 }
 
-//   it('extracts difficulty from a header', () => {
-//     let actual;
-//     let expected;
-//     for (let i = 0; i < constants.RETARGET_TUPLES.length; i += 1) {
-//       actual = BTCUtils.extractDifficulty(
-//         utils.deserializeHex(constants.RETARGET_TUPLES[i][0].hex)
-//       );
-//       expected = constants.RETARGET_TUPLES[i][0].difficulty;
-//       assert.equal(actual, expected);
-
-//       actual = BTCUtils.extractDifficulty(
-//         utils.deserializeHex(constants.RETARGET_TUPLES[i][1].hex)
-//       );
-//       expected = constants.RETARGET_TUPLES[i][1].difficulty;
-//       assert.equal(actual, expected);
-
-//       actual = BTCUtils.extractDifficulty(
-//         utils.deserializeHex(constants.RETARGET_TUPLES[i][2].hex)
-//       );
-//       expected = constants.RETARGET_TUPLES[i][2].difficulty;
-//       assert.equal(actual, expected);
-//     }
-//   });
-// });
 func (suite *UtilsSuite) TestExtractDifficulty() {
-	// var actual sdk.Int
-	// var expected sdk.Int
 	suite.T().Skip()
+	// var actual sdk.Uint
+	// var expected sdk.Uint
+	// fixture := suite.Fixtures["retargetAlogrithm"]
 	// need to figure out how to work with data in "retargetAlgorithm" in testVectors.json
 }
 
 func (suite *UtilsSuite) TestCalculateDifficulty() {
-	// diffOneTarget, _ := sdk.NewIntFromString("0xffff0000000000000000000000000000000000000000000000000000")
-	// diff := CalculateDifficulty(diffOneTarget)
-	// suite.True(diff.Equal(sdk.NewInt(1)))
-
-	// diff256, _ := sdk.NewIntFromString("0xffff00000000000000000000000000000000000000000000000000")
-	// diff = CalculateDifficulty(diff256)
-	// suite.True(diff.Equal(sdk.NewInt(256)))
-
-	// diff65536, _ := sdk.NewIntFromString("0xffff000000000000000000000000000000000000000000000000")
-	// diff = CalculateDifficulty(diff65536)
-	// suite.True(diff.Equal(sdk.NewInt(65536)))
-
 	fixture := suite.Fixtures["calculateDifficulty"]
 
 	for i := range fixture {
