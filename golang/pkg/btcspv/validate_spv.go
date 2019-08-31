@@ -120,7 +120,7 @@ func ParseOutput(output []byte) (uint, OutputType, []byte) {
 // ParseHeader parses a block header struct from a bytestring
 func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Uint, uint, error) {
 	if len(header) != 80 {
-		return nil, 0, nil, nil, 0, sdk.NewUint(0), 0, errors.New("Malformatted header. Must be exactly 80 bytes.")
+		return nil, 0, nil, nil, 0, sdk.NewUint(0), 0, errors.New("Malformatted header. Must be exactly 80 bytes")
 	}
 
 	digest := ReverseEndianness(Hash256(header))
@@ -159,7 +159,7 @@ func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
 func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 	// Check header chain length
 	if len(headers)%80 != 0 {
-		return sdk.ZeroUint(), errors.New("Header bytes not multiple of 80.")
+		return sdk.ZeroUint(), errors.New("Header bytes not multiple of 80")
 	}
 
 	var digest []byte
@@ -172,7 +172,7 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 		// After the first header, check that headers are in a chain
 		if i != 0 {
 			if !ValidateHeaderPrevHash(header, digest) {
-				return sdk.ZeroUint(), errors.New("Header bytes not a valid chain.")
+				return sdk.ZeroUint(), errors.New("Header bytes not a valid chain")
 			}
 		}
 
@@ -182,7 +182,7 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 		// Require that the header has sufficient work
 		digest = Hash256(header)
 		if !ValidateHeaderWork(ReverseEndianness(digest), target) {
-			return sdk.ZeroUint(), errors.New("Header does not meet its own difficulty target.")
+			return sdk.ZeroUint(), errors.New("Header does not meet its own difficulty target")
 		}
 
 		totalDifficulty = totalDifficulty.Add(CalculateDifficulty(target))

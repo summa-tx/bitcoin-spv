@@ -300,13 +300,13 @@ describe('BTCUtils', () => {
     let expectedNewTarget;
     let res;
     for (let i = 0; i < retargetAlgorithm.length; i += 1) {
-      firstTimestamp = retargetAlgorithm[i][0].timestamp;
-      secondTimestamp = retargetAlgorithm[i][1].timestamp;
+      firstTimestamp = retargetAlgorithm[i].input[0].timestamp;
+      secondTimestamp = retargetAlgorithm[i].input[1].timestamp;
       previousTarget = BTCUtils.extractTarget(
-        retargetAlgorithm[i][1].hex
+        retargetAlgorithm[i].input[1].hex
       );
       expectedNewTarget = BTCUtils.extractTarget(
-        retargetAlgorithm[i][2].hex
+        retargetAlgorithm[i].input[2].hex
       );
       res = BTCUtils.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
       // (response & expected) == expected
@@ -327,16 +327,16 @@ describe('BTCUtils', () => {
     let actual;
     let expected;
     for (let i = 0; i < retargetAlgorithm.length; i += 1) {
-      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i][0].hex);
-      expected = BigInt(retargetAlgorithm[i][0].difficulty);
+      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i].input[0].hex);
+      expected = BigInt(retargetAlgorithm[i].input[0].difficulty);
       assert.strictEqual(actual, expected);
 
-      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i][1].hex);
-      expected = BigInt(retargetAlgorithm[i][1].difficulty);
+      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i].input[1].hex);
+      expected = BigInt(retargetAlgorithm[i].input[1].difficulty);
       assert.strictEqual(actual, expected);
 
-      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i][2].hex);
-      expected = BigInt(retargetAlgorithm[i][2].difficulty);
+      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i].input[2].hex);
+      expected = BigInt(retargetAlgorithm[i].input[2].difficulty);
       assert.strictEqual(actual, expected);
     }
   });

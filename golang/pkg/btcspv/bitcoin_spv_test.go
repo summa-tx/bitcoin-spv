@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"math/big"
 	"os"
 	"testing"
 
@@ -507,6 +508,12 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
+
+	// Error case. Use the 10 bytes to simulate a vout with a very long output
+	actual, err := ExtractOutputAtIndex([]byte{0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0xff}, 1)
+	expected := "Multi-byte VarInts not supported"
+	suite.Equal([]byte{}, actual)
+	suite.EqualError(err, expected)
 }
 
 func (suite *UtilsSuite) TestExtractMerkleRootBE() {
@@ -532,13 +539,17 @@ func (suite *UtilsSuite) TestExtractTarget() {
 }
 
 func (suite *UtilsSuite) TestExtractPrevBlockHashBE() {
-	fixture := suite.Fixtures["extractPrevBlockHashBE"]
+	fixture := suite.Fixtures["retargetAlgorithm"]
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := testCase.Output.([]byte)
-		actual := ExtractPrevBlockHashBE(testCase.Input.([]byte))
-		suite.Equal(expected, actual)
+		input := testCase.Input.([]interface{})
+		for j := range input {
+			h := input[j].(map[string]interface{})
+			actual := ExtractPrevBlockHashBE(h["hex"].([]byte))
+			expected := h["prev_block"].([]byte)
+			suite.Equal(expected, actual)
+		}
 	}
 }
 
@@ -577,6 +588,20 @@ func (suite *UtilsSuite) TestDetermineVarIntDataLength() {
 	// res
 }
 
+func (suite *UtilsSuite) TestVerifyHash256Merkle() {
+	fixtures := suite.Fixtures["verifyHash256Merkle"]
+
+	for i := range fixtures {
+		testCase := fixtures[i]
+		ins := testCase.Input.(map[string]interface{})
+		proof := ins["proof"].([]byte)
+		index := uint(ins["index"].(int))
+		expected := testCase.Output.(bool)
+		actual := VerifyHash256Merkle(proof, index)
+		suite.Equal(expected, actual)
+	}
+}
+
 //   it('calculates consensus-correct retargets', () => {
 //     let firstTimestamp;
 //     let secondTimestamp;
@@ -607,46 +632,60 @@ func (suite *UtilsSuite) TestDetermineVarIntDataLength() {
 //     }
 //   });
 func (suite *UtilsSuite) TestRetargetAlgorithm() {
-	suite.T().Skip()
 	// FIXME:
-	// fixtures := suite.Fixtures["retargetAlgorithm"]
+	fixtures := suite.Fixtures["retargetAlgorithm"]
 
-	// for i := range fixtures {
-	// 	testCase := fixtures [i]
+	for i := range fixtures {
+		testCase := fixtures[i].Input.([]interface{})
+		testCaseFirst := testCase[0].(map[string]interface{})
+		testCaseSecond := testCase[1].(map[string]interface{})
+		testCaseExpected := testCase[2].(map[string]interface{})
 
-	// testCaseFirst := testCase[0]
-	// testCaseSecond := testCase[1]
-	// testCaseExpected := testCase[2]
-	// firstTimestamp := testCaseFirst["timestamp"]
-	// secondTimestamp := testCaseSecond["timestamp"]
-	// previousTarget := ExtractTarget(testCaseSecond["hex"])
-	// expectedNewTarget := ExtractTarget(testCaseExpected["hex"])
+		firstTimestamp := uint(testCaseFirst["timestamp"].(int))
+		secondTimestamp := uint(testCaseSecond["timestamp"].(int))
+		previousTarget := ExtractTarget(testCaseSecond["hex"].([]byte))
+		expectedNewTarget := ExtractTarget(testCaseExpected["hex"].([]byte))
 
-	// data := testCase.()
-	// firstTimestamp := data[0]["timestamp"]
-	// secondTimestamp := data[1]["timestamp"]
-	// previousTarget := ExtractTarget(data[1].hex)
-	// expectedNewTarget := ExtractTarget(data[2].hex)
+		actual := RetargetAlgorithm((previousTarget), firstTimestamp, secondTimestamp)
 
-	// expected := RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
-	// suite.Equal(expected & expectedNewTarget, expectedNewTarget)
+		// dirty hacks. sdk.Uint doesn't give us easy access to the underlying
+		a, _ := actual.MarshalAmino()
+		e, _ := expectedNewTarget.MarshalAmino()
+		actualBI := new(big.Int)
+		actualBI.SetString(a, 0)
+		expectedBI := new(big.Int)
+		expectedBI.SetString(e, 0)
 
-	// secondTimestamp = firstTimestamp + (5 * 2016 * 10 * 60)
-	// expected = RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
-	// suite.Equal(expected / sdk.NewInt(4) & previousTarget, previousTarget)
+		res := new(big.Int)
+		res.And(actualBI, expectedBI)
 
-	// secondTimestamp = firstTimestamp + (2016 * 10 * 14)
-	// expected = RetargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp)
-	// suite.Equal(expected * sdk.NewInt(4) & previousTarget, previousTarget)
-	// }
+		suite.Equal(expectedBI, res)
+
+		// long
+		fakeSecond := firstTimestamp + 5*2016*10*60
+		longRes := RetargetAlgorithm(previousTarget, firstTimestamp, fakeSecond)
+		suite.Equal(previousTarget.MulUint64(4), longRes)
+
+		// short
+		fakeSecond = firstTimestamp + 2016*10*14
+		shortRes := RetargetAlgorithm(previousTarget, firstTimestamp, fakeSecond)
+		suite.Equal(previousTarget.QuoUint64(4), shortRes)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractDifficulty() {
-	suite.T().Skip()
-	// var actual sdk.Uint
-	// var expected sdk.Uint
-	// fixture := suite.Fixtures["retargetAlogrithm"]
-	// need to figure out how to work with data in "retargetAlgorithm" in testVectors.json
+	fixture := suite.Fixtures["retargetAlgorithm"]
+
+	for i := range fixture {
+		testCase := fixture[i]
+		input := testCase.Input.([]interface{})
+		for j := range input {
+			h := input[j].(map[string]interface{})
+			actual := ExtractDifficulty(h["hex"].([]byte))
+			expected := sdk.NewUint(uint64(h["difficulty"].(int)))
+			suite.Equal(expected, actual)
+		}
+	}
 }
 
 func (suite *UtilsSuite) TestCalculateDifficulty() {

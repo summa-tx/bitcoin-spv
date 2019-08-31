@@ -327,10 +327,10 @@ contract('BTCUtils', () => {
     let expectedNewTarget;
     let res;
     for (let i = 0; i < retargetAlgorithm.length; i += 1) {
-      firstTimestamp = retargetAlgorithm[i][0].timestamp;
-      secondTimestamp = retargetAlgorithm[i][1].timestamp;
-      previousTarget = await instance.extractTarget.call(retargetAlgorithm[i][1].hex);
-      expectedNewTarget = await instance.extractTarget.call(retargetAlgorithm[i][2].hex);
+      firstTimestamp = retargetAlgorithm[i].input[0].timestamp;
+      secondTimestamp = retargetAlgorithm[i].input[1].timestamp;
+      previousTarget = await instance.extractTarget.call(retargetAlgorithm[i].input[1].hex);
+      expectedNewTarget = await instance.extractTarget.call(retargetAlgorithm[i].input[2].hex);
       res = await instance.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
       // (response & expected) == expected
       // this converts our full-length target into truncated block target
@@ -350,16 +350,16 @@ contract('BTCUtils', () => {
     let actual;
     let expected;
     for (let i = 0; i < retargetAlgorithm.length; i += 1) {
-      actual = await instance.extractDifficulty(retargetAlgorithm[i][0].hex);
-      expected = new BN(retargetAlgorithm[i][0].difficulty, 10);
+      actual = await instance.extractDifficulty(retargetAlgorithm[i].input[0].hex);
+      expected = new BN(retargetAlgorithm[i].input[0].difficulty, 10);
       assert(actual.eq(expected));
 
-      actual = await instance.extractDifficulty(retargetAlgorithm[i][1].hex);
-      expected = new BN(retargetAlgorithm[i][1].difficulty, 10);
+      actual = await instance.extractDifficulty(retargetAlgorithm[i].input[1].hex);
+      expected = new BN(retargetAlgorithm[i].input[1].difficulty, 10);
       assert(actual.eq(expected));
 
-      actual = await instance.extractDifficulty(retargetAlgorithm[i][2].hex);
-      expected = new BN(retargetAlgorithm[i][2].difficulty, 10);
+      actual = await instance.extractDifficulty(retargetAlgorithm[i].input[2].hex);
+      expected = new BN(retargetAlgorithm[i].input[2].difficulty, 10);
       assert(actual.eq(expected));
     }
   });
