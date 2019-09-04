@@ -12,10 +12,10 @@ type InputType int
 
 // possible input types
 const (
-	INPUT_NONE    InputType = 0
-	LEGACY        InputType = 1
-	COMPATIBILITY InputType = 2
-	WITNESS       InputType = 3
+	InputNone     InputType = 0
+	Legacy        InputType = 1
+	Compatibility InputType = 2
+	Witness       InputType = 3
 )
 
 // OutputType an enum of types of bitcoin outputs
@@ -23,13 +23,13 @@ type OutputType int
 
 // possible output types
 const (
-	OUTPUT_NONE OutputType = 0
+	OutputNone  OutputType = 0
 	WPKH        OutputType = 1
 	WSH         OutputType = 2
-	OP_RETURN   OutputType = 3
+	OpReturn    OutputType = 3
 	PKH         OutputType = 4
 	SH          OutputType = 5
-	NONSTANDARD OutputType = 6
+	Nonstandard OutputType = 6
 )
 
 // Prove checks the validity of a merkle proof
@@ -59,8 +59,8 @@ func CalculateTxID(version, vin, vout, locktime []byte) []byte {
 
 // ParseInput returns human-readable information about an input
 func ParseInput(input []byte) (uint, []byte, uint, InputType) {
-	// NB: If the scriptsig is exactly 00, we are WITNESS.
-	// Otherwise we are Compatibility or LEGACY
+	// NB: If the scriptsig is exactly 00, we are Witness.
+	// Otherwise we are Compatibility or Legacy
 	var sequence uint
 	var witnessTag []byte
 	var inputType InputType
@@ -70,13 +70,13 @@ func ParseInput(input []byte) (uint, []byte, uint, InputType) {
 		witnessTag = input[36:39]
 
 		if bytes.Equal(witnessTag, []byte{34, 0, 32}) || bytes.Equal(witnessTag, []byte{22, 0, 20}) {
-			inputType = COMPATIBILITY
+			inputType = Compatibility
 		} else {
-			inputType = LEGACY
+			inputType = Legacy
 		}
 	} else {
 		sequence = ExtractSequenceWitness(input)
-		inputType = WITNESS
+		inputType = Witness
 	}
 
 	inputID := ExtractInputTxID(input)
@@ -92,24 +92,24 @@ func ParseOutput(output []byte) (uint, OutputType, []byte) {
 	var payload []byte
 
 	if output[9] == 0x6a {
-		outputType = OP_RETURN
+		outputType = OpReturn
 		payload, _ = ExtractOpReturnData(output)
 	} else {
 		prefixHash := output[8:10]
-		if bytes.Equal(prefixHash, []byte{34, 0}) {
+		if bytes.Equal(prefixHash, []byte{0x22, 0x00}) {
 			outputType = WSH
 			payload = output[11:43]
-		} else if bytes.Equal(prefixHash, []byte{22, 0}) {
+		} else if bytes.Equal(prefixHash, []byte{0x16, 0x00}) {
 			outputType = WPKH
 			payload = output[11:31]
-		} else if bytes.Equal(prefixHash, []byte{25, 118}) {
+		} else if bytes.Equal(prefixHash, []byte{0x19, 0x76}) {
 			outputType = PKH
 			payload = output[12:32]
-		} else if bytes.Equal(prefixHash, []byte{23, 169}) {
+		} else if bytes.Equal(prefixHash, []byte{0x17, 0xa9}) {
 			outputType = SH
 			payload = output[11:31]
 		} else {
-			outputType = NONSTANDARD
+			outputType = Nonstandard
 			payload = []byte{}
 		}
 	}
@@ -139,7 +139,7 @@ func ValidateHeaderWork(digest []byte, target sdk.Uint) bool {
 	if bytes.Equal(digest, bytes.Repeat([]byte{0}, 32)) {
 		return false
 	}
-	return BytesToBigUint(digest).LT(target)
+	return BytesToBigUint(ReverseEndianness(digest)).LT(target)
 }
 
 // ValidateHeaderPrevHash checks validity of header chain
@@ -147,12 +147,7 @@ func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
 	// Extract prevHash of current header
 	prevHash := ExtractPrevBlockHashLE(header)
 
-	// Compare prevHash of current header to previous header's digest
-	if !bytes.Equal(prevHash, prevHeaderDigest) {
-		return false
-	}
-
-	return true
+	return bytes.Equal(prevHash, prevHeaderDigest)
 }
 
 // ValidateHeaderChain checks validity of header chain
@@ -181,7 +176,7 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 
 		// Require that the header has sufficient work
 		digest = Hash256(header)
-		if !ValidateHeaderWork(ReverseEndianness(digest), target) {
+		if !ValidateHeaderWork(digest, target) {
 			return sdk.ZeroUint(), errors.New("Header does not meet its own difficulty target")
 		}
 

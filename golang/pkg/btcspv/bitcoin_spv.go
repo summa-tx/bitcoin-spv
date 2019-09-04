@@ -124,8 +124,8 @@ func DetermineInputLength(input []byte) uint {
 // The sequence is a 4 byte little-endian number.
 func ExtractSequenceLELegacy(input []byte) []byte {
 	dataLen, scriptSigLen := ExtractScriptSigLen(input)
-	length := 36 + 1 + dataLen + scriptSigLen
-	return input[length : length+4]
+	offset := 36 + 1 + dataLen + scriptSigLen
+	return input[offset : offset+4]
 }
 
 // ExtractSequenceLegacy returns the integer sequence in from a tx input
@@ -197,7 +197,7 @@ func ExtractTxIndex(input []byte) uint {
 // DetermineOutputLength returns the length of an output
 func DetermineOutputLength(output []byte) (uint, error) {
 	length := uint(output[8])
-	if length > 0xfd {
+	if length > 0xfc {
 		return 0, errors.New("Multi-byte VarInts not supported")
 	}
 	return length + uint(9), nil
@@ -294,7 +294,7 @@ func ValidateVin(vin []byte) bool {
 	vLength := uint(len(vin))
 	nIns := uint(vin[0])
 
-	if nIns >= 0xfd || nIns == 0 {
+	if nIns > 0xfc || nIns == 0 {
 		return false
 	}
 
@@ -314,12 +314,15 @@ func ValidateVout(vout []byte) bool {
 	vLength := uint(len(vout))
 	nOuts := uint(vout[0])
 
-	if nOuts >= 0xfd || nOuts == 0 {
+	if nOuts > 0xfc || nOuts == 0 {
 		return false
 	}
 
 	for i := uint(0); i < nOuts; i++ {
-		output, _ := DetermineOutputLength(vout[offset:])
+		output, err := DetermineOutputLength(vout[offset:])
+		if err != nil {
+			return false
+		}
 		offset += output
 		if offset > vLength {
 			return false
@@ -351,6 +354,7 @@ func ExtractTarget(header []byte) sdk.Uint {
 	m := header[72:75]
 	e := sdk.NewInt(int64(header[75]))
 
+	// hacks
 	mantissa := sdk.NewUintFromString("0x" + hex.EncodeToString(ReverseEndianness(m)))
 	exponent := e.SubRaw(3)
 

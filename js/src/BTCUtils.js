@@ -304,7 +304,7 @@ export function extractTxIndex(input) {
  */
 export function determineOutputLength(output) {
   const len = output[8];
-  if (len > 0xfd) {
+  if (len > 0xfc) {
     throw new RangeError('Multi-byte VarInts not supported');
   }
 
@@ -456,7 +456,7 @@ export function validateVin(vin) {
   const [nIns] = vin;
 
   // Not valid if it says there are too many or no inputs
-  if (nIns >= 0xfd || nIns === 0) {
+  if (nIns > 0xfc || nIns === 0) {
     return false;
   }
 
@@ -489,7 +489,7 @@ export function validateVout(vout) {
   const [nOuts] = vout;
 
   // Not valid if it says there are too many or no inputs
-  if (nOuts >= 0xfd || nOuts === 0) {
+  if (nOuts > 0xfc || nOuts === 0) {
     return false;
   }
 

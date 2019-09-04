@@ -182,7 +182,7 @@ export function validateHeaderWork(digest, target) {
   if (utils.typedArraysAreEqual(digest, new Uint8Array(Array(32).fill(0)))) {
     return false;
   }
-  return utils.bytesToUint(digest) < target;
+  return utils.bytesToUint(utils.reverseEndianness(digest)) < target;
 }
 
 /**
@@ -242,7 +242,7 @@ export function validateHeaderChain(headers) {
 
     // Require that the header has sufficient work
     digest = BTCUtils.hash256(header);
-    if (!validateHeaderWork(utils.reverseEndianness(digest), target)) {
+    if (!validateHeaderWork(digest, target)) {
       throw new Error('Header does not meet its own difficulty target.');
     }
 
