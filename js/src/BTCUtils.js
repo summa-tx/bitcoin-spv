@@ -496,7 +496,11 @@ export function validateVout(vout) {
   for (let i = 0; i < nOuts; i += 1) {
     // Grab the next input and determine its length.
     // Increase the offset by that much
-    offset += determineOutputLength(utils.safeSlice(vout, offset));
+    try {
+      offset += determineOutputLength(utils.safeSlice(vout, offset));
+    } catch (e) {
+      return false;
+    }
     // Returns false if we jump past the end
     if (offset > vLength) {
       return false;

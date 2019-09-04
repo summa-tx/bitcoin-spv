@@ -244,8 +244,17 @@ contract('BTCUtils', () => {
 
   it('validates vout length based on stated size', async () => {
     for (let i = 0; i < validateVout.length; i += 1) {
-      const res = await instance.validateVout(validateVout[i].input);
-      assert.strictEqual(res, validateVout[i].output);
+      if (validateVout[i].solidityError) {
+        try {
+          await instance.validateVout(validateVout[i].input);
+          assert(false, 'expected an error');
+        } catch (e) {
+          assert.include(e.message, validateVout[i].solidityError);
+        }
+      } else {
+        const res = await instance.validateVout(validateVout[i].input);
+        assert.strictEqual(res, validateVout[i].output);
+      }
     }
   });
 
