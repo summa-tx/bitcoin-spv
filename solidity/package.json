@@ -1,6 +1,6 @@
 {
   "name": "@summa-tx/bitcoin-spv-sol",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "bitcoin SPV proofs in Solidity",
   "scripts": {
     "compile": "truffle compile",
@@ -19,6 +19,7 @@
     "eth-gas-reporter": "^0.2.8",
     "solidity-coverage": "^0.6.3",
     "solidity-docgen": "^0.3.0-beta.4",
-    "solium": "^1.2.4"
+    "solium": "^1.2.4",
+    "truffle": "^5.0.32"
   }
 }

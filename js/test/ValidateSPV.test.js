@@ -61,7 +61,7 @@ describe('ValidateSPV', () => {
         assert.strictEqual(txIn.sequence, BigInt(sequence));
         assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, txId));
         assert.strictEqual(txIn.inputIndex, BigInt(index));
-        assert.strictEqual(txIn.inputType, BigInt(utils.OUTPUT_TYPES[type]));
+        assert.strictEqual(txIn.inputType, BigInt(type));
       }
     });
   });
@@ -75,7 +75,7 @@ describe('ValidateSPV', () => {
         const TxOut = ValidateSPV.parseOutput(output);
 
         assert.strictEqual(TxOut.value, BigInt(value));
-        assert.strictEqual(TxOut.outputType, utils.OUTPUT_TYPES[type]);
+        assert.strictEqual(TxOut.outputType, BigInt(type));
         assert.isTrue(utils.typedArraysAreEqual(TxOut.payload, payload));
       }
     });

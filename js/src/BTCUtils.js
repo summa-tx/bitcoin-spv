@@ -246,7 +246,6 @@ export function extractOutpoint(input) {
  * @param {Uint8Array}    input The input
  * @returns {Uint8Array}  The tx id (little-endian bytes)
  */
-// TODO: no test, check against function that uses this
 export function extractInputTxIdLE(input) {
   return utils.safeSlice(input, 0, 32);
 }
@@ -259,7 +258,6 @@ export function extractInputTxIdLE(input) {
  * @param {Uint8Array}    input The input
  * @returns {Uint8Array}  The tx id (big-endian bytes)
  */
-// TODO: no test, check against function that uses this
 export function extractInputTxId(input) {
   const leId = extractInputTxIdLE(input);
   return utils.reverseEndianness(leId);
@@ -273,7 +271,6 @@ export function extractInputTxId(input) {
  * @param {Uint8Array}    input The input
  * @returns {Uint8Array}  The tx index (little-endian bytes)
  */
-// TODO: no test, check against function that uses this
 export function extractTxIndexLE(input) {
   return utils.safeSlice(input, 32, 36);
 }
@@ -286,7 +283,6 @@ export function extractTxIndexLE(input) {
  * @param {Uint8Array}    input The input
  * @returns {BigInt}      The tx index (big-endian uint)
  */
-// TODO: no test, check against function that uses this
 export function extractTxIndex(input) {
   const leIndex = extractTxIndexLE(input);
   const beIndex = utils.reverseEndianness(leIndex);
@@ -308,7 +304,7 @@ export function extractTxIndex(input) {
  */
 export function determineOutputLength(output) {
   const len = output[8];
-  if (len > 0xfd) {
+  if (len > 0xfc) {
     throw new RangeError('Multi-byte VarInts not supported');
   }
 
@@ -460,7 +456,7 @@ export function validateVin(vin) {
   const [nIns] = vin;
 
   // Not valid if it says there are too many or no inputs
-  if (nIns >= 0xfd || nIns === 0) {
+  if (nIns > 0xfc || nIns === 0) {
     return false;
   }
 
@@ -493,14 +489,18 @@ export function validateVout(vout) {
   const [nOuts] = vout;
 
   // Not valid if it says there are too many or no inputs
-  if (nOuts >= 0xfd || nOuts === 0) {
+  if (nOuts > 0xfc || nOuts === 0) {
     return false;
   }
 
   for (let i = 0; i < nOuts; i += 1) {
     // Grab the next input and determine its length.
     // Increase the offset by that much
-    offset += determineOutputLength(utils.safeSlice(vout, offset));
+    try {
+      offset += determineOutputLength(utils.safeSlice(vout, offset));
+    } catch (e) {
+      return false;
+    }
     // Returns false if we jump past the end
     if (offset > vLength) {
       return false;

@@ -25,6 +25,10 @@ const {
   isLegacyInput,
   extractValueLE,
   extractValue,
+  extractInputTxIdLE,
+  extractInputTxId,
+  extractTxIndexLE,
+  extractTxIndex,
   determineInputLength,
   extractScriptSig,
   extractScriptSigLen,
@@ -111,7 +115,7 @@ describe('BTCUtils', () => {
   it('extracts the length of the output script', () => {
     for (let i = 0; i < extractOutputScriptLen.length; i += 1) {
       const res = BTCUtils.extractOutputScriptLen(extractOutputScriptLen[i].input);
-      assert.strictEqual(res, extractOutputScriptLen[i].output[0]);
+      assert.strictEqual(res, extractOutputScriptLen[i].output);
     }
   });
 
@@ -296,13 +300,13 @@ describe('BTCUtils', () => {
     let expectedNewTarget;
     let res;
     for (let i = 0; i < retargetAlgorithm.length; i += 1) {
-      firstTimestamp = retargetAlgorithm[i][0].timestamp;
-      secondTimestamp = retargetAlgorithm[i][1].timestamp;
+      firstTimestamp = retargetAlgorithm[i].input[0].timestamp;
+      secondTimestamp = retargetAlgorithm[i].input[1].timestamp;
       previousTarget = BTCUtils.extractTarget(
-        retargetAlgorithm[i][1].hex
+        retargetAlgorithm[i].input[1].hex
       );
       expectedNewTarget = BTCUtils.extractTarget(
-        retargetAlgorithm[i][2].hex
+        retargetAlgorithm[i].input[2].hex
       );
       res = BTCUtils.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
       // (response & expected) == expected
@@ -323,16 +327,16 @@ describe('BTCUtils', () => {
     let actual;
     let expected;
     for (let i = 0; i < retargetAlgorithm.length; i += 1) {
-      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i][0].hex);
-      expected = BigInt(retargetAlgorithm[i][0].difficulty);
+      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i].input[0].hex);
+      expected = BigInt(retargetAlgorithm[i].input[0].difficulty);
       assert.strictEqual(actual, expected);
 
-      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i][1].hex);
-      expected = BigInt(retargetAlgorithm[i][1].difficulty);
+      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i].input[1].hex);
+      expected = BigInt(retargetAlgorithm[i].input[1].difficulty);
       assert.strictEqual(actual, expected);
 
-      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i][2].hex);
-      expected = BigInt(retargetAlgorithm[i][2].difficulty);
+      actual = BTCUtils.extractDifficulty(retargetAlgorithm[i].input[2].hex);
+      expected = BigInt(retargetAlgorithm[i].input[2].difficulty);
       assert.strictEqual(actual, expected);
     }
   });
@@ -346,6 +350,52 @@ describe('BTCUtils', () => {
         } catch (e) {
           assert.include(e.message, calculateDifficultyError[i].errorMessage);
         }
+      }
+    });
+  });
+
+  describe('#extractInputTxIdLE', () => {
+    it('extracts the LE  oupoint index from an input', () => {
+      let res;
+      let equalArrays;
+      for (let i = 0; i < extractInputTxIdLE.length; i += 1) {
+        res = BTCUtils.extractInputTxIdLE(extractInputTxIdLE[i].input);
+        equalArrays = utils.typedArraysAreEqual(res, extractInputTxIdLE[i].output);
+        assert.isTrue(equalArrays);
+      }
+    });
+  });
+
+  describe('#extractInputTxId', () => {
+    it('extracts the oupoint index from an input', () => {
+      let res;
+      let equalArrays;
+      for (let i = 0; i < extractInputTxId.length; i += 1) {
+        res = BTCUtils.extractInputTxId(extractInputTxId[i].input);
+        equalArrays = utils.typedArraysAreEqual(res, extractInputTxId[i].output);
+        assert.isTrue(equalArrays);
+      }
+    });
+  });
+
+  describe('#extractTxIndexLE', () => {
+    it('extracts the LE tx input index from the input in a tx', () => {
+      let res;
+      let equalArrays;
+      for (let i = 0; i < extractTxIndexLE.length; i += 1) {
+        res = BTCUtils.extractTxIndexLE(extractTxIndexLE[i].input);
+        equalArrays = utils.typedArraysAreEqual(res, extractTxIndexLE[i].output);
+        assert.isTrue(equalArrays);
+      }
+    });
+  });
+
+  describe('#extractTxIndex', () => {
+    it('extracts the tx input index from the input in a tx', () => {
+      let res;
+      for (let i = 0; i < extractTxIndex.length; i += 1) {
+        res = BTCUtils.extractTxIndex(extractTxIndex[i].input);
+        assert.strictEqual(res, BigInt(extractTxIndex[i].output));
       }
     });
   });
