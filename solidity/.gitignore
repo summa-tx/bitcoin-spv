@@ -1,0 +1,14 @@
+venv/
+build/
+blocks/
+__pycache__/
+node_modules/
+.mypy_cache
+
+# coverage
+scTopics
+coverage/
+coverageEnv/
+coverage.json
+docs/
+testVectors.json
