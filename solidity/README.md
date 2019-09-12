@@ -122,7 +122,9 @@ contract MixedAccess {
 | ValidateSPV |  1.1.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
 | BTCUtils    |	 1.1.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
 | BytesLib    |	 1.1.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
-
+| ValidateSPV |  2.0.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
+| BTCUtils    |	 2.0.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
+| BytesLib    |	 2.0.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
 
 
 ### Development Setup
