@@ -1,4 +1,4 @@
-module github.com/summa-tx/bitcoin-spv
+module github.com/summa-tx/bitcoin-spv/golang/btcspv
 
 go 1.12
 

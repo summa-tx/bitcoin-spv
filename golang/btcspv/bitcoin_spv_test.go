@@ -113,7 +113,7 @@ type UtilsSuite struct {
 
 // Runs the whole test suite
 func TestBTCUtils(t *testing.T) {
-	jsonFile, err := os.Open("../../../testVectors.json")
+	jsonFile, err := os.Open("../../testVectors.json")
 	defer jsonFile.Close()
 	logIfErr(err)
 
