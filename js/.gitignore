@@ -11,3 +11,4 @@ coverage/
 coverageEnv/
 coverage.json
 out
+dist/
