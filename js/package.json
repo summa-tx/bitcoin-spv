@@ -11,16 +11,19 @@
   ],
   "version": "2.0.0",
   "description": "bitcoin SPV proofs in Javascript",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "lint": "eslint ./test ./src",
     "lint:fix": "eslint --fix ./test ./src",
     "test": "mocha test -r esm",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "build": "babel src -d dist",
+    "prepublishOnly": "npm run build"
   },
   "license": "LGPLv3",
   "devDependencies": {
-    "@babel/core": "^7.5.5",
+    "@babel/cli": "^7.6.0",
+    "@babel/core": "^7.6.0",
     "@babel/preset-env": "^7.5.5",
     "babel-jest": "^24.8.0",
     "chai": "^4.2.0",
