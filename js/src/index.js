@@ -15,7 +15,7 @@ import * as BTCUtils from './BTCUtils';
 import * as utils from './utils';
 import * as ValidateSPV from './ValidateSPV';
 
-export default {
+export {
   BTCUtils,
   utils,
   ValidateSPV
