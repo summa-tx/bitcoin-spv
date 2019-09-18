@@ -1,11 +1,22 @@
-'use strict';
+/**
+ *
+ * @file Part of the [bitcoin-spv]{@link https://github.com/summa-tx/bitcoin-spv} project
+ *
+ * @title index.js
+ * @summary Export validate tools
+ * @author James Prestwich <james@summa.one>
+ * @author Erin Hales <erin@summa.one>
+ * @author Dominique Liau <dominique@summa.one>
+ * @copyright (c) [Summa]{@link https://summa.one} 2019
+ *
+ */
 
-import BTCUtils from './BTCUtils'
-import ValidateSPV from './ValidateSPV'
+import * as BTCUtils from './BTCUtils';
+import * as utils from './utils';
+import * as ValidateSPV from './ValidateSPV';
 
-const SPV = {
+export default {
   BTCUtils,
+  utils,
   ValidateSPV
-}
-
-export default SPV
+};
