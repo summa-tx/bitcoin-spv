@@ -1,6 +1,6 @@
 /* global BigInt */
-import shaLib from '../lib/sha256';
-import rmdlib from '../lib/ripemd160';
+import shaLib from './lib/sha256';
+import rmdlib from './lib/ripemd160';
 
 /**
  * Enum for transaction output types
