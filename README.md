@@ -5,6 +5,10 @@ blockchains. It supplies a set of pure functions that can be used to validate
 almost all Bitcoin transactions and headers, as well as higher-level
 functions that can evaluate header chains and transaction inclusion proofs.
 
+## In Partnership With
+
+[Binance X](./binancex-logo.jpg)
+
 ### What smart contract chains are supported?
 
 We have well-tested implementations in Solidty, ES6+ (JS), and golang.
