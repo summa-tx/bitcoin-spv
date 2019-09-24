@@ -1,5 +1,14 @@
 ## Bitcoin SPV Proofs in Golang
 
+## Supported by
+
+![Binance X Fellowship, Interchain Foundation, Summa, Cross Chain Group](../logo-group.jpg)
+
+- [Binance X Fellowship](https://binancex.dev/fellowship.html)
+- [Interchain Foundation](https://interchain.io/)
+- [Summa](https://summa.one)
+- [Cross Chain Group](https://crosschain.group/)
+
 ### What is it?
 
 `bitcoin-spv` is a collection of Golang functions for working with Bitcoin
