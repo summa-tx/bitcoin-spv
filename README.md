@@ -7,7 +7,7 @@ functions that can evaluate header chains and transaction inclusion proofs.
 
 ## In Partnership With
 
-[Binance X](./binancex-logo.jpg)
+![Binance X](./binancex-logo.jpg)
 
 ### What smart contract chains are supported?
 
