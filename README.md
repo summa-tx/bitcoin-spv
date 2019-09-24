@@ -5,12 +5,15 @@ blockchains. It supplies a set of pure functions that can be used to validate
 almost all Bitcoin transactions and headers, as well as higher-level
 functions that can evaluate header chains and transaction inclusion proofs.
 
-## Built For
+## Supported by
 
 ![Binance X](./binancex-logo.jpg)
-![Interchain Foundation)(./interchain-logo.jpg)
+
+![Interchain Foundation](./interchain-logo.jpg)
+
 ![Summa](./summa-logo.jpg)
-![Cross Chain Group](./CCG-logo.jpg)
+
+![Cross Chain Group](./ccg-logo.jpg)
 
 ### What smart contract chains are supported?
 
