@@ -1,5 +1,13 @@
 ## Bitcoin SPV Proofs in Golang
 
+### What is it?
+
+`bitcoin-spv` is a collection of Golang functions for working with Bitcoin
+data structures. Basically, these tools help you parse, inspect, and
+authenticate Bitcoin transactions. This library is targeted at running in
+modules or apps built on the
+[Cosmos SDK](https://github.com/cosmos/cosmos-sdk/).
+
 ## Supported by
 
 ![Binance X Fellowship, Interchain Foundation, Summa, Cross Chain Group](../logo-group.jpg)
@@ -9,13 +17,7 @@
 - [Summa](https://summa.one)
 - [Cross Chain Group](https://crosschain.group/)
 
-### What is it?
-
-`bitcoin-spv` is a collection of Golang functions for working with Bitcoin
-data structures. Basically, these tools help you parse, inspect, and
-authenticate Bitcoin transactions. This library is targeted at running in
-modules or apps built on the
-[Cosmos SDK](https://github.com/cosmos/cosmos-sdk/).
+-----------
 
 ### IMPORTANT WARNING
 
