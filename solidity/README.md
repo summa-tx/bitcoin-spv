@@ -1,5 +1,12 @@
 ## Bitcoin SPV Proofs in Solidity
 
+## Supported by
+
+![Summa, Cross Chain Group](../logo-summa-ccg.jpg)
+
+- [Summa](https://summa.one)
+- [Cross Chain Group](https://crosschain.group/)
+
 ### What is it?
 
 `bitcoin-spv` is a collection of Solidity libraries for working with Bitcoin
