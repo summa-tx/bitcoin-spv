@@ -6,6 +6,10 @@
 data structures. Basically, these tools help you parse, inspect, and
 authenticate Bitcoin transactions.
 
+This library will run in all modern browsers, as well as Node. Due to extensive
+use of `BigInt`s and ES6 modules, this library requires Node 10 or higher.
+Usage in Node requires the `--experimental-modules` flag.
+
 ## Supported by
 
 ![Binance X Fellowship, Interchain Foundation, Summa, Cross Chain Group](../logo-group.jpg)
@@ -18,10 +22,6 @@ authenticate Bitcoin transactions.
 ---------
 
 ### IMPORTANT WARNING
-
-This library will run in all modern browsers, as well as Node. Due to extensive
-use of `BigInt`s and ES6 modules, this library requires Node 10 or higher.
-Usage in Node requires the `--experimental-modules` flag.
 
 It is extremely easy to write insecure code using these libraries. We do not
 recommend a specific security model. Any SPV verification involves complex
