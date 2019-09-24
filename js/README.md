@@ -10,6 +10,17 @@ This library will run in all modern browsers, as well as Node. Due to extensive
 use of `BigInt`s and ES6 modules, this library requires Node 10 or higher.
 Usage in Node requires the `--experimental-modules` flag.
 
+## Supported by
+
+![Binance X Fellowship, Interchain Foundation, Summa, Cross Chain Group](../logo-group.jpg)
+
+- [Binance X Fellowship](https://binancex.dev/fellowship.html)
+- [Interchain Foundation](https://interchain.io/)
+- [Summa](https://summa.one)
+- [Cross Chain Group](https://crosschain.group/)
+
+---------
+
 ### IMPORTANT WARNING
 
 It is extremely easy to write insecure code using these libraries. We do not

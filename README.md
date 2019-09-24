@@ -5,6 +5,16 @@ blockchains. It supplies a set of pure functions that can be used to validate
 almost all Bitcoin transactions and headers, as well as higher-level
 functions that can evaluate header chains and transaction inclusion proofs.
 
+## Supported by
+
+![Binance X Fellowship, Interchain Foundation, Summa, Cross Chain Group](./logo-group.jpg)
+
+- [Binance X Fellowship](https://binancex.dev/fellowship.html)
+- [Interchain Foundation](https://interchain.io/)
+- [Summa](https://summa.one)
+- [Cross Chain Group](https://crosschain.group/)
+----------
+
 ### What smart contract chains are supported?
 
 We have well-tested implementations in Solidty, ES6+ (JS), and golang.

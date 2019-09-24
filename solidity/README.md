@@ -6,6 +6,15 @@
 transactions in Solidity contracts. Basically, these tools help you parse,
 inspect, and authenticate Bitcoin transactions.
 
+## Supported by
+
+![Summa, Cross Chain Group](../logo-summa-ccg.jpg)
+
+- [Summa](https://summa.one)
+- [Cross Chain Group](https://crosschain.group/)
+
+-------
+
 ### IMPORTANT WARNING
 
 It is extremely easy to write insecure code using these libraries. We do not

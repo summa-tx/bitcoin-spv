@@ -8,6 +8,17 @@ authenticate Bitcoin transactions. This library is targeted at running in
 modules or apps built on the
 [Cosmos SDK](https://github.com/cosmos/cosmos-sdk/).
 
+## Supported by
+
+![Binance X Fellowship, Interchain Foundation, Summa, Cross Chain Group](../logo-group.jpg)
+
+- [Binance X Fellowship](https://binancex.dev/fellowship.html)
+- [Interchain Foundation](https://interchain.io/)
+- [Summa](https://summa.one)
+- [Cross Chain Group](https://crosschain.group/)
+
+-----------
+
 ### IMPORTANT WARNING
 
 It is extremely easy to write insecure code using these libraries. We do not
