@@ -7,13 +7,7 @@ functions that can evaluate header chains and transaction inclusion proofs.
 
 ## Supported by
 
-![Binance X Fellowship](./binancex-fellowship.jpg)
-
-![Interchain Foundation](./interchain-logo.jpg)
-
-![Summa](./summa-logo.jpg)
-
-![Cross Chain Group](./ccg-logo.jpg)
+![Binance X Fellowship, Interchain Foundation, Summa, Cross Chain Group](./logo-group.jpg)
 
 ----------
 
