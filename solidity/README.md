@@ -1,5 +1,11 @@
 ## Bitcoin SPV Proofs in Solidity
 
+### What is it?
+
+`bitcoin-spv` is a collection of Solidity libraries for working with Bitcoin
+transactions in Solidity contracts. Basically, these tools help you parse,
+inspect, and authenticate Bitcoin transactions.
+
 ## Supported by
 
 ![Summa, Cross Chain Group](../logo-summa-ccg.jpg)
@@ -7,11 +13,7 @@
 - [Summa](https://summa.one)
 - [Cross Chain Group](https://crosschain.group/)
 
-### What is it?
-
-`bitcoin-spv` is a collection of Solidity libraries for working with Bitcoin
-transactions in Solidity contracts. Basically, these tools help you parse,
-inspect, and authenticate Bitcoin transactions.
+-------
 
 ### IMPORTANT WARNING
 
