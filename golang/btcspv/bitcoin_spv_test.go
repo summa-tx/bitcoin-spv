@@ -2,7 +2,6 @@ package btcspv
 
 import (
 	"bytes"
-	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -33,7 +32,7 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 
 	switch data["input"].(type) {
 	case string:
-		t.Input = decodeIfHex(data["input"].(string))
+		t.Input = DecodeIfHex(data["input"].(string))
 	case float64:
 		t.Input = int(data["input"].(float64))
 	default:
@@ -42,7 +41,7 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 
 	switch data["output"].(type) {
 	case string:
-		t.Output = decodeIfHex(data["output"].(string))
+		t.Output = DecodeIfHex(data["output"].(string))
 	case float64:
 		t.Output = int(data["output"].(float64))
 	default:
@@ -77,7 +76,7 @@ func preprocessList(l []interface{}) {
 		case []interface{}:
 			preprocessList(l[i].([]interface{}))
 		case string:
-			l[i] = decodeIfHex(l[i].(string))
+			l[i] = DecodeIfHex(l[i].(string))
 		case float64:
 			l[i] = int(l[i].(float64))
 		case map[string]interface{}:
@@ -94,7 +93,7 @@ func preprocessObject(m map[string]interface{}) {
 			preprocessList(l)
 		case string:
 			// overwrite the string with a []byte
-			m[k] = decodeIfHex(v.(string))
+			m[k] = DecodeIfHex(v.(string))
 		case float64:
 			m[k] = int(v.(float64))
 		case map[string]interface{}:
@@ -131,24 +130,6 @@ func logIfErr(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func decodeIfHex(s string) []byte {
-	res, err := hex.DecodeString(strip0xPrefix(s))
-	if err != nil {
-		return []byte(s)
-	}
-	return res
-}
-
-func strip0xPrefix(s string) string {
-	if len(s) < 2 {
-		return s
-	}
-	if s[0:2] == "0x" {
-		return s[2:]
-	}
-	return s
 }
 
 func (suite *UtilsSuite) TestReverseEndianness() {
@@ -200,7 +181,7 @@ func (suite *UtilsSuite) TestBytesToUint() {
 
 func (suite *UtilsSuite) TestBytesToBigInt() {
 	hexString := "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-	decoded := decodeIfHex(hexString)
+	decoded := DecodeIfHex(hexString)
 
 	buf := bytes.Buffer{}
 	buf.WriteString("0x")

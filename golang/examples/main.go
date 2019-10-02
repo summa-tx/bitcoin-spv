@@ -9,24 +9,6 @@ import (
 	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
-func strip0xPrefix(s string) string {
-	if len(s) < 2 {
-		return s
-	}
-	if s[0:2] == "0x" {
-		return s[2:]
-	}
-	return s
-}
-
-func decodeIfHex(s string) []byte {
-	res, err := hex.DecodeString(strip0xPrefix(s))
-	if err != nil {
-		return []byte(s)
-	}
-	return res
-}
-
 func prettifyInput(numInput int, outpoint []byte, index uint, inputType btcspv.InputType, sequence uint) string {
 	outpointStr := hex.EncodeToString(outpoint)
 	dataStr := fmt.Sprintf("\nInput #%d:\n  Outpoint: %s,\n  Index: %d,\n  Type: %d,\n  Sequence: %d\n", numInput, outpointStr, index, inputType, sequence)
@@ -117,7 +99,7 @@ func main() {
 	var result string
 	command := os.Args[1]
 	argument := os.Args[2]
-	buf := decodeIfHex(argument)
+	buf := btcspv.DecodeIfHex(argument)
 
 	// If decoded and arg are the same, it isn't hex
 	if bytes.Equal([]byte(argument), buf) {
