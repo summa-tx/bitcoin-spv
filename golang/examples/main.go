@@ -15,6 +15,10 @@ func route(command string, arguments [][]byte) string {
 		result = ParseVin(arguments[0])
 	case "parseVout":
 		result = ParseVout(arguments[0])
+	case "parseHeader":
+		result = ParseHeader(arguments[0])
+	case "validateHeaderChain":
+		result = ValidateHeaderChain(arguments[0])
 	default:
 		result = fmt.Sprintf("Unknown command: %s", command)
 	}
