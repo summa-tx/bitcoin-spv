@@ -10,8 +10,6 @@ import (
 	"os"
 	"testing"
 
-	// "fmt"
-
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -602,35 +600,6 @@ func (suite *UtilsSuite) TestVerifyHash256Merkle() {
 	}
 }
 
-//   it('calculates consensus-correct retargets', () => {
-//     let firstTimestamp;
-//     let secondTimestamp;
-//     let previousTarget;
-//     let expectedNewTarget;
-//     let res;
-//     for (let i = 0; i < constants.RETARGET_TUPLES.length; i += 1) {
-//       firstTimestamp = constants.RETARGET_TUPLES[i][0].timestamp;
-//       secondTimestamp = constants.RETARGET_TUPLES[i][1].timestamp;
-//       previousTarget = BTCUtils.extractTarget(
-//         utils.deserializeHex(constants.RETARGET_TUPLES[i][1].hex)
-//       );
-//       expectedNewTarget = BTCUtils.extractTarget(
-//         utils.deserializeHex(constants.RETARGET_TUPLES[i][2].hex)
-//       );
-//       res = BTCUtils.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-//       // (response & expected) == expected
-//       // this converts our full-length target into truncated block target
-//       assert.equal(res & expectedNewTarget, expectedNewTarget);
-
-//       secondTimestamp = firstTimestamp + 5 * 2016 * 10 * 60; // longer than 4x
-//       res = BTCUtils.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-//       assert.equal(res / BigInt(4) & previousTarget, previousTarget);
-
-//       secondTimestamp = firstTimestamp + 2016 * 10 * 14; // shorter than 1/4x
-//       res = BTCUtils.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-//       assert.equal(res * BigInt(4) & previousTarget, previousTarget);
-//     }
-//   });
 func (suite *UtilsSuite) TestRetargetAlgorithm() {
 	// FIXME:
 	fixtures := suite.Fixtures["retargetAlgorithm"]

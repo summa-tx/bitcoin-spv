@@ -1,10 +1,6 @@
 package btcspv
 
 import (
-
-	// "reflect"
-	// "github.com/stretchr/testify/suite"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
