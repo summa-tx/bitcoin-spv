@@ -9,12 +9,6 @@ import (
 	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
-// // InputType an enum of types of bitcoin inputs
-// type InputType int
-
-// // OutputType an enum of types of bitcoin outputs
-// type OutputType int
-
 func strip0xPrefix(s string) string {
 	if len(s) < 2 {
 		return s
@@ -35,12 +29,22 @@ func decodeIfHex(s string) []byte {
 
 func prettifyInput(numInput int, outpoint []byte, index uint, inputType btcspv.InputType, sequence uint) string {
 	outpointStr := hex.EncodeToString(outpoint)
-	dataStr := fmt.Sprintf(`input #%d:
+	dataStr := fmt.Sprintf(`Input #%d:
 		Outpoint: %s,
 		Index: %d,
 		Type: %d,
 		Sequence: %d
 	`, numInput, outpointStr, index, inputType, sequence)
+	return dataStr
+}
+
+func prettifyOutput(numOutput int, outpoint []byte, value uint, outputType btcspv.OutputType) string {
+	outpointStr := hex.EncodeToString(outpoint)
+	dataStr := fmt.Sprintf(`Output #%d:
+		Outpoint: %s,
+		Value: %d,
+		Type: %d
+	`, numOutput, outpointStr, value, outputType)
 	return dataStr
 }
 
@@ -93,10 +97,8 @@ func ParseVout(vout []byte) string {
 		value, outputType, payload := btcspv.ParseOutput(vout)
 
 		// Format information about the vout
-		voutData := fmt.Sprintf(`Output #%d:
-			Value: %d,
-			Type: %d,
-			Payload: %d`, i, value, outputType, payload)
+		numOutput := i + 1
+		voutData := prettifyOutput(numOutput, payload, value, outputType)
 
 		// Concat vout information onto `outputs`
 		outputs = outputs + "\n" + voutData
