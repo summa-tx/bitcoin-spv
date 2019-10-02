@@ -7,9 +7,9 @@ import (
 	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
-func prettifyOutput(numOutput int, outpoint []byte, value uint, outputType btcspv.OutputType) string {
+func prettifyOutput(numOutput int, outpoint []byte, value uint, outputType string) string {
 	outpointStr := hex.EncodeToString(outpoint)
-	dataStr := fmt.Sprintf("\nOutput #%d:\n  Payload: %s,\n  Value: %d,\n  Type: %d\n", numOutput, outpointStr, value, outputType)
+	dataStr := fmt.Sprintf("\nOutput #%d:\n  Payload: %s,\n  Value: %d,\n  Type: %s\n", numOutput, outpointStr, value, outputType)
 	return dataStr
 }
 
@@ -33,12 +33,15 @@ func ParseVout(vout []byte) string {
 		// Use ParseOutput to get more information about the vout
 		value, outputType, payload := btcspv.ParseOutput(vout)
 
+		// Get the output type in readable format
+		outputTypeString := btcspv.GetOutputType(uint(outputType))
+
 		// Format information about the vout
 		numOutput := i + 1
-		voutData := prettifyOutput(numOutput, payload, value, outputType)
+		voutData := prettifyOutput(numOutput, payload, value, outputTypeString)
 
 		// Concat vout information onto `outputs`
-		outputs = outputs + "\n" + voutData
+		outputs = outputs + voutData
 	}
 
 	return outputs
