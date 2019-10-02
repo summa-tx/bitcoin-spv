@@ -2,15 +2,12 @@ package btcspv
 
 import (
 	"bytes"
-	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"os"
 	"testing"
-
-	// "fmt"
 
 	"github.com/stretchr/testify/suite"
 
@@ -35,7 +32,7 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 
 	switch data["input"].(type) {
 	case string:
-		t.Input = decodeIfHex(data["input"].(string))
+		t.Input = DecodeIfHex(data["input"].(string))
 	case float64:
 		t.Input = int(data["input"].(float64))
 	default:
@@ -44,7 +41,7 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 
 	switch data["output"].(type) {
 	case string:
-		t.Output = decodeIfHex(data["output"].(string))
+		t.Output = DecodeIfHex(data["output"].(string))
 	case float64:
 		t.Output = int(data["output"].(float64))
 	default:
@@ -79,7 +76,7 @@ func preprocessList(l []interface{}) {
 		case []interface{}:
 			preprocessList(l[i].([]interface{}))
 		case string:
-			l[i] = decodeIfHex(l[i].(string))
+			l[i] = DecodeIfHex(l[i].(string))
 		case float64:
 			l[i] = int(l[i].(float64))
 		case map[string]interface{}:
@@ -96,7 +93,7 @@ func preprocessObject(m map[string]interface{}) {
 			preprocessList(l)
 		case string:
 			// overwrite the string with a []byte
-			m[k] = decodeIfHex(v.(string))
+			m[k] = DecodeIfHex(v.(string))
 		case float64:
 			m[k] = int(v.(float64))
 		case map[string]interface{}:
@@ -133,24 +130,6 @@ func logIfErr(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func decodeIfHex(s string) []byte {
-	res, err := hex.DecodeString(strip0xPrefix(s))
-	if err != nil {
-		return []byte(s)
-	}
-	return res
-}
-
-func strip0xPrefix(s string) string {
-	if len(s) < 2 {
-		return s
-	}
-	if s[0:2] == "0x" {
-		return s[2:]
-	}
-	return s
 }
 
 func (suite *UtilsSuite) TestReverseEndianness() {
@@ -202,7 +181,7 @@ func (suite *UtilsSuite) TestBytesToUint() {
 
 func (suite *UtilsSuite) TestBytesToBigInt() {
 	hexString := "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-	decoded := decodeIfHex(hexString)
+	decoded := DecodeIfHex(hexString)
 
 	buf := bytes.Buffer{}
 	buf.WriteString("0x")
@@ -602,35 +581,6 @@ func (suite *UtilsSuite) TestVerifyHash256Merkle() {
 	}
 }
 
-//   it('calculates consensus-correct retargets', () => {
-//     let firstTimestamp;
-//     let secondTimestamp;
-//     let previousTarget;
-//     let expectedNewTarget;
-//     let res;
-//     for (let i = 0; i < constants.RETARGET_TUPLES.length; i += 1) {
-//       firstTimestamp = constants.RETARGET_TUPLES[i][0].timestamp;
-//       secondTimestamp = constants.RETARGET_TUPLES[i][1].timestamp;
-//       previousTarget = BTCUtils.extractTarget(
-//         utils.deserializeHex(constants.RETARGET_TUPLES[i][1].hex)
-//       );
-//       expectedNewTarget = BTCUtils.extractTarget(
-//         utils.deserializeHex(constants.RETARGET_TUPLES[i][2].hex)
-//       );
-//       res = BTCUtils.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-//       // (response & expected) == expected
-//       // this converts our full-length target into truncated block target
-//       assert.equal(res & expectedNewTarget, expectedNewTarget);
-
-//       secondTimestamp = firstTimestamp + 5 * 2016 * 10 * 60; // longer than 4x
-//       res = BTCUtils.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-//       assert.equal(res / BigInt(4) & previousTarget, previousTarget);
-
-//       secondTimestamp = firstTimestamp + 2016 * 10 * 14; // shorter than 1/4x
-//       res = BTCUtils.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-//       assert.equal(res * BigInt(4) & previousTarget, previousTarget);
-//     }
-//   });
 func (suite *UtilsSuite) TestRetargetAlgorithm() {
 	// FIXME:
 	fixtures := suite.Fixtures["retargetAlgorithm"]

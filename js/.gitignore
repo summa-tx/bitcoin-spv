@@ -4,6 +4,7 @@ blocks/
 __pycache__/
 node_modules/
 .mypy_cache
+./golang/spvcli
 
 # coverage
 scTopics
