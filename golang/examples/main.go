@@ -29,22 +29,13 @@ func decodeIfHex(s string) []byte {
 
 func prettifyInput(numInput int, outpoint []byte, index uint, inputType btcspv.InputType, sequence uint) string {
 	outpointStr := hex.EncodeToString(outpoint)
-	dataStr := fmt.Sprintf(`Input #%d:
-		Outpoint: %s,
-		Index: %d,
-		Type: %d,
-		Sequence: %d
-	`, numInput, outpointStr, index, inputType, sequence)
+	dataStr := fmt.Sprintf("\nInput #%d:\n  Outpoint: %s,\n  Index: %d,\n  Type: %d,\n  Sequence: %d\n", numInput, outpointStr, index, inputType, sequence)
 	return dataStr
 }
 
 func prettifyOutput(numOutput int, outpoint []byte, value uint, outputType btcspv.OutputType) string {
 	outpointStr := hex.EncodeToString(outpoint)
-	dataStr := fmt.Sprintf(`Output #%d:
-		Outpoint: %s,
-		Value: %d,
-		Type: %d
-	`, numOutput, outpointStr, value, outputType)
+	dataStr := fmt.Sprintf("\nOutput #%d:\n  Outpoint: %s,\n  Value: %d,\n  Type: %d\n", numOutput, outpointStr, value, outputType)
 	return dataStr
 }
 
