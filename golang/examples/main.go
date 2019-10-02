@@ -19,6 +19,9 @@ func route(command string, arguments [][]byte) string {
 		result = ParseHeader(arguments[0])
 	case "validateHeaderChain":
 		result = ValidateHeaderChain(arguments[0])
+	case "prove":
+		// TODO: fix arguments, 7th argument should be uint
+		result, err := Prove(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6])
 	default:
 		result = fmt.Sprintf("Unknown command: %s", command)
 	}
