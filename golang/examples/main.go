@@ -29,36 +29,67 @@ func decodeIfHex(s string) []byte {
 
 // ParseVin parses an input vector from hex
 func ParseVin(vin []byte) string {
-	// Use ValidateVin to check if it is a vin
+	// Validate the vin
 	isVin := btcspv.ValidateVin(vin)
 	if !isVin {
 		return "Invalid Vin"
 	}
 
-	// TODO: Vin will have multiple inputs.
-	//       Parse all of them and return a string with linebreaks
-	//		 Use "ExtractInputAtIndex"
+	numInputs := int(vin[0])
+	var inputs string
+	for i := 0; i < numInputs; i++ {
+		// Extract each vin at the specified index
+		vin := btcspv.ExtractInputAtIndex(vin, uint8(i))
 
-	// Using ParseInput to get more information about the vin
-	sequence, inputID, inputIndex, inputType := btcspv.ParseInput(vin)
-	return fmt.Sprintf("Sequence: %d, Input ID: %d, Input Index: %d, Input Type: %d", sequence, inputID, inputIndex, inputType)
+		// Use ParseInput to get more information about the vin
+		sequence, inputID, inputIndex, inputType := btcspv.ParseInput(vin)
+
+		// Format information about the vin
+		vinData := fmt.Sprintf(`input #%d:
+			Outpoint: %d,
+			Index: %d,
+			Type: %d,
+			Sequence: %d,
+			Input ID: %d`, i, vin, inputIndex, inputType, sequence, inputID)
+
+		// Concat vin information onto `inputs`
+		inputs = inputs + "\n" + vinData
+	}
+
+	return inputs
 }
 
 // ParseVout parses an output vector from hex
 func ParseVout(vout []byte) string {
-	// Use ValidateVout to check if it includes a vout
+	// Validate the vout
 	isVout := btcspv.ValidateVout(vout)
 	if !isVout {
 		return "Invalid Vout"
 	}
 
-	// TODO: Vout will have multiple outputs.
-	//       Parse all of them and return a string with linebreaks
-	//		 Use "ExtractOutputAtIndex"
+	numOutputs := int(vout[0])
+	var outputs string
+	for i := 0; i < numOutputs; i++ {
+		// Extract each vout at the specified index
+		vout, err := btcspv.ExtractOutputAtIndex(vout, uint8(i))
+		if err != nil {
+			return "Error extracting output"
+		}
 
-	// Use ParseOutput to get more information about the vout
-	value, outputType, payload := btcspv.ParseOutput(vout)
-	return fmt.Sprintf("Value: %d, Output Type: %d, Payload: %d", value, outputType, payload)
+		// Use ParseOutput to get more information about the vout
+		value, outputType, payload := btcspv.ParseOutput(vout)
+
+		// Format information about the vout
+		voutData := fmt.Sprintf(`Output #%d:
+			Value: %d,
+			Type: %d,
+			Payload: %d`, i, value, outputType, payload)
+
+		// Concat vout information onto `outputs`
+		outputs = outputs + "\n" + voutData
+	}
+
+	return outputs
 }
 
 func route(command string, argument string, buf []byte) string {
