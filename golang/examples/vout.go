@@ -9,7 +9,7 @@ import (
 
 func prettifyOutput(numOutput int, outpoint []byte, value uint, outputType btcspv.OutputType) string {
 	outpointStr := hex.EncodeToString(outpoint)
-	dataStr := fmt.Sprintf("\nOutput #%d:\n  Outpoint: %s,\n  Value: %d,\n  Type: %d\n", numOutput, outpointStr, value, outputType)
+	dataStr := fmt.Sprintf("\nOutput #%d:\n  Payload: %s,\n  Value: %d,\n  Type: %d\n", numOutput, outpointStr, value, outputType)
 	return dataStr
 }
 
