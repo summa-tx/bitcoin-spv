@@ -1277,5 +1277,73 @@
       ],
       "output": 6393023717201
     }
+  ],
+  "encodeP2SH": [
+    {
+      "input": "0x15bcb3247bad4498fb5b5a88f65d2b3ceec9ebf4",
+      "output": "33fxAfNiDgjQhmZgVF1nZuxjSZtpJReSUa"
+    },
+    {
+      "input": "0x24f0a01c93ef0e9f95bf4af2b38ffec4beb5943d",
+      "output": "354LWQ3HtMNPDkA6W91biR8PqAxr2y7bat"
+    },
+    {
+      "input": "0x2d8b26c905309fc24a367d270255fd3f7cb58e88",
+      "output": "35qq2bJLSZnZt8Z9SweBEEfCmUf4DEKooh"
+    },
+    {
+      "input": "0x2da2c8ff01b5a735fde593762307b1ab287adc59",
+      "output": "35rKLgjzugHA2xdUh9gvP2rvDMDRsoKHgB"
+    }
+  ],
+  "encodeP2PKH": [
+    {
+      "input": "0x0dce68619d07abbb38f628744d114063148c505e",
+      "output": "12G13xPUNi2i3hBpS6emYRR9z5g75W89Dd"
+    },
+    {
+      "input": "0x12f95d63041bec7471573c898472950747a19863",
+      "output": "12jKtd6vq16ftSo4WCeV2yEGS6g4qM5i2z"
+    },
+    {
+      "input": "0x0f951bc38ec25d2ba1075ff051e9cc36f4649c81",
+      "output": "12RPm7dmeSBcHhP2t9Qfx5ZJS4K388CJFh"
+    },
+    {
+      "input": "0x1ac86542ab8909722f6e71f576a9bfbc09719842",
+      "output": "13ScdiSFkiAvn7Ay73SBkF8HjPRChvPvKg"
+    }
+  ],
+  "encodeP2WSH": [
+    {
+      "input": "0x701a8d401c84fb13e6baf169d59684e17abd9fa216c8cc5b9fc63d622ff8c58d",
+      "output": "bc1qwqdg6squsna38e46795at95yu9atm8azzmyvckulcc7kytlcckxswvvzej"
+    },
+    {
+      "input": "0xf6b2f54f2aa08ac04c74aaca151fdcd754446afe4d3ce2e7f8913b2de92cd141",
+      "output": "bc1q76e02ne25z9vqnr54t9p287u6a2yg6h7f57w9elcjyajm6fv69qsx27mv2"
+    },
+    {
+      "input": "0x8301e8dba2ed6990c738072b8992f5e61664022679f4d9ebdee5214ef58d9ea3",
+      "output": "bc1qsvq73kaza45ep3ecqu4cnyh4uctxgq3x086dn677u5s5aavdn63svuf2u9"
+    }
+  ],
+  "encodeP2WPKH": [
+    {
+      "input": "0x88821c6bfeb815b43feb6d523d414843e586d6a6",
+      "output": "bc1q3zppc6l7hq2mg0ltd4fr6s2gg0jcd44xmqf2uq"
+    },
+    {
+      "input": "0x9d0536f746d77e3f337c86a2e588fc586097631f",
+      "output": "bc1qn5znda6x6alr7vmus63wtz8utpsfwcclvtn6cq"
+    },
+    {
+      "input": "0x83c365d654cfb273770dd1e25147c2c4e9c17f26",
+      "output": "bc1qs0pkt4j5e7e8xacd6839z37zcn5uzlexxwwwd8"
+    },
+    {
+      "input": "0x231ff20ccbdaa0ee2bff6dd71ca2caf12bc2ec93",
+      "output": "bc1qyv0lyrxtm2swu2lldht3egk27y4u9mynrzxm7c"
+    }
   ]
 }
