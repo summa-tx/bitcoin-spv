@@ -29,7 +29,7 @@ func prettifyHeaderData(
 	timestampStr := strconv.Itoa(int(timestamp))
 	unixIntValue, err := strconv.ParseInt(timestampStr, 10, 64)
 	if err != nil {
-		return fmt.Sprintf("%s", err)
+		return fmt.Sprintf("%s\n", err)
 	}
 	timeStr := time.Unix(unixIntValue, 0)
 
@@ -47,7 +47,7 @@ func ParseHeader(header []byte) string {
 	digest, version, prevHash, merkleRoot, timestamp, target, nonce, err := btcspv.ParseHeader(header)
 	// Check for errors
 	if err != nil {
-		return fmt.Sprintf("%s", err)
+		return fmt.Sprintf("%s\n", err)
 	}
 
 	// Format data using prettifyHeaderData
@@ -62,7 +62,7 @@ func ValidateHeaderChain(headers []byte) string {
 	totalDifficulty, err := btcspv.ValidateHeaderChain(headers)
 	// Check for errors
 	if err != nil {
-		return fmt.Sprintf("%s", err)
+		return fmt.Sprintf("%s\n", err)
 	}
 
 	// Return the total difficulty

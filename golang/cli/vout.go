@@ -29,7 +29,7 @@ func ParseVout(vout []byte) string {
 	// Validate the vout
 	isVout := btcspv.ValidateVout(vout)
 	if !isVout {
-		return "Invalid Vout"
+		return "Invalid Vout\n"
 	}
 
 	numOutputs := int(vout[0])
@@ -38,7 +38,7 @@ func ParseVout(vout []byte) string {
 		// Extract each vout at the specified index
 		vout, err := btcspv.ExtractOutputAtIndex(vout, uint8(i))
 		if err != nil {
-			return fmt.Sprintf("%s", err)
+			return fmt.Sprintf("%s\n", err)
 		}
 
 		// Use ParseOutput to get more information about the vout
