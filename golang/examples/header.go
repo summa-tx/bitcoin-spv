@@ -10,7 +10,16 @@ import (
 	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
-func prettifyHeaderData(num uint, digest []byte, version uint, prevHash []byte, merkleRoot []byte, timestamp uint, target sdk.Uint, nonce uint) string {
+func prettifyHeaderData(
+	num uint,
+	digest []byte,
+	version uint,
+	prevHash []byte,
+	merkleRoot []byte,
+	timestamp uint,
+	target sdk.Uint,
+	nonce uint) string {
+
 	// Convert byte arrays to readable hex strings
 	digestStr := hex.EncodeToString(digest)
 	prevHashStr := hex.EncodeToString(prevHash)
@@ -24,7 +33,10 @@ func prettifyHeaderData(num uint, digest []byte, version uint, prevHash []byte, 
 	timeStr := time.Unix(unixIntValue, 0)
 
 	// Return data in a formatted string
-	dataStr := fmt.Sprintf("\nHeader #%d:\n  Digest: %s,\n  Version: %d,\n  Prev Hash: %s,\n  Merkle Root: %s,\n  Time Stamp: %s,\n  Target: %d,\n  Nonce: %d\n", num, digestStr, version, prevHashStr, merkleRootStr, timeStr, target, nonce)
+	dataStr := fmt.Sprintf(
+		"\nHeader #%d:\n  Digest: %s,\n  Version: %d,\n  Prev Hash: %s,\n  Merkle Root: %s,\n  Time Stamp: %s,\n  Target: %d,\n  Nonce: %d\n",
+		num, digestStr, version, prevHashStr, merkleRootStr, timeStr, target, nonce)
+
 	return dataStr
 }
 
@@ -38,7 +50,8 @@ func ParseHeader(header []byte) string {
 	}
 
 	// Format data using prettifyHeaderData
-	headerData := prettifyHeaderData(0, digest, version, prevHash, merkleRoot, timestamp, target, nonce)
+	headerData := prettifyHeaderData(
+		0, digest, version, prevHash, merkleRoot, timestamp, target, nonce)
 	return headerData
 }
 

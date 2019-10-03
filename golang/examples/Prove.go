@@ -7,7 +7,14 @@ import (
 )
 
 // Prove checks the validity of a merkle proof
-func Prove(version []byte, vin []byte, vout []byte, locktime []byte, merkleRoot []byte, intermediateNodes []byte, index uint) string {
+func Prove(
+	version []byte,
+	vin []byte,
+	vout []byte,
+	locktime []byte,
+	merkleRoot []byte,
+	intermediateNodes []byte,
+	index uint) string {
 	// Calculate the tx id
 	txid := btcspv.CalculateTxID(version, vin, vout, locktime)
 
