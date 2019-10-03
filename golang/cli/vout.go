@@ -18,9 +18,24 @@ func prettifyOutput(
 	// Get the output type in readable format
 	outputTypeString := btcspv.GetOutputType(outputType)
 
+	// Get the address associated with the output
+	var address string
+	switch outputType {
+	case btcspv.WPKH:
+		address = btcspv.EncodeP2WPKH(outpoint)
+	case btcspv.WSH:
+		address = btcspv.EncodeP2WSH(outpoint)
+	case btcspv.PKH:
+		address = btcspv.EncodeP2PKH(outpoint)
+	case btcspv.SH:
+		address = btcspv.EncodeP2SH(outpoint)
+	default:
+		address = ""
+	}
+
 	dataStr := fmt.Sprintf(
-		"\nOutput #%d:\n  Payload: %s,\n  Value: %d,\n  Type: %s\n",
-		numOutput, outpointStr, value, outputTypeString)
+		"\nOutput #%d:\n  Address: %s\n  Payload: %s,\n  Value: %d,\n  Type: %s\n",
+		numOutput, address, outpointStr, value, outputTypeString)
 	return dataStr
 }
 
