@@ -1,7 +1,9 @@
 package btcspv
 
 import (
+	"bytes"
 	"encoding/hex"
+	"errors"
 
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/btcsuite/btcutil/bech32"
@@ -75,10 +77,12 @@ func EncodeP2PKH(pkh []byte) string {
 }
 
 func encodeSegWit(payload []byte, version int) (string, error) {
-	adj, err := bech32.ConvertBits(payload, 8, 5, true)
-	if err != nil {
-		return "", err
+	if bytes.Equal(payload, make([]byte, len(payload))) {
+		return "", errors.New(
+			"Attempting to encode empty bytestring. " +
+				"Hint: your payload may not be properly initialized")
 	}
+	adj, _ := bech32.ConvertBits(payload, 8, 5, true)
 	combined := []byte{0x00}
 	combined = append(combined, adj...)
 	res, _ := bech32.Encode("bc", combined)
