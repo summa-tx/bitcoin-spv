@@ -79,7 +79,7 @@ func (suite *UtilsSuite) TestEncodeP2SH() {
 
 		input := testCase.Input.([]byte)
 		expected := testCase.Output
-		actual := DecodeIfHex(EncodeP2SH(input))
+		actual := EncodeP2SH(input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -92,7 +92,7 @@ func (suite *UtilsSuite) TestEncodeP2PKH() {
 
 		input := testCase.Input.([]byte)
 		expected := testCase.Output
-		actual := DecodeIfHex(EncodeP2PKH(input))
+		actual := EncodeP2PKH(input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -105,10 +105,8 @@ func (suite *UtilsSuite) TestEncodeP2WSH() {
 
 		input := testCase.Input.([]byte)
 		expected := testCase.Output
-		addr, err := EncodeP2WSH(input)
+		actual, err := EncodeP2WSH(input)
 		suite.Nil(err)
-
-		actual := DecodeIfHex(addr)
 		suite.Equal(expected, actual)
 	}
 }
@@ -121,10 +119,8 @@ func (suite *UtilsSuite) TestEncodeP2WPKH() {
 
 		input := testCase.Input.([]byte)
 		expected := testCase.Output
-		addr, err := EncodeP2WPKH(input)
+		actual, err := EncodeP2WPKH(input)
 		suite.Nil(err)
-
-		actual := DecodeIfHex(addr)
 		suite.Equal(expected, actual)
 	}
 }
