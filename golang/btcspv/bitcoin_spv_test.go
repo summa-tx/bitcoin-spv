@@ -20,6 +20,7 @@ type TestCase struct {
 	ErrorMessage interface{} `json:"errorMessage"`
 }
 
+// TODO: Strings that do not begin with "0x" should not be converted. See last tests in utils_test.go
 func (t *TestCase) UnmarshalJSON(b []byte) error {
 	var data map[string]interface{}
 	err := json.Unmarshal(b, &data)
