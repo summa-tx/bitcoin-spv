@@ -14,7 +14,7 @@ func strip0xPrefix(s string) string {
 	return s
 }
 
-// Decodes a hex string into a byte array
+// DecodeIfHex decodes a hex string into a byte array
 func DecodeIfHex(s string) []byte {
 	res, err := hex.DecodeString(strip0xPrefix(s))
 	if err != nil {
@@ -23,37 +23,39 @@ func DecodeIfHex(s string) []byte {
 	return res
 }
 
-func GetOutputType(num uint) string {
+// GetOuputType returns the name of the output type associated with the number
+func GetOutputType(outputType OutputType) string {
 	var typeString string
-	switch num {
-	case 0:
+	switch outputType {
+	case OutputNone:
 		typeString = "Output None"
-	case 1:
+	case WPKH:
 		typeString = "WPKH"
-	case 2:
+	case WSH:
 		typeString = "WSH"
-	case 3:
+	case OpReturn:
 		typeString = "Op Return"
-	case 4:
+	case PKH:
 		typeString = "PKH"
-	case 5:
+	case SH:
 		typeString = "SH"
-	case 6:
+	case Nonstandard:
 		typeString = "Nonstandard"
 	}
 	return typeString
 }
 
-func GetInputType(num uint) string {
+// GetInputType returns the name of the input type associated with the number
+func GetInputType(inputType InputType) string {
 	var typeString string
-	switch num {
-	case 0:
+	switch inputType {
+	case InputNone:
 		typeString = "Input None"
-	case 1:
+	case Legacy:
 		typeString = "Legacy"
-	case 2:
+	case Compatibility:
 		typeString = "Compatibility"
-	case 3:
+	case Witness:
 		typeString = "Witness"
 	}
 	return typeString
