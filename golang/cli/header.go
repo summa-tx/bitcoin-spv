@@ -19,7 +19,7 @@ func prettifyHeaderData(num uint, digest []byte, version uint, prevHash []byte, 
 	// Convert timestamp to readable time
 	unixIntValue, err := strconv.ParseInt(string(timestamp), 10, 64)
 	if err != nil {
-		fmt.Println(err)
+		return fmt.Sprintf("%s", err)
 	}
 	timeStr := time.Unix(unixIntValue, 0)
 
@@ -28,12 +28,13 @@ func prettifyHeaderData(num uint, digest []byte, version uint, prevHash []byte, 
 	return dataStr
 }
 
+// ParseHeader takes in a header and returns information about that header: digest, version, previous header hash, merkle root, timestamp, target and nonce
 func ParseHeader(header []byte) string {
 	// Get information about the header using ParseHeader
 	digest, version, prevHash, merkleRoot, timestamp, target, nonce, err := btcspv.ParseHeader(header)
 	// Check for errors
 	if err != nil {
-		return "Error parsing header"
+		return fmt.Sprintf("%s", err)
 	}
 
 	// Format data using prettifyHeaderData
@@ -41,6 +42,7 @@ func ParseHeader(header []byte) string {
 	return headerData
 }
 
+// ValidateHeaderChain takes in a chain of headers as a byte array, validates the chain, and returns the total difficulty
 func ValidateHeaderChain(headers []byte) string {
 	// Get the total difficulty using ValidateHeaderChain
 	totalDifficulty, err := btcspv.ValidateHeaderChain(headers)

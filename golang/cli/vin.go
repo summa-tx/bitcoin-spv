@@ -7,9 +7,14 @@ import (
 	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
-func prettifyInput(numInput int, outpoint []byte, index uint, inputType string, sequence uint) string {
+func prettifyInput(numInput int, outpoint []byte, index uint, inputType btcspv.InputType, sequence uint) string {
 	outpointStr := hex.EncodeToString(outpoint)
-	dataStr := fmt.Sprintf("\nInput #%d:\n  Outpoint: %s,\n  Index: %d,\n  Type: %s,\n  Sequence: %d\n", numInput, outpointStr, index, inputType, sequence)
+
+	// Get the input type in readable format
+	inputTypeString := btcspv.GetInputType(inputType)
+
+	dataStr := fmt.Sprintf("\nInput #%d:\n  Outpoint: %s,\n  Index: %d,\n  Type: %s,\n  Sequence: %d\n", numInput, outpointStr, index, inputTypeString, sequence)
+
 	return dataStr
 }
 
@@ -30,12 +35,9 @@ func ParseVin(vin []byte) string {
 		// Use ParseInput to get more information about the vin
 		sequence, inputID, inputIndex, inputType := btcspv.ParseInput(vin)
 
-		// Get the input type in readable format
-		inputTypeString := btcspv.GetInputType(uint(inputType))
-
 		// Format information about the vin
 		numInput := i + 1
-		vinData := prettifyInput(numInput, inputID, inputIndex, inputTypeString, sequence)
+		vinData := prettifyInput(numInput, inputID, inputIndex, inputType, sequence)
 
 		// Concat vin information onto `inputs`
 		inputs = inputs + vinData

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
@@ -19,9 +20,15 @@ func route(command string, arguments [][]byte) string {
 		result = ParseHeader(arguments[0])
 	case "validateHeaderChain":
 		result = ValidateHeaderChain(arguments[0])
-	// case "prove":
-	// 	// TODO: fix arguments, 7th argument should be uint
-	// 	result, err := Prove(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6])
+	case "prove":
+		// convert argument to a uint
+		str := string(arguments[6])
+		uint64Arg, err := strconv.ParseUint(str, 10, 32)
+		if err != nil {
+			result = "Error converting arg to uint"
+		}
+		uintArg := uint(uint64Arg)
+		result = Prove(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], uintArg)
 	default:
 		result = fmt.Sprintf("Unknown command: %s", command)
 	}
