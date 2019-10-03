@@ -97,21 +97,6 @@ func (suite *UtilsSuite) TestEncodeP2PKH() {
 	}
 }
 
-// func encodeSegWit(payload []byte, version int) string {
-// 	adj, err := bech32.ConvertBits(payload, 8, 5, true)
-// 	if err != nil {
-// 		return ""
-// 	}
-// 	combined := []byte{0x00}
-// 	combined = append(combined, adj...)
-// 	res, _ := bech32.Encode("bc", combined)
-// 	return res
-// }
-
-func (suite *UtilsSuite) TestEncodeSegWit() {
-
-}
-
 func (suite *UtilsSuite) TestEncodeP2WSH() {
 	fixture := suite.Fixtures["encodeP2WSH"]
 
