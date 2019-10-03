@@ -23,7 +23,7 @@ func ParseVin(vin []byte) string {
 	// Validate the vin
 	isVin := btcspv.ValidateVin(vin)
 	if !isVin {
-		return "Invalid Vin"
+		return "Invalid Vin\n"
 	}
 
 	numInputs := int(vin[0])
