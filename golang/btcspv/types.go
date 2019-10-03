@@ -54,7 +54,6 @@ func (h *Hash256Digest) UnmarshalJSON(b []byte) error {
 	// Have to trim quotation marks off byte array
 	buf, err := hex.DecodeString(strip0xPrefix(string(b[1 : len(b)-1])))
 	if err != nil {
-		fmt.Print(string(b))
 		return err
 	}
 	if len(buf) != 32 {
