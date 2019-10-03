@@ -2,12 +2,14 @@ package btcspv
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 )
 
 // Hash256Digest is a 32-byte double-sha2 hash
 type Hash256Digest [32]byte
+
+// HexBytes is a type alias to make JSON hex ser/deser easier
+type HexBytes []byte
 
 // BitcoinHeader is a parsed Bitcoin header
 type BitcoinHeader struct {
@@ -20,71 +22,35 @@ type BitcoinHeader struct {
 	MerkleRootLE Hash256Digest `json:"merkle_root_le"`
 }
 
-// Proof is the base struct for an SPV proof
-type Proof struct {
-	TxID             Hash256Digest `json:"tx_id"`
-	TxIDLE           Hash256Digest `json:"tx_id_le"`
-	Index            uint32        `json:"index"`
-	ConfirmingHeader BitcoinHeader `json:"confirming_header"`
-}
-
-// JSONProof is a convenience struct to make deserialization easier
-type JSONProof struct {
-	Proof
-	IntermediateNodes string `json:"intermediate_nodes"`
-}
-
-// SPVProof is an SPV proof
+// SPVProof is the base struct for an SPV proof
 type SPVProof struct {
-	Proof
-	IntermediateNodes []byte
+	TxID              Hash256Digest `json:"tx_id"`
+	TxIDLE            Hash256Digest `json:"tx_id_le"`
+	Index             uint32        `json:"index"`
+	ConfirmingHeader  BitcoinHeader `json:"confirming_header"`
+	IntermediateNodes HexBytes      `json:"intermediate_nodes"`
 }
 
-// class SPVProof(TypedDict):
-//     tx: tx.Tx    # some language-native TX object
-//     tx_id: str
-//     tx_id_le: str
-//     index: int
-//     intermediate_nodes: str
-//     confirming_header: RelayHeader
-
-// UnmarshalJSON unmarshalls SPVProofs
-func (s *SPVProof) UnmarshalJSON(b []byte) error {
-	j := new(JSONProof)
-	json.Unmarshal(b, &j)
-
-	buf, err := hex.DecodeString(strip0xPrefix(j.IntermediateNodes))
+// UnmarshalJSON unmarshalls 32 byte digests
+func (h HexBytes) UnmarshalJSON(b []byte) error {
+	buf, err := hex.DecodeString(strip0xPrefix(string(b)))
 	if err != nil {
 		return err
 	}
-
-	s.TxID = j.TxID
-	s.TxIDLE = j.TxIDLE
-	s.Index = j.Index
-	s.ConfirmingHeader = j.ConfirmingHeader
-	s.IntermediateNodes = buf
+	copy(h[:], buf)
 
 	return nil
 }
 
-// MarshallJSON marashalls SPVProofs
-func (s *SPVProof) MarshallJSON() ([]byte, error) {
-	j := new(JSONProof)
-
-	buf := "0x" + hex.EncodeToString(s.IntermediateNodes)
-
-	j.TxID = s.TxID
-	j.TxIDLE = s.TxIDLE
-	j.Index = s.Index
-	j.ConfirmingHeader = s.ConfirmingHeader
-	j.IntermediateNodes = buf
-
-	return json.Marshal(j)
+// MarshallJSON marashalls 32 byte digests
+func (h HexBytes) MarshallJSON() ([]byte, error) {
+	encoded := hex.EncodeToString(h)
+	return []byte("0x" + encoded), nil
 }
 
 // UnmarshalJSON unmarshalls 32 byte digests
 func (h Hash256Digest) UnmarshalJSON(b []byte) error {
-	buf, err := hex.D ecodeString(strip0xPrefix(string(b)))
+	buf, err := hex.DecodeString(strip0xPrefix(string(b)))
 	if err != nil {
 		return err
 	}
@@ -98,7 +64,7 @@ func (h Hash256Digest) UnmarshalJSON(b []byte) error {
 }
 
 // MarshallJSON marashalls 32 byte digests
-func (h *Hash256Digest) MarshallJSON() ([]byte, error) {
+func (h Hash256Digest) MarshallJSON() ([]byte, error) {
 	encoded := hex.EncodeToString(h[:])
 	return []byte("0x" + encoded), nil
 }
