@@ -20,7 +20,6 @@ type TestCase struct {
 	ErrorMessage interface{} `json:"errorMessage"`
 }
 
-// TODO: Strings that do not begin with "0x" should not be converted. See last tests in utils_test.go
 func (t *TestCase) UnmarshalJSON(b []byte) error {
 	var data map[string]interface{}
 	err := json.Unmarshal(b, &data)
@@ -33,7 +32,9 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 
 	switch data["input"].(type) {
 	case string:
-		t.Input = DecodeIfHex(data["input"].(string))
+		if len(data["input"].(string)) >= 2 && data["input"].(string)[0:2] == "0x" {
+			t.Input = DecodeIfHex(data["input"].(string))
+		}
 	case float64:
 		t.Input = int(data["input"].(float64))
 	default:
@@ -42,7 +43,9 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 
 	switch data["output"].(type) {
 	case string:
-		t.Output = DecodeIfHex(data["output"].(string))
+		if len(data["output"].(string)) >= 2 && data["output"].(string)[0:2] == "0x" {
+			t.Output = DecodeIfHex(data["output"].(string))
+		}
 	case float64:
 		t.Output = int(data["output"].(float64))
 	default:
