@@ -26,7 +26,7 @@ func DecodeIfHex(s string) []byte {
 	return res
 }
 
-// GetOutputType returns the name of the output type associated with the number
+// GetOuputType returns the name of the output type associated with the number
 func GetOutputType(outputType OutputType) string {
 	var typeString string
 	switch outputType {
@@ -74,23 +74,31 @@ func EncodeP2PKH(pkh []byte) string {
 	return base58.CheckEncode(pkh, 0)
 }
 
-func encodeSegWit(payload []byte, version int) string {
+func encodeSegWit(payload []byte, version int) (string, error) {
 	adj, err := bech32.ConvertBits(payload, 8, 5, true)
 	if err != nil {
-		return ""
+		return "", err
 	}
 	combined := []byte{0x00}
 	combined = append(combined, adj...)
 	res, _ := bech32.Encode("bc", combined)
-	return res
+	return res, nil
 }
 
 // EncodeP2WSH turns a scripthash into an address
-func EncodeP2WSH(sh []byte) string {
-	return encodeSegWit(sh, 0)
+func EncodeP2WSH(sh []byte) (string, error) {
+	addr, err := encodeSegWit(sh, 0)
+	if err != nil {
+		return "", err
+	}
+	return addr, nil
 }
 
 // EncodeP2WPKH turns a pubkey hash into an address
-func EncodeP2WPKH(pkh []byte) string {
-	return encodeSegWit(pkh, 0)
+func EncodeP2WPKH(pkh []byte) (string, error) {
+	addr, err := encodeSegWit(pkh, 0)
+	if err != nil {
+		return "", err
+	}
+	return addr, nil
 }
