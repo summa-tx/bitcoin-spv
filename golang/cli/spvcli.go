@@ -25,7 +25,7 @@ func route(command string, arguments [][]byte) string {
 		str := string(arguments[6])
 		uint64Arg, err := strconv.ParseUint(str, 10, 32)
 		if err != nil {
-			return "Error converting arg to uint"
+			return fmt.Sprintf("%s", err)
 		}
 		uintArg := uint(uint64Arg)
 		result = Prove(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], uintArg)

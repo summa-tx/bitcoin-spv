@@ -26,7 +26,8 @@ func prettifyHeaderData(
 	merkleRootStr := hex.EncodeToString(merkleRoot)
 
 	// Convert timestamp to readable time
-	unixIntValue, err := strconv.ParseInt(string(timestamp), 10, 64)
+	timestampStr := strconv.Itoa(int(timestamp))
+	unixIntValue, err := strconv.ParseInt(timestampStr, 10, 64)
 	if err != nil {
 		return fmt.Sprintf("%s", err)
 	}
