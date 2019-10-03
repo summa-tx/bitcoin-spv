@@ -26,7 +26,7 @@ func DecodeIfHex(s string) []byte {
 	return res
 }
 
-// GetOuputType returns the name of the output type associated with the number
+// GetOutputType returns the name of the output type associated with the number
 func GetOutputType(outputType OutputType) string {
 	var typeString string
 	switch outputType {
