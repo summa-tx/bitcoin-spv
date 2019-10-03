@@ -34,6 +34,8 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 	case string:
 		if len(data["input"].(string)) >= 2 && data["input"].(string)[0:2] == "0x" {
 			t.Input = DecodeIfHex(data["input"].(string))
+		} else {
+			t.Input = data["input"].(string)
 		}
 	case float64:
 		t.Input = int(data["input"].(float64))
@@ -45,6 +47,8 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 	case string:
 		if len(data["output"].(string)) >= 2 && data["output"].(string)[0:2] == "0x" {
 			t.Output = DecodeIfHex(data["output"].(string))
+		} else {
+			t.Output = data["output"].(string)
 		}
 	case float64:
 		t.Output = int(data["output"].(float64))
