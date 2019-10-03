@@ -32,12 +32,13 @@ type SPVProof struct {
 }
 
 // UnmarshalJSON unmarshalls 32 byte digests
-func (h HexBytes) UnmarshalJSON(b []byte) error {
-	buf, err := hex.DecodeString(strip0xPrefix(string(b)))
+func (h *HexBytes) UnmarshalJSON(b []byte) error {
+	// Have to trim quotation marks off byte array
+	buf, err := hex.DecodeString(strip0xPrefix(string(b[1 : len(b)-1])))
 	if err != nil {
 		return err
 	}
-	copy(h[:], buf)
+	copy(*h, buf)
 
 	return nil
 }
@@ -49,9 +50,11 @@ func (h HexBytes) MarshallJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON unmarshalls 32 byte digests
-func (h Hash256Digest) UnmarshalJSON(b []byte) error {
-	buf, err := hex.DecodeString(strip0xPrefix(string(b)))
+func (h *Hash256Digest) UnmarshalJSON(b []byte) error {
+	// Have to trim quotation marks off byte array
+	buf, err := hex.DecodeString(strip0xPrefix(string(b[1 : len(b)-1])))
 	if err != nil {
+		fmt.Print(string(b))
 		return err
 	}
 	if len(buf) != 32 {
