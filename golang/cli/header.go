@@ -46,7 +46,7 @@ func ValidateHeaderChain(headers []byte) string {
 	totalDifficulty, err := btcspv.ValidateHeaderChain(headers)
 	// Check for errors
 	if err != nil {
-		return "Error validating chain"
+		return fmt.Sprintf("%s", err)
 	}
 
 	// Return the total difficulty
