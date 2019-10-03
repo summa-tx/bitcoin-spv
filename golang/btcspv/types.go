@@ -84,7 +84,7 @@ func (s *SPVProof) MarshallJSON() ([]byte, error) {
 
 // UnmarshalJSON unmarshalls 32 byte digests
 func (h Hash256Digest) UnmarshalJSON(b []byte) error {
-	buf, err := hex.DecodeString(strip0xPrefix(string(b)))
+	buf, err := hex.D ecodeString(strip0xPrefix(string(b)))
 	if err != nil {
 		return err
 	}
