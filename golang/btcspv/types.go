@@ -38,15 +38,15 @@ func (h *HexBytes) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	copy(*h, buf)
 
+	*h = append(*h, buf...)
 	return nil
 }
 
-// MarshallJSON marashalls bytestrings as 0x-prepended hex
-func (h HexBytes) MarshallJSON() ([]byte, error) {
-	encoded := hex.EncodeToString(h)
-	return []byte("0x" + encoded), nil
+// MarshalJSON marashalls bytestrings as 0x-prepended hex
+func (h HexBytes) MarshalJSON() ([]byte, error) {
+	encoded := "\"0x" + hex.EncodeToString(h[:]) + "\""
+	return []byte(encoded), nil
 }
 
 // UnmarshalJSON unmarshalls 32 byte digests
@@ -65,8 +65,8 @@ func (h *Hash256Digest) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// MarshallJSON marashalls 32 byte digests as 0x-prepended hex
-func (h Hash256Digest) MarshallJSON() ([]byte, error) {
-	encoded := hex.EncodeToString(h[:])
-	return []byte("0x" + encoded), nil
+// MarshalJSON marashalls 32 byte digests as 0x-prepended hex
+func (h Hash256Digest) MarshalJSON() ([]byte, error) {
+	encoded := "\"0x" + hex.EncodeToString(h[:]) + "\""
+	return []byte(encoded), nil
 }
