@@ -30,17 +30,23 @@ func prettifyOutput(
 // getAddress return the address associated with the output
 func getAddress(outputType btcspv.OutputType, outpoint []byte) string {
 	var address string
+	var err error
+
 	switch outputType {
 	case btcspv.WPKH:
-		address = btcspv.EncodeP2WPKH(outpoint)
+		address, err = btcspv.EncodeP2WPKH(outpoint)
 	case btcspv.WSH:
-		address = btcspv.EncodeP2WSH(outpoint)
+		address, err = btcspv.EncodeP2WSH(outpoint)
 	case btcspv.PKH:
-		address = btcspv.EncodeP2PKH(outpoint)
+		address, err = btcspv.EncodeP2PKH(outpoint)
 	case btcspv.SH:
-		address = btcspv.EncodeP2SH(outpoint)
+		address, err = btcspv.EncodeP2SH(outpoint)
 	default:
 		address = ""
+	}
+
+	if err != nil {
+		return fmt.Sprintf("%s\n", err)
 	}
 	return address
 }
