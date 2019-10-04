@@ -24,6 +24,10 @@ type BitcoinHeader struct {
 
 // SPVProof is the base struct for an SPV proof
 type SPVProof struct {
+	Version           HexBytes      `json:"version"`
+	Vin               HexBytes      `json:"vin"`
+	Vout              HexBytes      `json:"vout"`
+	Locktime          HexBytes      `json:"locktime"`
 	TxID              Hash256Digest `json:"tx_id"`
 	TxIDLE            Hash256Digest `json:"tx_id_le"`
 	Index             uint32        `json:"index"`
