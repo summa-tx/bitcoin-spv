@@ -184,3 +184,83 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 	}
 	return totalDifficulty, nil
 }
+
+// Validate checks validity of all the elements in a BitcoinHeader
+func (b BitcoinHeader) Validate() (bool, error) {
+	header := []byte(b.Raw[:])
+	hash := []byte(b.Hash[:])
+	hashLE := []byte(b.HashLE[:])
+	merkleRoot := []byte(b.MerkleRoot[:])
+	merkleRootLE := []byte(b.MerkleRootLE[:])
+	prevHash := []byte(b.PrevHash[:])
+
+	// Check that HashLE is the correct hash of the raw header
+	headerHash := Hash256(header)
+	if bytes.Compare(headerHash, hashLE) != 0 {
+		return false, errors.New("Hash LE is not the correct hash of the header")
+	}
+
+	// Check that HashLE is the reverse of Hash
+	reversedHash := ReverseEndianness(hash)
+	if bytes.Compare(reversedHash, hashLE) != 0 {
+		return false, errors.New("HashLE is not the LE version of Hash")
+	}
+
+	// Check that the MerkleRootLE is the correct MerkleRoot for the header
+	extractedMerkleRootLE := ExtractMerkleRootLE(header)
+	if bytes.Compare(extractedMerkleRootLE, merkleRootLE) != 0 {
+		return false, errors.New("MerkleRootLE is not the correct merkle root of the header")
+	}
+
+	// Check that MerkleRootLE is the reverse of MerkleRoot
+	reversedMerkleRoot := ReverseEndianness(merkleRoot)
+	if bytes.Compare(reversedMerkleRoot, merkleRootLE) != 0 {
+		return false, errors.New("MerkleRootLE is not the LE version of MerkleRoot")
+	}
+
+	// Check that PrevHash is the correct PrevHash for the header
+	extractedPrevHash := ExtractPrevBlockHashBE(header)
+	if bytes.Compare(extractedPrevHash, prevHash) != 0 {
+		return false, errors.New("Prev hash is not the correct previous hash of the header")
+	}
+
+	return true, nil
+}
+
+// Validate checks validity of all the elements in an SPVProof
+func (s SPVProof) Validate() (bool, error) {
+	txIDLE := []byte(s.TxIDLE[:])
+	merkleRootLE := []byte(s.ConfirmingHeader.MerkleRootLE[:])
+	intermediateNodes := s.IntermediateNodes
+	index := uint(s.Index)
+
+	validVin := ValidateVin(s.Vin)
+	if !validVin {
+		return false, errors.New("Vin is not valid")
+	}
+	validVout := ValidateVout(s.Vout)
+	if !validVout {
+		return false, errors.New("Vout is not valid")
+	}
+
+	// Calculate the Tx ID and compare it to the one in SPVProof
+	txid := CalculateTxID(s.Version, s.Vin, s.Vout, s.Locktime)
+	if bytes.Compare(txid, txIDLE) != 0 {
+		return false, errors.New("Version, Vin, Vout and Locktime did not yield correct TxID")
+	}
+
+	// Validate all the fields in ConfirmingHeader
+	_, err := s.ConfirmingHeader.Validate()
+	if err != nil {
+		return false, err
+	}
+
+	// Check that the proof is valid
+	validProof := Prove(txIDLE, merkleRootLE, intermediateNodes, index)
+	if !validProof {
+		return false, errors.New("Not a valid Merkle Proof")
+	}
+
+	// If there are no errors, return true
+	return true, nil
+}
