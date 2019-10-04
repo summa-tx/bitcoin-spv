@@ -28,11 +28,14 @@ type SPVProof struct {
 	Vin               HexBytes      `json:"vin"`
 	Vout              HexBytes      `json:"vout"`
 	Locktime          HexBytes      `json:"locktime"`
-	TxID              Hash256Digest `json:"tx_id"`
+	TxID              []byte        `json:"tx_id"`
 	TxIDLE            Hash256Digest `json:"tx_id_le"`
 	Index             uint32        `json:"index"`
-	ConfirmingHeader  BitcoinHeader `json:"confirming_header"`
+	ConfirmingHeader  []byte        `json:"confirming_header"`
 	IntermediateNodes HexBytes      `json:"intermediate_nodes"`
+	// Was having problems with these types
+	// TxID              Hash256Digest `json:"tx_id"`
+	// ConfirmingHeader  BitcoinHeader `json:"confirming_header"`
 }
 
 // UnmarshalJSON unmarshalls 32 byte digests
