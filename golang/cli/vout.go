@@ -18,10 +18,31 @@ func prettifyOutput(
 	// Get the output type in readable format
 	outputTypeString := btcspv.GetOutputType(outputType)
 
+	// Get the address associated with the output
+	address := getAddress(outputType, outpoint)
+
 	dataStr := fmt.Sprintf(
-		"\nOutput #%d:\n  Payload: %s,\n  Value: %d,\n  Type: %s\n",
-		numOutput, outpointStr, value, outputTypeString)
+		"\nOutput #%d:\n  Address: %s\n  Payload: %s,\n  Value: %d,\n  Type: %s\n",
+		numOutput, address, outpointStr, value, outputTypeString)
 	return dataStr
+}
+
+// getAddress return the address associated with the output
+func getAddress(outputType btcspv.OutputType, outpoint []byte) string {
+	var address string
+	switch outputType {
+	case btcspv.WPKH:
+		address = btcspv.EncodeP2WPKH(outpoint)
+	case btcspv.WSH:
+		address = btcspv.EncodeP2WSH(outpoint)
+	case btcspv.PKH:
+		address = btcspv.EncodeP2PKH(outpoint)
+	case btcspv.SH:
+		address = btcspv.EncodeP2SH(outpoint)
+	default:
+		address = ""
+	}
+	return address
 }
 
 // ParseVout parses an output vector from hex
