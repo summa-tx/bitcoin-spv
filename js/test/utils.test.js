@@ -133,6 +133,24 @@ describe('utils', () => {
         assert.include(e.message, 'Error deserializing hex, must be a string');
       }
     });
+
+    it('errors when passed an odd-length string', () => {
+      try {
+        utils.deserializeHex('0xabc');
+        assert(false, 'expected an errror');
+      } catch (e) {
+        assert.include(e.message, 'Error deserializing hex, string length is odd');
+      }
+    });
+
+    it('errors when passed non-hex', () => {
+      try {
+        utils.deserializeHex('0xQQQQ');
+        assert(false, 'expected an errror');
+      } catch (e) {
+        assert.include(e.message, 'Error deserializing hex, got non-hex byte: QQ');
+      }
+    });
   });
 
   describe('#sha256', () => {
