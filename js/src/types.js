@@ -9,14 +9,31 @@ import * as utils from './utils';
  * @returns {Object}    The Header with deserialized byte arrays
  */
 export function objectToHeader(o) {
+  /* eslint-disable camelcase */
+  const raw = utils.deserializeHex(o.raw);
+  const hash = utils.deserializeHex(o.hash);
+  const hash_le = utils.deserializeHex(o.hash_le);
+  const prevhash = utils.deserializeHex(o.prevhash);
+  const merkle_root = utils.deserializeHex(o.merkle_root);
+  const merkle_root_le = utils.deserializeHex(o.merkle_root_le);
+  if (raw.length !== 80) {
+    throw new TypeError(`Expected 80 bytes, got ${raw.length} bytes`);
+  }
+  [raw, hash, hash_le, prevhash, merkle_root, merkle_root_le].forEach((e) => {
+    if (e.length !== 32) {
+      throw new TypeError(`Expected 32 bytes, got ${e.length} bytes`);
+    }
+  });
+  /* eslint-enable camelcase */
+
   return {
-    raw: utils.deserializeHex(o.raw),
-    hash: utils.deserializeHex(o.hash),
-    hash_le: utils.deserializeHex(o.hash_le),
+    raw,
+    hash,
+    hash_le,
     height: o.height,
-    prevhash: utils.deserializeHex(o.prevhash),
-    merkle_root: utils.deserializeHex(o.merkle_root),
-    merkle_root_le: utils.deserializeHex(o.merkle_root_le)
+    prevhash,
+    merkle_root,
+    merkle_root_le
   };
 }
 
@@ -71,17 +88,33 @@ export function serializeHeader(h) {
  * @returns {Object}      The proof with deserialized byte arrays
  */
 export function objectToSPVProof(o) {
+  /* eslint-disable camelcase */
+  const version = utils.deserializeHex(o.version);
+  const vin = utils.deserializeHex(o.vin);
+  const vout = utils.deserializeHex(o.vout);
+  const locktime = utils.deserializeHex(o.locktime);
+  const tx_id = utils.deserializeHex(o.tx_id);
+  const tx_id_le = utils.deserializeHex(o.tx_id_le);
+  const intermediate_nodes = utils.deserializeHex(o.intermediate_nodes);
+
+  [tx_id, tx_id_le].forEach((e) => {
+    if (e.length !== 32) {
+      throw new TypeError(`Expected 32 bytes, got ${e.length} bytes`);
+    }
+  });
+
   return {
-    version: utils.deserializeHex(o.version),
-    vin: utils.deserializeHex(o.vin),
-    vout: utils.deserializeHex(o.vout),
-    locktime: utils.deserializeHex(o.locktime),
-    tx_id: utils.deserializeHex(o.tx_id),
-    tx_id_le: utils.deserializeHex(o.tx_id_le),
+    version,
+    vin,
+    vout,
+    locktime,
+    tx_id,
+    tx_id_le,
     index: o.index,
-    intermediate_nodes: utils.deserializeHex(o.intermediate_nodes),
+    intermediate_nodes,
     confirming_header: objectToHeader(o.confirming_header)
   };
+  /* eslint-enable camelcase */
 }
 
 /**
@@ -100,18 +133,18 @@ export function deserializeSPVProof(s) {
  * Takes a SPVProof and serialized each byte array. The result is suitable for JSON serialization
  *
  * @param {Object}    o The SPVProof with deserialized byte arrays
- * @returns {Object}    The SPVProof with byte arrays serialized as hex, suitable for serialization
+ * @returns {Object}    Object byte arrays serialized as hex, suitable for serialization as JSON
  */
 export function objectFromSPVProof(s) {
   return {
-    version: utils.deserializeHex(s.version),
-    vin: utils.deserializeHex(s.vin),
-    vout: utils.deserializeHex(s.vout),
-    locktime: utils.deserializeHex(s.locktime),
-    tx_id: utils.deserializeHex(s.tx_id),
-    tx_id_le: utils.deserializeHex(s.tx_id_le),
+    version: utils.serializeHex(s.version),
+    vin: utils.serializeHex(s.vin),
+    vout: utils.serializeHex(s.vout),
+    locktime: utils.serializeHex(s.locktime),
+    tx_id: utils.serializeHex(s.tx_id),
+    tx_id_le: utils.serializeHex(s.tx_id_le),
     index: s.index,
-    intermediate_nodes: utils.deserializeHex(s.intermediate_nodes),
+    intermediate_nodes: utils.serializeHex(s.intermediate_nodes),
     confirming_header: objectFromHeader(s.confirming_header)
   };
 }
