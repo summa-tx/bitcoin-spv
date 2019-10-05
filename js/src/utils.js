@@ -66,7 +66,7 @@ export function deserializeHex(hexStr) {
   }
 
   if (typeof hexStr !== 'string') {
-    throw new Error('Error deserializing hex, must be a string');
+    throw new TypeError('Error deserializing hex, must be a string');
   }
 
   let hex = '';
@@ -76,9 +76,21 @@ export function deserializeHex(hexStr) {
     hex = hexStr;
   }
 
+  if (hex.length % 2 !== 0) {
+    throw new TypeError('Error deserializing hex, string length is odd');
+  }
+
   const a = [];
   for (let i = 0; i < hex.length; i += 2) {
-    a.push(parseInt(hex.substr(i, 2), 16));
+    const byte = hex.substr(i, 2);
+    const uint8 = parseInt(byte, 16);
+
+    // TODO: any way to improve this?
+    if (!uint8 && uint8 !== 0) {
+      throw new TypeError(`Error deserializing hex, got non-hex byte: ${byte}`);
+    }
+
+    a.push(uint8);
   }
 
   return new Uint8Array(a);
