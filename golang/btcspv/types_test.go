@@ -69,8 +69,12 @@ func (suite *TypesSuite) TestMarshalSPVProof() {
 	// fmt.Println(spvProof.ConfirmingHeader)
 	suite.Equal(384, len(spvProof.IntermediateNodes))
 
-	_, err := json.Marshal(spvProof)
+	j, err := json.Marshal(spvProof)
 	suite.Nil(err)
+
+	actual := new(SPVProof)
+	json.Unmarshal(j, &actual)
+	suite.Equal(spvProof, actual)
 }
 
 func (suite *TypesSuite) TestUnmarshalBadHexBytes() {
