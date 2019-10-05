@@ -19,7 +19,7 @@ export function objectToHeader(o) {
   if (raw.length !== 80) {
     throw new TypeError(`Expected 80 bytes, got ${raw.length} bytes`);
   }
-  [raw, hash, hash_le, prevhash, merkle_root, merkle_root_le].forEach((e) => {
+  [hash, hash_le, prevhash, merkle_root, merkle_root_le].forEach((e) => {
     if (e.length !== 32) {
       throw new TypeError(`Expected 32 bytes, got ${e.length} bytes`);
     }
@@ -76,7 +76,7 @@ export function objectFromHeader(h) {
  * @returns {string}    The Header serialized as a JSON string
  */
 export function serializeHeader(h) {
-  JSON.stringify(objectFromHeader(h));
+  return JSON.stringify(objectFromHeader(h));
 }
 
 /**
@@ -157,5 +157,5 @@ export function objectFromSPVProof(s) {
  * @returns {string}    The SPVProof serialized as a JSON string
  */
 export function serializeSPVProof(s) {
-  JSON.stringify(objectFromSPVProof(s));
+  return JSON.stringify(objectFromSPVProof(s));
 }

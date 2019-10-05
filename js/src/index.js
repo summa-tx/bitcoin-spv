@@ -14,9 +14,11 @@
 import * as BTCUtils from './BTCUtils';
 import * as utils from './utils';
 import * as ValidateSPV from './ValidateSPV';
+import * as ser from './ser';
 
 export {
   BTCUtils,
   utils,
-  ValidateSPV
+  ValidateSPV,
+  ser
 };
