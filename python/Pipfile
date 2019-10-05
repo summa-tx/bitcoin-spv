@@ -3,11 +3,21 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
+[scripts]
+test = "pytest btcspv/test"
+cover = "coverage erase"
+dothing = "./scripts/run_tests.sh"
+
 [dev-packages]
+mypy = "*"
+pytest = "*"
+flake8 = "*"
+coverage = "*"
+pytest-cov = "*"
 
 [packages]
-mypy = "*"
 btcspv = {editable = true,path = "."}
+riemann-tx = "*"
 
 [requires]
 python_version = "3.7"
