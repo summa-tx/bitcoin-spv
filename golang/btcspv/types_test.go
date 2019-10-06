@@ -11,10 +11,12 @@ import (
 )
 
 type TestProofCases struct {
-	Valid         []string `json:"valid"`
-	BadHexBytes   string   `json:"errBadHexBytes"`
-	BadHexHash256 string   `json:"errBadHexHash256"`
-	BadLenHash256 string   `json:"errBadLenHash256"`
+	Valid           []string `json:"valid"`
+	BadHexBytes     string   `json:"errBadHexBytes"`
+	BadHexHash256   string   `json:"errBadHexHash256"`
+	BadLenHash256   string   `json:"errBadLenHash256"`
+	BadHexRawHeader string   `json:"errBadHexRawHeader"`
+	BadLenRawHeader string   `json:"errBadLenRawHeader"`
 }
 
 type TypesSuite struct {
@@ -86,7 +88,7 @@ func (suite *TypesSuite) TestUnmarshalBadHexHash256() {
 	badHexHash256 := suite.Fixtures.BadHexHash256
 	s := new(SPVProof)
 	err := json.Unmarshal([]byte(badHexHash256), &s)
-	suite.EqualError(err, "encoding/hex: invalid byte: U+0051 'Q'")
+	suite.EqualError(err, "encoding/hex: invalid byte: U+0052 'R'")
 }
 
 func (suite *TypesSuite) TestUnmarshalBadLenHash256() {
@@ -94,4 +96,18 @@ func (suite *TypesSuite) TestUnmarshalBadLenHash256() {
 	s := new(SPVProof)
 	err := json.Unmarshal([]byte(badLenHash256), &s)
 	suite.EqualError(err, "Expected 32 bytes, got 31 bytes")
+}
+
+func (suite *TypesSuite) TestUnmarshalBadHexRawHeader() {
+	badHexRawHeader := suite.Fixtures.BadHexRawHeader
+	s := new(SPVProof)
+	err := json.Unmarshal([]byte(badHexRawHeader), &s)
+	suite.EqualError(err, "encoding/hex: invalid byte: U+0053 'S'")
+}
+
+func (suite *TypesSuite) TestUnmarshalBadLenRawHeader() {
+	badLenRawHeader := suite.Fixtures.BadLenRawHeader
+	s := new(SPVProof)
+	err := json.Unmarshal([]byte(badLenRawHeader), &s)
+	suite.EqualError(err, "Expected 80 bytes, got 79 bytes")
 }

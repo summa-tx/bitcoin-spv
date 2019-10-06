@@ -8,12 +8,15 @@ import (
 // Hash256Digest is a 32-byte double-sha2 hash
 type Hash256Digest [32]byte
 
+// RawHeader is an 80-byte raw header
+type RawHeader [80]byte
+
 // HexBytes is a type alias to make JSON hex ser/deser easier
 type HexBytes []byte
 
 // BitcoinHeader is a parsed Bitcoin header
 type BitcoinHeader struct {
-	Hex          string        `json:"hex"`
+	Raw          RawHeader     `json:"raw"`
 	Hash         Hash256Digest `json:"hash"`
 	HashLE       Hash256Digest `json:"hash_le"`
 	Height       uint32        `json:"height"`
@@ -71,6 +74,28 @@ func (h *Hash256Digest) UnmarshalJSON(b []byte) error {
 
 // MarshalJSON marashalls 32 byte digests as 0x-prepended hex
 func (h Hash256Digest) MarshalJSON() ([]byte, error) {
+	encoded := "\"0x" + hex.EncodeToString(h[:]) + "\""
+	return []byte(encoded), nil
+}
+
+// UnmarshalJSON unmarshalls 32 byte digests
+func (h *RawHeader) UnmarshalJSON(b []byte) error {
+	// Have to trim quotation marks off byte array
+	buf, err := hex.DecodeString(strip0xPrefix(string(b[1 : len(b)-1])))
+	if err != nil {
+		return err
+	}
+	if len(buf) != 80 {
+		return fmt.Errorf("Expected 80 bytes, got %d bytes", len(buf))
+	}
+
+	copy(h[:], buf)
+
+	return nil
+}
+
+// MarshalJSON marashalls 32 byte digests as 0x-prepended hex
+func (h RawHeader) MarshalJSON() ([]byte, error) {
 	encoded := "\"0x" + hex.EncodeToString(h[:]) + "\""
 	return []byte(encoded), nil
 }
