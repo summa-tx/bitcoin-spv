@@ -185,6 +185,49 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 	return totalDifficulty, nil
 }
 
+func (b BitcoinHeader) Validate() (bool, error) {
+	header := []byte(b.Raw[:])
+	hash := []byte(b.Hash[:])
+	hashLE := []byte(b.HashLE[:])
+	merkleRoot := []byte(b.MerkleRoot[:])
+	merkleRootLE := []byte(b.MerkleRootLE[:])
+	prevHash := []byte(b.PrevHash[:])
+
+	// Check that HashLE is the correct hash of the raw header
+	validHash := bytes.Equal(Hash256(header), hashLE)
+	if !validHash {
+		return false, errors.New("Hash LE is not the correct hash of the header")
+	}
+
+	// Check that HashLE is the reverse of Hash
+	reversedHash := ReverseEndianness(hash)
+	hashReversed := bytes.Equal(reversedHash, hashLE)
+	if !hashReversed {
+		return false, errors.New("HashLE is not the LE version of Hash")
+	}
+
+	// Check that MerkleRootLE is the reverse of MerkleRoot
+	reversedMerkleRoot := ReverseEndianness(merkleRoot)
+	merkleRootReversed := bytes.Equal(reversedMerkleRoot, merkleRootLE)
+	if !merkleRootReversed {
+		return false, errors.New("MerkleRootLE is not the LE version of MerkleRoot")
+	}
+
+	// Check that the MerkleRootLE is the correct MerkleRoot for the header
+	validMerkleRootLE := bytes.Equal(merkleRootLE, ExtractMerkleRootLE(header))
+	if !validMerkleRootLE {
+		return false, errors.New("Merkle Root is not the correct merkle root of the header")
+	}
+
+	// Check that PrevHash is the correct PrevHash for the header
+	validPrevHash := bytes.Equal(prevHash, ExtractPrevBlockHashLE(header))
+	if !validPrevHash {
+		return false, errors.New("Prev hash is not the correct previous hash of the header")
+	}
+
+	return true, nil
+}
+
 func (s SPVProof) Validate() (bool, error) {
 	rawHeader := []byte(s.ConfirmingHeader.Raw[:])
 	txIDLE := []byte(s.TxIDLE[:])
