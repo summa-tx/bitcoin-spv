@@ -186,27 +186,27 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 }
 
 func (s SPVProof) Validate() (bool, error) {
+	rawHeader := []byte(s.ConfirmingHeader.Raw[:])
+	txIDLE := []byte(s.TxIDLE[:])
+	merkleRootLE := []byte(s.ConfirmingHeader.MerkleRootLE[:])
+	intermediateNodes := s.IntermediateNodes
+	index := uint(s.Index)
+
 	// Calculate the Tx ID and compare it to the one in SPVProof
 	txid := CalculateTxID(s.Version, s.Vin, s.Vout, s.Locktime)
-	if bytes.Compare(txid, []byte(s.TxIDLE[:])) != 0 {
+	if bytes.Compare(txid, txIDLE) != 0 {
 		return false, errors.New("Version, Vin, Vout and Locktime did not yield correct TxID")
 	}
 
-	// // Get the merkle root, needed for Prove function
-	// _, _, _, merkleRoot, _, _, _, err := ParseHeader(s.ConfirmingHeader)
-	// if err != nil {
-	// 	return false, err
-	// }
-
 	// Check that the proof is valid
-	validProof := Prove(s.TxIDLE, s.ConfirmingHeader.MerkleRootLE, s.IntermediateNodes, uint(s.Index))
-	if !merkleProof {
+	validProof := Prove(txIDLE, merkleRootLE, intermediateNodes, index)
+	if !validProof {
 		return false, errors.New("Not a valid Merkle Proof")
 	}
 
 	// Validate the header chain, looks like the SPVProof doesn't have a header chain, only ConfirmingHeader
-	_, validationErr := ValidateHeaderChain(s.ConfirmingHeader.Raw)
-	if validationErr != nil {
+	_, err := ValidateHeaderChain(rawHeader)
+	if err != nil {
 		return false, err
 	}
 
