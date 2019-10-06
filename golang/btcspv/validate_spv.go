@@ -241,6 +241,11 @@ func (s SPVProof) Validate() (bool, error) {
 		return false, errors.New("Version, Vin, Vout and Locktime did not yield correct TxID")
 	}
 
+	_, err := s.ConfirmingHeader.Validate()
+	if err != nil {
+		return false, err
+	}
+
 	// Check that the proof is valid
 	validProof := Prove(txIDLE, merkleRootLE, intermediateNodes, index)
 	if !validProof {
@@ -248,9 +253,9 @@ func (s SPVProof) Validate() (bool, error) {
 	}
 
 	// Validate the header chain, looks like the SPVProof doesn't have a header chain, only ConfirmingHeader
-	_, err := ValidateHeaderChain(rawHeader)
-	if err != nil {
-		return false, err
+	_, validationErr := ValidateHeaderChain(rawHeader)
+	if validationErr != nil {
+		return false, validationErr
 	}
 
 	// If there are no errors, return true
