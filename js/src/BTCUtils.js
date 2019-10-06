@@ -121,7 +121,7 @@ export function extractSequenceLELegacy(input) {
  * Determines the length of an input from its scriptsig
  * 36 for outpoint, 1 for scriptsig length, 4 for sequence
  *
- * @param {Uint8Array}    arr The input as a u8a
+ * @param {Uint8Array}    input The input as a u8a
  * @returns {BigInt}      The length of the input in bytes
  */
 export function determineInputLength(input) {
@@ -530,7 +530,7 @@ export function extractMerkleRootLE(header) {
 /**
  *
  * Extracts the transaction merkle root from a block header
- * Use verifyMerkle to verify proofs with this root
+ * Use verifyHash256Merkle to verify proofs with this root
  *
  * @param {Uint8Array}    header An 80-byte Bitcoin header
  * @returns {Uint8Array}  The serialized merkle root (big-endian)
@@ -659,7 +659,7 @@ export function hash256MerkleStep(a, b) {
 /**
  *
  * Verifies a Bitcoin-style merkle tree
- * Leaves are 1-indexed.
+ * Leaves are 0-indexed.
  *
  * @param {Uint8Array}    proof The proof. Tightly packed LE sha256 hashes.
  *                        The last hash is the root

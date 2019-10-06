@@ -2,7 +2,7 @@
 
 ### What is it?
 
-`bitcoin-spv` is a collection of JavaScript functions for working with Bitcoin
+`bitcoin-spv-js` is a collection of JavaScript functions for working with Bitcoin
 data structures. Basically, these tools help you parse, inspect, and
 authenticate Bitcoin transactions.
 
