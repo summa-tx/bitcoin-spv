@@ -185,6 +185,7 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 	return totalDifficulty, nil
 }
 
+// Validate checks validity of all the elements in a BitcoinHeader
 func (b BitcoinHeader) Validate() (bool, error) {
 	header := []byte(b.Raw[:])
 	hash := []byte(b.Hash[:])
@@ -228,6 +229,7 @@ func (b BitcoinHeader) Validate() (bool, error) {
 	return true, nil
 }
 
+// Validate checks validity of all the elements in an SPVProof
 func (s SPVProof) Validate() (bool, error) {
 	rawHeader := []byte(s.ConfirmingHeader.Raw[:])
 	txIDLE := []byte(s.TxIDLE[:])
@@ -241,6 +243,7 @@ func (s SPVProof) Validate() (bool, error) {
 		return false, errors.New("Version, Vin, Vout and Locktime did not yield correct TxID")
 	}
 
+	// Validate all the fields in ConfirmingHeader
 	_, err := s.ConfirmingHeader.Validate()
 	if err != nil {
 		return false, err
