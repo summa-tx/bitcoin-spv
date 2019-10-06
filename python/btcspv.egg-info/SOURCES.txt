@@ -1,8 +1,0 @@
-setup.py
-btcspv/__init__.py
-btcspv/ser.py
-btcspv/types.py
-btcspv.egg-info/PKG-INFO
-btcspv.egg-info/SOURCES.txt
-btcspv.egg-info/dependency_links.txt
-btcspv.egg-info/top_level.txt

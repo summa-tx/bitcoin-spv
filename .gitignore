@@ -1,4 +1,5 @@
 venv/
+.pytest_cache
 build/
 blocks/
 __pycache__/
