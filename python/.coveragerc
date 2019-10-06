@@ -1,0 +1,11 @@
+[run]
+source = btcspv/
+omit =
+    btcspv/tests/*
+
+[report]
+show_missing = True
+sort = Miss
+
+[html]
+directory = coverage/html/

@@ -5,6 +5,9 @@ blockchains. It supplies a set of pure functions that can be used to validate
 almost all Bitcoin transactions and headers, as well as higher-level
 functions that can evaluate header chains and transaction inclusion proofs.
 
+It also supplies a standardized JSON format for proofs. Currently off-chain
+proof (de)serialization is supported in Golang, Python, and JS.
+
 ## Supported by
 
 ![Binance X Fellowship, Interchain Foundation, Summa, Cross Chain Group](./logo-group.jpg)
