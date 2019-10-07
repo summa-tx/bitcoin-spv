@@ -948,6 +948,20 @@
       "output": "0xffffff"
     }
   ],
+  "validateBitcoinHeader": [
+    {
+      "input": {
+        "raw": "0x0000c020c238b601308b7297346ab2ed59942d7d7ecea8d23a1001000000000000000000b61ac92842abc82aa93644b190fc18ad46c6738337e78bc0c69ab21c5d5ee2ddd6376d5d3e211a17d8706a84",
+        "hash": "0x00000000000000000016633b88de22bd6462283bcf7dcbe559233baaf5fb0c4d",
+        "hash_le": "0x4d0cfbf5aa3b2359e5cb7dcf3b286264bd22de883b6316000000000000000000",
+        "height": 592920,
+        "merkle_root": "0xdde25e5d1cb29ac6c08be7378373c646ad18fc90b14436a92ac8ab4228c91ab6",
+        "merkle_root_le": "0xb61ac92842abc82aa93644b190fc18ad46c6738337e78bc0c69ab21c5d5ee2dd",
+        "prev_hash": "0x00000000000000000001103ad2a8ce7e7d2d9459edb26a3497728b3001b638c2"
+      },
+      "output": true
+    }
+  ],
   "retargetAlgorithm": [
     {
       "input": [

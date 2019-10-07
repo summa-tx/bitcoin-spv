@@ -3,6 +3,7 @@ package btcspv
 import (
 	"bytes"
 	"errors"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -195,34 +196,32 @@ func (b BitcoinHeader) Validate() (bool, error) {
 	prevHash := []byte(b.PrevHash[:])
 
 	// Check that HashLE is the correct hash of the raw header
-	validHash := bytes.Equal(Hash256(header), hashLE)
-	if !validHash {
+	headerHash := Hash256(header)
+	if bytes.Compare(headerHash, hashLE) != 0 {
 		return false, errors.New("Hash LE is not the correct hash of the header")
 	}
 
 	// Check that HashLE is the reverse of Hash
 	reversedHash := ReverseEndianness(hash)
-	hashReversed := bytes.Equal(reversedHash, hashLE)
-	if !hashReversed {
+	if bytes.Compare(reversedHash, hashLE) != 0 {
 		return false, errors.New("HashLE is not the LE version of Hash")
 	}
 
 	// Check that MerkleRootLE is the reverse of MerkleRoot
 	reversedMerkleRoot := ReverseEndianness(merkleRoot)
-	merkleRootReversed := bytes.Equal(reversedMerkleRoot, merkleRootLE)
-	if !merkleRootReversed {
+	if bytes.Compare(reversedMerkleRoot, merkleRootLE) != 0 {
 		return false, errors.New("MerkleRootLE is not the LE version of MerkleRoot")
 	}
 
 	// Check that the MerkleRootLE is the correct MerkleRoot for the header
-	validMerkleRootLE := bytes.Equal(merkleRootLE, ExtractMerkleRootLE(header))
-	if !validMerkleRootLE {
+	extractedMerkleRootLE := ExtractMerkleRootLE(header)
+	if bytes.Compare(extractedMerkleRootLE, merkleRootLE) != 0 {
 		return false, errors.New("Merkle Root is not the correct merkle root of the header")
 	}
 
 	// Check that PrevHash is the correct PrevHash for the header
-	validPrevHash := bytes.Equal(prevHash, ExtractPrevBlockHashLE(header))
-	if !validPrevHash {
+	extractedPrevHash := ExtractPrevBlockHashBE(header)
+	if bytes.Compare(extractedPrevHash, prevHash) != 0 {
 		return false, errors.New("Prev hash is not the correct previous hash of the header")
 	}
 
@@ -237,8 +236,11 @@ func (s SPVProof) Validate() (bool, error) {
 	intermediateNodes := s.IntermediateNodes
 	index := uint(s.Index)
 
+	// TODO: CalculateTXID is not yielding the correct result.  Could the data be wrong?
 	// Calculate the Tx ID and compare it to the one in SPVProof
 	txid := CalculateTxID(s.Version, s.Vin, s.Vout, s.Locktime)
+	fmt.Println("calculated tx ID:", txid)
+	fmt.Println("tx ID associated with SPVProof:", txIDLE)
 	if bytes.Compare(txid, txIDLE) != 0 {
 		return false, errors.New("Version, Vin, Vout and Locktime did not yield correct TxID")
 	}

@@ -1,6 +1,8 @@
 package btcspv
 
 import (
+	"encoding/json"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -169,4 +171,27 @@ func (suite *UtilsSuite) TestValidateHeaderChain() {
 		suite.EqualError(err, expected)
 		suite.Equal(actual, sdk.NewUint(0))
 	}
+}
+
+func (suite *TypesSuite) TestValidateBitcoinHeader() {
+	valid := suite.Fixtures.Valid
+	spvProof := new(SPVProof)
+	json.Unmarshal([]byte(valid[0]), &spvProof)
+	bitcoinHeader := spvProof.ConfirmingHeader
+
+	validHeader, err := bitcoinHeader.Validate()
+
+	suite.Nil(err)
+	suite.Equal(validHeader, true)
+}
+
+func (suite *TypesSuite) TestValidateSPVProof() {
+	valid := suite.Fixtures.Valid
+	spvProof := new(SPVProof)
+	json.Unmarshal([]byte(valid[0]), &spvProof)
+
+	validProof, err := spvProof.Validate()
+
+	suite.Nil(err)
+	suite.Equal(validProof, true)
 }
