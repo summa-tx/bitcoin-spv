@@ -3,7 +3,6 @@ package btcspv
 import (
 	"bytes"
 	"errors"
-	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -236,11 +235,18 @@ func (s SPVProof) Validate() (bool, error) {
 	intermediateNodes := s.IntermediateNodes
 	index := uint(s.Index)
 
+	validVin := ValidateVin(s.Vin)
+	if !validVin {
+		return false, errors.New("Vin is not valid")
+	}
+	validVout := ValidateVout(s.Vout)
+	if !validVout {
+		return false, errors.New("Vout is not valid")
+	}
+
 	// TODO: CalculateTXID is not yielding the correct result.  Could the data be wrong?
 	// Calculate the Tx ID and compare it to the one in SPVProof
 	txid := CalculateTxID(s.Version, s.Vin, s.Vout, s.Locktime)
-	fmt.Println("calculated tx ID:", txid)
-	fmt.Println("tx ID associated with SPVProof:", txIDLE)
 	if bytes.Compare(txid, txIDLE) != 0 {
 		return false, errors.New("Version, Vin, Vout and Locktime did not yield correct TxID")
 	}

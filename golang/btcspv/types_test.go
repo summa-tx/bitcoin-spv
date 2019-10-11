@@ -22,6 +22,7 @@ type TestProofCases struct {
 type TypesSuite struct {
 	suite.Suite
 	Fixtures TestProofCases
+	Proof    SPVProof
 }
 
 func TestTypes(t *testing.T) {
@@ -37,6 +38,11 @@ func TestTypes(t *testing.T) {
 
 	typesSuite := new(TypesSuite)
 	typesSuite.Fixtures = fixtures
+
+	spvProof := new(SPVProof)
+	err = json.Unmarshal([]byte(typesSuite.Fixtures.Valid[0]), &spvProof)
+	logIfErr(err)
+	typesSuite.Proof = *spvProof
 
 	suite.Run(t, typesSuite)
 }
@@ -110,4 +116,21 @@ func (suite *TypesSuite) TestUnmarshalBadLenRawHeader() {
 	s := new(SPVProof)
 	err := json.Unmarshal([]byte(badLenRawHeader), &s)
 	suite.EqualError(err, "Expected 80 bytes, got 79 bytes")
+}
+
+func (suite *TypesSuite) TestValidateBitcoinHeader() {
+
+	bitcoinHeader := suite.Proof.ConfirmingHeader
+
+	validHeader, err := bitcoinHeader.Validate()
+
+	suite.Nil(err)
+	suite.Equal(validHeader, true)
+}
+
+func (suite *TypesSuite) TestValidateSPVProof() {
+	validProof, err := suite.Proof.Validate()
+
+	suite.Nil(err)
+	suite.Equal(validProof, true)
 }
