@@ -59,7 +59,7 @@ func TestTypes(t *testing.T) {
 
 	// TODO: use length of typesSuite.BadHeaders instead of using 5
 	// for i := range typesSuite.BadHeaders {
-	for i := 0; i < 5; i++ {
+	for i := 0; i < len(typesSuite.Fixtures.BadHeaders); i++ {
 		bitcoinHeader := new(BitcoinHeader)
 		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadHeaders[i]), &bitcoinHeader)
 		logIfErr(err)
@@ -67,7 +67,7 @@ func TestTypes(t *testing.T) {
 		typesSuite.BadHeaders = appended
 	}
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < len(typesSuite.Fixtures.BadHeaderErrors); i++ {
 		headerErr := new(Err)
 		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadHeaderErrors[i]), &headerErr)
 		logIfErr(err)
@@ -75,7 +75,7 @@ func TestTypes(t *testing.T) {
 		typesSuite.BadHeaderErrors = appended
 	}
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < len(typesSuite.Fixtures.BadSPVProofs); i++ {
 		spvProof := new(SPVProof)
 		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadSPVProofs[i]), &spvProof)
 		logIfErr(err)
@@ -83,7 +83,7 @@ func TestTypes(t *testing.T) {
 		typesSuite.BadSPVProofs = appended
 	}
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < len(typesSuite.Fixtures.BadSPVProofErrors); i++ {
 		spvProofErr := new(Err)
 		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadSPVProofErrors[i]), &spvProofErr)
 		logIfErr(err)
@@ -119,7 +119,6 @@ func (suite *TypesSuite) TestMarshalSPVProof() {
 		hex.EncodeToString(spvProof.TxIDLE[:]))
 	suite.Equal(uint32(26), spvProof.Index)
 	// // TODO: assert header equalities
-	// fmt.Println(spvProof.ConfirmingHeader)
 	suite.Equal(384, len(spvProof.IntermediateNodes))
 
 	j, err := json.Marshal(spvProof)
@@ -175,7 +174,7 @@ func (suite *TypesSuite) TestValidateBitcoinHeader() {
 	suite.Equal(validHeader, true)
 
 	// TODO: Use length of actual array
-	for i := 0; i < 5; i++ {
+	for i := 0; i < len(BadHeaders); i++ {
 		header := BadHeaders[i]
 
 		valid, err := header.Validate()
@@ -196,7 +195,7 @@ func (suite *TypesSuite) TestValidateSPVProof() {
 	suite.Equal(validProof, true)
 
 	// TODO: Use length of actual array
-	for i := 0; i < 5; i++ {
+	for i := 0; i < len(BadSPVProofs); i++ {
 		spvProof := BadSPVProofs[i]
 
 		valid, validateErr := spvProof.Validate()
