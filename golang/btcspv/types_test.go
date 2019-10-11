@@ -57,8 +57,6 @@ func TestTypes(t *testing.T) {
 	logIfErr(err)
 	typesSuite.Proof = *spvProof
 
-	// TODO: use length of typesSuite.BadHeaders instead of using 5
-	// for i := range typesSuite.BadHeaders {
 	for i := 0; i < len(typesSuite.Fixtures.BadHeaders); i++ {
 		bitcoinHeader := new(BitcoinHeader)
 		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadHeaders[i]), &bitcoinHeader)
@@ -173,12 +171,10 @@ func (suite *TypesSuite) TestValidateBitcoinHeader() {
 	suite.Nil(err)
 	suite.Equal(validHeader, true)
 
-	// TODO: Use length of actual array
 	for i := 0; i < len(BadHeaders); i++ {
 		header := BadHeaders[i]
 
 		valid, err := header.Validate()
-		// TODO: Is there a better way to convert regex?
 		expected := strings.Replace(BadHeaderErrors[i].Error, "\u00a0", " ", -1)
 
 		suite.Equal(false, valid)
@@ -194,7 +190,6 @@ func (suite *TypesSuite) TestValidateSPVProof() {
 	suite.Nil(err)
 	suite.Equal(validProof, true)
 
-	// TODO: Use length of actual array
 	for i := 0; i < len(BadSPVProofs); i++ {
 		spvProof := BadSPVProofs[i]
 
