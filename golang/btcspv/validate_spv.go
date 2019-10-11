@@ -206,16 +206,16 @@ func (b BitcoinHeader) Validate() (bool, error) {
 		return false, errors.New("HashLE is not the LE version of Hash")
 	}
 
+	// Check that the MerkleRootLE is the correct MerkleRoot for the header
+	extractedMerkleRootLE := ExtractMerkleRootLE(header)
+	if bytes.Compare(extractedMerkleRootLE, merkleRootLE) != 0 {
+		return false, errors.New("MerkleRootLE is not the correct merkle root of the header")
+	}
+
 	// Check that MerkleRootLE is the reverse of MerkleRoot
 	reversedMerkleRoot := ReverseEndianness(merkleRoot)
 	if bytes.Compare(reversedMerkleRoot, merkleRootLE) != 0 {
 		return false, errors.New("MerkleRootLE is not the LE version of MerkleRoot")
-	}
-
-	// Check that the MerkleRootLE is the correct MerkleRoot for the header
-	extractedMerkleRootLE := ExtractMerkleRootLE(header)
-	if bytes.Compare(extractedMerkleRootLE, merkleRootLE) != 0 {
-		return false, errors.New("Merkle Root is not the correct merkle root of the header")
 	}
 
 	// Check that PrevHash is the correct PrevHash for the header
@@ -244,7 +244,6 @@ func (s SPVProof) Validate() (bool, error) {
 		return false, errors.New("Vout is not valid")
 	}
 
-	// TODO: CalculateTXID is not yielding the correct result.  Could the data be wrong?
 	// Calculate the Tx ID and compare it to the one in SPVProof
 	txid := CalculateTxID(s.Version, s.Vin, s.Vout, s.Locktime)
 	if bytes.Compare(txid, txIDLE) != 0 {

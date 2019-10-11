@@ -5,24 +5,37 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 )
 
+type Err struct {
+	Error string `json:"Error"`
+}
+
 type TestProofCases struct {
-	Valid           []string `json:"valid"`
-	BadHexBytes     string   `json:"errBadHexBytes"`
-	BadHexHash256   string   `json:"errBadHexHash256"`
-	BadLenHash256   string   `json:"errBadLenHash256"`
-	BadHexRawHeader string   `json:"errBadHexRawHeader"`
-	BadLenRawHeader string   `json:"errBadLenRawHeader"`
+	Valid             []string `json:"valid"`
+	BadHeaders        []string `json:"badHeaders"`
+	BadHeaderErrors   []string `json:"badHeaderErrors"`
+	BadSPVProofs      []string `json:"badSPVProofs"`
+	BadSPVProofErrors []string `json:"badSPVProofErrors"`
+	BadHexBytes       string   `json:"errBadHexBytes"`
+	BadHexHash256     string   `json:"errBadHexHash256"`
+	BadLenHash256     string   `json:"errBadLenHash256"`
+	BadHexRawHeader   string   `json:"errBadHexRawHeader"`
+	BadLenRawHeader   string   `json:"errBadLenRawHeader"`
 }
 
 type TypesSuite struct {
 	suite.Suite
-	Fixtures TestProofCases
-	Proof    SPVProof
+	Fixtures          TestProofCases
+	Proof             SPVProof
+	BadHeaders        []BitcoinHeader
+	BadHeaderErrors   []Err
+	BadSPVProofs      []SPVProof
+	BadSPVProofErrors []Err
 }
 
 func TestTypes(t *testing.T) {
@@ -43,6 +56,40 @@ func TestTypes(t *testing.T) {
 	err = json.Unmarshal([]byte(typesSuite.Fixtures.Valid[0]), &spvProof)
 	logIfErr(err)
 	typesSuite.Proof = *spvProof
+
+	// TODO: use length of typesSuite.BadHeaders instead of using 5
+	// for i := range typesSuite.BadHeaders {
+	for i := 0; i < 5; i++ {
+		bitcoinHeader := new(BitcoinHeader)
+		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadHeaders[i]), &bitcoinHeader)
+		logIfErr(err)
+		appended := append(typesSuite.BadHeaders, *bitcoinHeader)
+		typesSuite.BadHeaders = appended
+	}
+
+	for i := 0; i < 5; i++ {
+		headerErr := new(Err)
+		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadHeaderErrors[i]), &headerErr)
+		logIfErr(err)
+		appended := append(typesSuite.BadHeaderErrors, *headerErr)
+		typesSuite.BadHeaderErrors = appended
+	}
+
+	for i := 0; i < 5; i++ {
+		spvProof := new(SPVProof)
+		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadSPVProofs[i]), &spvProof)
+		logIfErr(err)
+		appended := append(typesSuite.BadSPVProofs, *spvProof)
+		typesSuite.BadSPVProofs = appended
+	}
+
+	for i := 0; i < 5; i++ {
+		spvProofErr := new(Err)
+		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadSPVProofErrors[i]), &spvProofErr)
+		logIfErr(err)
+		appended := append(typesSuite.BadSPVProofErrors, *spvProofErr)
+		typesSuite.BadSPVProofErrors = appended
+	}
 
 	suite.Run(t, typesSuite)
 }
@@ -119,18 +166,43 @@ func (suite *TypesSuite) TestUnmarshalBadLenRawHeader() {
 }
 
 func (suite *TypesSuite) TestValidateBitcoinHeader() {
-
 	bitcoinHeader := suite.Proof.ConfirmingHeader
+	BadHeaders := suite.BadHeaders
+	BadHeaderErrors := suite.BadHeaderErrors
 
 	validHeader, err := bitcoinHeader.Validate()
-
 	suite.Nil(err)
 	suite.Equal(validHeader, true)
+
+	// TODO: Use length of actual array
+	for i := 0; i < 5; i++ {
+		header := BadHeaders[i]
+
+		valid, err := header.Validate()
+		// TODO: Is there a better way to convert regex?
+		expected := strings.Replace(BadHeaderErrors[i].Error, "\u00a0", " ", -1)
+
+		suite.Equal(false, valid)
+		suite.EqualError(err, expected)
+	}
 }
 
 func (suite *TypesSuite) TestValidateSPVProof() {
 	validProof, err := suite.Proof.Validate()
+	BadSPVProofs := suite.BadSPVProofs
+	BadSPVProofErrors := suite.BadSPVProofErrors
 
 	suite.Nil(err)
 	suite.Equal(validProof, true)
+
+	// TODO: Use length of actual array
+	for i := 0; i < 5; i++ {
+		spvProof := BadSPVProofs[i]
+
+		valid, validateErr := spvProof.Validate()
+		expected := strings.Replace(BadSPVProofErrors[i].Error, "\u00a0", " ", -1)
+
+		suite.Equal(false, valid)
+		suite.EqualError(validateErr, expected)
+	}
 }
