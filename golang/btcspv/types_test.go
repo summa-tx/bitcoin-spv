@@ -11,33 +11,6 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-// type Err struct {
-// 	Error string `json:"Error"`
-// }
-
-// type TestProofCases struct {
-// 	Valid             []string `json:"valid"`
-// 	BadHeaders        []string `json:"badHeaders"`
-// 	BadHeaderErrors   []string `json:"badHeaderErrors"`
-// 	BadSPVProofs      []string `json:"badSPVProofs"`
-// 	BadSPVProofErrors []string `json:"badSPVProofErrors"`
-// 	BadHexBytes       string   `json:"errBadHexBytes"`
-// 	BadHexHash256     string   `json:"errBadHexHash256"`
-// 	BadLenHash256     string   `json:"errBadLenHash256"`
-// 	BadHexRawHeader   string   `json:"errBadHexRawHeader"`
-// 	BadLenRawHeader   string   `json:"errBadLenRawHeader"`
-// }
-
-// type TypesSuite struct {
-// 	suite.Suite
-// 	Fixtures          TestProofCases
-// 	Proof             SPVProof
-// 	BadHeaders        []BitcoinHeader
-// 	BadHeaderErrors   []Err
-// 	BadSPVProofs      []SPVProof
-// 	BadSPVProofErrors []Err
-// }
-
 type SerializationCases struct {
 	Valid           []string `json:"valid"`
 	BadHeaders      []string `json:"badHeaders"`
@@ -66,60 +39,6 @@ type TypesSuite struct {
 	InvalidHeaders []InvalidHeadersCases
 	InvalidProofs  []InvalidProofsCases
 }
-
-// func TestTypes(t *testing.T) {
-// 	jsonFile, err := os.Open("../../testProofs.json")
-// 	defer jsonFile.Close()
-// 	logIfErr(err)
-
-// 	byteValue, err := ioutil.ReadAll(jsonFile)
-// 	logIfErr(err)
-
-// 	var fixtures TestProofCases
-// 	json.Unmarshal([]byte(byteValue), &fixtures)
-
-// 	typesSuite := new(TypesSuite)
-// 	typesSuite.Fixtures = fixtures
-
-// 	spvProof := new(SPVProof)
-// 	err = json.Unmarshal([]byte(typesSuite.Fixtures.Valid[0]), &spvProof)
-// 	logIfErr(err)
-// 	typesSuite.Proof = *spvProof
-
-// 	for i := 0; i < len(typesSuite.Fixtures.BadHeaders); i++ {
-// 		bitcoinHeader := new(BitcoinHeader)
-// 		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadHeaders[i]), &bitcoinHeader)
-// 		logIfErr(err)
-// 		appended := append(typesSuite.BadHeaders, *bitcoinHeader)
-// 		typesSuite.BadHeaders = appended
-// 	}
-
-// 	for i := 0; i < len(typesSuite.Fixtures.BadHeaderErrors); i++ {
-// 		headerErr := new(Err)
-// 		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadHeaderErrors[i]), &headerErr)
-// 		logIfErr(err)
-// 		appended := append(typesSuite.BadHeaderErrors, *headerErr)
-// 		typesSuite.BadHeaderErrors = appended
-// 	}
-
-// 	for i := 0; i < len(typesSuite.Fixtures.BadSPVProofs); i++ {
-// 		spvProof := new(SPVProof)
-// 		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadSPVProofs[i]), &spvProof)
-// 		logIfErr(err)
-// 		appended := append(typesSuite.BadSPVProofs, *spvProof)
-// 		typesSuite.BadSPVProofs = appended
-// 	}
-
-// 	for i := 0; i < len(typesSuite.Fixtures.BadSPVProofErrors); i++ {
-// 		spvProofErr := new(Err)
-// 		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadSPVProofErrors[i]), &spvProofErr)
-// 		logIfErr(err)
-// 		appended := append(typesSuite.BadSPVProofErrors, *spvProofErr)
-// 		typesSuite.BadSPVProofErrors = appended
-// 	}
-
-// 	suite.Run(t, typesSuite)
-// }
 
 func TestTypes(t *testing.T) {
 	jsonFile, err := os.Open("../../testProofs.json")
