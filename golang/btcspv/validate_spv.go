@@ -229,7 +229,6 @@ func (b BitcoinHeader) Validate() (bool, error) {
 
 // Validate checks validity of all the elements in an SPVProof
 func (s SPVProof) Validate() (bool, error) {
-	rawHeader := []byte(s.ConfirmingHeader.Raw[:])
 	txIDLE := []byte(s.TxIDLE[:])
 	merkleRootLE := []byte(s.ConfirmingHeader.MerkleRootLE[:])
 	intermediateNodes := s.IntermediateNodes
@@ -260,12 +259,6 @@ func (s SPVProof) Validate() (bool, error) {
 	validProof := Prove(txIDLE, merkleRootLE, intermediateNodes, index)
 	if !validProof {
 		return false, errors.New("Not a valid Merkle Proof")
-	}
-
-	// Validate the header chain, looks like the SPVProof doesn't have a header chain, only ConfirmingHeader
-	_, validationErr := ValidateHeaderChain(rawHeader)
-	if validationErr != nil {
-		return false, validationErr
 	}
 
 	// If there are no errors, return true
