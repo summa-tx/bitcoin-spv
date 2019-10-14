@@ -12,14 +12,14 @@ import (
 )
 
 type SerializationCases struct {
-	Valid           []string `json:"valid"`
-	BadHeaders      []string `json:"badHeaders"`
-	BadSPVProofs    []string `json:"badSPVProofs"`
-	BadHexBytes     string   `json:"errBadHexBytes"`
-	BadHexHash256   string   `json:"errBadHexHash256"`
-	BadLenHash256   string   `json:"errBadLenHash256"`
-	BadHexRawHeader string   `json:"errBadHexRawHeader"`
-	BadLenRawHeader string   `json:"errBadLenRawHeader"`
+	Valid           []string              `json:"valid"`
+	BadHeaders      []InvalidHeadersCases `json:"badHeaders"`
+	BadSPVProofs    []InvalidProofsCases  `json:"badSPVProofs"`
+	BadHexBytes     string                `json:"errBadHexBytes"`
+	BadHexHash256   string                `json:"errBadHexHash256"`
+	BadLenHash256   string                `json:"errBadLenHash256"`
+	BadHexRawHeader string                `json:"errBadHexRawHeader"`
+	BadLenRawHeader string                `json:"errBadLenRawHeader"`
 }
 
 type InvalidHeadersCases struct {
@@ -58,24 +58,6 @@ func TestTypes(t *testing.T) {
 	err = json.Unmarshal([]byte(typesSuite.Fixtures.Valid[0]), &spvProof)
 	logIfErr(err)
 	typesSuite.ValidProof = *spvProof
-
-	for i := 0; i < len(typesSuite.Fixtures.BadHeaders); i++ {
-		invalidHeader := new(InvalidHeadersCases)
-		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadHeaders[i]), &invalidHeader)
-		logIfErr(err)
-
-		appended := append(typesSuite.InvalidHeaders, *invalidHeader)
-		typesSuite.InvalidHeaders = appended
-	}
-
-	for i := 0; i < len(typesSuite.Fixtures.BadSPVProofs); i++ {
-		invalidProof := new(InvalidProofsCases)
-		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadSPVProofs[i]), &invalidProof)
-		logIfErr(err)
-
-		appended := append(typesSuite.InvalidProofs, *invalidProof)
-		typesSuite.InvalidProofs = appended
-	}
 
 	suite.Run(t, typesSuite)
 }
