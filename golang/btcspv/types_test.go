@@ -5,37 +5,36 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 )
 
-type Err struct {
-	Error string `json:"Error"`
+type SerializedCases struct {
+	Valid           []string              `json:"valid"`
+	InvalidHeaders  []InvalidHeadersCases `json:"badHeaders"`
+	InvalidProofs   []InvalidProofsCases  `json:"badSPVProofs"`
+	BadHexBytes     string                `json:"errBadHexBytes"`
+	BadHexHash256   string                `json:"errBadHexHash256"`
+	BadLenHash256   string                `json:"errBadLenHash256"`
+	BadHexRawHeader string                `json:"errBadHexRawHeader"`
+	BadLenRawHeader string                `json:"errBadLenRawHeader"`
 }
 
-type TestProofCases struct {
-	Valid             []string `json:"valid"`
-	BadHeaders        []string `json:"badHeaders"`
-	BadHeaderErrors   []string `json:"badHeaderErrors"`
-	BadSPVProofs      []string `json:"badSPVProofs"`
-	BadSPVProofErrors []string `json:"badSPVProofErrors"`
-	BadHexBytes       string   `json:"errBadHexBytes"`
-	BadHexHash256     string   `json:"errBadHexHash256"`
-	BadLenHash256     string   `json:"errBadLenHash256"`
-	BadHexRawHeader   string   `json:"errBadHexRawHeader"`
-	BadLenRawHeader   string   `json:"errBadLenRawHeader"`
+type InvalidHeadersCases struct {
+	Header BitcoinHeader `json:"header"`
+	Error  string        `json:"e"`
+}
+
+type InvalidProofsCases struct {
+	Proof SPVProof `json:"proof"`
+	Error string   `json:"e"`
 }
 
 type TypesSuite struct {
 	suite.Suite
-	Fixtures          TestProofCases
-	Proof             SPVProof
-	BadHeaders        []BitcoinHeader
-	BadHeaderErrors   []Err
-	BadSPVProofs      []SPVProof
-	BadSPVProofErrors []Err
+	Fixtures   SerializedCases
+	ValidProof SPVProof
 }
 
 func TestTypes(t *testing.T) {
@@ -46,50 +45,21 @@ func TestTypes(t *testing.T) {
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	logIfErr(err)
 
-	var fixtures TestProofCases
-	json.Unmarshal([]byte(byteValue), &fixtures)
-
-	typesSuite := new(TypesSuite)
-	typesSuite.Fixtures = fixtures
+	fixtures := new(SerializedCases)
+	err = json.Unmarshal([]byte(byteValue), &fixtures)
+	logIfErr(err)
 
 	spvProof := new(SPVProof)
-	err = json.Unmarshal([]byte(typesSuite.Fixtures.Valid[0]), &spvProof)
+	err = json.Unmarshal([]byte(fixtures.Valid[0]), &spvProof)
 	logIfErr(err)
-	typesSuite.Proof = *spvProof
 
-	for i := 0; i < len(typesSuite.Fixtures.BadHeaders); i++ {
-		bitcoinHeader := new(BitcoinHeader)
-		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadHeaders[i]), &bitcoinHeader)
-		logIfErr(err)
-		appended := append(typesSuite.BadHeaders, *bitcoinHeader)
-		typesSuite.BadHeaders = appended
+	typesSuite := TypesSuite{
+		*new(suite.Suite),
+		*fixtures,
+		*spvProof,
 	}
 
-	for i := 0; i < len(typesSuite.Fixtures.BadHeaderErrors); i++ {
-		headerErr := new(Err)
-		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadHeaderErrors[i]), &headerErr)
-		logIfErr(err)
-		appended := append(typesSuite.BadHeaderErrors, *headerErr)
-		typesSuite.BadHeaderErrors = appended
-	}
-
-	for i := 0; i < len(typesSuite.Fixtures.BadSPVProofs); i++ {
-		spvProof := new(SPVProof)
-		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadSPVProofs[i]), &spvProof)
-		logIfErr(err)
-		appended := append(typesSuite.BadSPVProofs, *spvProof)
-		typesSuite.BadSPVProofs = appended
-	}
-
-	for i := 0; i < len(typesSuite.Fixtures.BadSPVProofErrors); i++ {
-		spvProofErr := new(Err)
-		err = json.Unmarshal([]byte(typesSuite.Fixtures.BadSPVProofErrors[i]), &spvProofErr)
-		logIfErr(err)
-		appended := append(typesSuite.BadSPVProofErrors, *spvProofErr)
-		typesSuite.BadSPVProofErrors = appended
-	}
-
-	suite.Run(t, typesSuite)
+	suite.Run(t, &typesSuite)
 }
 
 func (suite *TypesSuite) TestUnmarshalSPVProof() {
@@ -163,40 +133,35 @@ func (suite *TypesSuite) TestUnmarshalBadLenRawHeader() {
 }
 
 func (suite *TypesSuite) TestValidateBitcoinHeader() {
-	bitcoinHeader := suite.Proof.ConfirmingHeader
-	BadHeaders := suite.BadHeaders
-	BadHeaderErrors := suite.BadHeaderErrors
+	validHeader, err := suite.ValidProof.ConfirmingHeader.Validate()
+	invalidHeaders := suite.Fixtures.InvalidHeaders
 
-	validHeader, err := bitcoinHeader.Validate()
 	suite.Nil(err)
 	suite.Equal(validHeader, true)
 
-	for i := 0; i < len(BadHeaders); i++ {
-		header := BadHeaders[i]
+	for i := 0; i < len(invalidHeaders); i++ {
+		headerCase := invalidHeaders[i]
 
-		valid, err := header.Validate()
-		expected := strings.Replace(BadHeaderErrors[i].Error, "\u00a0", " ", -1)
+		valid, err := headerCase.Header.Validate()
 
 		suite.Equal(false, valid)
-		suite.EqualError(err, expected)
+		suite.EqualError(err, headerCase.Error)
 	}
 }
 
 func (suite *TypesSuite) TestValidateSPVProof() {
-	validProof, err := suite.Proof.Validate()
-	BadSPVProofs := suite.BadSPVProofs
-	BadSPVProofErrors := suite.BadSPVProofErrors
+	validProof, err := suite.ValidProof.Validate()
+	invalidProofs := suite.Fixtures.InvalidProofs
 
 	suite.Nil(err)
 	suite.Equal(validProof, true)
 
-	for i := 0; i < len(BadSPVProofs); i++ {
-		spvProof := BadSPVProofs[i]
+	for i := 0; i < len(invalidProofs); i++ {
+		proofCase := invalidProofs[i]
 
-		valid, validateErr := spvProof.Validate()
-		expected := strings.Replace(BadSPVProofErrors[i].Error, "\u00a0", " ", -1)
+		valid, err := proofCase.Proof.Validate()
 
 		suite.Equal(false, valid)
-		suite.EqualError(validateErr, expected)
+		suite.EqualError(err, proofCase.Error)
 	}
 }
