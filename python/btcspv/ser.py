@@ -56,7 +56,6 @@ def serialize_spv_proof(s: SPVProof) -> str:
 
 
 def dict_to_spv_proof(d: dict) -> SPVProof:
-    print(d)
     t = tx.Tx.from_hex(
         f'{d["version"][2:]}{d["vin"][2:]}{d["vout"][2:]}{d["locktime"][2:]}')
     return SPVProof(
