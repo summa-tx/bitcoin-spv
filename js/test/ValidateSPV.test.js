@@ -19,7 +19,9 @@ const {
   validateHeaderChain,
   validateHeaderChainError,
   validateHeaderWork,
-  validateHeaderPrevHash
+  validateHeaderPrevHash,
+  validateHeader
+  // validateProof
 } = vectorObj;
 
 describe('ValidateSPV', () => {
@@ -159,4 +161,47 @@ describe('ValidateSPV', () => {
       }
     });
   });
+
+  // describe('#validateHeader', () => {
+  //   it('returns true if all elements of the bitcoin header are valid, false if otherwise', () => {
+  //     for (let i = 0; i < validateHeader.length; i += 1) {
+  //       const res = ValidateSPV.validateHeader(
+  //         new Uint8Array(validateHeader[i].input.raw),
+  //         new Uint8Array(validateHeader[i].input.hash),
+  //         new Uint8Array(validateHeader[i].input.hashLE),
+  //         validateHeader[i].input.height,
+  //         new Uint8Array(validateHeader[i].input.merkleRoot),
+  //         new Uint8Array(validateHeader[i].input.merkleRootLE),
+  //         new Uint8Array(validateHeader[i].input.prevHash)
+  //       )
+  //       assert.strictEqual(res, validateHeader[i].output)
+  //     }
+  //   })
+  // })
+
+  // describe('#validateProof', () => {
+  //   it('returns true if all elements of the SPV Proof are valid, false if otherwise', () => {
+  //     // assert.equal(validateProof.length, 1)
+  //     for (let i = 0; i < validateProof.length; i += 1) {
+  //       const res = ValidateSPV.validateProof(
+  //         validateProof.version,
+  //         validateProof.vin,
+  //         validateProof.vout,
+  //         validateProof.locktime,
+  //         validateProof.txid,
+  //         validateProof.txidLE,
+  //         validateProof.index,
+  //         validateProof.intermediateNodes,
+  //         validateProof.raw,
+  //         validateProof.hash,
+  //         validateProof.hashLE,
+  //         validateProof.height,
+  //         validateProof.merkleRoot,
+  //         validateProof.merkleRootLE,
+  //         validateProof.prevHash
+  //       )
+  //       assert.strictEqual(res, true)
+  //     }
+  //   })
+  // })
 });
