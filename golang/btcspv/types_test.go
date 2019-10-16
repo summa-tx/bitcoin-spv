@@ -10,18 +10,31 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type TestProofCases struct {
-	Valid           []string `json:"valid"`
-	BadHexBytes     string   `json:"errBadHexBytes"`
-	BadHexHash256   string   `json:"errBadHexHash256"`
-	BadLenHash256   string   `json:"errBadLenHash256"`
-	BadHexRawHeader string   `json:"errBadHexRawHeader"`
-	BadLenRawHeader string   `json:"errBadLenRawHeader"`
+type SerializedCases struct {
+	Valid           []string              `json:"valid"`
+	InvalidHeaders  []InvalidHeadersCases `json:"badHeaders"`
+	InvalidProofs   []InvalidProofsCases  `json:"badSPVProofs"`
+	BadHexBytes     string                `json:"errBadHexBytes"`
+	BadHexHash256   string                `json:"errBadHexHash256"`
+	BadLenHash256   string                `json:"errBadLenHash256"`
+	BadHexRawHeader string                `json:"errBadHexRawHeader"`
+	BadLenRawHeader string                `json:"errBadLenRawHeader"`
+}
+
+type InvalidHeadersCases struct {
+	Header BitcoinHeader `json:"header"`
+	Error  string        `json:"e"`
+}
+
+type InvalidProofsCases struct {
+	Proof SPVProof `json:"proof"`
+	Error string   `json:"e"`
 }
 
 type TypesSuite struct {
 	suite.Suite
-	Fixtures TestProofCases
+	Fixtures   SerializedCases
+	ValidProof SPVProof
 }
 
 func TestTypes(t *testing.T) {
@@ -32,13 +45,21 @@ func TestTypes(t *testing.T) {
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	logIfErr(err)
 
-	var fixtures TestProofCases
-	json.Unmarshal([]byte(byteValue), &fixtures)
+	fixtures := new(SerializedCases)
+	err = json.Unmarshal([]byte(byteValue), &fixtures)
+	logIfErr(err)
 
-	typesSuite := new(TypesSuite)
-	typesSuite.Fixtures = fixtures
+	spvProof := new(SPVProof)
+	err = json.Unmarshal([]byte(fixtures.Valid[0]), &spvProof)
+	logIfErr(err)
 
-	suite.Run(t, typesSuite)
+	typesSuite := TypesSuite{
+		*new(suite.Suite),
+		*fixtures,
+		*spvProof,
+	}
+
+	suite.Run(t, &typesSuite)
 }
 
 func (suite *TypesSuite) TestUnmarshalSPVProof() {
@@ -66,7 +87,6 @@ func (suite *TypesSuite) TestMarshalSPVProof() {
 		hex.EncodeToString(spvProof.TxIDLE[:]))
 	suite.Equal(uint32(26), spvProof.Index)
 	// // TODO: assert header equalities
-	// fmt.Println(spvProof.ConfirmingHeader)
 	suite.Equal(384, len(spvProof.IntermediateNodes))
 
 	j, err := json.Marshal(spvProof)
@@ -110,4 +130,44 @@ func (suite *TypesSuite) TestUnmarshalBadLenRawHeader() {
 	s := new(SPVProof)
 	err := json.Unmarshal([]byte(badLenRawHeader), &s)
 	suite.EqualError(err, "Expected 80 bytes, got 79 bytes")
+}
+
+func (suite *TypesSuite) TestValidateBitcoinHeader() {
+	validHeader, err := suite.ValidProof.ConfirmingHeader.Validate()
+	invalidHeaders := suite.Fixtures.InvalidHeaders
+
+	suite.Nil(err)
+	suite.Equal(validHeader, true)
+
+	for i := 0; i < len(invalidHeaders); i++ {
+		headerCase := invalidHeaders[i]
+
+		valid, err := headerCase.Header.Validate()
+
+		suite.Equal(false, valid)
+		suite.EqualError(err, headerCase.Error)
+	}
+}
+
+func (suite *TypesSuite) TestValidateSPVProof() {
+	validProof, err := suite.ValidProof.Validate()
+	suite.Nil(err)
+	suite.Equal(validProof, true)
+
+	invalidHeader := suite.ValidProof
+	invalidHeader.ConfirmingHeader.MerkleRoot = Hash256Digest{0xdd, 0xe2, 0x5e, 0x5d, 0x1c, 0xb2, 0x9a, 0xc6, 0xc0, 0x8b, 0xe7, 0x37, 0x83, 0x73, 0xc6, 0x46, 0xad, 0x18, 0xfc, 0x90, 0xb1, 0x44, 0x35, 0xa9, 0x2a, 0xc8, 0xab, 0x42, 0x28, 0xc9, 0x1a, 0xb6}
+	invalidProof, validationErr := invalidHeader.Validate()
+	suite.Equal(invalidProof, false)
+	suite.EqualError(validationErr, "MerkleRootLE is not the LE version of MerkleRoot")
+
+	invalidProofs := suite.Fixtures.InvalidProofs
+
+	for i := 0; i < len(invalidProofs); i++ {
+		proofCase := invalidProofs[i]
+
+		valid, err := proofCase.Proof.Validate()
+
+		suite.Equal(false, valid)
+		suite.EqualError(err, proofCase.Error)
+	}
 }
