@@ -6,6 +6,12 @@ from btcspv.types import RelayHeader, SPVProof
 
 
 def dict_from_relay_header(r: RelayHeader) -> dict:
+    '''
+    Args:
+        r (RelayHeader): The RelayHeader to be serialized
+    Returns:
+        (dict): A dictionary representing the RelayHeader with serialized keys
+    '''
     return {
         'raw': f"0x{r['raw'].hex()}",
         'hash': f"0x{r['hash'].hex()}",
@@ -18,10 +24,22 @@ def dict_from_relay_header(r: RelayHeader) -> dict:
 
 
 def serialize_relay_header(r: RelayHeader) -> str:
+    '''
+    Args:
+        r (RelayHeader): The RelayHeader to be serialized
+    Returns:
+        (str): A JSON-serialized RelayHeader
+    '''
     return json.dumps(dict_from_relay_header(r))
 
 
 def dict_to_relay_header(d: dict) -> RelayHeader:
+    '''
+    Args:
+        d (dict): The dict with serialized keys to be deserialized
+    Returns:
+        (RelayHeader): The RelayHeader, a TypedDict with deserialized keys
+    '''
     return RelayHeader(
         raw=bytes.fromhex(d['raw'][2:]),
         hash=bytes.fromhex(d['hash'][2:]),
@@ -34,10 +52,22 @@ def dict_to_relay_header(d: dict) -> RelayHeader:
 
 
 def deserialize_relay_header(s: str) -> RelayHeader:
+    '''
+    Args:
+        s (str): A JSON-serialized RelayHeader
+    Returns:
+        (RelayHeader): The deserialized RelayHeader
+    '''
     return dict_to_relay_header(json.loads(s))
 
 
 def dict_from_spv_proof(s: SPVProof) -> dict:
+    '''
+    Args:
+        s (SPVProof): The SPVProof to be serialized
+    Returns:
+        (dict): A dictionary representing the SPVProof with serialized keys
+    '''
     return {
         'version': f"0x{s['version'].hex()}",
         'vin': f"0x{s['vin'].hex()}",
@@ -52,10 +82,22 @@ def dict_from_spv_proof(s: SPVProof) -> dict:
 
 
 def serialize_spv_proof(s: SPVProof) -> str:
+    '''
+    Args:
+        s (SPVProof): The SPVProof to be serialized
+    Returns:
+        (str): A JSON-serialized SPVProof
+    '''
     return json.dumps(dict_from_spv_proof(s))
 
 
 def dict_to_spv_proof(d: dict) -> SPVProof:
+    '''
+    Args:
+        d (dict): The dict with serialized keys to be deserialized
+    Returns:
+        (SPVProof): The SPVProof, a TypedDict with deserialized keys
+    '''
     t = tx.Tx.from_hex(
         f'{d["version"][2:]}{d["vin"][2:]}{d["vout"][2:]}{d["locktime"][2:]}')
     return SPVProof(
@@ -73,4 +115,10 @@ def dict_to_spv_proof(d: dict) -> SPVProof:
 
 
 def deserialize_spv_proof(s: str) -> SPVProof:
+    '''
+    Args:
+        s (str): A JSON-serialized SPVProof
+    Returns:
+        (SPVProof): The deserialized SPVProof
+    '''
     return dict_to_spv_proof(json.loads(s))

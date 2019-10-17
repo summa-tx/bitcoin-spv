@@ -2,6 +2,16 @@ from riemann import utils as rutils
 
 
 def verify_proof(proof: bytes, index: int):
+    '''
+    Verifies a hash256 merkle proof.
+    The proof is encoded as a bytestring. The first 32 bytes are the leaf hash,
+    the last 32 bytes are the roothash.
+    Args:
+        proof (bytes): The merkle proof as a bytestring
+        index   (int): The 0-indexed position of the leaf in the leafset
+    Returns:
+        (bool): True if valid proof, else False
+    '''
     idx = index
     length = (len(proof) // 32) - 1
 
