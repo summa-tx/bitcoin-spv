@@ -1,17 +1,12 @@
 {
-  "engineStrict": true,
-  "engines": {
-    "node": ">10.0.0"
-  },
   "name": "@summa-tx/bitcoin-spv-js",
-  "contributors": [
-    "Erin Hales <erin@summa.one>",
-    "Dominique Liau <dominique@summa.one>",
-    "James Prestwich <james@summa.one>"
-  ],
   "version": "2.2.0",
   "description": "bitcoin SPV proofs in Javascript",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">10.0.0"
+  },
+  "engineStrict": true,
   "scripts": {
     "lint": "eslint ./test ./src",
     "lint:fix": "eslint --fix ./test ./src",
@@ -20,7 +15,20 @@
     "build": "babel src -d dist",
     "prepublishOnly": "npm run build"
   },
+  "keywords": [
+    "bitcoin",
+    "verification",
+    "cryptocurrency",
+    "utilities"
+  ],
+  "author": "Summa",
+  "contributors": [
+    "Erin Hales <erin@summa.one>",
+    "Dominique Liau <dominique@summa.one>",
+    "James Prestwich <james@summa.one>"
+  ],
   "license": "LGPLv3",
+  "homepage": "https://github.com/summa-tx/bitcoin-spv/tree/master/js#readme",
   "devDependencies": {
     "@babel/cli": "^7.6.0",
     "@babel/core": "^7.6.0",
