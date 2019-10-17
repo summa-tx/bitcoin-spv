@@ -9,7 +9,7 @@
     "Dominique Liau <dominique@summa.one>",
     "James Prestwich <james@summa.one>"
   ],
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "bitcoin SPV proofs in Javascript",
   "main": "dist/index.js",
   "scripts": {
