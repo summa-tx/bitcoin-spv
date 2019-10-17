@@ -15,7 +15,7 @@ pytest-cov = "*"
 
 [packages]
 btcspv = {editable = true,path = "."}
-riemann-tx = "*"
+riemann-tx = "2.0.1"
 
 [requires]
 python_version = "3.7"
