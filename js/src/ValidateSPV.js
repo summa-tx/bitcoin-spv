@@ -350,66 +350,28 @@ export function validateProof(
 
   const validVin = BTCUtils.validateVin(vin)
   if (!validVin) {
-    return false
+    throw new Error('Vin is not valid')
   }
 
   const validVout = BTCUtils.validateVout(vout)
   if (!validVout) {
-    return false
+    throw new Error('Vout is not valid')
   }
 
-  const txID = BTCUtils.calculateTxId(version, vin, vout, locktime)
-  if (!utils.typedArraysAreEqual(txID, txid)) {
-    return false
+  const txID = calculateTxId(version, vin, vout, locktime)
+  if (!utils.typedArraysAreEqual(txID, txidLE)) {
+    throw new Error('Version, Vin, Vout and Locktime did not yield correct TxID')
   }
 
   const validHeader = validateHeader(header, hash, hashLE, height, merkleRoot, merkleRootLE, prevHash)
   if (!validHeader) {
-    return false
+    throw new Error('Bitcoin header is not valid')
   }
 
   const validProof = prove(txidLE, merkleRootLE, intermediateNodes, index)
   if (!validProof) {
-    return false
+    throw new Error('Merkle Proof is not valid')
   }
 
   return true
 }
-
-// // Validate checks validity of all the elements in an SPVProof
-// func (s SPVProof) Validate() (bool, error) {
-// 	txIDLE := []byte(s.TxIDLE[:])
-// 	merkleRootLE := []byte(s.ConfirmingHeader.MerkleRootLE[:])
-// 	intermediateNodes := s.IntermediateNodes
-// 	index := uint(s.Index)
-
-// 	validVin := ValidateVin(s.Vin)
-// 	if !validVin {
-// 		return false, errors.New("Vin is not valid")
-// 	}
-// 	validVout := ValidateVout(s.Vout)
-// 	if !validVout {
-// 		return false, errors.New("Vout is not valid")
-// 	}
-
-// 	// Calculate the Tx ID and compare it to the one in SPVProof
-// 	txid := CalculateTxID(s.Version, s.Vin, s.Vout, s.Locktime)
-// 	if bytes.Compare(txid, txIDLE) != 0 {
-// 		return false, errors.New("Version, Vin, Vout and Locktime did not yield correct TxID")
-// 	}
-
-// 	// Validate all the fields in ConfirmingHeader
-// 	_, err := s.ConfirmingHeader.Validate()
-// 	if err != nil {
-// 		return false, err
-// 	}
-
-// 	// Check that the proof is valid
-// 	validProof := Prove(txIDLE, merkleRootLE, intermediateNodes, index)
-// 	if !validProof {
-// 		return false, errors.New("Not a valid Merkle Proof")
-// 	}
-
-// 	// If there are no errors, return true
-// 	return true, nil
-// }

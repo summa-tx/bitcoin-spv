@@ -20,8 +20,8 @@ const {
   validateHeaderChainError,
   validateHeaderWork,
   validateHeaderPrevHash,
-  validateHeader
-  // validateProof
+  validateHeader,
+  validateProof
 } = vectorObj;
 
 describe('ValidateSPV', () => {
@@ -162,46 +162,45 @@ describe('ValidateSPV', () => {
     });
   });
 
-  // describe('#validateHeader', () => {
-  //   it('returns true if all elements of the bitcoin header are valid, false if otherwise', () => {
-  //     for (let i = 0; i < validateHeader.length; i += 1) {
-  //       const res = ValidateSPV.validateHeader(
-  //         new Uint8Array(validateHeader[i].input.raw),
-  //         new Uint8Array(validateHeader[i].input.hash),
-  //         new Uint8Array(validateHeader[i].input.hashLE),
-  //         validateHeader[i].input.height,
-  //         new Uint8Array(validateHeader[i].input.merkleRoot),
-  //         new Uint8Array(validateHeader[i].input.merkleRootLE),
-  //         new Uint8Array(validateHeader[i].input.prevHash)
-  //       )
-  //       assert.strictEqual(res, validateHeader[i].output)
-  //     }
-  //   })
-  // })
+  describe('#validateHeader', () => {
+    it('returns true if all elements of the bitcoin header are valid, false if otherwise', () => {
+      for (let i = 0; i < validateHeader.length; i += 1) {
+        const res = ValidateSPV.validateHeader(
+          validateHeader[i].input.raw,
+          validateHeader[i].input.hash,
+          validateHeader[i].input.hash_le,
+          validateHeader[i].input.height,
+          validateHeader[i].input.merkle_root,
+          validateHeader[i].input.merkle_root_le,
+          validateHeader[i].input.prev_hash
+        )
+        assert.strictEqual(res, validateHeader[i].output)
+      }
+    })
+  })
 
-  // describe('#validateProof', () => {
-  //   it('returns true if all elements of the SPV Proof are valid, false if otherwise', () => {
-  //     // assert.equal(validateProof.length, 1)
-  //     for (let i = 0; i < validateProof.length; i += 1) {
-  //       const res = ValidateSPV.validateProof(
-  //         validateProof.version,
-  //         validateProof.vin,
-  //         validateProof.vout,
-  //         validateProof.locktime,
-  //         validateProof.txid,
-  //         validateProof.txidLE,
-  //         validateProof.index,
-  //         validateProof.intermediateNodes,
-  //         validateProof.raw,
-  //         validateProof.hash,
-  //         validateProof.hashLE,
-  //         validateProof.height,
-  //         validateProof.merkleRoot,
-  //         validateProof.merkleRootLE,
-  //         validateProof.prevHash
-  //       )
-  //       assert.strictEqual(res, true)
-  //     }
-  //   })
-  // })
+  describe('#validateProof', () => {
+    it('returns true if all elements of the SPV Proof are valid, false if otherwise', () => {
+      for (let i = 0; i < validateProof.length; i += 1) {
+        const res = ValidateSPV.validateProof(
+          validateProof[i].input.version,
+          validateProof[i].input.vin,
+          validateProof[i].input.vout,
+          validateProof[i].input.locktime,
+          validateProof[i].input.txid,
+          validateProof[i].input.txid_le,
+          validateProof[i].input.index,
+          validateProof[i].input.intermediate_nodes,
+          validateProof[i].input.raw,
+          validateProof[i].input.hash,
+          validateProof[i].input.hash_le,
+          validateProof[i].input.height,
+          validateProof[i].input.merkle_root,
+          validateProof[i].input.merkle_root_le,
+          validateProof[i].input.prev_hash
+        )
+        assert.strictEqual(res, validateProof[i].output)
+      }
+    })
+  })
 });

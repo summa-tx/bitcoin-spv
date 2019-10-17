@@ -258,7 +258,7 @@ func (s SPVProof) Validate() (bool, error) {
 	// Check that the proof is valid
 	validProof := Prove(txIDLE, merkleRootLE, intermediateNodes, index)
 	if !validProof {
-		return false, errors.New("Not a valid Merkle Proof")
+		return false, errors.New("Merkle Proof is not valid")
 	}
 
 	// If there are no errors, return true
