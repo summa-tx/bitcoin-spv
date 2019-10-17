@@ -276,37 +276,36 @@ export function validateHeader(
   prevHash) {
 
   // Check that HashLE is the correct hash of the raw header
-  const headerHash = BTCUtils.hash256(header)
-  // return `${typeof headerHash}`
+  const headerHash = BTCUtils.hash256(header);
 	if (!utils.typedArraysAreEqual(headerHash, hashLE)) {
-		throw new Error('Hash LE is not the correct hash of the header')
+		throw new Error('Hash LE is not the correct hash of the header');
   }
 
 	// Check that HashLE is the reverse of Hash
-	const reversedHash = utils.reverseEndianness(hash)
+	const reversedHash = utils.reverseEndianness(hash);
 	if (!utils.typedArraysAreEqual(reversedHash, hashLE)) {
-		throw new Error('HashLE is not the LE version of Hash')
+		throw new Error('HashLE is not the LE version of Hash');
   }
 
 	// Check that the MerkleRootLE is the correct MerkleRoot for the header
-	const extractedMerkleRootLE = BTCUtils.extractMerkleRootLE(header)
+	const extractedMerkleRootLE = BTCUtils.extractMerkleRootLE(header); 
 	if (!utils.typedArraysAreEqual(extractedMerkleRootLE, merkleRootLE)) {
-		throw new Error('MerkleRootLE is not the correct merkle root of the header')
+		throw new Error('MerkleRootLE is not the correct merkle root of the header');
   }
 
 	// Check that MerkleRootLE is the reverse of MerkleRoot
-	const reversedMerkleRoot = utils.reverseEndianness(merkleRoot)
+	const reversedMerkleRoot = utils.reverseEndianness(merkleRoot);
 	if (!utils.typedArraysAreEqual(reversedMerkleRoot, merkleRootLE)) {
-		throw new Error('MerkleRootLE is not the LE version of MerkleRoot')
+		throw new Error('MerkleRootLE is not the LE version of MerkleRoot');
   }
 
 	// Check that PrevHash is the correct PrevHash for the header
-	const extractedPrevHash = BTCUtils.extractPrevBlockBE(header)
+	const extractedPrevHash = BTCUtils.extractPrevBlockBE(header);
 	if (!utils.typedArraysAreEqual(extractedPrevHash, prevHash)) {
-		throw new Error('Prev hash is not the correct previous hash of the header')
+		throw new Error('Prev hash is not the correct previous hash of the header');
   }
 
-  return true
+  return true;
 }
 
 /**
@@ -348,30 +347,30 @@ export function validateProof(
   merkleRootLE,
   prevHash) {
 
-  const validVin = BTCUtils.validateVin(vin)
+  const validVin = BTCUtils.validateVin(vin);
   if (!validVin) {
-    throw new Error('Vin is not valid')
+    throw new Error('Vin is not valid');
   }
 
-  const validVout = BTCUtils.validateVout(vout)
+  const validVout = BTCUtils.validateVout(vout);
   if (!validVout) {
-    throw new Error('Vout is not valid')
+    throw new Error('Vout is not valid');
   }
 
-  const txID = calculateTxId(version, vin, vout, locktime)
+  const txID = calculateTxId(version, vin, vout, locktime);
   if (!utils.typedArraysAreEqual(txID, txidLE)) {
-    throw new Error('Version, Vin, Vout and Locktime did not yield correct TxID')
+    throw new Error('Version, Vin, Vout and Locktime did not yield correct TxID');
   }
 
-  const validHeader = validateHeader(header, hash, hashLE, height, merkleRoot, merkleRootLE, prevHash)
+  const validHeader = validateHeader(header, hash, hashLE, height, merkleRoot, merkleRootLE, prevHash);
   if (!validHeader) {
-    throw new Error('Bitcoin header is not valid')
+    throw new Error('Bitcoin header is not valid');
   }
 
-  const validProof = prove(txidLE, merkleRootLE, intermediateNodes, index)
+  const validProof = prove(txidLE, merkleRootLE, intermediateNodes, index);
   if (!validProof) {
-    throw new Error('Merkle Proof is not valid')
+    throw new Error('Merkle Proof is not valid');
   }
 
-  return true
+  return true;
 }

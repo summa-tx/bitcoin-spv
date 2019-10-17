@@ -21,7 +21,9 @@ const {
   validateHeaderWork,
   validateHeaderPrevHash,
   validateHeader,
-  validateProof
+  validateHeaderError,
+  validateProof,
+  validateProofError
 } = vectorObj;
 
 describe('ValidateSPV', () => {
@@ -163,7 +165,7 @@ describe('ValidateSPV', () => {
   });
 
   describe('#validateHeader', () => {
-    it('returns true if all elements of the bitcoin header are valid, false if otherwise', () => {
+    it('returns true if all elements of the bitcoin header are valid', () => {
       for (let i = 0; i < validateHeader.length; i += 1) {
         const res = ValidateSPV.validateHeader(
           validateHeader[i].input.raw,
@@ -177,10 +179,29 @@ describe('ValidateSPV', () => {
         assert.strictEqual(res, validateHeader[i].output)
       }
     })
+
+    it('throws error if any element of a header is invalid'), () => {
+      for (let i = 0; i < validateHeaderError.length; i += 1) {
+        try {
+          ValidateSPV.validateHeader(
+            validateHeaderError[i].input.raw,
+            validateHeaderError[i].input.hash,
+            validateHeaderError[i].input.hash_le,
+            validateHeaderError[i].input.height,
+            validateHeaderError[i].input.merkle_root,
+            validateHeaderError[i].input.merkle_root_le,
+            validateHeaderError[i].input.prev_hash
+          )
+          assert(false, 'expected an error');
+        } catch (e) {
+          assert.include(e.message, validateHeaderError[i].errorMessage);
+        }
+      }
+    }
   })
 
   describe('#validateProof', () => {
-    it('returns true if all elements of the SPV Proof are valid, false if otherwise', () => {
+    it('returns true if all elements of the SPV Proof are valid', () => {
       for (let i = 0; i < validateProof.length; i += 1) {
         const res = ValidateSPV.validateProof(
           validateProof[i].input.version,
@@ -200,6 +221,33 @@ describe('ValidateSPV', () => {
           validateProof[i].input.prev_hash
         )
         assert.strictEqual(res, validateProof[i].output)
+      }
+    })
+
+    it('throws error if any element in the SPV Proof are invalid', () => {
+      for (let i = 0; i < validateProofError.length; i += 1) {
+        try {
+          ValidateSPV.validateProof(
+            validateProofError[i].input.version,
+            validateProofError[i].input.vin,
+            validateProofError[i].input.vout,
+            validateProofError[i].input.locktime,
+            validateProofError[i].input.txid,
+            validateProofError[i].input.txid_le,
+            validateProofError[i].input.index,
+            validateProofError[i].input.intermediate_nodes,
+            validateProofError[i].input.raw,
+            validateProofError[i].input.hash,
+            validateProofError[i].input.hash_le,
+            validateProofError[i].input.height,
+            validateProofError[i].input.merkle_root,
+            validateProofError[i].input.merkle_root_le,
+            validateProofError[i].input.prev_hash
+          )
+          assert(false, 'expected an error');
+        } catch (e) {
+          assert.include(e.message, validateProofError[i].errorMessage);
+        }
       }
     })
   })
