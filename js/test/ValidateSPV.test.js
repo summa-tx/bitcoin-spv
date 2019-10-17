@@ -197,8 +197,8 @@ describe('ValidateSPV', () => {
           assert.include(e.message, validateHeaderError[i].errorMessage);
         }
       }
-    })
-  })
+    });
+  });
 
   describe('#validateProof', () => {
     it('returns true if all elements of the SPV Proof are valid', () => {
@@ -222,7 +222,7 @@ describe('ValidateSPV', () => {
         );
         assert.strictEqual(res, validateProof[i].output);
       }
-    })
+    });
 
     it('throws error if any element in the SPV Proof are invalid', () => {
       for (let i = 0; i < validateProofError.length; i += 1) {
@@ -249,6 +249,6 @@ describe('ValidateSPV', () => {
           assert.include(e.message, validateProofError[i].errorMessage);
         }
       }
-    })
-  })
+    });
+  });
 });
