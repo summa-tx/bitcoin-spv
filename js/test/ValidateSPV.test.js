@@ -175,12 +175,12 @@ describe('ValidateSPV', () => {
           validateHeader[i].input.merkle_root,
           validateHeader[i].input.merkle_root_le,
           validateHeader[i].input.prev_hash
-        )
-        assert.strictEqual(res, validateHeader[i].output)
+        );
+        assert.strictEqual(res, validateHeader[i].output);
       }
-    })
+    });
 
-    it('throws error if any element of a header is invalid'), () => {
+    it('throws error if any element of a header is invalid', () => {
       for (let i = 0; i < validateHeaderError.length; i += 1) {
         try {
           ValidateSPV.validateHeader(
@@ -191,13 +191,13 @@ describe('ValidateSPV', () => {
             validateHeaderError[i].input.merkle_root,
             validateHeaderError[i].input.merkle_root_le,
             validateHeaderError[i].input.prev_hash
-          )
+          );
           assert(false, 'expected an error');
         } catch (e) {
           assert.include(e.message, validateHeaderError[i].errorMessage);
         }
       }
-    }
+    })
   })
 
   describe('#validateProof', () => {
@@ -219,8 +219,8 @@ describe('ValidateSPV', () => {
           validateProof[i].input.merkle_root,
           validateProof[i].input.merkle_root_le,
           validateProof[i].input.prev_hash
-        )
-        assert.strictEqual(res, validateProof[i].output)
+        );
+        assert.strictEqual(res, validateProof[i].output);
       }
     })
 
@@ -243,7 +243,7 @@ describe('ValidateSPV', () => {
             validateProofError[i].input.merkle_root,
             validateProofError[i].input.merkle_root_le,
             validateProofError[i].input.prev_hash
-          )
+          );
           assert(false, 'expected an error');
         } catch (e) {
           assert.include(e.message, validateProofError[i].errorMessage);
