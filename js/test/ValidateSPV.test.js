@@ -1,7 +1,7 @@
 /* global describe it BigInt */
 import * as chai from 'chai';
 import * as utils from '../src/utils';
-import * as ser from '../src/ser.js';
+import * as ser from '../src/ser';
 import * as ValidateSPV from '../src/ValidateSPV';
 import * as vectors from '../../testVectors.json';
 import * as testProofs from '../../testProofs.json';
@@ -173,12 +173,12 @@ describe('ValidateSPV', () => {
   });
 
   describe('#validateHeader', () => {
-    it('returns true if all elements of the bitcoin header are valid', () => {
+    it('returns true if the header object is syntactically valid', () => {
       const res = ValidateSPV.validateHeader(validProof.confirming_header);
       assert.strictEqual(res, true);
     });
 
-    it('throws error if any element of a header is invalid', () => {
+    it('throws error if any element of the header is invalid', () => {
       for (let i = 0; i < badHeaders.length; i += 1) {
         try {
           ValidateSPV.validateHeader(badHeaders[i].header)
@@ -191,12 +191,12 @@ describe('ValidateSPV', () => {
   });
 
   describe('#validateProof', () => {
-    it('returns true if all elements of the SPV Proof are valid', () => {
+    it('returns true if the SPV Proof object is syntactically valid', () => {
       const res = ValidateSPV.validateProof(validProof);
       assert.isTrue(res);
     });
 
-    it('throws error if any element in the SPV Proof are invalid', () => {
+    it('throws error if any element in the SPV Proof is invalid', () => {
       for (let i = 0; i < badSPVProofs.length; i += 1) {
         try {
           ValidateSPV.validateProof(badSPVProofs[i].proof);

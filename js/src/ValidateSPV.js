@@ -264,7 +264,7 @@ export function validateHeaderChain(headers) {
  * @param {Uint8Array}    header.merkle_root The merkle root of the header
  * @param {Uint8Array}    header.merkle_root_le The LE merkle root
  * @param {Uint8Array}    header.prevhash The hash of the previous header
- * @returns {Boolean}     True if all the elements of the header are valid
+ * @returns {Boolean}     True if the header object is syntactically valid
  * @throws {Error}        If any of the bitcoin header elements are invalid
 */
 export function validateHeader(header) {
@@ -322,7 +322,8 @@ export function validateHeader(header) {
  * @param {Uint8Array}    proof.confirming_header.merkle_root The merkle root of the header
  * @param {Uint8Array}    proof.confirming_header.merkle_root_le The LE merkle root
  * @param {Uint8Array}    proof.confirming_header.prevhash The hash of the previous header
- * @returns {Boolean}     True if all the elements of the proof are valid, false if otherwise
+ * @returns {Boolean}     Teturns true if the SPV Proof object is syntactically valid
+ * @throws {Error}        If any of the SPV Proof elements are invalid
 */
 export function validateProof(proof) {
   const { version, vin, vout, locktime, tx_id, tx_id_le, index, intermediate_nodes, confirming_header } = proof
