@@ -67,9 +67,15 @@ the verifier may set any number of other acceptance constraints on the proof.
 E.g. the contract may check that the `vout` contains an output paying at least
 30,000 satoshi to a particular `scriptPubkey`.
 
+We have provided serialization methods for proofs with a single header in
+`ser.js`.
+
 **SPV Proof Example:**
 ```JavaScript
-const SPVProof = {
+import * as ser from './src/ser'
+import * as ValidateSPV from './src/ValidateSPV'
+
+const SPVProofObject = {
     version: "0x01000000",
     vin: "0x0101748906a5c7064550a594c4683ffc6d1ee25292b638c4328bb66403cfceb58a000000006a4730440220364301a77ee7ae34fa71768941a2aad5bd1fa8d3e30d4ce6424d8752e83f2c1b02203c9f8aafced701f59ffb7c151ff2523f3ed1586d29b674efb489e803e9bf93050121029b3008c0fa147fd9db5146e42b27eb0a77389497713d3aad083313d1b1b05ec0ffffffff",
     vout: "0x0316312f00000000001976a91400cc8d95d6835252e0d95eb03b11691a21a7bac588ac220200000000000017a914e5034b9de4881d62480a2df81032ef0299dcdc32870000000000000000166a146f6d6e69000000000000001f0000000315e17900",
@@ -88,6 +94,10 @@ const SPVProof = {
         prevhash: "0x00000000000000000001103ad2a8ce7e7d2d9459edb26a3497728b3001b638c2"
     }
 }
+
+let SPVProof = ser.objectToSPVProof(SPVProofObject)
+
+let validProof = ValidateSPV.validateProof(SPVProof)
 ```
 
 **Usage Example:**

@@ -256,7 +256,8 @@ export function validateHeaderChain(headers) {
  * Checks validity of an entire bitcoin header
  *
  * @dev                   Checks that each element in a bitcoin header is valid
- * @param {Object}        header A valid Bitcoin header object, see README for more information on creating an Bitcoin Header object
+ * @param {Object}        header A valid Bitcoin header object, see README for
+ *                          more information on creating an Bitcoin Header object
  * @param {Uint8Array}    header.raw The bitcoin header
  * @param {Uint8Array}    header.hash The hash of the header
  * @param {Uint8Array}    header.hash_le The LE hash of the header
@@ -306,7 +307,8 @@ export function validateHeader(header) {
  * Checks validity of an entire SPV Proof
  *
  * @dev                   Checks that each element in an SPV Proof is valid
- * @param {Object}        proof A valid SPV Proof object, see README for more information on creating an SPV Proof object
+ * @param {Object}        proof A valid SPV Proof object, see README for
+ *                          more information on creating an SPV Proof object
  * @param {Uint8Array}    proof.version The version
  * @param {Uint8Array}    proof.vin The vin
  * @param {Uint8Array}    proof.vout The vout
@@ -326,8 +328,18 @@ export function validateHeader(header) {
  * @throws {Error}        If any of the SPV Proof elements are invalid
 */
 export function validateProof(proof) {
-  const { version, vin, vout, locktime, tx_id, tx_id_le, index, intermediate_nodes, confirming_header } = proof
-  const { merkle_root_le } = confirming_header
+  const {
+    version,
+    vin,
+    vout,
+    locktime,
+    tx_id_le: txIdLE,
+    index,
+    intermediate_nodes: intermediateNodes,
+    confirming_header: confirmingHeader
+  } = proof;
+  const { merkle_root_le: merkleRootLE } = confirmingHeader;
+
   const validVin = BTCUtils.validateVin(vin);
   if (!validVin) {
     throw new Error('Vin is not valid');
@@ -339,13 +351,13 @@ export function validateProof(proof) {
   }
 
   const txID = calculateTxId(version, vin, vout, locktime);
-  if (!utils.typedArraysAreEqual(txID, tx_id_le)) {
+  if (!utils.typedArraysAreEqual(txID, txIdLE)) {
     throw new Error('Version, Vin, Vout and Locktime did not yield correct TxID');
   }
 
-  validateHeader(confirming_header);
+  validateHeader(confirmingHeader);
 
-  const validProof = prove(tx_id_le, merkle_root_le, intermediate_nodes, index);
+  const validProof = prove(txIdLE, merkleRootLE, intermediateNodes, index);
   if (!validProof) {
     throw new Error('Merkle Proof is not valid');
   }

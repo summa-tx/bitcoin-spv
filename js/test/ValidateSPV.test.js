@@ -181,7 +181,7 @@ describe('ValidateSPV', () => {
     it('throws error if any element of the header is invalid', () => {
       for (let i = 0; i < badHeaders.length; i += 1) {
         try {
-          ValidateSPV.validateHeader(badHeaders[i].header)
+          ValidateSPV.validateHeader(badHeaders[i].header);
           assert(false, 'expected an error');
         } catch (e) {
           assert.include(e.message, badHeaders[i].e);
