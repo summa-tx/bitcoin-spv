@@ -85,7 +85,7 @@ export function serializeHeader(h) {
  *   with deserialized Uint8Array in place of serialzed hex strings
  *
  * @param {Object}    o The proof as an unprcessed object, immediately after derserialization
- * @returns {Object}      The proof with deserialized byte arrays
+ * @returns {Object}    The proof with deserialized byte arrays
  */
 export function objectToSPVProof(o) {
   /* eslint-disable camelcase */
@@ -122,7 +122,7 @@ export function objectToSPVProof(o) {
  * Deserializes a SPVProof object from a JSON string
  *
  * @param {string}    s The SPVProof serialized as a JSON string
- * @returns {Object}      The SPVProof with deserialized byte arrays
+ * @returns {Object}    The SPVProof with deserialized byte arrays
  */
 export function deserializeSPVProof(s) {
   return objectToSPVProof(JSON.parse(s));
@@ -153,7 +153,7 @@ export function objectFromSPVProof(s) {
  *
  * Serializes a SPVProof object to a JSON string
  *
- * @param {Object}  s The SPVProof with deserialized byte arrays
+ * @param {Object}    s The SPVProof with deserialized byte arrays
  * @returns {string}    The SPVProof serialized as a JSON string
  */
 export function serializeSPVProof(s) {

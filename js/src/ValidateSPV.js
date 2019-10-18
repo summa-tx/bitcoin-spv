@@ -362,12 +362,9 @@ export function validateProof(
     throw new Error('Version, Vin, Vout and Locktime did not yield correct TxID');
   }
 
-  const validHeader = validateHeader(
+  validateHeader(
     header, hash, hashLE, height, merkleRoot, merkleRootLE, prevHash
   );
-  if (!validHeader) {
-    throw new Error('Bitcoin header is not valid');
-  }
 
   const validProof = prove(txidLE, merkleRootLE, intermediateNodes, index);
   if (!validProof) {

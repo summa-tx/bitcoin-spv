@@ -11,36 +11,36 @@ const { valid } = vectorObj;
 const { assert } = chai;
 
 describe('ser', () => {
-  it('can round-trip serialization', () => {
-    const emptyDigest = new Uint8Array(32);
-    valid.forEach((e) => {
-      const proof = ser.deserializeSPVProof(e);
+  // it('can round-trip serialization', () => {
+  //   const emptyDigest = new Uint8Array(32);
+  //   valid.forEach((e) => {
+  //     const proof = ser.deserializeSPVProof(e);
 
-      // TODO: make more assertions and clean up this section
-      assert.equal(proof.tx_id_le.length, 32);
-      assert.isFalse(utils.typedArraysAreEqual(proof.tx_id_le, emptyDigest));
-      assert.equal(proof.tx_id.length, 32);
-      assert.isFalse(utils.typedArraysAreEqual(proof.tx_id, emptyDigest));
+  //     // TODO: make more assertions and clean up this section
+  //     assert.equal(proof.tx_id_le.length, 32);
+  //     assert.isFalse(utils.typedArraysAreEqual(proof.tx_id_le, emptyDigest));
+  //     assert.equal(proof.tx_id.length, 32);
+  //     assert.isFalse(utils.typedArraysAreEqual(proof.tx_id, emptyDigest));
 
-      // re-serialize and re-deserialize
-      const jsonProofString = ser.serializeSPVProof(proof);
-      const secondProof = ser.deserializeSPVProof(jsonProofString);
+  //     // re-serialize and re-deserialize
+  //     const jsonProofString = ser.serializeSPVProof(proof);
+  //     const secondProof = ser.deserializeSPVProof(jsonProofString);
 
-      // TODO: make more assertions and clean up this section
-      assert.isTrue(utils.typedArraysAreEqual(
-        proof.intermediate_nodes,
-        secondProof.intermediate_nodes
-      ));
-      assert.isTrue(utils.typedArraysAreEqual(
-        proof.tx_id,
-        secondProof.tx_id
-      ));
-      assert.isTrue(utils.typedArraysAreEqual(
-        proof.tx_id_le,
-        secondProof.tx_id_le
-      ));
-    });
-  });
+  //     // TODO: make more assertions and clean up this section
+  //     assert.isTrue(utils.typedArraysAreEqual(
+  //       proof.intermediate_nodes,
+  //       secondProof.intermediate_nodes
+  //     ));
+  //     assert.isTrue(utils.typedArraysAreEqual(
+  //       proof.tx_id,
+  //       secondProof.tx_id
+  //     ));
+  //     assert.isTrue(utils.typedArraysAreEqual(
+  //       proof.tx_id_le,
+  //       secondProof.tx_id_le
+  //     ));
+  //   });
+  // });
 
   it('errBadHexBytes', () => {
     try {
