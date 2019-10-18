@@ -100,7 +100,7 @@ export function deserializeHex(hexStr) {
  *
  * Executes the sha256 hash
  *
- * @param {Uint8Array}    but The pre-image
+ * @param {Uint8Array}    buf The pre-image
  * @returns {Uint8Array}  The digest
  */
 export function sha256(buf) {

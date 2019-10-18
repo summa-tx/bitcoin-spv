@@ -1,8 +1,10 @@
 /* global describe it BigInt */
 import * as chai from 'chai';
 import * as utils from '../src/utils';
+import * as ser from '../src/ser';
 import * as ValidateSPV from '../src/ValidateSPV';
 import * as vectors from '../../testVectors.json';
+import * as testProofs from '../../testProofs.json';
 
 const { assert } = chai;
 
@@ -21,6 +23,16 @@ const {
   validateHeaderWork,
   validateHeaderPrevHash
 } = vectorObj;
+
+const testProofsObj = JSON.parse(JSON.stringify(testProofs));
+utils.updateJSON(testProofsObj);
+
+const {
+  valid,
+  badHeaders,
+  badSPVProofs
+} = testProofsObj;
+const validProof = ser.deserializeSPVProof(valid);
 
 describe('ValidateSPV', () => {
   describe('#prove', () => {
@@ -156,6 +168,42 @@ describe('ValidateSPV', () => {
           validateHeaderPrevHash[i].input.prevHash
         );
         assert.strictEqual(res, validateHeaderPrevHash[i].output);
+      }
+    });
+  });
+
+  describe('#validateHeader', () => {
+    it('returns true if the header object is syntactically valid', () => {
+      const res = ValidateSPV.validateHeader(validProof.confirming_header);
+      assert.strictEqual(res, true);
+    });
+
+    it('throws error if any element of the header is invalid', () => {
+      for (let i = 0; i < badHeaders.length; i += 1) {
+        try {
+          ValidateSPV.validateHeader(badHeaders[i].header);
+          assert(false, 'expected an error');
+        } catch (e) {
+          assert.include(e.message, badHeaders[i].e);
+        }
+      }
+    });
+  });
+
+  describe('#validateProof', () => {
+    it('returns true if the SPV Proof object is syntactically valid', () => {
+      const res = ValidateSPV.validateProof(validProof);
+      assert.isTrue(res);
+    });
+
+    it('throws error if any element in the SPV Proof is invalid', () => {
+      for (let i = 0; i < badSPVProofs.length; i += 1) {
+        try {
+          ValidateSPV.validateProof(badSPVProofs[i].proof);
+          assert(false, 'expected an error');
+        } catch (e) {
+          assert.include(e.message, badSPVProofs[i].e);
+        }
       }
     });
   });

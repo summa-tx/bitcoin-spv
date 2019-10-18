@@ -250,3 +250,117 @@ export function validateHeaderChain(headers) {
   }
   return totalDifficulty;
 }
+
+/**
+ *
+ * Checks validity of an entire bitcoin header
+ *
+ * @dev                   Checks that each element in a bitcoin header is valid
+ * @param {Object}        header A valid Bitcoin header object, see README for
+ *                          more information on creating an Bitcoin Header object
+ * @param {Uint8Array}    header.raw The bitcoin header
+ * @param {Uint8Array}    header.hash The hash of the header
+ * @param {Uint8Array}    header.hash_le The LE hash of the header
+ * @param {Number}        header.height The height
+ * @param {Uint8Array}    header.merkle_root The merkle root of the header
+ * @param {Uint8Array}    header.merkle_root_le The LE merkle root
+ * @param {Uint8Array}    header.prevhash The hash of the previous header
+ * @returns {Boolean}     True if the header object is syntactically valid
+ * @throws {Error}        If any of the bitcoin header elements are invalid
+*/
+export function validateHeader(header) {
+  // Check that HashLE is the correct hash of the raw header
+  const headerHash = BTCUtils.hash256(header.raw);
+  if (!utils.typedArraysAreEqual(headerHash, header.hash_le)) {
+    throw new Error('Hash LE is not the correct hash of the header');
+  }
+
+  // Check that HashLE is the reverse of Hash
+  const reversedHash = utils.reverseEndianness(header.hash);
+  if (!utils.typedArraysAreEqual(reversedHash, header.hash_le)) {
+    throw new Error('HashLE is not the LE version of Hash');
+  }
+
+  // Check that the MerkleRootLE is the correct MerkleRoot for the header
+  const extractedMerkleRootLE = BTCUtils.extractMerkleRootLE(header.raw);
+  if (!utils.typedArraysAreEqual(extractedMerkleRootLE, header.merkle_root_le)) {
+    throw new Error('MerkleRootLE is not the correct merkle root of the header');
+  }
+
+  // Check that MerkleRootLE is the reverse of MerkleRoot
+  const reversedMerkleRoot = utils.reverseEndianness(header.merkle_root);
+  if (!utils.typedArraysAreEqual(reversedMerkleRoot, header.merkle_root_le)) {
+    throw new Error('MerkleRootLE is not the LE version of MerkleRoot');
+  }
+
+  // Check that PrevHash is the correct PrevHash for the header
+  const extractedPrevHash = BTCUtils.extractPrevBlockBE(header.raw);
+  if (!utils.typedArraysAreEqual(extractedPrevHash, header.prevhash)) {
+    throw new Error('Prev hash is not the correct previous hash of the header');
+  }
+
+  return true;
+}
+
+/**
+ *
+ * Checks validity of an entire SPV Proof
+ *
+ * @dev                   Checks that each element in an SPV Proof is valid
+ * @param {Object}        proof A valid SPV Proof object, see README for
+ *                          more information on creating an SPV Proof object
+ * @param {Uint8Array}    proof.version The version
+ * @param {Uint8Array}    proof.vin The vin
+ * @param {Uint8Array}    proof.vout The vout
+ * @param {Uint8Array}    proof.locktime The locktime
+ * @param {Uint8Array}    proof.tx_id The tx ID
+ * @param {Uint8Array}    proof.tx_id_le The LE tx ID
+ * @param {Number}        proof.index The index
+ * @param {Uint8Array}    proof.intermediate_nodes The intermediate nodes
+ * @param {Uint8Array}    proof.confirming_header.raw The bitcoin header
+ * @param {Uint8Array}    proof.confirming_header.hash The hash of the header
+ * @param {Uint8Array}    proof.confirming_header.hash_le The LE hash of the header
+ * @param {Number}        proof.confirming_header.height The height
+ * @param {Uint8Array}    proof.confirming_header.merkle_root The merkle root of the header
+ * @param {Uint8Array}    proof.confirming_header.merkle_root_le The LE merkle root
+ * @param {Uint8Array}    proof.confirming_header.prevhash The hash of the previous header
+ * @returns {Boolean}     Teturns true if the SPV Proof object is syntactically valid
+ * @throws {Error}        If any of the SPV Proof elements are invalid
+*/
+export function validateProof(proof) {
+  const {
+    version,
+    vin,
+    vout,
+    locktime,
+    tx_id_le: txIdLE,
+    index,
+    intermediate_nodes: intermediateNodes,
+    confirming_header: confirmingHeader
+  } = proof;
+  const { merkle_root_le: merkleRootLE } = confirmingHeader;
+
+  const validVin = BTCUtils.validateVin(vin);
+  if (!validVin) {
+    throw new Error('Vin is not valid');
+  }
+
+  const validVout = BTCUtils.validateVout(vout);
+  if (!validVout) {
+    throw new Error('Vout is not valid');
+  }
+
+  const txID = calculateTxId(version, vin, vout, locktime);
+  if (!utils.typedArraysAreEqual(txID, txIdLE)) {
+    throw new Error('Version, Vin, Vout and Locktime did not yield correct TxID');
+  }
+
+  validateHeader(confirmingHeader);
+
+  const validProof = prove(txIdLE, merkleRootLE, intermediateNodes, index);
+  if (!validProof) {
+    throw new Error('Merkle Proof is not valid');
+  }
+
+  return true;
+}
