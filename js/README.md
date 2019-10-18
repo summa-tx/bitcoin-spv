@@ -67,36 +67,23 @@ the verifier may set any number of other acceptance constraints on the proof.
 E.g. the contract may check that the `vout` contains an output paying at least
 30,000 satoshi to a particular `scriptPubkey`.
 
+**SPV Proof Example:**
 We have provided serialization methods for proofs with a single header in
 `ser.js`.
 
-**SPV Proof Example:**
 ```JavaScript
 import * as ser from './src/ser'
 import * as ValidateSPV from './src/ValidateSPV'
 
-const SPVProofObject = {
-    version: "0x01000000",
-    vin: "0x0101748906a5c7064550a594c4683ffc6d1ee25292b638c4328bb66403cfceb58a000000006a4730440220364301a77ee7ae34fa71768941a2aad5bd1fa8d3e30d4ce6424d8752e83f2c1b02203c9f8aafced701f59ffb7c151ff2523f3ed1586d29b674efb489e803e9bf93050121029b3008c0fa147fd9db5146e42b27eb0a77389497713d3aad083313d1b1b05ec0ffffffff",
-    vout: "0x0316312f00000000001976a91400cc8d95d6835252e0d95eb03b11691a21a7bac588ac220200000000000017a914e5034b9de4881d62480a2df81032ef0299dcdc32870000000000000000166a146f6d6e69000000000000001f0000000315e17900",
-    locktime: "0x00000000",
-    tx_id: "0x74d6d6dc1fc9b0f393abde12e76adeeb3d674b38b7fbea4d9fc28b3bb0f67651",
-    tx_id_le: "0x5176f6b03b8bc29f4deafbb7384b673debde6ae712deab93f3b0c91fdcd6d674",
-    index: 26,
-    intermediate_nodes: "0x8d7a6d53ce27f79802631f1aae5f172c43d128b210ab4962d488c81c96136cfb75c95def872e878839bd93b42c04eb44da44c401a2d580ca343c3262e9c0a2819ed4bbfb9ea620280b31433f43b2512a893873b8c8c679f61e1a926c0ec80bcfc6225a15d72fbd1116f78b14663d8518236b02e765bf0a746a6a08840c122a02afa4df3ab6b9197a20f00495a404ee8e07da2b7554e94609e9ee1d5da0fb7857ea0332072568d0d53a9aedf851892580504a7fcabfbdde076242eb7f4e5f218a14d2a3f357d950b4f6a1dcf93f7c19c44d0fc122d00afa297b9503c1a6ad24cf36cb5f2835bcf490371db2e96047813a24176c3d3416f84b7ddfb7d8c915eb0c5ce7de089b5d9e700ecd12e09163f173b70bb4c9af33051b466b1f55abd66f3121216ad0ad9dfa898535e1d5e51dd07bd0a73d584daace7902f20ece4ba4f4f241c80cb31eda88a244a3c68d0f157c1049b4153d7addd6548aca0885acafbf98a1f8345c89914c24729ad095c7a0b9acd20232ccd90dbd359468fcc4eee7b67d",
-    confirming_header: {
-        hash: "0x00000000000000000016633b88de22bd6462283bcf7dcbe559233baaf5fb0c4d",
-        hash_le: "0x4d0cfbf5aa3b2359e5cb7dcf3b286264bd22de883b6316000000000000000000",
-        height: 592920,
-        raw: "0x0000c020c238b601308b7297346ab2ed59942d7d7ecea8d23a1001000000000000000000b61ac92842abc82aa93644b190fc18ad46c6738337e78bc0c69ab21c5d5ee2ddd6376d5d3e211a17d8706a84",
-        merkle_root: "0xdde25e5d1cb29ac6c08be7378373c646ad18fc90b14436a92ac8ab4228c91ab6",
-        merkle_root_le: "0xb61ac92842abc82aa93644b190fc18ad46c6738337e78bc0c69ab21c5d5ee2dd",
-        prevhash: "0x00000000000000000001103ad2a8ce7e7d2d9459edb26a3497728b3001b638c2"
-    }
-}
+// An SPV Proof is an object comprised of version, vin, vout, locktime, tx_id, tx_id_le, index, intermediate_nodes and confirming_header
+// Confirming header is a bitcoin header object comprised of hash, hash_le, height, raw (the raw header), merkle_root, merkle_root_le and prevhash
+// This is an example of an SPV Proof stored in JSON
+const SPVProofJSON = "{\"version\": \"0x01000000\",\"vin\": \"0x0101748906a5c7064550a594c4683ffc6d1ee25292b638c4328bb66403cfceb58a000000006a4730440220364301a77ee7ae34fa71768941a2aad5bd1fa8d3e30d4ce6424d8752e83f2c1b02203c9f8aafced701f59ffb7c151ff2523f3ed1586d29b674efb489e803e9bf93050121029b3008c0fa147fd9db5146e42b27eb0a77389497713d3aad083313d1b1b05ec0ffffffff\", \"vout\": \"0x0316312f00000000001976a91400cc8d95d6835252e0d95eb03b11691a21a7bac588ac220200000000000017a914e5034b9de4881d62480a2df81032ef0299dcdc32870000000000000000166a146f6d6e69000000000000001f0000000315e17900\",\"locktime\": \"0x00000000\",\"tx_id\": \"0x74d6d6dc1fc9b0f393abde12e76adeeb3d674b38b7fbea4d9fc28b3bb0f67651\",\"tx_id_le\": \"0x5176f6b03b8bc29f4deafbb7384b673debde6ae712deab93f3b0c91fdcd6d674\",\"index\": 26,\"intermediate_nodes\": \"0x8d7a6d53ce27f79802631f1aae5f172c43d128b210ab4962d488c81c96136cfb75c95def872e878839bd93b42c04eb44da44c401a2d580ca343c3262e9c0a2819ed4bbfb9ea620280b31433f43b2512a893873b8c8c679f61e1a926c0ec80bcfc6225a15d72fbd1116f78b14663d8518236b02e765bf0a746a6a08840c122a02afa4df3ab6b9197a20f00495a404ee8e07da2b7554e94609e9ee1d5da0fb7857ea0332072568d0d53a9aedf851892580504a7fcabfbdde076242eb7f4e5f218a14d2a3f357d950b4f6a1dcf93f7c19c44d0fc122d00afa297b9503c1a6ad24cf36cb5f2835bcf490371db2e96047813a24176c3d3416f84b7ddfb7d8c915eb0c5ce7de089b5d9e700ecd12e09163f173b70bb4c9af33051b466b1f55abd66f3121216ad0ad9dfa898535e1d5e51dd07bd0a73d584daace7902f20ece4ba4f4f241c80cb31eda88a244a3c68d0f157c1049b4153d7addd6548aca0885acafbf98a1f8345c89914c24729ad095c7a0b9acd20232ccd90dbd359468fcc4eee7b67d\",\"confirming_header\": {\"hash\": \"0x00000000000000000016633b88de22bd6462283bcf7dcbe559233baaf5fb0c4d\",\"hash_le\": \"0x4d0cfbf5aa3b2359e5cb7dcf3b286264bd22de883b6316000000000000000000\",\"height\": 592920,\"raw\": \"0x0000c020c238b601308b7297346ab2ed59942d7d7ecea8d23a1001000000000000000000b61ac92842abc82aa93644b190fc18ad46c6738337e78bc0c69ab21c5d5ee2ddd6376d5d3e211a17d8706a84\",\"merkle_root\": \"0xdde25e5d1cb29ac6c08be7378373c646ad18fc90b14436a92ac8ab4228c91ab6\",\"merkle_root_le\": \"0xb61ac92842abc82aa93644b190fc18ad46c6738337e78bc0c69ab21c5d5ee2dd\",\"prevhash\": \"0x00000000000000000001103ad2a8ce7e7d2d9459edb26a3497728b3001b638c2\"}}"
 
-let SPVProof = ser.objectToSPVProof(SPVProofObject)
+// deserializeSPVProof will parse the json, deserialize the values, and return an SPVProof object
+let SPVProof = ser.deserializeSPVProof(SPVProofJSON)
 
+// The SPVProof object can now be used in functions, such as validateProof
 let validProof = ValidateSPV.validateProof(SPVProof)
 ```
 
