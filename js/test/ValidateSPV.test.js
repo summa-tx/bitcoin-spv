@@ -220,7 +220,7 @@ describe('ValidateSPV', () => {
           merkle_root_le,
           prevhash
         );
-        assert.strictEqual(res, true);
+        assert.isTrue(res);
       }
     });
 
