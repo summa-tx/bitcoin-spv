@@ -1,6 +1,7 @@
 /* global describe it BigInt */
 import * as chai from 'chai';
 import * as utils from '../src/utils';
+import * as ser from '../src/ser.js';
 import * as ValidateSPV from '../src/ValidateSPV';
 import * as vectors from '../../testVectors.json';
 import * as testProofs from '../../testProofs.json';
@@ -20,11 +21,7 @@ const {
   validateHeaderChain,
   validateHeaderChainError,
   validateHeaderWork,
-  validateHeaderPrevHash,
-  validateHeader,
-  validateHeaderError,
-  validateProof,
-  validateProofError
+  validateHeaderPrevHash
 } = vectorObj;
 
 const testProofsObj = JSON.parse(JSON.stringify(testProofs));
@@ -35,6 +32,7 @@ const {
   badHeaders,
   badSPVProofs
 } = testProofsObj;
+const validProof = ser.deserializeSPVProof(valid);
 
 describe('ValidateSPV', () => {
   describe('#prove', () => {
@@ -176,8 +174,8 @@ describe('ValidateSPV', () => {
 
   describe('#validateHeader', () => {
     it('returns true if all elements of the bitcoin header are valid', () => {
-      for (let i = 0; i < valid.length; i += 1) {
-        const { raw, hash, hash_le, height, merkle_root, merkle_root_le, prevhash } = valid[i].confirming_header
+      for (let i = 0; i < validProof.length; i += 1) {
+        const { raw, hash, hash_le, height, merkle_root, merkle_root_le, prevhash } = validProof[i].confirming_header
         const res = ValidateSPV.validateHeader(
           raw, hash, hash_le, height, merkle_root, merkle_root_le, prevhash
         );
@@ -202,8 +200,8 @@ describe('ValidateSPV', () => {
 
   describe('#validateProof', () => {
     it('returns true if all elements of the SPV Proof are valid', () => {
-      for (let i = 0; i < valid.length; i += 1) {
-        const { version, vin, vout, locktime, tx_id, tx_id_le, index, intermediate_nodes, confirming_header } = valid[i]
+      for (let i = 0; i < validProof.length; i += 1) {
+        const { version, vin, vout, locktime, tx_id, tx_id_le, index, intermediate_nodes, confirming_header } = validProof[i]
         const { raw, hash, hash_le, height, merkle_root, merkle_root_le, prevhash } = confirming_header
         const res = ValidateSPV.validateProof(
           version,
