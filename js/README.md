@@ -67,7 +67,7 @@ the verifier may set any number of other acceptance constraints on the proof.
 E.g. the contract may check that the `vout` contains an output paying at least
 30,000 satoshi to a particular `scriptPubkey`.
 
-**SPV Proof Example:**
+**SPV Proof Example:**  
 We have provided serialization methods for proofs with a single header in
 `ser.js`.
 
