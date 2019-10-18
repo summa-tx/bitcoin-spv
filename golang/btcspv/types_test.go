@@ -1,6 +1,7 @@
 package btcspv
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
 	"os"
@@ -10,7 +11,7 @@ import (
 )
 
 type SerializedCases struct {
-	Valid           []SPVProof            `json:"valid"`
+	Valid           []string              `json:"valid"`
 	InvalidHeaders  []InvalidHeadersCases `json:"badHeaders"`
 	InvalidProofs   []InvalidProofsCases  `json:"badSPVProofs"`
 	BadHexBytes     string                `json:"errBadHexBytes"`
@@ -32,7 +33,8 @@ type InvalidProofsCases struct {
 
 type TypesSuite struct {
 	suite.Suite
-	Fixtures SerializedCases
+	Fixtures   SerializedCases
+	ValidProof SPVProof
 }
 
 func TestTypes(t *testing.T) {
@@ -47,54 +49,53 @@ func TestTypes(t *testing.T) {
 	err = json.Unmarshal([]byte(byteValue), &fixtures)
 	logIfErr(err)
 
-	// spvProof := new(SPVProof)
-	// err = json.Unmarshal([]byte(fixtures.Valid[0]), &spvProof)
-	// logIfErr(err)
+	spvProof := new(SPVProof)
+	err = json.Unmarshal([]byte(fixtures.Valid[0]), &spvProof)
+	logIfErr(err)
 
 	typesSuite := TypesSuite{
 		*new(suite.Suite),
 		*fixtures,
-		// *spvProof,
+		*spvProof,
 	}
 
 	suite.Run(t, &typesSuite)
 }
 
-// TODO: Figure out what these do
-// func (suite *TypesSuite) TestUnmarshalSPVProof() {
-// 	valid := suite.Fixtures.Valid
+func (suite *TypesSuite) TestUnmarshalSPVProof() {
+	valid := suite.Fixtures.Valid
 
-// 	for i := range valid {
-// 		s := new(SPVProof)
-// 		testCase := valid[i]
-// 		err := json.Unmarshal([]byte(testCase), &s)
-// 		suite.Nil(err)
-// 	}
-// }
+	for i := range valid {
+		s := new(SPVProof)
+		testCase := valid[i]
+		err := json.Unmarshal([]byte(testCase), &s)
+		suite.Nil(err)
+	}
+}
 
-// func (suite *TypesSuite) TestMarshalSPVProof() {
-// 	valid := suite.Fixtures.Valid
-// 	spvProof := new(SPVProof)
-// 	json.Unmarshal([]byte(valid[0]), &spvProof)
+func (suite *TypesSuite) TestMarshalSPVProof() {
+	valid := suite.Fixtures.Valid
+	spvProof := new(SPVProof)
+	json.Unmarshal([]byte(valid[0]), &spvProof)
 
-// 	// Extra assertions here will catch random broken stuff
-// 	suite.Equal(
-// 		"74d6d6dc1fc9b0f393abde12e76adeeb3d674b38b7fbea4d9fc28b3bb0f67651",
-// 		hex.EncodeToString(spvProof.TxID[:]))
-// 	suite.Equal(
-// 		"5176f6b03b8bc29f4deafbb7384b673debde6ae712deab93f3b0c91fdcd6d674",
-// 		hex.EncodeToString(spvProof.TxIDLE[:]))
-// 	suite.Equal(uint32(26), spvProof.Index)
-// 	// // TODO: assert header equalities
-// 	suite.Equal(384, len(spvProof.IntermediateNodes))
+	// Extra assertions here will catch random broken stuff
+	suite.Equal(
+		"74d6d6dc1fc9b0f393abde12e76adeeb3d674b38b7fbea4d9fc28b3bb0f67651",
+		hex.EncodeToString(spvProof.TxID[:]))
+	suite.Equal(
+		"5176f6b03b8bc29f4deafbb7384b673debde6ae712deab93f3b0c91fdcd6d674",
+		hex.EncodeToString(spvProof.TxIDLE[:]))
+	suite.Equal(uint32(26), spvProof.Index)
+	// // TODO: assert header equalities
+	suite.Equal(384, len(spvProof.IntermediateNodes))
 
-// 	j, err := json.Marshal(spvProof)
-// 	suite.Nil(err)
+	j, err := json.Marshal(spvProof)
+	suite.Nil(err)
 
-// 	actual := new(SPVProof)
-// 	json.Unmarshal(j, &actual)
-// 	suite.Equal(spvProof, actual)
-// }
+	actual := new(SPVProof)
+	json.Unmarshal(j, &actual)
+	suite.Equal(spvProof, actual)
+}
 
 func (suite *TypesSuite) TestUnmarshalBadHexBytes() {
 	badHexBytes := suite.Fixtures.BadHexBytes
@@ -132,7 +133,7 @@ func (suite *TypesSuite) TestUnmarshalBadLenRawHeader() {
 }
 
 func (suite *TypesSuite) TestValidateBitcoinHeader() {
-	validHeader, err := suite.Fixtures.Valid[0].ConfirmingHeader.Validate()
+	validHeader, err := suite.ValidProof.ConfirmingHeader.Validate()
 	invalidHeaders := suite.Fixtures.InvalidHeaders
 
 	suite.Nil(err)
@@ -149,11 +150,11 @@ func (suite *TypesSuite) TestValidateBitcoinHeader() {
 }
 
 func (suite *TypesSuite) TestValidateSPVProof() {
-	validProof, err := suite.Fixtures.Valid[0].Validate()
+	validProof, err := suite.ValidProof.Validate()
 	suite.Nil(err)
 	suite.Equal(validProof, true)
 
-	invalidHeader := suite.Fixtures.Valid[0]
+	invalidHeader := suite.ValidProof
 	invalidHeader.ConfirmingHeader.MerkleRoot = Hash256Digest{0xdd, 0xe2, 0x5e, 0x5d, 0x1c, 0xb2, 0x9a, 0xc6, 0xc0, 0x8b, 0xe7, 0x37, 0x83, 0x73, 0xc6, 0x46, 0xad, 0x18, 0xfc, 0x90, 0xb1, 0x44, 0x35, 0xa9, 0x2a, 0xc8, 0xab, 0x42, 0x28, 0xc9, 0x1a, 0xb6}
 	invalidProof, validationErr := invalidHeader.Validate()
 	suite.Equal(invalidProof, false)

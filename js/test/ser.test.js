@@ -6,12 +6,12 @@ import * as utils from '../src/utils';
 import * as vectors from '../../testProofs.json';
 
 const vectorObj = JSON.parse(JSON.stringify(vectors));
-const { valid } = vectorObj;
+const { valid, validHeader } = vectorObj;
 
 const { assert } = chai;
 
 describe('ser', () => {
-  it('can round-trip serialization', () => {
+  it('can round-trip serialize SPV Proof', () => {
     const emptyDigest = new Uint8Array(32);
     valid.forEach((e) => {
       const proof = ser.deserializeSPVProof(e);
@@ -38,6 +38,37 @@ describe('ser', () => {
       assert.isTrue(utils.typedArraysAreEqual(
         proof.tx_id_le,
         secondProof.tx_id_le
+      ));
+    });
+  });
+
+  it('can round-trip serialize Bitcoin header', () => {
+    const emptyDigest = new Uint8Array(32);
+    validHeader.forEach((e) => {
+      const header = ser.deserializeHeader(e);
+
+      // TODO: make more assertions and clean up this section
+      assert.equal(header.hash.length, 32);
+      assert.isFalse(utils.typedArraysAreEqual(header.hash, emptyDigest));
+      assert.equal(header.hash_le.length, 32);
+      assert.isFalse(utils.typedArraysAreEqual(header.hash_le, emptyDigest));
+
+      // re-serialize and re-deserialize
+      const jsonHeaderString = ser.serializeHeader(header);
+      const secondHeader = ser.deserializeHeader(jsonHeaderString);
+
+      // TODO: make more assertions and clean up this section
+      assert.isTrue(utils.typedArraysAreEqual(
+        header.hash,
+        secondHeader.hash
+      ));
+      assert.isTrue(utils.typedArraysAreEqual(
+        header.hash_le,
+        secondHeader.hash_le
+      ));
+      assert.isTrue(utils.typedArraysAreEqual(
+        header.raw,
+        secondHeader.raw
       ));
     });
   });
@@ -84,6 +115,15 @@ describe('ser', () => {
       assert(false, 'expected an error');
     } catch (e) {
       assert.include(e.message, 'Expected 80 bytes, got 79 bytes');
+    }
+  });
+
+  it('errBadLenHash', () => {
+    try {
+      ser.deserializeSPVProof(vectorObj.errBadLenHash);
+      assert(false, 'expected an error');
+    } catch (e) {
+      assert.include(e.message, 'Expected 32 bytes, got 31 bytes');
     }
   });
 });
