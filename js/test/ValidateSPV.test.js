@@ -174,22 +174,14 @@ describe('ValidateSPV', () => {
 
   describe('#validateHeader', () => {
     it('returns true if all elements of the bitcoin header are valid', () => {
-      for (let i = 0; i < validProof.length; i += 1) {
-        const { raw, hash, hash_le, height, merkle_root, merkle_root_le, prevhash } = validProof[i].confirming_header
-        const res = ValidateSPV.validateHeader(
-          raw, hash, hash_le, height, merkle_root, merkle_root_le, prevhash
-        );
-        assert.strictEqual(res, true);
-      }
+      const res = ValidateSPV.validateHeader(validProof.confirming_header);
+      assert.strictEqual(res, true);
     });
 
     it('throws error if any element of a header is invalid', () => {
       for (let i = 0; i < badHeaders.length; i += 1) {
-        const { raw, hash, hash_le, height, merkle_root, merkle_root_le, prevhash } = badHeaders[i].header
         try {
-          ValidateSPV.validateHeader(
-            raw, hash, hash_le, height, merkle_root, merkle_root_le, prevhash
-          )
+          ValidateSPV.validateHeader(badHeaders[i].header)
           assert(false, 'expected an error');
         } catch (e) {
           assert.include(e.message, badHeaders[i].e);
@@ -200,55 +192,14 @@ describe('ValidateSPV', () => {
 
   describe('#validateProof', () => {
     it('returns true if all elements of the SPV Proof are valid', () => {
-      for (let i = 0; i < validProof.length; i += 1) {
-        const { version, vin, vout, locktime, tx_id, tx_id_le, index, intermediate_nodes, confirming_header } = validProof[i]
-        const { raw, hash, hash_le, height, merkle_root, merkle_root_le, prevhash } = confirming_header
-        const res = ValidateSPV.validateProof(
-          version,
-          vin,
-          vout,
-          locktime,
-          tx_id,
-          tx_id_le,
-          index,
-          intermediate_nodes,
-          raw,
-          hash,
-          hash_le,
-          height,
-          merkle_root,
-          merkle_root_le,
-          prevhash
-        );
-        assert.isTrue(res);
-      }
+      const res = ValidateSPV.validateProof(validProof);
+      assert.isTrue(res);
     });
 
     it('throws error if any element in the SPV Proof are invalid', () => {
       for (let i = 0; i < badSPVProofs.length; i += 1) {
-        const {
-          version, vin, vout, locktime, tx_id, tx_id_le, index, intermediate_nodes, confirming_header
-        } = badSPVProofs[i].proof
-        const { raw, hash, hash_le, height, merkle_root, merkle_root_le, prevhash } = confirming_header
-
         try {
-          ValidateSPV.validateProof(
-            version,
-            vin,
-            vout,
-            locktime,
-            tx_id,
-            tx_id_le,
-            index,
-            intermediate_nodes,
-            raw,
-            hash,
-            hash_le,
-            height,
-            merkle_root,
-            merkle_root_le,
-            prevhash
-          );
+          ValidateSPV.validateProof(badSPVProofs[i].proof);
           assert(false, 'expected an error');
         } catch (e) {
           assert.include(e.message, badSPVProofs[i].e);
