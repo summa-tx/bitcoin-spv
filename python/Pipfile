@@ -15,7 +15,7 @@ pytest-cov = "*"
 
 [packages]
 bitcoin-spv-py = {editable = true,path = "."}
-riemann-tx = "==2.0.1"
+riemann-tx = "==2.1.0"
 
 [requires]
 python_version = "3.7"
