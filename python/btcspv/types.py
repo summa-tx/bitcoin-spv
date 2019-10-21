@@ -4,19 +4,23 @@ from mypy_extensions import TypedDict
 
 
 class RelayHeader(TypedDict):
-    hex: str
-    hash: str
-    hash_le: str
+    raw: bytes
+    hash: bytes
+    hash_le: bytes
     height: int
-    prevhash: str
-    merkle_root: str
-    merkle_root_le: str
+    prevhash: bytes
+    merkle_root: bytes
+    merkle_root_le: bytes
 
 
 class SPVProof(TypedDict):
     tx: tx.Tx
-    tx_id: str
-    tx_id_le: str
+    version: bytes
+    vin: bytes
+    vout: bytes
+    locktime: bytes
+    tx_id: bytes
+    tx_id_le: bytes
     index: int
-    intermediate_nodes: str
+    intermediate_nodes: bytes
     confirming_header: RelayHeader
