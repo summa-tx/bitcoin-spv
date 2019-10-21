@@ -1,7 +1,9 @@
 from riemann import tx
 from riemann import utils as rutils
+
+from btcspv import utils
+
 from btcspv.types import RelayHeader, SPVProof
-from btcspv.utils import verify_proof
 
 
 def validate_vin(s: SPVProof) -> bool:
@@ -52,7 +54,7 @@ def prove(
         return True
 
     proof = txid + intermediate_nodes + merkle_root
-    return verify_proof(proof, index)
+    return utils.verify_proof(proof, index)
 
 
 def validate_header(header: RelayHeader) -> bool:
@@ -107,10 +109,10 @@ def validate_spvproof(proof: SPVProof) -> bool:
         return False
 
     tx_id = rutils.hash256(
-        proof['version'][2:] +
-        proof['vin'][2:] +
-        proof['vout'][2:] +
-        proof['locktime'][2:]
+        proof['version'] +
+        proof['vin'] +
+        proof['vout'] +
+        proof['locktime']
     )
     if tx_id != proof['tx_id_le']:
         return False
