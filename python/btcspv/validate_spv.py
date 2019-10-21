@@ -76,34 +76,34 @@ def validate_header(header: RelayHeader) -> bool:
         (bool): True if valid header, else False
     '''
     # Check that HashLE is the correct hash of the raw header
-    headerHash = rutils.hash256(header.raw)
-    if headerHash != header.hash_le:
+    headerHash = rutils.hash256(header['raw'])
+    if headerHash != header['hash_le']:
         # TODO: Throw error instead of returning false
         # throw new Error('Hash LE is not the correct hash of the header')
         return False
 
     # Check that HashLE is the reverse of Hash
-    reversedHash = header.hash[::-1]
-    if reversedHash != header.hash_le:
+    reversedHash = header['hash'][::-1]
+    if reversedHash != header['hash_le']:
         # throw new Error('HashLE is not the LE version of Hash');
         return False
 
     # Check that the MerkleRootLE is the correct MerkleRoot for the header
-    extractedMerkleRootLE = extract_merkle_root_le(header.raw)
-    if extractedMerkleRootLE != header.merkle_root_le:
+    extractedMerkleRootLE = extract_merkle_root_le(header['raw'])
+    if extractedMerkleRootLE != header['merkle_root_le']:
         # throw new Error(
         # 'MerkleRootLE is not the correct merkle root of the header')
         return False
 
     # Check that MerkleRootLE is the reverse of MerkleRoot
-    reversedMerkleRoot = header.merkle_root[::-1]
-    if reversedMerkleRoot != header.merkle_root_le:
+    reversedMerkleRoot = header['merkle_root'][::-1]
+    if reversedMerkleRoot != header['merkle_root_le']:
         # throw new Error('MerkleRootLE is not the LE version of MerkleRoot');
         return False
 
     # Check that PrevHash is the correct PrevHash for the header
-    extractedPrevHash = extract_prev_block_be(header.raw)
-    if extractedPrevHash != header.prevhash:
+    extractedPrevHash = extract_prev_block_be(header['raw'])
+    if extractedPrevHash != header['prevhash']:
         # throw new Error(
         # 'Prev hash is not the correct previous hash of the header');
         return False
@@ -111,7 +111,7 @@ def validate_header(header: RelayHeader) -> bool:
     return True
 
 
-def validate_spvproof(proof: object) -> bool:
+def validate_spvproof(proof: SPVProof) -> bool:
     '''
     Verifies an SPV proof object
     Args:
@@ -134,35 +134,35 @@ def validate_spvproof(proof: object) -> bool:
     Returns:
         (bool): True if valid proof, else False
     '''
-    validVin = validate_vin(proof.vin)
+    validVin = validate_vin(proof)
     if not validVin:
         # throw new Error('Vin is not valid')
         return False
 
-    validVout = validate_vout(proof.vout)
+    validVout = validate_vout(proof)
     if not validVout:
         # throw new Error('Vout is not valid')
         return False
 
     # txID = calculateTxId(version, vin, vout, locktime)
     txID = rutils.hash256(
-        proof.confirming_header['version'][2:] +
-        proof.confirming_header['vin'][2:] +
-        proof.confirming_header['vout'][2:] +
-        proof.confirming_header['locktime'][2:]
+        proof['version'][2:] +
+        proof['vin'][2:] +
+        proof['vout'][2:] +
+        proof['locktime'][2:]
     )
-    if txID != proof.tx_id_le:
+    if txID != proof['tx_id_le']:
         # throw new Error(
         # 'Version, Vin, Vout and Locktime did not yield correct TxID');
         return False
 
-    validate_header(proof.confirming_header)
+    validate_header(proof['confirming_header'])
 
     validProof = prove(
-        proof.tx_id_le,
-        proof.merkle_root_le,
-        proof.intermediate_nodes,
-        proof.index
+        proof['tx_id_le'],
+        proof['confirming_header']['merkle_root_le'],
+        proof['intermediate_nodes'],
+        proof['index']
     )
     if not validProof:
         # throw new Error('Merkle Proof is not valid')
