@@ -1,9 +1,6 @@
 from riemann import tx
-
 from riemann import utils as rutils
-
 from btcspv.types import RelayHeader, SPVProof
-
 from btcspv.utils import verify_proof
 
 
@@ -32,7 +29,6 @@ def _extract_vout(t: tx.Tx) -> bytes:
     return b
 
 
-# TODO: add documentation to all of these
 def extract_merkle_root_le(h: bytes) -> bytes:
     '''Extracts the transaction merkle root from a header (little-endian)'''
     return h[36:68]
@@ -49,8 +45,8 @@ def extract_prev_block_be(h: bytes) -> bytes:
 
 
 def prove(
-    txid: bytes, merkle_root: bytes, intermediate_nodes: bytes, index: int
-) -> bool:
+    txid: bytes, merkle_root: bytes, intermediate_nodes: bytes, index: int) \
+        -> bool:
     '''Validates a tx inclusion in the block'''
     if txid == merkle_root and index == 0 and len(intermediate_nodes) == 0:
         return True
@@ -63,49 +59,34 @@ def validate_header(header: RelayHeader) -> bool:
     '''
     Verifies a bitcoin header
     Args:
-        header (object): The header as an object
-        header.raw (bytes): The bitcoin header
-        header.hash (bytes): The hash of the header
-        header.hash_le (bytes): The LE hash of the header
-        header.height (int): The height
-        header.prevhash (bytes): The hash of the previous header
-        header.merkle_root The merkle root of the header
-        header.merkle_root_le The LE merkle root
+        header (RelayHeader): The header as an object
 
     Returns:
         (bool): True if valid header, else False
     '''
     # Check that HashLE is the correct hash of the raw header
-    headerHash = rutils.hash256(header['raw'])
-    if headerHash != header['hash_le']:
-        # TODO: Throw error instead of returning false
-        # throw new Error('Hash LE is not the correct hash of the header')
+    header_hash = rutils.hash256(header['raw'])
+    if header_hash != header['hash_le']:
         return False
 
     # Check that HashLE is the reverse of Hash
-    reversedHash = header['hash'][::-1]
-    if reversedHash != header['hash_le']:
-        # throw new Error('HashLE is not the LE version of Hash');
+    reversed_hash = header['hash'][::-1]
+    if reversed_hash != header['hash_le']:
         return False
 
     # Check that the MerkleRootLE is the correct MerkleRoot for the header
-    extractedMerkleRootLE = extract_merkle_root_le(header['raw'])
-    if extractedMerkleRootLE != header['merkle_root_le']:
-        # throw new Error(
-        # 'MerkleRootLE is not the correct merkle root of the header')
+    extracted_merkle_root_le = extract_merkle_root_le(header['raw'])
+    if extracted_merkle_root_le != header['merkle_root_le']:
         return False
 
     # Check that MerkleRootLE is the reverse of MerkleRoot
-    reversedMerkleRoot = header['merkle_root'][::-1]
-    if reversedMerkleRoot != header['merkle_root_le']:
-        # throw new Error('MerkleRootLE is not the LE version of MerkleRoot');
+    reversed_merkle_root = header['merkle_root'][::-1]
+    if reversed_merkle_root != header['merkle_root_le']:
         return False
 
     # Check that PrevHash is the correct PrevHash for the header
-    extractedPrevHash = extract_prev_block_be(header['raw'])
-    if extractedPrevHash != header['prevhash']:
-        # throw new Error(
-        # 'Prev hash is not the correct previous hash of the header');
+    extracted_prevhash = extract_prev_block_be(header['raw'])
+    if extracted_prevhash != header['prevhash']:
         return False
 
     return True
@@ -115,56 +96,34 @@ def validate_spvproof(proof: SPVProof) -> bool:
     '''
     Verifies an SPV proof object
     Args:
-        proof (object): The SPV Proof as an object
-        proof.vin (bytes): The vin
-        proof.vout (bytes): The vout
-        proof.locktime (bytes): The locktime
-        proof.tx_id (bytes): The tx ID
-        proof.tx_id_le (bytes): The LE tx ID
-        proof.index (int): The index
-        proof.intermediate_nodes (bytes): The intermediate nodes
-        proof.confirming_header.raw (bytes): The bitcoin header
-        proof.confirming_header.hash (bytes): The hash of the header
-        proof.confirming_header.hash_le (bytes): The LE hash
-        proof.confirming_header.height (int): The height
-        proof.confirming_header.prevhash (bytes): The hash of the
-            previous header
-        proof.confirming_header.merkle_root The merkle root of the header
-        proof.confirming_header.merkle_root_le The LE merkle root
+        proof (SPVProof): The SPV Proof as an object
     Returns:
         (bool): True if valid proof, else False
     '''
-    validVin = validate_vin(proof)
-    if not validVin:
-        # throw new Error('Vin is not valid')
+    if not validate_vin(proof):
         return False
 
-    validVout = validate_vout(proof)
-    if not validVout:
-        # throw new Error('Vout is not valid')
+    if not validate_vout(proof):
         return False
 
-    # txID = calculateTxId(version, vin, vout, locktime)
-    txID = rutils.hash256(
+    tx_id = rutils.hash256(
         proof['version'][2:] +
         proof['vin'][2:] +
         proof['vout'][2:] +
         proof['locktime'][2:]
     )
-    if txID != proof['tx_id_le']:
-        # throw new Error(
-        # 'Version, Vin, Vout and Locktime did not yield correct TxID');
+    if tx_id != proof['tx_id_le']:
         return False
 
-    validate_header(proof['confirming_header'])
+    if not validate_header(proof['confirming_header']):
+        return False
 
-    validProof = prove(
+    valid_proof = prove(
         proof['tx_id_le'],
         proof['confirming_header']['merkle_root_le'],
         proof['intermediate_nodes'],
         proof['index']
     )
-    if not validProof:
-        # throw new Error('Merkle Proof is not valid')
+    if not valid_proof:
         return False
     return True
