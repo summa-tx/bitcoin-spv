@@ -1,6 +1,8 @@
 import json
 import unittest
 
+from unittest import mock
+
 from btcspv import ser, validate_spv
 
 
@@ -21,21 +23,22 @@ class TestValidateSPV(unittest.TestCase):
             for p in self.proof_vectors['badHeaders']
         ]
 
-        # self.bad_proofs = [
-        #     ser.dict_to_spv_proof(p['proof'])
-        #     for p in self.proof_vectors['badSPVProofs']
-        # ]
+        with mock.patch('btcspv.ser.tx'):
+            self.bad_proofs = [
+                ser.dict_to_spv_proof(p['proof'])
+                for p in self.proof_vectors['badSPVProofs']
+            ]
 
     def test_validate_vin(self):
         for proof in self.valid_proofs:
             self.assertEqual(
-                validate_spv.validate_vin(proof),
+                validate_spv.validate_vin(proof['vin']),
                 True)
 
     def test_validate_vout(self):
         for proof in self.valid_proofs:
             self.assertEqual(
-                validate_spv.validate_vout(proof),
+                validate_spv.validate_vout(proof['vout']),
                 True)
 
     def test_extract_merkle_root_le(self):
@@ -110,8 +113,8 @@ class TestValidateSPV(unittest.TestCase):
                 True
             )
 
-        # for proof in self.bad_proofs:
-        #     self.assertEqual(
-        #         validate_spv.validate_spvproof(proof),
-        #         False
-        #     )
+        for proof in self.bad_proofs:
+            self.assertEqual(
+                validate_spv.validate_spvproof(proof),
+                False
+            )

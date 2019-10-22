@@ -1,49 +1,82 @@
 from riemann import tx
+from riemann.tx import shared
 from riemann import utils as rutils
 
 from btcspv import utils
 
+from typing import List
 from btcspv.types import RelayHeader, SPVProof
 
 
-def validate_vin(s: SPVProof) -> bool:
-    return s['vin'] == _extract_vin(s['tx'])
+def validate_vin(vin: bytes) -> bool:
+    '''Checks that the vin is properly formatted'''
+    if vin[0] > 0xfc or vin[0] == 0:
+        return False
+    try:
+        deser = _deserialize_vin(vin)
+    except (IndexError, ValueError):
+        return False
+    return sum(map(len, deser)) + 1 == len(vin)
 
 
-def _extract_vin(t: tx.Tx) -> bytes:
-    '''Get the length-prefixed input vector from a tx'''
-    b = bytearray([len(t.tx_ins)])
-    for tx_in in t.tx_ins:
-        b.extend(tx_in)
-    return b
+def _deserialize_vin(vin: bytes) -> List[tx.TxIn]:
+    # Get the length of the tx_in vector
+    tx_ins = []
+    tx_ins_num = shared.VarInt.from_bytes(vin)
+
+    # `current` is the index of next read
+    current = len(tx_ins_num)
+
+    # Deserialize all tx_ins
+    for _ in range(tx_ins_num.number):
+        tx_in = tx.TxIn.from_bytes(vin[current:])
+        current += len(tx_in)
+        tx_ins.append(tx_in)
+
+    return tx_ins
 
 
-def validate_vout(s: SPVProof) -> bool:
+def validate_vout(vout: bytes) -> bool:
     '''Checks that the vout is properly formatted'''
-    return s['vout'] == _extract_vout(s['tx'])
+    if vout[0] > 0xfc or vout[0] == 0:
+        return False
+    try:
+        deser = _deserialize_vout(vout)
+    except IndexError:
+        return False
+    return sum(map(len, deser)) + 1 == len(vout)
 
 
-def _extract_vout(t: tx.Tx) -> bytes:
-    '''Get the length-prefixed output vector from a tx'''
-    b = bytearray([len(t.tx_outs)])
-    for tx_out in t.tx_outs:
-        b.extend(tx_out)
-    return b
+def _deserialize_vout(vout: bytes) -> List[tx.TxOut]:
+    # Get the length of the tx_in vector
+    tx_outs = []
+    tx_outs_num = shared.VarInt.from_bytes(vout)
+
+    # `current` is the index of next read
+    current = len(tx_outs_num)
+
+    # Deserialize all tx_outs
+    for _ in range(tx_outs_num.number):
+        tx_out = tx.TxOut.from_bytes(vout[current:])
+        current += len(tx_out)
+        tx_outs.append(tx_out)
+
+    return tx_outs
 
 
-def extract_merkle_root_le(h: bytes) -> bytes:
+def extract_merkle_root_le(header: bytes) -> bytes:
     '''Extracts the transaction merkle root from a header (little-endian)'''
-    return h[36:68]
+    return header[36:68]
 
 
-def extract_prev_block_le(h: bytes) -> bytes:
+def extract_prev_block_le(header: bytes) -> bytes:
     '''Extracts the previous block's hash from a header (little-endian)'''
-    return h[4:36]
+    return header[4:36]
 
 
-def extract_prev_block_be(h: bytes) -> bytes:
+def extract_prev_block_be(header: bytes) -> bytes:
     '''Extracts the previous block's hash from a header (big-endian)'''
-    return extract_prev_block_le(h)[::-1]
+    return extract_prev_block_le(header)[::-1]
 
 
 def prove(
@@ -102,10 +135,10 @@ def validate_spvproof(proof: SPVProof) -> bool:
     Returns:
         (bool): True if valid proof, else False
     '''
-    if not validate_vin(proof):
+    if not validate_vin(proof['vin']):
         return False
 
-    if not validate_vout(proof):
+    if not validate_vout(proof['vout']):
         return False
 
     tx_id = rutils.hash256(
