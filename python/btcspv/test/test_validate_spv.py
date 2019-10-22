@@ -16,15 +16,23 @@ class TestValidateSPV(unittest.TestCase):
             ser.deserialize_spv_proof(p) for p in self.proof_vectors['valid']
         ]
 
+        self.bad_headers = [
+            ser.dict_to_relay_header(p['header'])
+            for p in self.proof_vectors['badHeaders']
+        ]
+
+        # self.bad_proofs = [
+        #     ser.dict_to_spv_proof(p['proof'])
+        #     for p in self.proof_vectors['badSPVProofs']
+        # ]
+
     def test_validate_vin(self):
-        # TODO: need a sample tx dict to go in valid SPVProof
         for proof in self.valid_proofs:
             self.assertEqual(
                 validate_spv.validate_vin(proof),
                 True)
 
     def test_validate_vout(self):
-        # TODO: need a sample tx dict to go in valid SPVProof
         for proof in self.valid_proofs:
             self.assertEqual(
                 validate_spv.validate_vout(proof),
@@ -89,9 +97,21 @@ class TestValidateSPV(unittest.TestCase):
                 True
             )
 
+        for header in self.bad_headers:
+            self.assertEqual(
+                validate_spv.validate_header(header),
+                False
+            )
+
     def test_validate_spvproof(self):
         for proof in self.valid_proofs:
             self.assertEqual(
                 validate_spv.validate_spvproof(proof),
                 True
             )
+
+        # for proof in self.bad_proofs:
+        #     self.assertEqual(
+        #         validate_spv.validate_spvproof(proof),
+        #         False
+        #     )
