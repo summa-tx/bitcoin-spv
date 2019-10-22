@@ -42,7 +42,7 @@ def validate_vout(vout: bytes) -> bool:
         return False
     try:
         deser = _deserialize_vout(vout)
-    except IndexError:
+    except (IndexError, ValueError):
         return False
     return sum(map(len, deser)) + 1 == len(vout)
 

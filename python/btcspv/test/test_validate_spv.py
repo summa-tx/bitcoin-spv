@@ -35,11 +35,25 @@ class TestValidateSPV(unittest.TestCase):
                 validate_spv.validate_vin(proof['vin']),
                 True)
 
+        invalid_proof = self.valid_proofs[0].copy()
+        invalid_proof['vin'] = bytes.fromhex('00')
+        self.assertEqual(
+            validate_spv.validate_vin(invalid_proof['vin']),
+            False
+        )
+
     def test_validate_vout(self):
         for proof in self.valid_proofs:
             self.assertEqual(
                 validate_spv.validate_vout(proof['vout']),
                 True)
+
+        invalid_proof = self.valid_proofs[0].copy()
+        invalid_proof['vout'] = bytes.fromhex('f12b34efcd')
+        self.assertEqual(
+            validate_spv.validate_vout(invalid_proof['vout']),
+            False
+        )
 
     def test_extract_merkle_root_le(self):
         cases = self.vectors['extractMerkleRootBE']
@@ -118,3 +132,15 @@ class TestValidateSPV(unittest.TestCase):
                 validate_spv.validate_spvproof(proof),
                 False
             )
+
+        invalid_header_proof = self.valid_proofs[0].copy()
+        invalid_header_proof['confirming_header'][
+            'merkle_root_le'
+        ] = bytes.fromhex(
+            'c61ac92842abc82aa93644b190fc18ad46c6738337e78bc0c69ab21c5d5ee2dd'
+        )
+
+        self.assertEqual(
+            validate_spv.validate_spvproof(invalid_header_proof),
+            False
+        )
