@@ -7,7 +7,7 @@ reqs = [
 
 setup(
     name='bitcoin-spv-py',
-    version='0.0.1',
+    version='1.0.0',
     url='https://github.com/summa-tx/bitcoin-spv',
     author='James Prestwich',
     author_email='james@summa.one',
