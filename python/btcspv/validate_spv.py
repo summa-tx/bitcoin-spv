@@ -102,11 +102,11 @@ def validate_spvproof(proof: SPVProof) -> bool:
     Returns:
         (bool): True if valid proof, else False
     '''
-    if not validate_vin(proof):
-        return False
+    # if not validate_vin(proof):
+    #     return False
 
-    if not validate_vout(proof):
-        return False
+    # if not validate_vout(proof):
+    #     return False
 
     tx_id = rutils.hash256(
         proof['version'] +
