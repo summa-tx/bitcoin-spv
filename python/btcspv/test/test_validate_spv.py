@@ -1,46 +1,34 @@
 import json
 import unittest
 
-from btcspv import validate_spv
-
-from btcspv.types import RelayHeader, SPVProof
+from btcspv import ser, validate_spv
 
 
-class TestSer(unittest.TestCase):
+class TestValidateSPV(unittest.TestCase):
     def setUp(self):
         f = open('../testVectors.json')
         self.vectors = json.loads(f.read())
 
         p = open('../testProofs.json')
-        self.proofs = json.loads(p.read())
+        self.proof_vectors = json.loads(p.read())
 
-        # parse valid string and return list
-        valid = json.loads(self.proofs['valid'][0])
-        # change list data to SPVProof
-        self.valid = SPVProof(valid)
-        # deserialize data, TODO: Put deserialize in own function?
-        for value in self.valid:
-            if isinstance(self.valid[f'{value}'], str):
-                self.valid[f'{value}'] = bytes.fromhex(
-                    self.valid[f'{value}'][2:]
-                )
+        self.valid_proofs = [
+            ser.deserialize_spv_proof(p) for p in self.proof_vectors['valid']
+        ]
 
-        # deserialize confirming_header
-        self.valid['confirming_header'] = RelayHeader(
-            self.valid['confirming_header']
-        )
-        for value in self.valid['confirming_header']:
-            if isinstance(self.valid['confirming_header'][f'{value}'], str):
-                self.valid['confirming_header'][f'{value}'] = bytes.fromhex(
-                    self.valid['confirming_header'][f'{value}'][2:]
-                )
+    def test_validate_vin(self):
+        # TODO: need a sample tx dict to go in valid SPVProof
+        for proof in self.valid_proofs:
+            self.assertEqual(
+                validate_spv.validate_vin(proof),
+                True)
 
-    # def test_validate_vin(self):
-    #     # TODO: need a sample tx dict to go in valid SPVProof
-    #     self.assertEqual(
-    #         validate_spv.validate_vin(self.valid),
-    #         True
-    #     )
+    def test_validate_vout(self):
+        # TODO: need a sample tx dict to go in valid SPVProof
+        for proof in self.valid_proofs:
+            self.assertEqual(
+                validate_spv.validate_vout(proof),
+                True)
 
     def test_extract_merkle_root_le(self):
         cases = self.vectors['extractMerkleRootBE']
@@ -95,13 +83,15 @@ class TestSer(unittest.TestCase):
             )
 
     def test_validate_header(self):
-        self.assertEqual(
-            validate_spv.validate_header(self.valid['confirming_header']),
-            True
-        )
+        for proof in self.valid_proofs:
+            self.assertEqual(
+                validate_spv.validate_header(proof['confirming_header']),
+                True
+            )
 
     def test_validate_spvproof(self):
-        self.assertEqual(
-            validate_spv.validate_spvproof(self.valid),
-            True
-        )
+        for proof in self.valid_proofs:
+            self.assertEqual(
+                validate_spv.validate_spvproof(proof),
+                True
+            )
