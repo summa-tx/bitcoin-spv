@@ -30,17 +30,14 @@ pipenv run test
 ```Python
 import json
 
-# Read in the test vectors
-f = open('../testProofs.json')
-vectors = json.loads(f.read())
+from btcspv import ser
 
-# Test vectors are double-serialized, so an additional load step is necessary
-# Most use cases will only need one load step
-valid_json_string = vectors['valid'][0]
-proof = json.loads(valid_json_string)
+p = open('../testProofs.json')
+proof_vectors = json.loads(p.read())
 
-print(proof)
-print(proof['confirming_header']['merkle_root_le'].hex())
+valid_proofs = [
+    ser.deserialize_spv_proof(p) for p in self.proof_vectors['valid']
+]
 ```
 
 ## Supported by

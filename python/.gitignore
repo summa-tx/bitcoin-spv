@@ -3,3 +3,4 @@ coverage
 .coverage
 btcspv.egg-info/
 bitcoin_spv_py.egg-info/
+dist/
