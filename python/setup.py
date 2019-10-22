@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 
 reqs = [
-    'riemann-tx==2.0.1'
+    'riemann-tx==2.1.0'
 ]
 
 setup(
