@@ -1,7 +1,7 @@
 from riemann import utils as rutils
 
 
-def verify_proof(proof: bytes, index: int):
+def verify_proof(proof: bytes, index: int) -> bool:
     '''
     Verifies a hash256 merkle proof.
     The proof is encoded as a bytestring. The first 32 bytes are the leaf hash,
