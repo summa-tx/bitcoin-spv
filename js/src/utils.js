@@ -2,6 +2,29 @@
 import shaLib from './lib/sha256';
 import rmdlib from './lib/ripemd160';
 
+// TODO: Should these be combined into one errors object or do we like them being separate?
+// Should they be stored in JSON instead so they can be used across languages?
+export const errors = {
+  ERR_INVALID_CHAIN: 'Header bytes not a valid chain.',
+  ERR_BAD_LENGTH: 'Header bytes not multiple of 80.',
+  ERR_LOW_WORK: 'Header does not meet its own difficulty target.',
+}
+
+export const headerErrors = {
+  ERR_HASH_LE: 'Hash LE is not the correct hash of the header',
+  ERR_HASH_BE: 'HashLE is not the LE version of Hash',
+  ERR_MERKLE_ROOT_LE: 'MerkleRootLE is not the correct merkle root of the header',
+  ERR_MERKLE_ROOT_BE: 'MerkleRootLE is not the LE version of MerkleRoot',
+  ERR_PREV_HASH: 'Prev hash is not the correct previous hash of the header'
+}
+
+export const proofErrors = {
+  ERR_VIN: 'Vin is not valid',
+  ERR_VOUT: 'Vout is not valid',
+  ERR_TXID: 'Version, Vin, Vout and Locktime did not yield correct TxID',
+  ERR_MERKLE_PROOF: 'Merkle Proof is not valid'
+}
+
 /**
  * Enum for transaction output types
  * @enum {BigInt}
@@ -246,6 +269,37 @@ export function reverseEndianness(uint8Arr) {
  */
 export function lastBytes(arr, num) {
   return safeSlice(arr, arr.length - num);
+}
+
+export function getErrMsg(e) {
+  switch (e.message) {
+    case 1:
+      return [false, errors.ERR_INVALID_CHAIN]
+    case 2:
+      return [false, errors.ERR_BAD_LENGTH]
+    case 3:
+      return [false, errors.ERR_LOW_WORK]
+    case 4:
+      return [false, headerErrors.ERR_HASH_LE]
+    case 5:
+      return [false, headerErrors.ERR_HASH_BE]
+    case 6:
+      return [false, headerErrors.ERR_MERKLE_ROOT_LE]
+    case 7:
+      return [false, headerErrors.ERR_MERKLE_ROOT_BE]
+    case 8:
+      return [false, headerErrors.ERR_PREV_HASH]
+    case 9:
+      return [false, proofErrors.ERR_VIN]
+    case 10:
+      return [false, proofErrors.ERR_VOUT]
+    case 11:
+      return [false, proofErrors.ERR_TXID]
+    case 12:
+      return [false, proofErrors.ERR_MERKLE_PROOF]
+    default:
+      return [false, errors.ERR_INVALID_CHAIN]
+  }
 }
 
 export function updateJSON(element) {
