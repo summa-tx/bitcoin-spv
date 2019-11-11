@@ -285,6 +285,18 @@ export function getErrMsg(e) {
       return errors.proof.ERR_TXID
     case "13":
       return errors.proof.ERR_MERKLE_PROOF
+    case "14":
+      return errors.output.ERR_BAD_LENGTH
+    case "15":
+      return errors.output.ERR_OP_RETURN_FORMAT
+    case "16":
+      return errors.output.ERR_WITNESS_FORMAT
+    case "17":
+      return errors.output.ERR_P2PKH_FORMAT
+    case "18":
+      return errors.output.ERR_P2SH_FORMAT
+    case "19":
+      return errors.output.ERR_ABNORMAL_OUTPUT
     default:
       return errors.ERR_INVALID_CHAIN
   }

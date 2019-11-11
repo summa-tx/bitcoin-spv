@@ -35,6 +35,14 @@
       "ERR_VOUT": "Vout is not valid.",
       "ERR_TXID": "Version, Vin, Vout and Locktime did not yield correct TxID.",
       "ERR_MERKLE_PROOF": "Merkle Proof is not valid."
+    },
+    "output": {
+      "ERR_BAD_LENGTH": "Multi-byte VarInts not supported.",
+      "ERR_OP_RETURN_FORMAT": "Malformatted data. Must be an op return.",
+      "ERR_WITNESS_FORMAT": "Maliciously formatted witness output.",
+      "ERR_P2PKH_FORMAT": "Maliciously formatted p2pkh output.",
+      "ERR_P2SH_FORMAT": "Maliciously formatted p2sh output.",
+      "ERR_ABNORMAL_OUTPUT": "Nonstandard, OP_RETURN, or malformatted output."
     }
   },
   "determineVarIntDataLength": [
@@ -424,7 +432,7 @@
     },{
       "input": "0x024897070000000000ff0020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
       "output": false,
-      "solidityError": "Multi-byte VarInts not supported"
+      "solidityError": "Multi-byte VarInts not supported."
     }
   ],
   "extractMerkleRootBE": [

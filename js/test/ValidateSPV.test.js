@@ -12,7 +12,6 @@ const vectorObj = JSON.parse(JSON.stringify(vectors));
 utils.updateJSON(vectorObj);
 
 const {
-  errors,
   prove,
   calculateTxId,
   parseInput,
