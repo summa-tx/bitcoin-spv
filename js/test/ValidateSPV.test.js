@@ -12,6 +12,7 @@ const vectorObj = JSON.parse(JSON.stringify(vectors));
 utils.updateJSON(vectorObj);
 
 const {
+  errors,
   prove,
   calculateTxId,
   parseInput,
@@ -118,7 +119,8 @@ describe('ValidateSPV', () => {
           ValidateSPV.parseHeader(parseHeaderError[i].input);
           assert(false, 'expected an error');
         } catch (e) {
-          assert.include(e.message, parseHeaderError[i].errorMessage);
+          let error = utils.getErrMsg(e)
+          assert.equal(error, parseHeaderError[i].errorMessage);
         }
       }
     });
@@ -138,7 +140,8 @@ describe('ValidateSPV', () => {
           ValidateSPV.validateHeaderChain(validateHeaderChainError[i].input);
           assert(false, 'expected an error');
         } catch (e) {
-          assert.include(e.message, validateHeaderChainError[i].errorMessage);
+          let error = utils.getErrMsg(e)
+          assert.equal(error, validateHeaderChainError[i].errorMessage);
         }
       }
     });
@@ -184,7 +187,8 @@ describe('ValidateSPV', () => {
           ValidateSPV.validateHeader(badHeaders[i].header);
           assert(false, 'expected an error');
         } catch (e) {
-          assert.include(e.message, badHeaders[i].e);
+          let error = utils.getErrMsg(e)
+          assert.equal(error, badHeaders[i].e);
         }
       }
     });
@@ -202,7 +206,8 @@ describe('ValidateSPV', () => {
           ValidateSPV.validateProof(badSPVProofs[i].proof);
           assert(false, 'expected an error');
         } catch (e) {
-          assert.include(e.message, badSPVProofs[i].e);
+          let error = utils.getErrMsg(e)
+          assert.equal(error, badSPVProofs[i].e);
         }
       }
     });

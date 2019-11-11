@@ -2,28 +2,14 @@
 import shaLib from './lib/sha256';
 import rmdlib from './lib/ripemd160';
 
-// TODO: Should these be combined into one errors object or do we like them being separate?
-// Should they be stored in JSON instead so they can be used across languages?
-export const errors = {
-  ERR_INVALID_CHAIN: 'Header bytes not a valid chain.',
-  ERR_BAD_LENGTH: 'Header bytes not multiple of 80.',
-  ERR_LOW_WORK: 'Header does not meet its own difficulty target.',
-}
+import * as vectors from '../../testVectors.json';
 
-export const headerErrors = {
-  ERR_HASH_LE: 'Hash LE is not the correct hash of the header',
-  ERR_HASH_BE: 'HashLE is not the LE version of Hash',
-  ERR_MERKLE_ROOT_LE: 'MerkleRootLE is not the correct merkle root of the header',
-  ERR_MERKLE_ROOT_BE: 'MerkleRootLE is not the LE version of MerkleRoot',
-  ERR_PREV_HASH: 'Prev hash is not the correct previous hash of the header'
-}
+const vectorObj = JSON.parse(JSON.stringify(vectors));
+updateJSON(vectorObj);
 
-export const proofErrors = {
-  ERR_VIN: 'Vin is not valid',
-  ERR_VOUT: 'Vout is not valid',
-  ERR_TXID: 'Version, Vin, Vout and Locktime did not yield correct TxID',
-  ERR_MERKLE_PROOF: 'Merkle Proof is not valid'
-}
+const {
+  errors
+} = vectorObj;
 
 /**
  * Enum for transaction output types
@@ -63,7 +49,7 @@ export function serializeHex(uint8arr) {
   }
 
   if (!(uint8arr instanceof Uint8Array)) {
-    throw new Error('Cannot serialize hex, must be a Uint8Array');
+    throw new Error('Cannot serialize hex, must be a Uint8Array.');
   }
 
   let hexStr = '';
@@ -89,7 +75,7 @@ export function deserializeHex(hexStr) {
   }
 
   if (typeof hexStr !== 'string') {
-    throw new TypeError('Error deserializing hex, must be a string');
+    throw new TypeError('Error deserializing hex, must be a string.');
   }
 
   let hex = '';
@@ -100,7 +86,7 @@ export function deserializeHex(hexStr) {
   }
 
   if (hex.length % 2 !== 0) {
-    throw new TypeError('Error deserializing hex, string length is odd');
+    throw new TypeError('Error deserializing hex, string length is odd.');
   }
 
   const a = [];
@@ -151,7 +137,7 @@ export function ripemd160(buf) {
  */
 export function typedArraysAreEqual(a, b) {
   if (!(a instanceof Uint8Array) || !(b instanceof Uint8Array)) {
-    throw new Error('Arrays must be of type Uint8Array');
+    throw new Error('Arrays must be of type Uint8Array.');
   }
 
   if (a.byteLength !== b.byteLength) return false;
@@ -196,7 +182,7 @@ export function safeSlice(buf, first, last) {
 
   /* eslint-disable-next-line valid-typeof */
   if (typeof first === 'bigint') {
-    if (first > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('BigInt argument out of safe number range');
+    if (first > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('BigInt argument out of safe number range.');
     start = Number(first);
   } else {
     start = first;
@@ -204,15 +190,15 @@ export function safeSlice(buf, first, last) {
 
   /* eslint-disable-next-line valid-typeof */
   if (typeof last === 'bigint') {
-    if (last > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('BigInt argument out of safe number range');
+    if (last > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('BigInt argument out of safe number range.');
     end = Number(last);
   } else {
     end = last;
   }
 
-  if (end > buf.length) { throw new Error('Tried to slice past end of array'); }
-  if (start < 0 || end < 0) { throw new Error('Slice must not use negative indexes'); }
-  if (start >= end) { throw new Error('Slice must not have 0 length'); }
+  if (end > buf.length) { throw new Error('Tried to slice past end of array.'); }
+  if (start < 0 || end < 0) { throw new Error('Slice must not use negative indexes.'); }
+  if (start >= end) { throw new Error('Slice must not have 0 length.'); }
   return buf.slice(start, end);
 }
 
@@ -231,7 +217,7 @@ export function concatUint8Arrays(...arrays) {
     if (arr instanceof Uint8Array) {
       length += arr.length;
     } else {
-      throw new Error('Arrays must be of type Uint8Array');
+      throw new Error('Arrays must be of type Uint8Array.');
     }
   });
 
@@ -273,32 +259,34 @@ export function lastBytes(arr, num) {
 
 export function getErrMsg(e) {
   switch (e.message) {
-    case 1:
-      return [false, errors.ERR_INVALID_CHAIN]
-    case 2:
-      return [false, errors.ERR_BAD_LENGTH]
-    case 3:
-      return [false, errors.ERR_LOW_WORK]
-    case 4:
-      return [false, headerErrors.ERR_HASH_LE]
-    case 5:
-      return [false, headerErrors.ERR_HASH_BE]
-    case 6:
-      return [false, headerErrors.ERR_MERKLE_ROOT_LE]
-    case 7:
-      return [false, headerErrors.ERR_MERKLE_ROOT_BE]
-    case 8:
-      return [false, headerErrors.ERR_PREV_HASH]
-    case 9:
-      return [false, proofErrors.ERR_VIN]
-    case 10:
-      return [false, proofErrors.ERR_VOUT]
-    case 11:
-      return [false, proofErrors.ERR_TXID]
-    case 12:
-      return [false, proofErrors.ERR_MERKLE_PROOF]
+    case "1":
+      return errors.headerChain.ERR_INVALID_CHAIN
+    case "2":
+      return errors.headerChain.ERR_BAD_LENGTH
+    case "3":
+      return errors.headerChain.ERR_LOW_WORK
+    case "4":
+      return errors.header.ERR_BAD_LENGTH
+    case "5":
+      return errors.header.ERR_HASH_LE
+    case "6":
+      return errors.header.ERR_HASH_BE
+    case "7":
+      return errors.header.ERR_MERKLE_ROOT_LE
+    case "8":
+      return errors.header.ERR_MERKLE_ROOT_BE
+    case "9":
+      return errors.header.ERR_PREV_HASH
+    case "10":
+      return errors.proof.ERR_VIN
+    case "11":
+      return errors.proof.ERR_VOUT
+    case "12":
+      return errors.proof.ERR_TXID
+    case "13":
+      return errors.proof.ERR_MERKLE_PROOF
     default:
-      return [false, errors.ERR_INVALID_CHAIN]
+      return errors.ERR_INVALID_CHAIN
   }
 }
 

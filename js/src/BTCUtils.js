@@ -305,7 +305,7 @@ export function extractTxIndex(input) {
 export function determineOutputLength(output) {
   const len = output[8];
   if (len > 0xfc) {
-    throw new RangeError('Multi-byte VarInts not supported');
+    throw new RangeError('Multi-byte VarInts not supported.');
   }
 
   return BigInt(len) + BigInt(8 + 1); // 8 byte value, 1 byte for len itself
@@ -435,7 +435,7 @@ export function extractHash(output) {
   }
 
   /* Abnormal Case */
-  throw new TypeError('Nonstandard, OP_RETURN, or malformatted output');
+  throw new TypeError('Nonstandard, OP_RETURN, or malformatted output.');
 }
 
 /* ********** */
@@ -573,7 +573,7 @@ export function extractTarget(header) {
 export function calculateDifficulty(target) {
   /* eslint-disable-next-line valid-typeof */
   if (typeof target !== 'bigint') {
-    throw new Error('Argument must be a BigInt');
+    throw new Error('Argument must be a BigInt.');
   }
   return DIFF_ONE_TARGET / target;
 }

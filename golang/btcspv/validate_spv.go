@@ -120,7 +120,7 @@ func ParseOutput(output []byte) (uint, OutputType, []byte) {
 // ParseHeader parses a block header struct from a bytestring
 func ParseHeader(header []byte) ([]byte, uint, []byte, []byte, uint, sdk.Uint, uint, error) {
 	if len(header) != 80 {
-		return nil, 0, nil, nil, 0, sdk.NewUint(0), 0, errors.New("Malformatted header. Must be exactly 80 bytes")
+		return nil, 0, nil, nil, 0, sdk.NewUint(0), 0, errors.New("Malformatted header. Must be exactly 80 bytes.")
 	}
 
 	digest := ReverseEndianness(Hash256(header))
@@ -154,7 +154,7 @@ func ValidateHeaderPrevHash(header, prevHeaderDigest []byte) bool {
 func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 	// Check header chain length
 	if len(headers)%80 != 0 {
-		return sdk.ZeroUint(), errors.New("Header bytes not multiple of 80")
+		return sdk.ZeroUint(), errors.New("Header bytes not multiple of 80.")
 	}
 
 	var digest []byte
@@ -167,7 +167,7 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 		// After the first header, check that headers are in a chain
 		if i != 0 {
 			if !ValidateHeaderPrevHash(header, digest) {
-				return sdk.ZeroUint(), errors.New("Header bytes not a valid chain")
+				return sdk.ZeroUint(), errors.New("Header bytes not a valid chain.")
 			}
 		}
 
@@ -177,7 +177,7 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 		// Require that the header has sufficient work
 		digest = Hash256(header)
 		if !ValidateHeaderWork(digest, target) {
-			return sdk.ZeroUint(), errors.New("Header does not meet its own difficulty target")
+			return sdk.ZeroUint(), errors.New("Header does not meet its own difficulty target.")
 		}
 
 		totalDifficulty = totalDifficulty.Add(CalculateDifficulty(target))
@@ -197,31 +197,31 @@ func (b BitcoinHeader) Validate() (bool, error) {
 	// Check that HashLE is the correct hash of the raw header
 	headerHash := Hash256(header)
 	if bytes.Compare(headerHash, hashLE) != 0 {
-		return false, errors.New("Hash LE is not the correct hash of the header")
+		return false, errors.New("Hash LE is not the correct hash of the header.")
 	}
 
 	// Check that HashLE is the reverse of Hash
 	reversedHash := ReverseEndianness(hash)
 	if bytes.Compare(reversedHash, hashLE) != 0 {
-		return false, errors.New("HashLE is not the LE version of Hash")
+		return false, errors.New("HashLE is not the LE version of Hash.")
 	}
 
 	// Check that the MerkleRootLE is the correct MerkleRoot for the header
 	extractedMerkleRootLE := ExtractMerkleRootLE(header)
 	if bytes.Compare(extractedMerkleRootLE, merkleRootLE) != 0 {
-		return false, errors.New("MerkleRootLE is not the correct merkle root of the header")
+		return false, errors.New("MerkleRootLE is not the correct merkle root of the header.")
 	}
 
 	// Check that MerkleRootLE is the reverse of MerkleRoot
 	reversedMerkleRoot := ReverseEndianness(merkleRoot)
 	if bytes.Compare(reversedMerkleRoot, merkleRootLE) != 0 {
-		return false, errors.New("MerkleRootLE is not the LE version of MerkleRoot")
+		return false, errors.New("MerkleRootLE is not the LE version of MerkleRoot.")
 	}
 
 	// Check that PrevHash is the correct PrevHash for the header
 	extractedPrevHash := ExtractPrevBlockHashBE(header)
 	if bytes.Compare(extractedPrevHash, prevHash) != 0 {
-		return false, errors.New("Prev hash is not the correct previous hash of the header")
+		return false, errors.New("Prev hash is not the correct previous hash of the header.")
 	}
 
 	return true, nil
@@ -236,17 +236,17 @@ func (s SPVProof) Validate() (bool, error) {
 
 	validVin := ValidateVin(s.Vin)
 	if !validVin {
-		return false, errors.New("Vin is not valid")
+		return false, errors.New("Vin is not valid.")
 	}
 	validVout := ValidateVout(s.Vout)
 	if !validVout {
-		return false, errors.New("Vout is not valid")
+		return false, errors.New("Vout is not valid.")
 	}
 
 	// Calculate the Tx ID and compare it to the one in SPVProof
 	txid := CalculateTxID(s.Version, s.Vin, s.Vout, s.Locktime)
 	if bytes.Compare(txid, txIDLE) != 0 {
-		return false, errors.New("Version, Vin, Vout and Locktime did not yield correct TxID")
+		return false, errors.New("Version, Vin, Vout and Locktime did not yield correct TxID.")
 	}
 
 	// Validate all the fields in ConfirmingHeader
@@ -258,7 +258,7 @@ func (s SPVProof) Validate() (bool, error) {
 	// Check that the proof is valid
 	validProof := Prove(txIDLE, merkleRootLE, intermediateNodes, index)
 	if !validProof {
-		return false, errors.New("Merkle Proof is not valid")
+		return false, errors.New("Merkle Proof is not valid.")
 	}
 
 	// If there are no errors, return true

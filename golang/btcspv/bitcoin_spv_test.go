@@ -498,7 +498,7 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 
 	// Error case. Use the 10 bytes to simulate a vout with a very long output
 	actual, err := ExtractOutputAtIndex([]byte{0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0xff}, 1)
-	expected := "Multi-byte VarInts not supported"
+	expected := "Multi-byte VarInts not supported."
 	suite.Equal([]byte{}, actual)
 	suite.EqualError(err, expected)
 }

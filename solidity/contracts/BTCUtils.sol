@@ -261,7 +261,7 @@ library BTCUtils {
     /// @return          The length indicated by the prefix, error if invalid length
     function determineOutputLength(bytes memory _output) internal pure returns (uint256) {
         uint8 _len = uint8(_output.slice(8, 1)[0]);
-        require(_len < 0xfd, "Multi-byte VarInts not supported");
+        require(_len < 0xfd, "Multi-byte VarInts not supported.");
 
         return _len + 8 + 1; // 8 byte value, 1 byte for _len itself
     }

@@ -158,7 +158,7 @@ func (suite *TypesSuite) TestValidateSPVProof() {
 	invalidHeader.ConfirmingHeader.MerkleRoot = Hash256Digest{0xdd, 0xe2, 0x5e, 0x5d, 0x1c, 0xb2, 0x9a, 0xc6, 0xc0, 0x8b, 0xe7, 0x37, 0x83, 0x73, 0xc6, 0x46, 0xad, 0x18, 0xfc, 0x90, 0xb1, 0x44, 0x35, 0xa9, 0x2a, 0xc8, 0xab, 0x42, 0x28, 0xc9, 0x1a, 0xb6}
 	invalidProof, validationErr := invalidHeader.Validate()
 	suite.Equal(invalidProof, false)
-	suite.EqualError(validationErr, "MerkleRootLE is not the LE version of MerkleRoot")
+	suite.EqualError(validationErr, "MerkleRootLE is not the LE version of MerkleRoot.")
 
 	invalidProofs := suite.Fixtures.InvalidProofs
 
