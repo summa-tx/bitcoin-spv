@@ -118,7 +118,7 @@ func (suite *UtilsSuite) TestEncodeP2WSH() {
 	for i := range fixture {
 		testCase := fixture[i]
 
-		input := testCase.Input.([]byte)
+		input := testCase.Input.(Hash256Digest)
 		expected := testCase.Output
 		actual, err := EncodeP2WSH(input)
 		suite.Nil(err)
@@ -155,8 +155,8 @@ func (suite *UtilsSuite) TestEncodeSegwitErrors() {
 	suite.Equal("", actual)
 	suite.EqualError(err, zeroBytesError)
 
-	input = make([]byte, 32)
-	actual, err = EncodeP2WSH(input)
+	WSH, _ := NewHash256Digest(make([]byte, 32))
+	actual, err = EncodeP2WSH(WSH)
 	suite.Equal("", actual)
 	suite.EqualError(err, zeroBytesError)
 
@@ -173,8 +173,4 @@ func (suite *UtilsSuite) TestEncodeSegwitErrors() {
 	actual, err = EncodeP2WPKH(input)
 	suite.Equal("", actual)
 	suite.EqualError(err, "WPKH must be 20 bytes, got 1 bytes")
-
-	actual, err = EncodeP2WSH(input)
-	suite.Equal("", actual)
-	suite.EqualError(err, "WSH must be 32 bytes, got 1 bytes")
 }

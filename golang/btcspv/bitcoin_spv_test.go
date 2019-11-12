@@ -20,6 +20,19 @@ type TestCase struct {
 	ErrorMessage interface{} `json:"errorMessage"`
 }
 
+/// hacky function to sort bytes by types. can generate false positives
+func decodeTestBuffer(buf []byte) interface{} {
+	var ret interface{}
+	if len(buf) == 32 {
+		ret, _ = NewHash256Digest(buf)
+	} else if len(buf) == 80 {
+		ret, _ = NewRawHeader(buf)
+	} else {
+		ret = buf
+	}
+	return ret
+}
+
 func (t *TestCase) UnmarshalJSON(b []byte) error {
 	var data map[string]interface{}
 	err := json.Unmarshal(b, &data)
@@ -33,7 +46,8 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 	switch data["input"].(type) {
 	case string:
 		if len(data["input"].(string)) >= 2 && data["input"].(string)[0:2] == "0x" {
-			t.Input = DecodeIfHex(data["input"].(string))
+			buf := DecodeIfHex(data["input"].(string))
+			t.Input = decodeTestBuffer(buf)
 		} else {
 			t.Input = data["input"].(string)
 		}
@@ -46,7 +60,8 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 	switch data["output"].(type) {
 	case string:
 		if len(data["output"].(string)) >= 2 && data["output"].(string)[0:2] == "0x" {
-			t.Output = DecodeIfHex(data["output"].(string))
+			buf := DecodeIfHex(data["output"].(string))
+			t.Output = decodeTestBuffer(buf)
 		} else {
 			t.Output = data["output"].(string)
 		}
@@ -84,7 +99,8 @@ func preprocessList(l []interface{}) {
 		case []interface{}:
 			preprocessList(l[i].([]interface{}))
 		case string:
-			l[i] = DecodeIfHex(l[i].(string))
+			buf := DecodeIfHex(l[i].(string))
+			l[i] = decodeTestBuffer(buf)
 		case float64:
 			l[i] = int(l[i].(float64))
 		case map[string]interface{}:
@@ -100,8 +116,8 @@ func preprocessObject(m map[string]interface{}) {
 			l := v.([]interface{})
 			preprocessList(l)
 		case string:
-			// overwrite the string with a []byte
-			m[k] = DecodeIfHex(v.(string))
+			buf := DecodeIfHex(v.(string))
+			m[k] = decodeTestBuffer(buf)
 		case float64:
 			m[k] = int(v.(float64))
 		case map[string]interface{}:
@@ -144,8 +160,15 @@ func (suite *UtilsSuite) TestReverseEndianness() {
 	testbytes := []byte{1, 2, 3}
 	reversed := ReverseEndianness(testbytes)
 	suite.Equal(reversed, []byte{3, 2, 1})
-	suite.Equal(testbytes, []byte{1, 2, 3})
 	suite.Equal(len(reversed), len(testbytes))
+}
+
+func (suite *UtilsSuite) TestReverseHash256Endianness() {
+	input := Hash256Digest{1, 2, 3}
+	output := Hash256Digest{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 1}
+	reversed := ReverseHash256Endianness(input)
+	suite.Equal(reversed, output)
+	suite.Equal(len(reversed), len(input))
 }
 
 func (suite *UtilsSuite) TestLastBytes() {
@@ -161,7 +184,7 @@ func (suite *UtilsSuite) TestHash160() {
 		testCase := fixtures[i]
 		expected := testCase.Output.([]byte)
 		actual := Hash160(testCase.Input.([]byte))
-		suite.Equal(expected, actual)
+		suite.Equal(expected, actual[:])
 	}
 }
 
@@ -170,7 +193,7 @@ func (suite *UtilsSuite) TestHash256() {
 
 	for i := range fixtures {
 		testCase := fixtures[i]
-		expected := testCase.Output.([]byte)
+		expected := testCase.Output.(Hash256Digest)
 		actual := Hash256(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -273,10 +296,10 @@ func (suite *UtilsSuite) TestExtractHash() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := testCase.Output.([]byte)
-		actual, err := ExtractHash(testCase.Input.([]byte))
+		expected := normalizeToByteSlice(testCase.Output)
+		actual, err := ExtractHash(normalizeToByteSlice(testCase.Input))
 		suite.Nil(err)
-		suite.Equal(expected, actual)
+		suite.Equal(expected[:], actual)
 	}
 
 	fixtureError := suite.Fixtures["extractHashError"]
@@ -284,7 +307,7 @@ func (suite *UtilsSuite) TestExtractHash() {
 	for i := range fixtureError {
 		testCase := fixtureError[i]
 		expected := testCase.ErrorMessage.(string)
-		actual, err := ExtractHash(testCase.Input.([]byte))
+		actual, err := ExtractHash(normalizeToByteSlice(testCase.Input))
 		suite.Nil(actual)
 		suite.EqualError(err, expected)
 	}
@@ -418,7 +441,7 @@ func (suite *UtilsSuite) TestExtractInputTxIDLE() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := testCase.Output.([]byte)
+		expected := testCase.Output.(Hash256Digest)
 		actual := ExtractInputTxIDLE(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -429,7 +452,7 @@ func (suite *UtilsSuite) TestExtractInputTxID() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := testCase.Output.([]byte)
+		expected := testCase.Output.(Hash256Digest)
 		actual := ExtractInputTxID(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -508,8 +531,8 @@ func (suite *UtilsSuite) TestExtractMerkleRootBE() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := testCase.Output.([]byte)
-		actual := ExtractMerkleRootBE(testCase.Input.([]byte))
+		expected := testCase.Output.(Hash256Digest)
+		actual := ExtractMerkleRootBE(testCase.Input.(RawHeader))
 		suite.Equal(expected, actual)
 	}
 }
@@ -520,7 +543,7 @@ func (suite *UtilsSuite) TestExtractTarget() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := BytesToBigInt(testCase.Output.([]byte))
-		actual := ExtractTarget(testCase.Input.([]byte))
+		actual := ExtractTarget(testCase.Input.(RawHeader))
 		suite.Equal(expected, actual)
 	}
 }
@@ -533,8 +556,8 @@ func (suite *UtilsSuite) TestExtractPrevBlockHashBE() {
 		input := testCase.Input.([]interface{})
 		for j := range input {
 			h := input[j].(map[string]interface{})
-			actual := ExtractPrevBlockHashBE(h["hex"].([]byte))
-			expected := h["prev_block"].([]byte)
+			actual := ExtractPrevBlockHashBE(h["hex"].(RawHeader))
+			expected := h["prev_block"].(Hash256Digest)
 			suite.Equal(expected, actual)
 		}
 	}
@@ -546,7 +569,7 @@ func (suite *UtilsSuite) TestExtractTimestamp() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := uint(testCase.Output.(int))
-		actual := ExtractTimestamp(testCase.Input.([]byte))
+		actual := ExtractTimestamp(testCase.Input.(RawHeader))
 		suite.Equal(expected, actual)
 	}
 }
@@ -558,7 +581,7 @@ func (suite *UtilsSuite) TestHash256MerkleStep() {
 		testCase := fixtures[i]
 		ins := testCase.Input.([]interface{})
 		actual := hash256MerkleStep(ins[0].([]byte), ins[1].([]byte))
-		expected := testCase.Output.([]byte)
+		expected := testCase.Output.(Hash256Digest)
 		suite.Equal(expected, actual)
 	}
 }
@@ -581,7 +604,7 @@ func (suite *UtilsSuite) TestVerifyHash256Merkle() {
 	for i := range fixtures {
 		testCase := fixtures[i]
 		ins := testCase.Input.(map[string]interface{})
-		proof := ins["proof"].([]byte)
+		proof := normalizeToByteSlice(ins["proof"])
 		index := uint(ins["index"].(int))
 		expected := testCase.Output.(bool)
 		actual := VerifyHash256Merkle(proof, index)
@@ -601,8 +624,8 @@ func (suite *UtilsSuite) TestRetargetAlgorithm() {
 
 		firstTimestamp := uint(testCaseFirst["timestamp"].(int))
 		secondTimestamp := uint(testCaseSecond["timestamp"].(int))
-		previousTarget := ExtractTarget(testCaseSecond["hex"].([]byte))
-		expectedNewTarget := ExtractTarget(testCaseExpected["hex"].([]byte))
+		previousTarget := ExtractTarget(testCaseSecond["hex"].(RawHeader))
+		expectedNewTarget := ExtractTarget(testCaseExpected["hex"].(RawHeader))
 
 		actual := RetargetAlgorithm((previousTarget), firstTimestamp, secondTimestamp)
 
@@ -639,7 +662,7 @@ func (suite *UtilsSuite) TestExtractDifficulty() {
 		input := testCase.Input.([]interface{})
 		for j := range input {
 			h := input[j].(map[string]interface{})
-			actual := ExtractDifficulty(h["hex"].([]byte))
+			actual := ExtractDifficulty(h["hex"].(RawHeader))
 			expected := sdk.NewUint(uint64(h["difficulty"].(int)))
 			suite.Equal(expected, actual)
 		}
