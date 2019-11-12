@@ -94,17 +94,17 @@ describe('ValidateSPV', () => {
   });
 
   describe('#parseHeader', () => {
-    it('returns the header digest, version, prevHash, merkleRoot, timestamp, target, and nonce',
+    it('returns the header digest, version, prevhash, merkleRoot, timestamp, target, and nonce',
       () => {
         for (let i = 0; i < parseHeader.length; i += 1) {
           const validHeader = ValidateSPV.parseHeader(parseHeader[0].input);
           const {
-            digest, version, prevHash, merkleRoot, timestamp, target, nonce
+            digest, version, prevhashLE, merkleRoot, timestamp, target, nonce
           } = parseHeader[i].output;
 
           assert.isTrue(utils.typedArraysAreEqual(validHeader.digest, digest));
           assert.strictEqual(validHeader.version, BigInt(version));
-          assert.isTrue(utils.typedArraysAreEqual(validHeader.prevHash, prevHash));
+          assert.isTrue(utils.typedArraysAreEqual(validHeader.prevhashLE, prevhashLE));
           assert.isTrue(utils.typedArraysAreEqual(validHeader.merkleRoot, merkleRoot));
           assert.strictEqual(validHeader.timestamp, BigInt(timestamp));
           assert.strictEqual(validHeader.target, BigInt(utils.bytesToUint(target)));
@@ -163,7 +163,7 @@ describe('ValidateSPV', () => {
   describe('#validateHeaderPrevHash', () => {
     it('returns true if header prevHash is valid, false if otherwise', () => {
       for (let i = 0; i < validateHeaderPrevHash.length; i += 1) {
-        const res = ValidateSPV.validateHeaderPrevHash(
+        const res = ValidateSPV.validateHeaderPrevHashLE(
           validateHeaderPrevHash[i].input.header,
           validateHeaderPrevHash[i].input.prevHash
         );

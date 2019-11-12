@@ -14,7 +14,7 @@ export function objectToHeader(o) {
   const hash = utils.deserializeHex(o.hash);
   const hash_le = utils.deserializeHex(o.hash_le);
   const prevhash = utils.deserializeHex(o.prevhash);
-  const prevhash_le = utils.deserializeHex(o.prevhash_le)
+  const prevhash_le = utils.deserializeHex(o.prevhash_le);
   const merkle_root = utils.deserializeHex(o.merkle_root);
   const merkle_root_le = utils.deserializeHex(o.merkle_root_le);
   if (raw.length !== 80) {
