@@ -221,7 +221,7 @@ func (suite *TypesSuite) TestNewRawHeader() {
 func (suite *TypesSuite) TestHeaderFromRaw() {
 	validHeader := suite.ValidProof.ConfirmingHeader
 	// PrevHash is stored in JSON as BE, we need to reverse it before comparing
-	reversed, _ := NewHash256Digest(ReverseEndianness(validHeader.PrevHash[:]))
+	reversed, _ := ReverseHash256Endianness(validHeader.PrevHash)
 	validHeader.PrevHash = reversed
 	var height uint32 = 592920
 
@@ -235,7 +235,7 @@ func (suite *TypesSuite) TestHeaderFromHex() {
 
 	validHeader := suite.ValidProof.ConfirmingHeader
 	// PrevHash is stored in JSON as BE, we need to reverse it before comparing
-	reversed, _ := NewHash256Digest(ReverseEndianness(validHeader.PrevHash[:]))
+	reversed, _ := ReverseHash256Endianness(validHeader.PrevHash)
 	validHeader.PrevHash = reversed
 
 	rawHeader, err := HeaderFromHex(hex, height)

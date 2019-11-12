@@ -171,7 +171,13 @@ func (suite *UtilsSuite) TestReverseEndianness() {
 	testbytes := []byte{1, 2, 3}
 	reversed := ReverseEndianness(testbytes)
 	suite.Equal(reversed, []byte{3, 2, 1})
-	suite.Equal(testbytes, []byte{1, 2, 3})
+	suite.Equal(len(reversed), len(testbytes))
+}
+
+func (suite *UtilsSuite) TestReverseHash256Endianness() {
+	testbytes := Hash256Digest{1, 2, 3}
+	reversed, _ := ReverseHash256Endianness(testbytes)
+	suite.Equal(reversed, Hash256Digest{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 1})
 	suite.Equal(len(reversed), len(testbytes))
 }
 

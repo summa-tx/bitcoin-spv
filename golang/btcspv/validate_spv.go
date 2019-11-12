@@ -96,7 +96,7 @@ func ParseOutput(output []byte) (uint, OutputType, []byte) {
 func ParseHeader(header RawHeader) (Hash256Digest, uint, Hash256Digest, Hash256Digest, uint, sdk.Uint, uint, error) {
 	digestLE := Hash256(header[:])
 
-	digest, _ := NewHash256Digest(ReverseEndianness(digestLE[:]))
+	digest, _ := ReverseHash256Endianness(digestLE)
 	version := BytesToUint(ReverseEndianness(header[0:4]))
 	prevHash := ExtractPrevBlockHashLE(header)
 	merkleRoot := ExtractMerkleRootLE(header)
