@@ -9,6 +9,7 @@ class RelayHeader(TypedDict):
     hash_le: bytes
     height: int
     prevhash: bytes
+    prevhash_le: bytes
     merkle_root: bytes
     merkle_root_le: bytes
 

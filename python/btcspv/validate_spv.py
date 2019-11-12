@@ -120,10 +120,14 @@ def validate_header(header: RelayHeader) -> bool:
         return False
 
     # Check that PrevHash is the correct PrevHash for the header
-    extracted_prevhash = extract_prev_block_be(header['raw'])
-    if extracted_prevhash != header['prevhash']:
+    extracted_prevhash_le = extract_prev_block_le(header['raw'])
+    if extracted_prevhash_le != header['prevhash_le']:
         return False
 
+    # Check that PrevHashLE is the reverse of PrevHash
+    reversed_prevhash = header['prevhash'][::-1]
+    if reversed_prevhash != header['prevhash_le']:
+        return False
     return True
 
 
