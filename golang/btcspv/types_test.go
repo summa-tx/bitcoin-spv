@@ -11,7 +11,8 @@ import (
 )
 
 type SerializedCases struct {
-	Valid           []string              `json:"valid"`
+	ValidProof      []string              `json:"valid"`
+	ValidHeader     []string              `json:"validHeader"`
 	InvalidHeaders  []InvalidHeadersCases `json:"badHeaders"`
 	InvalidProofs   []InvalidProofsCases  `json:"badSPVProofs"`
 	BadHexBytes     string                `json:"errBadHexBytes"`
@@ -33,8 +34,9 @@ type InvalidProofsCases struct {
 
 type TypesSuite struct {
 	suite.Suite
-	Fixtures   SerializedCases
-	ValidProof SPVProof
+	Fixtures     SerializedCases
+	ValidProofs  []SPVProof
+	ValidHeaders []BitcoinHeader
 }
 
 func TestTypes(t *testing.T) {
@@ -49,21 +51,34 @@ func TestTypes(t *testing.T) {
 	err = json.Unmarshal([]byte(byteValue), &fixtures)
 	logIfErr(err)
 
-	spvProof := new(SPVProof)
-	err = json.Unmarshal([]byte(fixtures.Valid[0]), &spvProof)
-	logIfErr(err)
+	var validProofs []SPVProof
+	for i := range fixtures.ValidProof {
+		spvProof := new(SPVProof)
+		err = json.Unmarshal([]byte(fixtures.ValidProof[i]), &spvProof)
+		logIfErr(err)
+		validProofs = append(validProofs, *spvProof)
+	}
+
+	var validHeaders []BitcoinHeader
+	for i := range fixtures.ValidHeader {
+		bitcoinHeader := new(BitcoinHeader)
+		err = json.Unmarshal([]byte(fixtures.ValidHeader[i]), &bitcoinHeader)
+		logIfErr(err)
+		validHeaders = append(validHeaders, *bitcoinHeader)
+	}
 
 	typesSuite := TypesSuite{
 		*new(suite.Suite),
 		*fixtures,
-		*spvProof,
+		validProofs,
+		validHeaders,
 	}
 
 	suite.Run(t, &typesSuite)
 }
 
 func (suite *TypesSuite) TestUnmarshalSPVProof() {
-	valid := suite.Fixtures.Valid
+	valid := suite.Fixtures.ValidProof
 
 	for i := range valid {
 		s := new(SPVProof)
@@ -74,7 +89,7 @@ func (suite *TypesSuite) TestUnmarshalSPVProof() {
 }
 
 func (suite *TypesSuite) TestMarshalSPVProof() {
-	valid := suite.Fixtures.Valid
+	valid := suite.Fixtures.ValidProof
 	spvProof := new(SPVProof)
 	json.Unmarshal([]byte(valid[0]), &spvProof)
 
@@ -133,13 +148,16 @@ func (suite *TypesSuite) TestUnmarshalBadLenRawHeader() {
 }
 
 func (suite *TypesSuite) TestValidateBitcoinHeader() {
-	validHeader, err := suite.ValidProof.ConfirmingHeader.Validate()
+	validHeaders := suite.ValidHeaders
 	invalidHeaders := suite.Fixtures.InvalidHeaders
 
-	suite.Nil(err)
-	suite.Equal(validHeader, true)
+	for i := range validHeaders {
+		validHeader, err := validHeaders[i].Validate()
+		suite.Nil(err)
+		suite.Equal(validHeader, true)
+	}
 
-	for i := 0; i < len(invalidHeaders); i++ {
+	for i := range invalidHeaders {
 		headerCase := invalidHeaders[i]
 
 		valid, err := headerCase.Header.Validate()
@@ -150,11 +168,14 @@ func (suite *TypesSuite) TestValidateBitcoinHeader() {
 }
 
 func (suite *TypesSuite) TestValidateSPVProof() {
-	validProof, err := suite.ValidProof.Validate()
-	suite.Nil(err)
-	suite.Equal(validProof, true)
+	validProofs := suite.ValidProofs
+	for i := range validProofs {
+		validProof, err := validProofs[i].Validate()
+		suite.Nil(err)
+		suite.Equal(validProof, true)
+	}
 
-	invalidHeader := suite.ValidProof
+	invalidHeader := suite.ValidProofs[0]
 	invalidHeader.ConfirmingHeader.MerkleRoot = Hash256Digest{0xdd, 0xe2, 0x5e, 0x5d, 0x1c, 0xb2, 0x9a, 0xc6, 0xc0, 0x8b, 0xe7, 0x37, 0x83, 0x73, 0xc6, 0x46, 0xad, 0x18, 0xfc, 0x90, 0xb1, 0x44, 0x35, 0xa9, 0x2a, 0xc8, 0xab, 0x42, 0x28, 0xc9, 0x1a, 0xb6}
 	invalidProof, validationErr := invalidHeader.Validate()
 	suite.Equal(invalidProof, false)
@@ -162,7 +183,7 @@ func (suite *TypesSuite) TestValidateSPVProof() {
 
 	invalidProofs := suite.Fixtures.InvalidProofs
 
-	for i := 0; i < len(invalidProofs); i++ {
+	for i := range invalidProofs {
 		proofCase := invalidProofs[i]
 
 		valid, err := proofCase.Proof.Validate()
@@ -219,30 +240,41 @@ func (suite *TypesSuite) TestNewRawHeader() {
 }
 
 func (suite *TypesSuite) TestHeaderFromRaw() {
-	validHeader := suite.ValidProof.ConfirmingHeader
-	// PrevHash is stored in JSON as BE, we need to reverse it before comparing
-	reversed := ReverseHash256Endianness(validHeader.PrevHash)
-	validHeader.PrevHash = reversed
-	var height uint32 = 592920
+	validHeaders := suite.ValidHeaders
+	for i := range validHeaders {
+		header := validHeaders[i]
+		// PrevHash is stored in JSON as BE, we need to reverse it before comparing
+		reversed := ReverseHash256Endianness(header.PrevHash)
+		header.PrevHash = reversed
+		var height uint32 = 592920
 
-	rawHeader := HeaderFromRaw(validHeader.Raw, height)
-	suite.Equal(rawHeader, validHeader)
+		rawHeader := HeaderFromRaw(header.Raw, height)
+		suite.Equal(rawHeader, header)
+	}
 }
 
 func (suite *TypesSuite) TestHeaderFromHex() {
+	// TODO: serialize hex and height from json data and move inside for block
 	hex := "0x0000c020c238b601308b7297346ab2ed59942d7d7ecea8d23a1001000000000000000000b61ac92842abc82aa93644b190fc18ad46c6738337e78bc0c69ab21c5d5ee2ddd6376d5d3e211a17d8706a84"
 	var height uint32 = 592920
 
-	validHeader := suite.ValidProof.ConfirmingHeader
-	// PrevHash is stored in JSON as BE, we need to reverse it before comparing
-	reversed := ReverseHash256Endianness(validHeader.PrevHash)
-	validHeader.PrevHash = reversed
+	validHeaders := suite.ValidHeaders
+	for i := range validHeaders {
+		header := validHeaders[i]
+		// PrevHash is stored in JSON as BE, we need to reverse it before comparing
+		reversed := ReverseHash256Endianness(header.PrevHash)
+		header.PrevHash = reversed
 
-	rawHeader, err := HeaderFromHex(hex, height)
-	suite.Nil(err)
-	suite.Equal(rawHeader, validHeader)
+		rawHeader, err := HeaderFromHex(hex, height)
+		suite.Nil(err)
+		suite.Equal(rawHeader, header)
+	}
 
 	badLengthInput := hex[0:142]
-	_, err = HeaderFromHex(badLengthInput, height)
+	_, err := HeaderFromHex(badLengthInput, height)
 	suite.EqualError(err, "Expected 80 bytes in a Hash256 digest, got 70")
+
+	nonHex := "zzzz"
+	_, err = HeaderFromHex(nonHex, height)
+	suite.EqualError(err, "encoding/hex: invalid byte: U+007A 'z'")
 }
