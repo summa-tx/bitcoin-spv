@@ -179,6 +179,10 @@ func (suite *TypesSuite) TestNewHash160Digest() {
 	digest, err := NewHash160Digest(input)
 	suite.Nil(err)
 	suite.Equal(digest, output)
+
+	badLength := input[0:18]
+	_, err = NewHash160Digest(badLength)
+	suite.EqualError(err, "Expected 20 bytes in a Hash160Digest, got 18")
 }
 
 func (suite *TypesSuite) TestNewHash256Digest() {
@@ -208,8 +212,9 @@ func (suite *TypesSuite) TestNewRawHeader() {
 
 func (suite *TypesSuite) TestHeaderFromRaw() {
 	validHeader := suite.ValidProof.ConfirmingHeader
-	// TODO: Why is the prevhash the reverse endianness of what it should be?
-	validHeader.PrevHash = Hash256Digest{0xc2, 0x38, 0xb6, 0x1, 0x30, 0x8b, 0x72, 0x97, 0x34, 0x6a, 0xb2, 0xed, 0x59, 0x94, 0x2d, 0x7d, 0x7e, 0xce, 0xa8, 0xd2, 0x3a, 0x10, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
+	// PrevHash is stored in JSON as BE, we need to reverse it before comparing
+	reversed, _ := NewHash256Digest(ReverseEndianness(validHeader.PrevHash[:]))
+	validHeader.PrevHash = reversed
 	var height uint32 = 592920
 
 	rawHeader := HeaderFromRaw(validHeader.Raw, height)
@@ -221,8 +226,9 @@ func (suite *TypesSuite) TestHeaderFromHex() {
 	var height uint32 = 592920
 
 	validHeader := suite.ValidProof.ConfirmingHeader
-	// TODO: Why is the prevhash the reverse endianness of what it should be?
-	validHeader.PrevHash = Hash256Digest{0xc2, 0x38, 0xb6, 0x1, 0x30, 0x8b, 0x72, 0x97, 0x34, 0x6a, 0xb2, 0xed, 0x59, 0x94, 0x2d, 0x7d, 0x7e, 0xce, 0xa8, 0xd2, 0x3a, 0x10, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
+	// PrevHash is stored in JSON as BE, we need to reverse it before comparing
+	reversed, _ := NewHash256Digest(ReverseEndianness(validHeader.PrevHash[:]))
+	validHeader.PrevHash = reversed
 
 	rawHeader, err := HeaderFromHex(hex, height)
 	suite.Nil(err)
