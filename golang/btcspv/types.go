@@ -24,6 +24,7 @@ type BitcoinHeader struct {
 	HashLE       Hash256Digest `json:"hash_le"`
 	Height       uint32        `json:"height"`
 	PrevHash     Hash256Digest `json:"prevhash"`
+	PrevHashLE   Hash256Digest `json:"prevhash_le"`
 	MerkleRoot   Hash256Digest `json:"merkle_root"`
 	MerkleRootLE Hash256Digest `json:"merkle_root_le"`
 }
@@ -100,12 +101,15 @@ func NewRawHeader(b []byte) (RawHeader, error) {
 func HeaderFromRaw(raw RawHeader, height uint32) BitcoinHeader {
 	digestLE := Hash256(raw[:])
 	digestBE := ReverseHash256Endianness(digestLE)
+	prevhashLE := ExtractPrevBlockHashLE(raw)
+	prevhash := ReverseHash256Endianness(prevhashLE)
 	return BitcoinHeader{
 		raw,
 		digestBE,
 		digestLE,
 		height,
-		ExtractPrevBlockHashLE(raw),
+		prevhash,
+		prevhashLE,
 		ExtractMerkleRootBE(raw),
 		ExtractMerkleRootLE(raw),
 	}

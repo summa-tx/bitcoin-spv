@@ -18,6 +18,7 @@ def dict_from_relay_header(r: RelayHeader) -> dict:
         'hash_le': f"0x{r['hash_le'].hex()}",
         'height': r['height'],
         'prevhash': f"0x{r['prevhash'].hex()}",
+        'prevhash_le': f"0x{r['prevhash_le'].hex()}",
         'merkle_root': f"0x{r['merkle_root'].hex()}",
         'merkle_root_le': f"0x{r['merkle_root_le'].hex()}"
     }
@@ -46,6 +47,7 @@ def dict_to_relay_header(d: dict) -> RelayHeader:
         hash_le=bytes.fromhex(d['hash_le'][2:]),
         height=d['height'],
         prevhash=bytes.fromhex(d['prevhash'][2:]),
+        prevhash_le=bytes.fromhex(d['prevhash_le'][2:]),
         merkle_root=bytes.fromhex(d['merkle_root'][2:]),
         merkle_root_le=bytes.fromhex(d['merkle_root_le'][2:])
     )

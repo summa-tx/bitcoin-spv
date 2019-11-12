@@ -163,7 +163,7 @@ func (b BitcoinHeader) Validate() (bool, error) {
 	// Check that HashLE is the correct hash of the raw header
 	headerHash := Hash256(b.Raw[:])
 	if !bytes.Equal(headerHash[:], b.HashLE[:]) {
-		return false, errors.New("Hash LE is not the correct hash of the header")
+		return false, errors.New("HashLE is not the correct hash of the header")
 	}
 
 	// Check that HashLE is the reverse of Hash
@@ -185,9 +185,15 @@ func (b BitcoinHeader) Validate() (bool, error) {
 	}
 
 	// Check that PrevHash is the correct PrevHash for the header
-	extractedPrevHash := ExtractPrevBlockHashBE(b.Raw)
-	if bytes.Compare(extractedPrevHash[:], b.PrevHash[:]) != 0 {
-		return false, errors.New("Prev hash is not the correct previous hash of the header")
+	extractedPrevHashLE := ExtractPrevBlockHashLE(b.Raw)
+	if bytes.Compare(extractedPrevHashLE[:], b.PrevHashLE[:]) != 0 {
+		return false, errors.New("PrevhashLE is not the correct parent hash of the header")
+	}
+
+	// Check that PrevHashLE is the reverse of Prevhash
+	reversedPrevHash := ReverseEndianness(b.PrevHash[:])
+	if !bytes.Equal(reversedPrevHash, b.PrevHashLE[:]) {
+		return false, errors.New("PrevhashLE is not the LE version of Prevhash")
 	}
 
 	return true, nil

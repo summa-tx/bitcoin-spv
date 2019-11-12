@@ -243,12 +243,8 @@ func (suite *TypesSuite) TestHeaderFromRaw() {
 	validHeaders := suite.ValidHeaders
 	for i := range validHeaders {
 		header := validHeaders[i]
-		// PrevHash is stored in JSON as BE, we need to reverse it before comparing
-		reversed := ReverseHash256Endianness(header.PrevHash)
-		header.PrevHash = reversed
-		var height uint32 = 592920
 
-		rawHeader := HeaderFromRaw(header.Raw, height)
+		rawHeader := HeaderFromRaw(header.Raw, header.Height)
 		suite.Equal(rawHeader, header)
 	}
 }
@@ -257,15 +253,11 @@ func (suite *TypesSuite) TestHeaderFromHex() {
 	validHeaders := suite.ValidHeaders
 	for i := range validHeaders {
 		header := validHeaders[i]
-		headerHex := hex.EncodeToString(header.Raw[:])
+		rawHex := hex.EncodeToString(header.Raw[:])
+		rawHeader, err := HeaderFromHex(rawHex, header.Height)
 
-		// PrevHash is stored in JSON as BE, we need to reverse it before comparing
-		reversed := ReverseHash256Endianness(header.PrevHash)
-		header.PrevHash = reversed
-
-		rawHeader, err := HeaderFromHex(headerHex, header.Height)
 		suite.Nil(err)
-		suite.Equal(rawHeader, header)
+		suite.Equal(header, rawHeader)
 	}
 
 	testHeader := hex.EncodeToString(suite.ValidHeaders[0].Raw[:])
