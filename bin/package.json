@@ -1,0 +1,22 @@
+{
+  "name": "@summa-tx/bitcoin-spv-cli",
+  "version": "0.0.1",
+  "description": "",
+  "main": "BcoinClient.js",
+  "scripts": {
+    "build": "bpkg index.js -o proof && chmod +x proof",
+    "clean": "rm -f proof"
+  },
+  "keywords": [],
+  "author": "Mark Tyneway <mark.tyneway@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "bcfg": "^0.1.6",
+    "bclient": "^0.1.7",
+    "bcoin": "git+https://github.com/bcoin-org/bcoin.git",
+    "bpkg": "^0.6.0"
+  },
+  "dependencies": {
+    "@summa-tx/bitcoin-spv-js": "^2.2.0"
+  }
+}
