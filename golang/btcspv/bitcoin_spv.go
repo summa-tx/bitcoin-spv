@@ -64,12 +64,9 @@ func ReverseEndianness(b []byte) []byte {
 	return out
 }
 
-func ReverseHash256Endianness(h Hash256Digest) (Hash256Digest, error) {
-	reversed, err := NewHash256Digest(ReverseEndianness(h[:]))
-	if err != nil {
-		return Hash256Digest{}, err
-	}
-	return reversed, nil
+func ReverseHash256Endianness(h Hash256Digest) Hash256Digest {
+	reversed, _ := NewHash256Digest(ReverseEndianness(h[:]))
+	return reversed
 }
 
 // LastBytes returns the last num in from a byte array
@@ -188,7 +185,7 @@ func ExtractInputTxIDLE(input []byte) Hash256Digest {
 // ExtractInputTxID returns the input tx id bytes
 func ExtractInputTxID(input []byte) Hash256Digest {
 	LE := ExtractInputTxIDLE(input)
-	txID, _ := ReverseHash256Endianness(LE)
+	txID := ReverseHash256Endianness(LE)
 	return txID
 }
 
@@ -360,8 +357,7 @@ func ExtractMerkleRootLE(header RawHeader) Hash256Digest {
 // The returned merkle root is big-endian
 func ExtractMerkleRootBE(header RawHeader) Hash256Digest {
 	LE := ExtractMerkleRootLE(header)
-	res, _ := ReverseHash256Endianness(LE)
-	return res
+	return ReverseHash256Endianness(LE)
 }
 
 // ExtractTarget returns the target from a given block hedaer
@@ -402,8 +398,7 @@ func ExtractPrevBlockHashLE(header RawHeader) Hash256Digest {
 // Returns the hash as a big endian []byte
 func ExtractPrevBlockHashBE(header RawHeader) Hash256Digest {
 	LE := ExtractPrevBlockHashLE(header)
-	res, _ := ReverseHash256Endianness(LE)
-	return res
+	return ReverseHash256Endianness(LE)
 }
 
 // ExtractTimestampLE returns the timestamp from a block header

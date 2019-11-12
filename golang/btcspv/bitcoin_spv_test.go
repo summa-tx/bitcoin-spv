@@ -175,10 +175,11 @@ func (suite *UtilsSuite) TestReverseEndianness() {
 }
 
 func (suite *UtilsSuite) TestReverseHash256Endianness() {
-	testbytes := Hash256Digest{1, 2, 3}
-	reversed, _ := ReverseHash256Endianness(testbytes)
-	suite.Equal(reversed, Hash256Digest{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 1})
-	suite.Equal(len(reversed), len(testbytes))
+	input := Hash256Digest{1, 2, 3}
+	output := Hash256Digest{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 1}
+	reversed := ReverseHash256Endianness(input)
+	suite.Equal(reversed, output)
+	suite.Equal(len(reversed), len(input))
 }
 
 func (suite *UtilsSuite) TestLastBytes() {

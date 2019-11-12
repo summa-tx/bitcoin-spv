@@ -99,7 +99,7 @@ func NewRawHeader(b []byte) (RawHeader, error) {
 // HeaderFromRaw builds a BitcoinHeader from a raw bytestring and height
 func HeaderFromRaw(raw RawHeader, height uint32) BitcoinHeader {
 	digestLE := Hash256(raw[:])
-	digestBE, _ := ReverseHash256Endianness(digestLE)
+	digestBE := ReverseHash256Endianness(digestLE)
 	return BitcoinHeader{
 		raw,
 		digestBE,
