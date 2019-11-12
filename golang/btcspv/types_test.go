@@ -180,8 +180,8 @@ func (suite *TypesSuite) TestNewHash160Digest() {
 	suite.Nil(err)
 	suite.Equal(digest, output)
 
-	badLength := input[0:18]
-	_, err = NewHash160Digest(badLength)
+	badLengthInput := input[0:18]
+	_, err = NewHash160Digest(badLengthInput)
 	suite.EqualError(err, "Expected 20 bytes in a Hash160Digest, got 18")
 }
 
@@ -199,6 +199,10 @@ func (suite *TypesSuite) TestNewHash256Digest() {
 	digest, err = NewHash256Digest(input)
 	suite.Nil(err)
 	suite.Equal(digest, output)
+
+	badLengthInput := input[0:30]
+	_, err = NewHash256Digest(badLengthInput)
+	suite.EqualError(err, "Expected 32 bytes in a Hash256Digest, got 30")
 }
 
 func (suite *TypesSuite) TestNewRawHeader() {
@@ -208,6 +212,10 @@ func (suite *TypesSuite) TestNewRawHeader() {
 	header, err := NewRawHeader(input)
 	suite.Nil(err)
 	suite.Equal(header, output)
+
+	badLengthInput := input[0:70]
+	_, err = NewRawHeader(badLengthInput)
+	suite.EqualError(err, "Expected 80 bytes in a RawHeader got 70")
 }
 
 func (suite *TypesSuite) TestHeaderFromRaw() {
@@ -233,4 +241,8 @@ func (suite *TypesSuite) TestHeaderFromHex() {
 	rawHeader, err := HeaderFromHex(hex, height)
 	suite.Nil(err)
 	suite.Equal(rawHeader, validHeader)
+
+	badLengthInput := hex[0:142]
+	_, err = HeaderFromHex(badLengthInput, height)
+	suite.EqualError(err, "Expected 80 bytes in a Hash256 digest, got 70")
 }
