@@ -14,12 +14,13 @@ export function objectToHeader(o) {
   const hash = utils.deserializeHex(o.hash);
   const hash_le = utils.deserializeHex(o.hash_le);
   const prevhash = utils.deserializeHex(o.prevhash);
+  const prevhash_le = utils.deserializeHex(o.prevhash_le)
   const merkle_root = utils.deserializeHex(o.merkle_root);
   const merkle_root_le = utils.deserializeHex(o.merkle_root_le);
   if (raw.length !== 80) {
     throw new TypeError(`Expected 80 bytes, got ${raw.length} bytes`);
   }
-  [hash, hash_le, prevhash, merkle_root, merkle_root_le].forEach((e) => {
+  [hash, hash_le, prevhash, prevhash_le, merkle_root, merkle_root_le].forEach((e) => {
     if (e.length !== 32) {
       throw new TypeError(`Expected 32 bytes, got ${e.length} bytes`);
     }
@@ -32,6 +33,7 @@ export function objectToHeader(o) {
     hash_le,
     height: o.height,
     prevhash,
+    prevhash_le,
     merkle_root,
     merkle_root_le
   };
@@ -63,6 +65,7 @@ export function objectFromHeader(h) {
     hash_le: utils.serializeHex(h.hash_le),
     height: h.height,
     prevhash: utils.serializeHex(h.prevhash),
+    prevhash_le: utils.serializeHex(h.prevhash_le),
     merkle_root: utils.serializeHex(h.merkle_root),
     merkle_root_le: utils.serializeHex(h.merkle_root_le)
   };

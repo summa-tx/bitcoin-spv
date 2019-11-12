@@ -272,7 +272,7 @@ export function validateHeader(header) {
   // Check that HashLE is the correct hash of the raw header
   const headerHash = BTCUtils.hash256(header.raw);
   if (!utils.typedArraysAreEqual(headerHash, header.hash_le)) {
-    throw new Error('Hash LE is not the correct hash of the header');
+    throw new Error('HashLE is not the correct hash of the header');
   }
 
   // Check that HashLE is the reverse of Hash
@@ -294,9 +294,15 @@ export function validateHeader(header) {
   }
 
   // Check that PrevHash is the correct PrevHash for the header
-  const extractedPrevHash = BTCUtils.extractPrevBlockBE(header.raw);
-  if (!utils.typedArraysAreEqual(extractedPrevHash, header.prevhash)) {
-    throw new Error('Prev hash is not the correct previous hash of the header');
+  const extractedPrevHash = BTCUtils.extractPrevBlockLE(header.raw);
+  if (!utils.typedArraysAreEqual(extractedPrevHash, header.prevhash_le)) {
+    throw new Error('PrevhashLE is not the correct parent hash of the header');
+  }
+
+  // Check that PrevhashLE is the reverse of Prevhash
+  const reversedPrevhash = utils.reverseEndianness(header.prevhash);
+  if (!utils.typedArraysAreEqual(reversedPrevhash, header.prevhash_le)) {
+    throw new Error('PrevhashLE is not the LE version of Prevhash');
   }
 
   return true;
@@ -324,7 +330,8 @@ export function validateHeader(header) {
  * @param {Uint8Array}    proof.confirming_header.merkle_root The merkle root of the header
  * @param {Uint8Array}    proof.confirming_header.merkle_root_le The LE merkle root
  * @param {Uint8Array}    proof.confirming_header.prevhash The hash of the previous header
- * @returns {Boolean}     Teturns true if the SPV Proof object is syntactically valid
+ * @param {Uint8Array}    proof.confirming_header.prevhash_le The LE hash of the previous header
+ * @returns {Boolean}     Returns true if the SPV Proof object is syntactically valid
  * @throws {Error}        If any of the SPV Proof elements are invalid
 */
 export function validateProof(proof) {
