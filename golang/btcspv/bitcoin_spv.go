@@ -72,14 +72,16 @@ func LastBytes(in []byte, num int) []byte {
 }
 
 // Hash160 takes a byte slice and returns a hashed byte slice.
-func Hash160(in []byte) []byte {
+func Hash160(in []byte) Hash160Digest {
 	sha := sha256.New()
 	sha.Write(in)
 	sum := sha.Sum(nil)
 
 	r := ripemd160.New()
 	r.Write(sum)
-	return r.Sum(nil)
+
+	digest, _ := NewHash160Digest(r.Sum(nil))
+	return digest
 }
 
 // Hash256 implements bitcoin's hash256 (double sha2)

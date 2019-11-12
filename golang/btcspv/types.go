@@ -5,6 +5,9 @@ import (
 	"fmt"
 )
 
+// Hash160Digest is a 20-byte ripemd160+sha2 hash
+type Hash160Digest [20]byte
+
 // Hash256Digest is a 32-byte double-sha2 hash
 type Hash256Digest [32]byte
 
@@ -63,12 +66,22 @@ const (
 	Nonstandard OutputType = 6
 )
 
+// NewHash160Digest instantiates a Hash160Digest from a byte slice
+func NewHash160Digest(b []byte) (Hash160Digest, error) {
+	var h Hash160Digest
+	copied := copy(h[:], b)
+	if copied != 20 {
+		return Hash160Digest{}, fmt.Errorf("Expected 20 bytes in a Hash160Digest, got %d", copied)
+	}
+	return h, nil
+}
+
 // NewHash256Digest instantiates a Hash256Digest from a byte slice
 func NewHash256Digest(b []byte) (Hash256Digest, error) {
 	var h Hash256Digest
 	copied := copy(h[:], b)
 	if copied != 32 {
-		return Hash256Digest{}, fmt.Errorf("Expected 32 bytes in a Hash256 digest, got %d", copied)
+		return Hash256Digest{}, fmt.Errorf("Expected 32 bytes in a Hash256Digest, got %d", copied)
 	}
 	return h, nil
 }

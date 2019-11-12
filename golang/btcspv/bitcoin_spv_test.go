@@ -188,7 +188,7 @@ func (suite *UtilsSuite) TestHash160() {
 		testCase := fixtures[i]
 		expected := testCase.Output.([]byte)
 		actual := Hash160(testCase.Input.([]byte))
-		suite.Equal(expected, actual)
+		suite.Equal(expected, actual[:])
 	}
 }
 
