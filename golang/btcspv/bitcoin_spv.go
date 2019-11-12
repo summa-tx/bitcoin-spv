@@ -64,6 +64,7 @@ func ReverseEndianness(b []byte) []byte {
 	return out
 }
 
+// ReverseHash256Endianness returns a new digest with opposite byteorder
 func ReverseHash256Endianness(h Hash256Digest) Hash256Digest {
 	reversed, _ := NewHash256Digest(ReverseEndianness(h[:]))
 	return reversed
