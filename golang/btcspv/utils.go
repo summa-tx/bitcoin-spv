@@ -105,11 +105,8 @@ func encodeSegWit(payload []byte, version int) (string, error) {
 }
 
 // EncodeP2WSH turns a scripthash into an address
-func EncodeP2WSH(sh []byte) (string, error) {
-	if len(sh) != 32 {
-		return "", fmt.Errorf("WSH must be 32 bytes, got %d bytes", len(sh))
-	}
-	addr, err := encodeSegWit(sh, 0)
+func EncodeP2WSH(sh Hash256Digest) (string, error) {
+	addr, err := encodeSegWit(sh[:], 0)
 	if err != nil {
 		return "", err
 	}
