@@ -99,12 +99,12 @@ describe('ValidateSPV', () => {
         for (let i = 0; i < parseHeader.length; i += 1) {
           const validHeader = ValidateSPV.parseHeader(parseHeader[0].input);
           const {
-            digest, version, prevhashLE, merkleRoot, timestamp, target, nonce
+            digest, version, prevHash, merkleRoot, timestamp, target, nonce
           } = parseHeader[i].output;
 
           assert.isTrue(utils.typedArraysAreEqual(validHeader.digest, digest));
           assert.strictEqual(validHeader.version, BigInt(version));
-          assert.isTrue(utils.typedArraysAreEqual(validHeader.prevhashLE, prevhashLE));
+          assert.isTrue(utils.typedArraysAreEqual(validHeader.prevhashLE, prevHash));
           assert.isTrue(utils.typedArraysAreEqual(validHeader.merkleRoot, merkleRoot));
           assert.strictEqual(validHeader.timestamp, BigInt(timestamp));
           assert.strictEqual(validHeader.target, BigInt(utils.bytesToUint(target)));
