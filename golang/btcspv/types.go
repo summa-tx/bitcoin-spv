@@ -38,6 +38,58 @@ type SPVProof struct {
 	IntermediateNodes HexBytes      `json:"intermediate_nodes"`
 }
 
+// NewHash256Digest instantiates a Hash256Digest from a byte slice
+func NewHash256Digest(b []byte) (Hash256Digest, error) {
+	var h Hash256Digest
+	copied := copy(h[:], b)
+	if copied != 32 {
+		return Hash256Digest{}, fmt.Errorf("Expected 32 bytes in a Hash256 digest, got %d", copied)
+	}
+	return h, nil
+}
+
+// NewRawHeader instantiates a RawHeader from a byte slice
+func NewRawHeader(b []byte) (RawHeader, error) {
+	var h RawHeader
+	copied := copy(h[:], b)
+	if copied != 80 {
+		return RawHeader{}, fmt.Errorf("Expected 80 bytes in a RawHeader got %d", copied)
+	}
+	return h, nil
+}
+
+// HeaderFromRaw builds a BitcoinHeader from a raw bytestring and height
+func HeaderFromRaw(raw RawHeader, height uint32) BitcoinHeader {
+	digestLE := Hash256(raw[:])
+	digestBE, _ := NewHash256Digest(ReverseEndianness(digestLE[:]))
+	return BitcoinHeader{
+		raw,
+		digestBE,
+		digestLE,
+		height,
+		ExtractPrevBlockHashLE(raw),
+		ExtractMerkleRootBE(raw),
+		ExtractMerkleRootLE(raw),
+	}
+}
+
+// HeaderFromHex buidls a BitcoinHeader from a hex string and height
+func HeaderFromHex(s string, height uint32) (BitcoinHeader, error) {
+	var raw RawHeader
+
+	buf, err := hex.DecodeString(strip0xPrefix(s))
+	if err != nil {
+		return BitcoinHeader{}, err
+	}
+
+	copied := copy(raw[:], buf)
+	if copied != 80 {
+		return BitcoinHeader{}, fmt.Errorf("Expected 80 bytes in a Hash256 digest, got %d", copied)
+	}
+
+	return HeaderFromRaw(raw, height), nil
+}
+
 // UnmarshalJSON unmarshalls 32 byte digests
 func (h *HexBytes) UnmarshalJSON(b []byte) error {
 	// Have to trim quotation marks off byte array

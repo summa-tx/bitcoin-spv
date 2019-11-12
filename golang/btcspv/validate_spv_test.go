@@ -11,8 +11,8 @@ func (suite *UtilsSuite) TestProve() {
 		testCase := fixture[i]
 		expected := testCase.Output.(bool)
 		inputs := testCase.Input.(map[string]interface{})
-		txIDLE := inputs["txIdLE"].([]byte)
-		merkleRootLE := inputs["merkleRootLE"].([]byte)
+		txIDLE := inputs["txIdLE"].(Hash256Digest)
+		merkleRootLE := inputs["merkleRootLE"].(Hash256Digest)
 		proof := inputs["proof"].([]byte)
 		index := uint(inputs["index"].(int))
 		actual := Prove(txIDLE, merkleRootLE, proof, index)
@@ -25,7 +25,7 @@ func (suite *UtilsSuite) TestCalculateTxId() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := testCase.Output.([]byte)
+		expected := testCase.Output.(Hash256Digest)
 		inputs := testCase.Input.(map[string]interface{})
 		version := inputs["version"].([]byte)
 		vin := inputs["vin"].([]byte)
@@ -43,7 +43,7 @@ func (suite *UtilsSuite) TestParseInput() {
 		testCase := fixture[i]
 		expected := testCase.Output.(map[string]interface{})
 		expectedSequence := uint(expected["sequence"].(int))
-		expectedTxID := expected["txId"].([]byte)
+		expectedTxID := expected["txId"].(Hash256Digest)
 		expectedIndex := uint(expected["index"].(int))
 		expectedType := InputType(expected["type"].(int))
 		input := testCase.Input.([]byte)
@@ -78,14 +78,14 @@ func (suite *UtilsSuite) TestParseHeader() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output.(map[string]interface{})
-		expectedDigest := expected["digest"].([]byte)
+		expectedDigest := expected["digest"].(Hash256Digest)
 		expectedVersion := uint(expected["version"].(int))
-		expectedPrevHash := expected["prevHash"].([]byte)
-		expectedMerkleRoot := expected["merkleRoot"].([]byte)
+		expectedPrevHash := expected["prevHash"].(Hash256Digest)
+		expectedMerkleRoot := expected["merkleRoot"].(Hash256Digest)
 		expectedTimestamp := uint(expected["timestamp"].(int))
 		expectedTarget := BytesToBigUint(expected["target"].([]byte))
 		expectedNonce := uint(expected["nonce"].(int))
-		input := testCase.Input.([]byte)
+		input := testCase.Input.(RawHeader)
 		actualDigest, actualVersion, actualPrevHash, actualMerkleRoot, actualTimestamp, actualTarget, actualNonce, err := ParseHeader(input)
 		suite.Nil(err)
 		suite.Equal(expectedDigest, actualDigest)
@@ -102,7 +102,7 @@ func (suite *UtilsSuite) TestParseHeader() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.ErrorMessage.(string)
-		input := testCase.Input.([]byte)
+		input := testCase.Input.(RawHeader)
 		digest, version, prevHash, merkleRoot, timestamp, target, nonce, err := ParseHeader(input)
 		suite.Nil(digest)
 		suite.Equal(version, uint(0))
@@ -123,7 +123,7 @@ func (suite *UtilsSuite) TestValidateHeaderWork() {
 		testCase := fixture[i]
 		expected := testCase.Output.(bool)
 		inputs := testCase.Input.(map[string]interface{})
-		digest := inputs["digest"].([]byte)
+		digest := inputs["digest"].(Hash256Digest)
 		targetInt, okInt := inputs["target"].(int)
 		if okInt {
 			target = sdk.NewUint(uint64(targetInt))
@@ -142,8 +142,8 @@ func (suite *UtilsSuite) TestValidateHeaderPrevHash() {
 		testCase := fixture[i]
 		expected := testCase.Output.(bool)
 		inputs := testCase.Input.(map[string]interface{})
-		header := inputs["header"].([]byte)
-		prevHash := inputs["prevHash"].([]byte)
+		header := inputs["header"].(RawHeader)
+		prevHash := inputs["prevHash"].(Hash256Digest)
 		actual := ValidateHeaderPrevHash(header, prevHash)
 		suite.Equal(expected, actual)
 	}

@@ -33,7 +33,14 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 	switch data["input"].(type) {
 	case string:
 		if len(data["input"].(string)) >= 2 && data["input"].(string)[0:2] == "0x" {
-			t.Input = DecodeIfHex(data["input"].(string))
+			buf := DecodeIfHex(data["input"].(string))
+			if len(buf) == 32 {
+				t.Input, _ = NewHash256Digest(buf)
+			} else if len(buf) == 80 {
+				t.Input, _ = NewRawHeader(buf)
+			} else {
+				t.Input = buf
+			}
 		} else {
 			t.Input = data["input"].(string)
 		}
@@ -46,7 +53,14 @@ func (t *TestCase) UnmarshalJSON(b []byte) error {
 	switch data["output"].(type) {
 	case string:
 		if len(data["output"].(string)) >= 2 && data["output"].(string)[0:2] == "0x" {
-			t.Output = DecodeIfHex(data["output"].(string))
+			buf := DecodeIfHex(data["output"].(string))
+			if len(buf) == 32 {
+				t.Output, _ = NewHash256Digest(buf)
+			} else if len(buf) == 80 {
+				t.Output, _ = NewRawHeader(buf)
+			} else {
+				t.Output = buf
+			}
 		} else {
 			t.Output = data["output"].(string)
 		}
@@ -170,7 +184,7 @@ func (suite *UtilsSuite) TestHash256() {
 
 	for i := range fixtures {
 		testCase := fixtures[i]
-		expected := testCase.Output.([]byte)
+		expected := testCase.Output.(Hash256Digest)
 		actual := Hash256(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -273,10 +287,10 @@ func (suite *UtilsSuite) TestExtractHash() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := testCase.Output.([]byte)
+		expected := testCase.Output.(Hash256Digest)
 		actual, err := ExtractHash(testCase.Input.([]byte))
 		suite.Nil(err)
-		suite.Equal(expected, actual)
+		suite.Equal(expected[:], actual)
 	}
 
 	fixtureError := suite.Fixtures["extractHashError"]
@@ -418,7 +432,7 @@ func (suite *UtilsSuite) TestExtractInputTxIDLE() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := testCase.Output.([]byte)
+		expected := testCase.Output.(Hash256Digest)
 		actual := ExtractInputTxIDLE(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -429,7 +443,7 @@ func (suite *UtilsSuite) TestExtractInputTxID() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := testCase.Output.([]byte)
+		expected := testCase.Output.(Hash256Digest)
 		actual := ExtractInputTxID(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -508,8 +522,8 @@ func (suite *UtilsSuite) TestExtractMerkleRootBE() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := testCase.Output.([]byte)
-		actual := ExtractMerkleRootBE(testCase.Input.([]byte))
+		expected := testCase.Output.(Hash256Digest)
+		actual := ExtractMerkleRootBE(testCase.Input.(RawHeader))
 		suite.Equal(expected, actual)
 	}
 }
@@ -520,7 +534,7 @@ func (suite *UtilsSuite) TestExtractTarget() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := BytesToBigInt(testCase.Output.([]byte))
-		actual := ExtractTarget(testCase.Input.([]byte))
+		actual := ExtractTarget(testCase.Input.(RawHeader))
 		suite.Equal(expected, actual)
 	}
 }
@@ -533,7 +547,7 @@ func (suite *UtilsSuite) TestExtractPrevBlockHashBE() {
 		input := testCase.Input.([]interface{})
 		for j := range input {
 			h := input[j].(map[string]interface{})
-			actual := ExtractPrevBlockHashBE(h["hex"].([]byte))
+			actual := ExtractPrevBlockHashBE(h["hex"].(RawHeader))
 			expected := h["prev_block"].([]byte)
 			suite.Equal(expected, actual)
 		}
@@ -546,7 +560,7 @@ func (suite *UtilsSuite) TestExtractTimestamp() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := uint(testCase.Output.(int))
-		actual := ExtractTimestamp(testCase.Input.([]byte))
+		actual := ExtractTimestamp(testCase.Input.(RawHeader))
 		suite.Equal(expected, actual)
 	}
 }
@@ -558,7 +572,7 @@ func (suite *UtilsSuite) TestHash256MerkleStep() {
 		testCase := fixtures[i]
 		ins := testCase.Input.([]interface{})
 		actual := hash256MerkleStep(ins[0].([]byte), ins[1].([]byte))
-		expected := testCase.Output.([]byte)
+		expected := testCase.Output.(Hash256Digest)
 		suite.Equal(expected, actual)
 	}
 }
@@ -601,8 +615,8 @@ func (suite *UtilsSuite) TestRetargetAlgorithm() {
 
 		firstTimestamp := uint(testCaseFirst["timestamp"].(int))
 		secondTimestamp := uint(testCaseSecond["timestamp"].(int))
-		previousTarget := ExtractTarget(testCaseSecond["hex"].([]byte))
-		expectedNewTarget := ExtractTarget(testCaseExpected["hex"].([]byte))
+		previousTarget := ExtractTarget(testCaseSecond["hex"].(RawHeader))
+		expectedNewTarget := ExtractTarget(testCaseExpected["hex"].(RawHeader))
 
 		actual := RetargetAlgorithm((previousTarget), firstTimestamp, secondTimestamp)
 
@@ -639,7 +653,7 @@ func (suite *UtilsSuite) TestExtractDifficulty() {
 		input := testCase.Input.([]interface{})
 		for j := range input {
 			h := input[j].(map[string]interface{})
-			actual := ExtractDifficulty(h["hex"].([]byte))
+			actual := ExtractDifficulty(h["hex"].(RawHeader))
 			expected := sdk.NewUint(uint64(h["difficulty"].(int)))
 			suite.Equal(expected, actual)
 		}
