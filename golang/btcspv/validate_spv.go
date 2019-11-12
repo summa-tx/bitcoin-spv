@@ -7,31 +7,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// InputType an enum of types of bitcoin inputs
-type InputType int
-
-// possible input types
-const (
-	InputNone     InputType = 0
-	Legacy        InputType = 1
-	Compatibility InputType = 2
-	Witness       InputType = 3
-)
-
-// OutputType an enum of types of bitcoin outputs
-type OutputType int
-
-// possible output types
-const (
-	OutputNone  OutputType = 0
-	WPKH        OutputType = 1
-	WSH         OutputType = 2
-	OpReturn    OutputType = 3
-	PKH         OutputType = 4
-	SH          OutputType = 5
-	Nonstandard OutputType = 6
-)
-
 // Prove checks the validity of a merkle proof
 func Prove(txid Hash256Digest, merkleRoot Hash256Digest, intermediateNodes []byte, index uint) bool {
 	// Shortcut the empty-block case
@@ -119,10 +94,6 @@ func ParseOutput(output []byte) (uint, OutputType, []byte) {
 
 // ParseHeader parses a block header struct from a bytestring
 func ParseHeader(header RawHeader) (Hash256Digest, uint, Hash256Digest, Hash256Digest, uint, sdk.Uint, uint, error) {
-	if len(header) != 80 {
-		return Hash256Digest{}, 0, Hash256Digest{}, Hash256Digest{}, 0, sdk.NewUint(0), 0, errors.New("Malformatted header. Must be exactly 80 bytes")
-	}
-
 	digestLE := Hash256(header[:])
 
 	digest, _ := NewHash256Digest(ReverseEndianness(digestLE[:]))

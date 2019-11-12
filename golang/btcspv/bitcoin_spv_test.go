@@ -98,7 +98,14 @@ func preprocessList(l []interface{}) {
 		case []interface{}:
 			preprocessList(l[i].([]interface{}))
 		case string:
-			l[i] = DecodeIfHex(l[i].(string))
+			buf := DecodeIfHex(l[i].(string))
+			if len(buf) == 32 {
+				l[i], _ = NewHash256Digest(buf)
+			} else if len(buf) == 80 {
+				l[i], _ = NewRawHeader(buf)
+			} else {
+				l[i] = buf
+			}
 		case float64:
 			l[i] = int(l[i].(float64))
 		case map[string]interface{}:
@@ -114,8 +121,14 @@ func preprocessObject(m map[string]interface{}) {
 			l := v.([]interface{})
 			preprocessList(l)
 		case string:
-			// overwrite the string with a []byte
-			m[k] = DecodeIfHex(v.(string))
+			buf := DecodeIfHex(v.(string))
+			if len(buf) == 32 {
+				m[k], _ = NewHash256Digest(buf)
+			} else if len(buf) == 80 {
+				m[k], _ = NewRawHeader(buf)
+			} else {
+				m[k] = buf
+			}
 		case float64:
 			m[k] = int(v.(float64))
 		case map[string]interface{}:
@@ -287,8 +300,8 @@ func (suite *UtilsSuite) TestExtractHash() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := testCase.Output.(Hash256Digest)
-		actual, err := ExtractHash(testCase.Input.([]byte))
+		expected := normalizeToByteSlice(testCase.Output)
+		actual, err := ExtractHash(normalizeToByteSlice(testCase.Input))
 		suite.Nil(err)
 		suite.Equal(expected[:], actual)
 	}
@@ -298,7 +311,7 @@ func (suite *UtilsSuite) TestExtractHash() {
 	for i := range fixtureError {
 		testCase := fixtureError[i]
 		expected := testCase.ErrorMessage.(string)
-		actual, err := ExtractHash(testCase.Input.([]byte))
+		actual, err := ExtractHash(normalizeToByteSlice(testCase.Input))
 		suite.Nil(actual)
 		suite.EqualError(err, expected)
 	}
@@ -548,7 +561,7 @@ func (suite *UtilsSuite) TestExtractPrevBlockHashBE() {
 		for j := range input {
 			h := input[j].(map[string]interface{})
 			actual := ExtractPrevBlockHashBE(h["hex"].(RawHeader))
-			expected := h["prev_block"].([]byte)
+			expected := h["prev_block"].(Hash256Digest)
 			suite.Equal(expected, actual)
 		}
 	}
@@ -595,7 +608,7 @@ func (suite *UtilsSuite) TestVerifyHash256Merkle() {
 	for i := range fixtures {
 		testCase := fixtures[i]
 		ins := testCase.Input.(map[string]interface{})
-		proof := ins["proof"].([]byte)
+		proof := normalizeToByteSlice(ins["proof"])
 		index := uint(ins["index"].(int))
 		expected := testCase.Output.(bool)
 		actual := VerifyHash256Merkle(proof, index)

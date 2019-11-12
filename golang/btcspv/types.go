@@ -38,6 +38,31 @@ type SPVProof struct {
 	IntermediateNodes HexBytes      `json:"intermediate_nodes"`
 }
 
+// InputType an enum of types of bitcoin inputs
+type InputType int
+
+// possible input types
+const (
+	InputNone     InputType = 0
+	Legacy        InputType = 1
+	Compatibility InputType = 2
+	Witness       InputType = 3
+)
+
+// OutputType an enum of types of bitcoin outputs
+type OutputType int
+
+// possible output types
+const (
+	OutputNone  OutputType = 0
+	WPKH        OutputType = 1
+	WSH         OutputType = 2
+	OpReturn    OutputType = 3
+	PKH         OutputType = 4
+	SH          OutputType = 5
+	Nonstandard OutputType = 6
+)
+
 // NewHash256Digest instantiates a Hash256Digest from a byte slice
 func NewHash256Digest(b []byte) (Hash256Digest, error) {
 	var h Hash256Digest

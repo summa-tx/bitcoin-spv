@@ -4,6 +4,21 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+func normalizeToByteSlice(b interface{}) []byte {
+	switch b.(type) {
+	case []byte:
+		return b.([]byte)
+	case Hash256Digest:
+		h := b.(Hash256Digest)
+		return h[:]
+	case RawHeader:
+		h := b.(RawHeader)
+		return h[:]
+	default:
+		panic("Bad normalization")
+	}
+}
+
 func (suite *UtilsSuite) TestProve() {
 	fixture := suite.Fixtures["prove"]
 
@@ -63,8 +78,8 @@ func (suite *UtilsSuite) TestParseOutput() {
 		expected := testCase.Output.(map[string]interface{})
 		expectedValue := uint(expected["value"].(int))
 		expectedOutputType := OutputType(expected["type"].(int))
-		expectedPayload := expected["payload"].([]byte)
-		input := testCase.Input.([]byte)
+		expectedPayload := normalizeToByteSlice(expected["payload"])
+		input := normalizeToByteSlice(testCase.Input)
 		actualValue, actualOutputType, actualPayload := ParseOutput(input)
 		suite.Equal(expectedValue, actualValue)
 		suite.Equal(expectedPayload, actualPayload)
@@ -96,23 +111,23 @@ func (suite *UtilsSuite) TestParseHeader() {
 		suite.Equal(expectedTarget, actualTarget)
 		suite.Equal(expectedNonce, actualNonce)
 	}
-
-	fixture = suite.Fixtures["parseHeaderError"]
-
-	for i := range fixture {
-		testCase := fixture[i]
-		expected := testCase.ErrorMessage.(string)
-		input := testCase.Input.(RawHeader)
-		digest, version, prevHash, merkleRoot, timestamp, target, nonce, err := ParseHeader(input)
-		suite.Nil(digest)
-		suite.Equal(version, uint(0))
-		suite.Nil(prevHash)
-		suite.Nil(merkleRoot)
-		suite.Equal(timestamp, uint(0))
-		suite.Equal(target, sdk.NewUint(0))
-		suite.Equal(nonce, uint(0))
-		suite.EqualError(err, expected)
-	}
+	// // No longer needed with type refactor
+	// fixture = suite.Fixtures["parseHeaderError"]
+	//
+	// for i := range fixture {
+	// 	testCase := fixture[i]
+	// 	expected := testCase.ErrorMessage.(string)
+	// 	input := testCase.Input.([]byte)
+	// 	digest, version, prevHash, merkleRoot, timestamp, target, nonce, err := ParseHeader(input)
+	// 	suite.Nil(digest)
+	// 	suite.Equal(version, uint(0))
+	// 	suite.Nil(prevHash)
+	// 	suite.Nil(merkleRoot)
+	// 	suite.Equal(timestamp, uint(0))
+	// 	suite.Equal(target, sdk.NewUint(0))
+	// 	suite.Equal(nonce, uint(0))
+	// 	suite.EqualError(err, expected)
+	// }
 }
 
 func (suite *UtilsSuite) TestValidateHeaderWork() {
