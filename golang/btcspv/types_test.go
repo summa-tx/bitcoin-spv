@@ -254,27 +254,27 @@ func (suite *TypesSuite) TestHeaderFromRaw() {
 }
 
 func (suite *TypesSuite) TestHeaderFromHex() {
-	// TODO: serialize hex and height from json data and move inside for block
-	hex := "0x0000c020c238b601308b7297346ab2ed59942d7d7ecea8d23a1001000000000000000000b61ac92842abc82aa93644b190fc18ad46c6738337e78bc0c69ab21c5d5ee2ddd6376d5d3e211a17d8706a84"
-	var height uint32 = 592920
-
 	validHeaders := suite.ValidHeaders
 	for i := range validHeaders {
 		header := validHeaders[i]
+		headerHex := hex.EncodeToString(header.Raw[:])
+
 		// PrevHash is stored in JSON as BE, we need to reverse it before comparing
 		reversed := ReverseHash256Endianness(header.PrevHash)
 		header.PrevHash = reversed
 
-		rawHeader, err := HeaderFromHex(hex, height)
+		rawHeader, err := HeaderFromHex(headerHex, header.Height)
 		suite.Nil(err)
 		suite.Equal(rawHeader, header)
 	}
 
-	badLengthInput := hex[0:142]
-	_, err := HeaderFromHex(badLengthInput, height)
+	testHeader := hex.EncodeToString(suite.ValidHeaders[0].Raw[:])
+	testHeight := suite.ValidHeaders[0].Height
+	badLengthInput := testHeader[0:140]
+	_, err := HeaderFromHex(badLengthInput, testHeight)
 	suite.EqualError(err, "Expected 80 bytes in a Hash256 digest, got 70")
 
 	nonHex := "zzzz"
-	_, err = HeaderFromHex(nonHex, height)
+	_, err = HeaderFromHex(nonHex, testHeight)
 	suite.EqualError(err, "encoding/hex: invalid byte: U+007A 'z'")
 }
