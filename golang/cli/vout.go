@@ -36,7 +36,8 @@ func getAddress(outputType btcspv.OutputType, outpoint []byte) string {
 	case btcspv.WPKH:
 		address, err = btcspv.EncodeP2WPKH(outpoint)
 	case btcspv.WSH:
-		address, err = btcspv.EncodeP2WSH(outpoint)
+		digest, _ := btcspv.NewHash256Digest(outpoint)
+		address, err = btcspv.EncodeP2WSH(digest)
 	case btcspv.PKH:
 		address, err = btcspv.EncodeP2PKH(outpoint)
 	case btcspv.SH:

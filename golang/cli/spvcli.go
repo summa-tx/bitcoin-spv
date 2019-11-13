@@ -17,7 +17,8 @@ func route(command string, arguments [][]byte) string {
 	case "parseVout":
 		result = ParseVout(arguments[0])
 	case "parseHeader":
-		result = ParseHeader(arguments[0])
+		rawHeader, _ := btcspv.NewRawHeader(arguments[0])
+		result = ParseHeader(rawHeader)
 	case "validateHeaderChain":
 		result = ValidateHeaderChain(arguments[0])
 	case "prove":
@@ -28,7 +29,8 @@ func route(command string, arguments [][]byte) string {
 			return fmt.Sprintf("%s\n", err)
 		}
 		uintArg := uint(uint64Arg)
-		result = Prove(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], uintArg)
+		merkleRoot, _ := btcspv.NewHash256Digest(arguments[4])
+		result = Prove(arguments[0], arguments[1], arguments[2], arguments[3], merkleRoot, arguments[5], uintArg)
 	default:
 		result = fmt.Sprintf("Unknown command: %s\n", command)
 	}
