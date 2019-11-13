@@ -12,18 +12,18 @@ import (
 
 func prettifyHeaderData(
 	num uint,
-	digest []byte,
+	digest btcspv.Hash256Digest,
 	version uint,
-	prevHash []byte,
-	merkleRoot []byte,
+	prevHash btcspv.Hash256Digest,
+	merkleRoot btcspv.Hash256Digest,
 	timestamp uint,
 	target sdk.Uint,
 	nonce uint) string {
 
 	// Convert byte arrays to readable hex strings
-	digestStr := hex.EncodeToString(digest)
-	prevHashStr := hex.EncodeToString(prevHash)
-	merkleRootStr := hex.EncodeToString(merkleRoot)
+	digestStr := hex.EncodeToString(digest[:])
+	prevHashStr := hex.EncodeToString(prevHash[:])
+	merkleRootStr := hex.EncodeToString(merkleRoot[:])
 
 	// Convert timestamp to readable time
 	timestampStr := strconv.Itoa(int(timestamp))
@@ -42,7 +42,7 @@ func prettifyHeaderData(
 }
 
 // ParseHeader takes in a header and returns information about that header: digest, version, previous header hash, merkle root, timestamp, target and nonce
-func ParseHeader(header []byte) string {
+func ParseHeader(header btcspv.RawHeader) string {
 	// Get information about the header using ParseHeader
 	digest, version, prevHash, merkleRoot, timestamp, target, nonce, err := btcspv.ParseHeader(header)
 	// Check for errors
