@@ -28,7 +28,6 @@ class CLI {
     this.config = new Config('bitcoin-verifier-ses', {
       alias: {
         t: 'txid',
-        c: 'currency',
         n: 'network',
         e: 'height',
         u: 'url',
