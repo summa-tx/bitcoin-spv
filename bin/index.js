@@ -9,7 +9,7 @@
 'use strict';
 
 const BcoinClient = require('./BcoinClient');
-const Config = require('bcfg');
+const Config = require('./vendor/bcfg');
 const pkg = require('./package.json');
 
 const ports = {
@@ -22,8 +22,6 @@ const ports = {
 /**
  * Fetch proofs to create an SPVProof object
  * or a chain of headers.
- *
- * TODO: remove bcoin dep
  */
 class CLI {
   constructor() {
@@ -79,12 +77,6 @@ class CLI {
       case 'headers':
         await this.getHeaders();
         break;
-      case 'headersbywork':
-        await this.getHeadersByWork();
-        break;
-      case 'headersbycurrency':
-        await this.getHeadersByCurrency();
-        break;
       case 'info':
         await this.getInfo();
         break;
@@ -120,8 +112,6 @@ class CLI {
     this.log(proof);
   }
 
-  // this one is broken!
-  // needs to return a string, not json
   async getHeaders() {
     let height = this.config.uint('height');
     const count = this.config.uint(0, 0);
@@ -139,62 +129,6 @@ class CLI {
     this.log(headers);
   }
 
-  async getHeadersByWork() {
-    let height = this.config.uint('height');
-    const nwork = this.config.str(0, 0);
-
-    if (!height) {
-      const info = await this.client.getInfo();
-      if (!info)
-        throw new Error('Must pass --height');
-
-      height = info.chain.height;
-    }
-
-    const headers = await this.client.getHeadersByWork(height, nwork, 'hex');
-
-    this.log(headers);
-  }
-
-  // number of btc in coinbase * current btc price
-  async getHeadersByCurrency() {
-    const currency = this.config.str('currency', 'USD');
-    const price = this.config.str(0, 0);
-    let height = this.config.str('height');
-
-    if (!height) {
-      const info = await this.client.getInfo();
-      if (!info)
-        throw new Error('Must pass --height');
-
-      height = info.chain.height;
-    }
-
-    const {url, query} = this.oracle;
-
-    const client = new BcoinClient({
-      url: this.oracle.url,
-      query: query
-    });
-
-    // hack
-    const info = await client.get('', query);
-
-    if (!info)
-      throw new Error('Cannot access prices');
-
-    const rates = info.data.rates;
-    let unit = rates[currency.toUpperCase()];
-    unit = parseInt(unit, 10);
-
-    if (!unit)
-      throw new Error('Cannot access prices');
-
-    const headers = await this.client.getHeadersByCurrency(height, price, unit, 'hex');
-
-    this.log(headers);
-  }
-
   help(err) {
     let str = ''
     if (err)
@@ -206,8 +140,6 @@ class CLI {
     + 'Commands:\n'
     + '  $ proof [txid]: Get SPV Proof\n'
     + '  $ headers [count]: Create Header By Count\n'
-    + '  $ headersbywork [work]: Create Header Chain By Work\n'
-    + '  $ headersbycurrency [dollars]: Create Header Chain By Dollar\n'
     + '  $ info: Get Node Info\n'
     + 'Flags:\n'
     + '  --network/-n {main|testnet|regtest}\n'
@@ -217,7 +149,6 @@ class CLI {
     + '  --http-host/-h <http host>\n'
     + '  --http-port/-p <http port>'
     + '  --height/-e <block height>\n'
-    + '  --currency/-c <block height>\n';
   }
 }
 
