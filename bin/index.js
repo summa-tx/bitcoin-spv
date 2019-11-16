@@ -51,11 +51,6 @@ class CLI {
     this.argv = this.config.argv;
     this.network = this.config.str('network', 'main');
 
-    this.oracle = {
-      url: 'https://api.coinbase.com/v2/exchange-rates',
-      query: {currency: 'BTC'}
-    }
-
     this.client = new BcoinClient({
       url: this.config.str('url'),
       apiKey: this.config.str('api-key'),
