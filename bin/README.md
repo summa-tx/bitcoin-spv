@@ -8,7 +8,8 @@ command line tool.
 Must sync a `bcoin` full node. All proofs are
 created using `bcoin` as a backend.
 See https://github.com/bcoin-org/bcoin for configuration
-information.
+information. Be sure to build `bitcoin-spv/js` before
+trying to use this CLI tool.
 
 ```bash
 $ node index.js --help

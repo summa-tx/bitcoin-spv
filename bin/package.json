@@ -2,15 +2,13 @@
   "name": "@summa-tx/bitcoin-spv-cli",
   "version": "0.0.1",
   "description": "",
-  "main": "BcoinClient.js",
-  "scripts": {
-    "build": "bpkg index.js -o proof && chmod +x proof",
-    "clean": "rm -f proof"
-  },
-  "keywords": [],
+  "main": "index.js",
+  "keywords": [
+    "bitcoin",
+    "bcoin",
+    "spv"
+  ],
   "author": "Mark Tyneway <mark.tyneway@gmail.com>",
   "license": "MIT",
-  "dependencies": {
-    "@summa-tx/bitcoin-spv-js": "^2.2.0"
-  }
+  "dependencies": {}
 }
