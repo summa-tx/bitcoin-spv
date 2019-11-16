@@ -9,13 +9,7 @@
   },
   "keywords": [],
   "author": "Mark Tyneway <mark.tyneway@gmail.com>",
-  "license": "ISC",
-  "devDependencies": {
-    "bcfg": "^0.1.6",
-    "bclient": "^0.1.7",
-    "bcoin": "git+https://github.com/bcoin-org/bcoin.git",
-    "bpkg": "^0.6.0"
-  },
+  "license": "MIT",
   "dependencies": {
     "@summa-tx/bitcoin-spv-js": "^2.2.0"
   }
