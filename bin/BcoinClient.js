@@ -10,7 +10,6 @@ const {NodeClient} = require('./vendor/bclient');
 const assert = require('./vendor/bsert');
 const hash256 = require('./vendor/hash256');
 const merkle = require('./vendor/merkle');
-const BN = require('./vendor/bn.js');
 const {utils, BTCUtils} = require('../js/dist');
 
 /**
