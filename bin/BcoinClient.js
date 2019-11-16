@@ -6,18 +6,12 @@
 
 'use strict';
 
-const {NodeClient} = require('bcoin/lib/client');
-const assert = require('bsert');
-const TX = require('bcoin/lib/primitives/tx');
-const Block = require('bcoin/lib/primitives/block')
-const ChainEntry = require('bcoin/lib/blockchain/chainentry');
-const Amount = require('bcoin/lib/btc/amount');
-const Headers = require('bcoin/lib/primitives/headers');
-const consensus = require('bcoin/lib/protocol/consensus');
-const hash256 = require('bcrypto/lib/hash256');
-const {merkle} = require('bcrypto');
-const BN = require('bcrypto/lib/bn.js');
-const {utils} = require('@summa-tx/bitcoin-spv-js')
+const {NodeClient} = require('./vendor/bclient');
+const assert = require('./vendor/bsert');
+const hash256 = require('./vendor/hash256');
+const merkle = require('./vendor/merkle');
+const BN = require('./vendor/bn.js');
+const {utils, BTCUtils} = require('@summa-tx/bitcoin-spv-js')
 
 /**
  * BcoinClient extends the bcoin NodeClient
@@ -31,6 +25,17 @@ class BcoinClient extends NodeClient {
    */
   constructor(options) {
     super(options);
+  }
+
+  /**
+   * Retrieve a block header.
+   * @param {Hash|Number} block
+   * @returns {Promise}
+   */
+
+  getBlockHeader(block) {
+    assert(typeof block === 'string' || typeof block === 'number');
+    return this.get(`/header/${block}`);
   }
 
   /**
@@ -49,13 +54,14 @@ class BcoinClient extends NodeClient {
     if (tx.height < 0)
       throw new Error('Transaction not confirmed');
 
-    const json = await super.getBlockHeader(tx.height);
+    const json = await this.getBlockHeader(tx.height);
 
     if (!json)
       throw new Error('Cannot find header');
 
     const header = await this.getHeader(tx.height, enc);
-    const txinfo = parseBcoinTx(tx.hex);
+
+    const txinfo = parseTxHex(tx.hex);
 
     let [nodes, index] = await this.getMerkleProof(txid, tx.height);
 
@@ -63,171 +69,40 @@ class BcoinClient extends NodeClient {
     for (let node of nodes)
       path += node;
 
-    if (enc === 'hex') {
-      return {
-        version: Buffer.from(txinfo.version).toString('hex'),
-        vin: Buffer.from(txinfo.vin).toString('hex'),
-        vout: Buffer.from(txinfo.vout).toString('hex'),
-        locktime: Buffer.from(txinfo.locktime).toString('hex'),
-        tx_id: txid,
-        tx_id_le: reverse(txid),
-        index: index,
-        confirming_header: header,
-        intermediate_nodes: path
-      }
-    }
-
     return {
       version: txinfo.version,
       vin: txinfo.vin,
       vout: txinfo.vout,
       locktime: txinfo.locktime,
-      tx_id: utils.deserializeHex(txid),
-      tx_id_le: utils.deserializeHex(reverse(txid)),
+      tx_id: txid,
+      tx_id_le: reverse(txid),
       index: index,
       confirming_header: header,
-      intermediate_nodes: utils.deserializeHex(path)
+      intermediate_nodes: path
     }
   }
 
-  async getHeader(height, enc) {
-    const json = await super.getBlockHeader(height);
+  /**
+   * Fetch a header by height or hash.
+   */
+
+  async getHeader(height) {
+    const json = await this.getBlockHeader(height);
 
     if (!json)
       return null;
 
-    const header = Headers.fromJSON(json);
-
-    if (enc === 'hex' || enc === 'json') {
-      return {
-        raw: header.toRaw().slice(0, 80).toString('hex'),
-        hash: json.hash,
-        hash_le: reverse(json.hash),
-        height: height,
-        prevhash: json.prevBlock,
-        merkle_root: json.merkleRoot,
-        merkle_root_le: reverse(json.merkleRoot)
-      }
-    }
+    const hex = await this.execute('getblockheader', [json.hash, false]);
 
     return {
-      raw: utils.deserializeHex(header.toRaw().slice(0, 80).toString('hex')),
-      hash: utils.deserializeHex(header.hash().reverse().toString('hex')),
-      hash_le: utils.deserializeHex(header.hash().toString('hex')),
+      raw: hex,
+      hash: json.hash,
+      hash_le: reverse(json.hash),
       height: height,
-      prevhash: utils.deserializeHex(header.prevBlock.reverse().toString('hex')),
-      merkle_root: utils.deserializeHex(header.merkleRoot.reverse().toString('hex')),
-      merkle_root_le: utils.deserializeHex(header.merkleRoot.toString('hex')),
+      prevhash: json.prevBlock,
+      merkle_root: json.merkleRoot,
+      merkle_root_le: reverse(json.merkleRoot)
     }
-  }
-
-  async getHeaders(height, count, enc) {
-    const headers = [];
-    const rawHeaders = [];
-
-    for (let i = 0; i < count; i++) {
-      const header = await this.getHeader(height + i, enc);
-
-      if (!header)
-        return headers;
-
-      headers.push(header);
-    }
-
-    if (enc === 'hex')
-      return headers.join('');
-
-    if (enc === 'raw')
-      return new Uint8Array(headers.join(''));
-
-    return headers;
-  }
-
-  async getHeadersByWork(height, nwork, enc) {
-    const headers = [];
-    let accumulated = new BN(0);
-
-    if(!(nwork instanceof BN))
-      nwork = new BN(nwork);
-
-    if (nwork.eq(new BN(0)))
-      throw new Error('nwork is too small.');
-
-    while (accumulated.lte(nwork)) {
-      const json = await super.getBlockHeader(height);
-      const header = Headers.fromJSON(json);
-
-      const entry = ChainEntry.fromBlock(header)
-      const proof = entry.getProof();
-
-      accumulated.iadd(proof);
-      height += 1;
-
-      if (enc === 'json') {
-        const spv = await this.getHeader(height, 'hex');
-        headers.push(spv);
-      } else {
-        headers.push(header.toRaw().toString('hex'));
-      }
-    }
-
-    if (enc === 'hex')
-      return headers.join('');
-
-    return headers;
-  }
-
-  /**
-   *
-   * @param {}
-   * @returns {}
-   */
-
-  async getHeadersByCurrency(height, budget, unit, enc) {
-    const headers = [];
-    let total = new BN(0);
-
-    if(!(budget instanceof BN))
-      budget = new BN(budget);
-
-    if(!(unit instanceof BN))
-      unit = new BN(unit);
-
-    while (total.lte(budget)) {
-      const json = await super.getBlock(height);
-
-      if (!json)
-        throw new Error(`Cannot query block ${height}`);
-
-      const coinbase = json.txs[0];
-      // satoshis
-      const value = coinbase.outputs[0].value;
-      // bitcoin
-      let cost = Amount.fromSatoshis(value);
-      cost = new BN(parseInt(cost.toBTC(), 10));
-      cost.imul(unit);
-
-      // stop one before it goes over
-      const next = total.add(cost);
-      if (next.gt(budget))
-        break;
-
-      total.iadd(cost);
-      height++;
-
-      if (enc === 'json') {
-        const spv = await this.getHeader(height, 'hex');
-        headers.push(spv);
-      } else {
-        const header = Headers.fromJSON(json);
-        headers.push(header.toRaw().toString('hex'));
-      }
-    }
-
-    if (enc === 'hex')
-      return headers.join('');
-
-    return headers;
   }
 
   /**
@@ -263,6 +138,13 @@ class BcoinClient extends NodeClient {
     return [proof, index];
   }
 
+  /**
+   * Fetch a header chain by count.
+   * @param {Number} height - starting block height
+   * @param {Number} count - number of headers
+   * @param {String} enc - json or hex
+   */
+
   async getHeaderChainByCount(height, count, enc) {
     assert((height >>> 0) === height);
     assert((count >>> 0) === count);
@@ -270,26 +152,21 @@ class BcoinClient extends NodeClient {
     const headers = [];
 
     for (let i = 0; i < count; i++) {
-      const json = await super.getBlockHeader(height);
+      const json = await this.getBlockHeader(height);
 
       if (!json)
         throw new Error('Cannot find header');
 
-      const header = Headers.fromJSON(json);
-
       if (enc === 'json') {
-        headers.push(header);
+        headers.push(json);
       } else {
-        const hex = header.toRaw().toString('hex');
+        const hex = await this.execute('getblockheader', [json.hash, false]);
         headers.push(hex);
       }
     }
 
     if (enc === 'hex')
       return headers.join('');
-
-    if (enc === 'raw')
-      return new Uint8Array(headers.join(''));
 
     return headers;
   }
@@ -298,39 +175,108 @@ class BcoinClient extends NodeClient {
 module.exports = BcoinClient;
 
 /**
- * This will be useful for moving off
- * of depending on bcoin
- */
-function parseBcoinTx(hex) {
-  if (typeof hex !== 'string') {
-    throw new Error('Must pass string')
-  }
-
-  const tx = TX.fromRaw(hex, 'hex');
-
-  if (tx.inputs.length > 253 || tx.outputs.length > 253) {
-    throw RangeError('too many ins/outs');
-  }
-
-  const raw = tx.toRaw();
-  // version and witness flag if any
-  const baseOffset = raw[4] === 0 ? 6 : 4;
-
-  const vinBytes = 1 + tx.inputs.reduce((a, b) => a + b.getSize(), 0);
-  const voutBytes = 1 + tx.outputs.reduce((a, b) => a + b.getSize(), 0);
-
-  return {
-    version: new Uint8Array(raw.subarray(0, 4)),
-    vin: new Uint8Array(raw.subarray(baseOffset, baseOffset + vinBytes)),
-    vout: new Uint8Array(raw.subarray(baseOffset + vinBytes, baseOffset + vinBytes + voutBytes)),
-    locktime: new Uint8Array(raw.subarray(-4))
-  };
-}
-
-/**
  * Reverse the endianess of a hex string
  */
 
 function reverse(str) {
   return Buffer.from(str, 'hex').reverse().toString('hex');
+}
+
+/**
+ * Parse a hex transaction into an object
+ */
+
+function parseTxHex(hex) {
+  const raw = utils.deserializeHex(hex);
+  let offset = 0;
+
+  // Handle version
+  let version = raw.subarray(offset, offset + 4);
+  version = toString(version);
+
+  if (hasWitnessBytes(raw))
+    offset += 6;
+  else
+    offset += 4;
+
+  let inputs = '';
+  const vinCount = BTCUtils.determineVarIntDataLength(raw[offset]) || raw[offset];
+  inputs += toString(raw.subarray(offset, offset + 1));
+  offset += 1;
+
+  // Handle inputs
+  for (let i = 0; i < vinCount; i++) {
+    // 32 byte hash
+    const hash = raw.subarray(offset, offset + 32);
+    inputs += toString(hash);
+    offset += 32;
+    // 32 bit integer
+    const index = raw.subarray(offset, offset + 4);
+    inputs += toString(index);
+    offset += 4;
+
+    // varint script
+    const scriptSize = BTCUtils.determineVarIntDataLength(raw[offset]) || raw[offset];
+    const varint = raw.subarray(offset, offset + 1);
+    inputs += toString(varint);
+    offset += 1;
+
+    const script = raw.subarray(offset, offset + scriptSize);
+    inputs += toString(script);
+    offset += scriptSize;
+
+    // 32 bit sequence
+    const sequence = raw.subarray(offset, offset + 4);
+    inputs += toString(sequence);
+    offset += 4;
+  }
+
+  // Handle outputs
+  let outputs = '';
+  const voutCount = BTCUtils.determineVarIntDataLength(raw[offset]) || raw[offset];
+  outputs += toString(raw.subarray(offset, offset + 1));
+  offset += 1;
+
+  for (let i = 0; i < voutCount; i++) {
+    // value 64 bits
+    const value = raw.subarray(offset, offset + 8);
+    offset += 8;
+    outputs += toString(value);
+
+    // script varbytes
+    const scriptSize = BTCUtils.determineVarIntDataLength(raw[offset]) || raw[offset];
+    const varint = raw.subarray(offset, offset + 1);
+    outputs += toString(varint);
+    offset += 1;
+
+    const script = raw.subarray(offset, offset + scriptSize);
+    outputs += toString(script);
+    offset += scriptSize;
+  }
+
+  // Handle locktime
+  let locktime = raw.subarray(-4);
+  locktime = toString(locktime);
+
+  return {
+    version: version,
+    vin: inputs,
+    vout: outputs,
+    locktime: locktime
+  }
+}
+
+function toString(buf) {
+  let str = '';
+  for (const uint of buf) {
+    let hex = uint.toString(16);
+    if (hex.length === 1)
+      hex = '0' + hex;
+    str += hex;
+  }
+  return str;
+}
+
+function hasWitnessBytes(bytes) {
+  return bytes[4] === 0 && bytes[5] !== 0;
 }
