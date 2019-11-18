@@ -8,7 +8,7 @@
 
 'use strict';
 
-const BcoinClient = require('./BcoinClient');
+const BcoinClient = require('../clients/BcoinClient');
 const Config = require('./vendor/bcfg');
 const pkg = require('./package.json');
 
