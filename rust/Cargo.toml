@@ -3,6 +3,9 @@ name = "bitcoin-spv"
 version = "0.1.0"
 authors = ["James Prestwich <james@prestwi.ch>"]
 edition = "2018"
+description="Bitcoin SPV Proof evaluation"
+homepage="https://github.com/summa-tx/bitcoin-spv"
+repository="https://github.com/summa-tx/bitcoin-spv"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
