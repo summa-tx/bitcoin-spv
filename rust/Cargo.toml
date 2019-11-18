@@ -1,6 +1,6 @@
 [package]
 name = "bitcoin-spv"
-version = "0.0.1"
+version = "0.1.0"
 authors = ["James Prestwich <james@prestwi.ch>"]
 edition = "2018"
 
