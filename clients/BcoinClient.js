@@ -165,9 +165,9 @@ class BcoinClient extends NodeClient {
     }
 
     if (enc === 'hex')
-      return headers.join('');
+      return {headers: headers.join('')};
 
-    return headers;
+    return {headers};
   }
 }
 
