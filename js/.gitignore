@@ -13,3 +13,4 @@ coverageEnv/
 coverage.json
 out
 dist/
+.nyc_output/
