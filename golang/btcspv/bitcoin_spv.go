@@ -25,13 +25,27 @@ func BytesToUint(b []byte) uint {
 }
 
 // BytesToBigInt converts a bytestring to a cosmos-sdk Int
-func BytesToBigInt(b []byte) sdk.Uint {
-	ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
-	return ret
+func BytesToBigInt(b []byte) uint64 {
+	// data := binary.LittleEndian.Uint64(b)
+	// return sdk.NewUint(data)
+	return binary.LittleEndian.Uint64(b)
+	// total := sdk.NewUint(uint64(0))
+	// for i := range b {
+	// 	total.Add(b[i] << ((len(b) - i - 1) * 8))
+	// }
+	// return total
+	// var ret uint64
+	// buf := bytes.NewBuffer(b)
+	// binary.Read(buf, binary.LittleEndian, &ret)
+	// return sdk.NewUint(ret)
+	// ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
+	// return ret
 }
 
 // BytesToBigUint converts a bytestring of up to 32 bytes to a cosmos sdk uint
 func BytesToBigUint(b []byte) sdk.Uint {
+	// data := binary.BigEndian.Uint64(b)
+	// return sdk.NewUint(data)
 	ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
 	return ret
 }
