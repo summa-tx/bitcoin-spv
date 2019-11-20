@@ -1,0 +1,2305 @@
+/*!
+ * bcfg@0.1.6 - Config parser for bcoin
+ * Copyright (c) 2019, Christopher Jeffrey (MIT)
+ * https://github.com/bcoin-org/bcfg
+ *
+ * License for bcfg@0.1.6:
+ *
+ * This software is licensed under the MIT License.
+ *
+ * Copyright (c) 2017, Christopher Jeffrey (https://github.com/chjj)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * License for bsert@0.0.10:
+ *
+ * This software is licensed under the MIT License.
+ *
+ * Copyright (c) 2018, Christopher Jeffrey (https://github.com/chjj)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+var __node_modules__ = [
+[/* 0 */ 'bcfg', '/lib/bcfg.js', function(exports, module, __filename, __dirname, __meta) {
+/*!
+ * bcfg.js - configuration parsing for bcoin
+ * Copyright (c) 2016-2017, Christopher Jeffrey (MIT License).
+ * https://github.com/bcoin-org/bcoin
+ */
+
+'use strict';
+
+module.exports = __node_require__(1 /* './config' */);
+}],
+[/* 1 */ 'bcfg', '/lib/config.js', function(exports, module, __filename, __dirname, __meta) {
+/*!
+ * config.js - configuration parsing for bcoin
+ * Copyright (c) 2016-2017, Christopher Jeffrey (MIT License).
+ * https://github.com/bcoin-org/bcoin
+ */
+
+'use strict';
+
+const assert = __node_require__(2 /* 'bsert' */);
+const Path = require('path');
+const os = require('os');
+const fs = __node_require__(3 /* './fs' */);
+const HOME = os.homedir ? os.homedir() : '/';
+
+/**
+ * Config Parser
+ */
+
+class Config {
+  /**
+   * Create a config.
+   * @constructor
+   * @param {String} module - Module name (e.g. `bcoin`).
+   * @param {Object?} options
+   */
+
+  constructor(module, options) {
+    assert(typeof module === 'string');
+    assert(module.length > 0);
+
+    this.module = module;
+    this.prefix = Path.join(HOME, `.${module}`);
+    this.suffix = null;
+    this.fallback = null;
+    this.alias = Object.create(null);
+
+    this.options = Object.create(null);
+    this.data = Object.create(null);
+    this.env = Object.create(null);
+    this.args = Object.create(null);
+    this.argv = [];
+    this.pass = [];
+    this.query = Object.create(null);
+    this.hash = Object.create(null);
+
+    if (options)
+      this.init(options);
+  }
+
+  /**
+   * Initialize options.
+   * @private
+   * @param {Object} options
+   */
+
+  init(options) {
+    assert(options && typeof options === 'object');
+
+    if (options.suffix != null) {
+      assert(typeof options.suffix === 'string');
+      this.suffix = options.suffix;
+    }
+
+    if (options.fallback != null) {
+      assert(typeof options.fallback === 'string');
+      this.fallback = options.fallback;
+    }
+
+    if (options.alias) {
+      assert(typeof options.alias === 'object');
+      for (const key of Object.keys(options.alias)) {
+        const value = options.alias[key];
+        assert(typeof value === 'string');
+        this.alias[key] = value;
+      }
+    }
+  }
+
+  /**
+   * Inject options.
+   * @param {Object} options
+   */
+
+  inject(options) {
+    for (const key of Object.keys(options)) {
+      const value = options[key];
+
+      switch (key) {
+        case 'hash':
+        case 'query':
+        case 'env':
+        case 'argv':
+        case 'config':
+          continue;
+      }
+
+      this.set(key, value);
+    }
+  }
+
+  /**
+   * Load options from hash, query, env, or args.
+   * @param {Object} options
+   */
+
+  load(options) {
+    if (options.hash)
+      this.parseHash(options.hash);
+
+    if (options.query)
+      this.parseQuery(options.query);
+
+    if (options.env)
+      this.parseEnv(options.env);
+
+    if (options.argv)
+      this.parseArg(options.argv);
+
+    this.prefix = this.getPrefix();
+  }
+
+  /**
+   * Open a config file.
+   * @param {String} file - e.g. `bcoin.conf`.
+   * @throws on IO error
+   */
+
+  open(file) {
+    if (fs.unsupported)
+      return;
+
+    const path = this.getFile(file);
+
+    let text;
+    try {
+      text = fs.readFileSync(path, 'utf8');
+    } catch (e) {
+      if (e.code === 'ENOENT')
+        return;
+      throw e;
+    }
+
+    this.parseConfig(text);
+
+    this.prefix = this.getPrefix();
+  }
+
+  /**
+   * Create a child config. Filter by plugin name.
+   * @param {String} name
+   * @returns {Config}
+   */
+
+  filter(name) {
+    assert(typeof name === 'string');
+
+    const child = new Config(this.module);
+
+    child.prefix = this.prefix;
+    child.suffix = this.suffix;
+    child.fallback = this.fallback;
+    child.argv = this.argv;
+    child.pass = this.pass;
+
+    _filter(name, this.env, child.env);
+    _filter(name, this.args, child.args);
+    _filter(name, this.query, child.query);
+    _filter(name, this.hash, child.hash);
+
+    return child;
+  }
+
+  /**
+   * Set default option.
+   * @param {String} key
+   * @param {Object} value
+   */
+
+  set(key, value) {
+    assert(typeof key === 'string', 'Key must be a string.');
+
+    if (value == null)
+      return;
+
+    key = key.replace(/-/g, '');
+    key = key.toLowerCase();
+
+    this.options[key] = value;
+  }
+
+  /**
+   * Test whether a config option is present.
+   * @param {String} key
+   * @returns {Boolean}
+   */
+
+  has(key) {
+    if (typeof key === 'number') {
+      assert(key >= 0, 'Index must be positive.');
+      if (key >= this.argv.length)
+        return false;
+      return true;
+    }
+
+    assert(typeof key === 'string', 'Key must be a string.');
+
+    key = key.replace(/-/g, '');
+    key = key.toLowerCase();
+
+    if (this.hash[key] != null)
+      return true;
+
+    if (this.query[key] != null)
+      return true;
+
+    if (this.args[key] != null)
+      return true;
+
+    if (this.env[key] != null)
+      return true;
+
+    if (this.data[key] != null)
+      return true;
+
+    if (this.options[key] != null)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Get a config option.
+   * @param {String} key
+   * @param {Object?} fallback
+   * @returns {Object|null}
+   */
+
+  get(key, fallback) {
+    if (fallback === undefined)
+      fallback = null;
+
+    if (Array.isArray(key)) {
+      const keys = key;
+      for (const key of keys) {
+        const value = this.get(key);
+        if (value !== null)
+          return value;
+      }
+      return fallback;
+    }
+
+    if (typeof key === 'number') {
+      assert(key >= 0, 'Index must be positive.');
+
+      if (key >= this.argv.length)
+        return fallback;
+
+      if (this.argv[key] != null)
+        return this.argv[key];
+
+      return fallback;
+    }
+
+    assert(typeof key === 'string', 'Key must be a string.');
+
+    key = key.replace(/-/g, '');
+    key = key.toLowerCase();
+
+    if (this.hash[key] != null)
+      return this.hash[key];
+
+    if (this.query[key] != null)
+      return this.query[key];
+
+    if (this.args[key] != null)
+      return this.args[key];
+
+    if (this.env[key] != null)
+      return this.env[key];
+
+    if (this.data[key] != null)
+      return this.data[key];
+
+    if (this.options[key] != null)
+      return this.options[key];
+
+    return fallback;
+  }
+
+  /**
+   * Get a value's type.
+   * @param {String} key
+   * @returns {String}
+   */
+
+  typeOf(key) {
+    const value = this.get(key);
+
+    if (value === null)
+      return 'null';
+
+    return typeof value;
+  }
+
+  /**
+   * Get a config option (as a string).
+   * @param {String} key
+   * @param {Object?} fallback
+   * @returns {String|null}
+   */
+
+  str(key, fallback) {
+    const value = this.get(key);
+
+    if (fallback === undefined)
+      fallback = null;
+
+    if (value === null)
+      return fallback;
+
+    if (typeof value !== 'string')
+      throw new Error(`${fmt(key)} must be a string.`);
+
+    return value;
+  }
+
+  /**
+   * Get a config option (as an integer).
+   * @param {String} key
+   * @param {Object?} fallback
+   * @returns {Number|null}
+   */
+
+  int(key, fallback) {
+    const value = this.get(key);
+
+    if (fallback === undefined)
+      fallback = null;
+
+    if (value === null)
+      return fallback;
+
+    if (typeof value !== 'string') {
+      if (typeof value !== 'number')
+        throw new Error(`${fmt(key)} must be an int.`);
+
+      if (!Number.isSafeInteger(value))
+        throw new Error(`${fmt(key)} must be an int.`);
+
+      return value;
+    }
+
+    if (!/^\-?\d+$/.test(value))
+      throw new Error(`${fmt(key)} must be an int.`);
+
+    const num = parseInt(value, 10);
+
+    if (!Number.isSafeInteger(num))
+      throw new Error(`${fmt(key)} must be an int.`);
+
+    return num;
+  }
+
+  /**
+   * Get a config option (as a unsigned integer).
+   * @param {String} key
+   * @param {Object?} fallback
+   * @returns {Number|null}
+   */
+
+  uint(key, fallback) {
+    const value = this.int(key);
+
+    if (fallback === undefined)
+      fallback = null;
+
+    if (value === null)
+      return fallback;
+
+    if (value < 0)
+      throw new Error(`${fmt(key)} must be a uint.`);
+
+    return value;
+  }
+
+  /**
+   * Get a config option (as a float).
+   * @param {String} key
+   * @param {Object?} fallback
+   * @returns {Number|null}
+   */
+
+  float(key, fallback) {
+    const value = this.get(key);
+
+    if (fallback === undefined)
+      fallback = null;
+
+    if (value === null)
+      return fallback;
+
+    if (typeof value !== 'string') {
+      if (typeof value !== 'number')
+        throw new Error(`${fmt(key)} must be a float.`);
+
+      if (!isFinite(value))
+        throw new Error(`${fmt(key)} must be a float.`);
+
+      return value;
+    }
+
+    if (!/^\-?\d*(?:\.\d*)?$/.test(value))
+      throw new Error(`${fmt(key)} must be a float.`);
+
+    if (!/\d/.test(value))
+      throw new Error(`${fmt(key)} must be a float.`);
+
+    const num = parseFloat(value);
+
+    if (!isFinite(num))
+      throw new Error(`${fmt(key)} must be a float.`);
+
+    return num;
+  }
+
+  /**
+   * Get a config option (as a positive float).
+   * @param {String} key
+   * @param {Object?} fallback
+   * @returns {Number|null}
+   */
+
+  ufloat(key, fallback) {
+    const value = this.float(key);
+
+    if (fallback === undefined)
+      fallback = null;
+
+    if (value === null)
+      return fallback;
+
+    if (value < 0)
+      throw new Error(`${fmt(key)} must be a positive float.`);
+
+    return value;
+  }
+
+  /**
+   * Get a value (as a fixed number).
+   * @param {String} key
+   * @param {Number?} exp
+   * @param {Object?} fallback
+   * @returns {Number|null}
+   */
+
+  fixed(key, exp, fallback) {
+    const value = this.float(key);
+
+    if (fallback === undefined)
+      fallback = null;
+
+    if (value === null)
+      return fallback;
+
+    try {
+      return fromFloat(value, exp || 0);
+    } catch (e) {
+      throw new Error(`${fmt(key)} must be a fixed number.`);
+    }
+  }
+
+  /**
+   * Get a value (as a positive fixed number).
+   * @param {String} key
+   * @param {Number?} exp
+   * @param {Object?} fallback
+   * @returns {Number|null}
+   */
+
+  ufixed(key, exp, fallback) {
+    const value = this.fixed(key, exp);
+
+    if (fallback === undefined)
+      fallback = null;
+
+    if (value === null)
+      return fallback;
+
+    if (value < 0)
+      throw new Error(`${fmt(key)} must be a positive fixed number.`);
+
+    return value;
+  }
+
+  /**
+   * Get a config option (as a boolean).
+   * @param {String} key
+   * @param {Object?} fallback
+   * @returns {Boolean|null}
+   */
+
+  bool(key, fallback) {
+    const value = this.get(key);
+
+    if (fallback === undefined)
+      fallback = null;
+
+    if (value === null)
+      return fallback;
+
+    // Bitcoin Core compat.
+    if (typeof value === 'number') {
+      if (value === 1)
+        return true;
+
+      if (value === 0)
+        return false;
+    }
+
+    if (typeof value !== 'string') {
+      if (typeof value !== 'boolean')
+        throw new Error(`${fmt(key)} must be a boolean.`);
+      return value;
+    }
+
+    if (value === 'true' || value === '1')
+      return true;
+
+    if (value === 'false' || value === '0')
+      return false;
+
+    throw new Error(`${fmt(key)} must be a boolean.`);
+  }
+
+  /**
+   * Get a config option (as a buffer).
+   * @param {String} key
+   * @param {Object?} fallback
+   * @returns {Buffer|null}
+   */
+
+  buf(key, fallback, enc) {
+    const value = this.get(key);
+
+    if (!enc)
+      enc = 'hex';
+
+    if (fallback === undefined)
+      fallback = null;
+
+    if (value === null)
+      return fallback;
+
+    if (typeof value !== 'string') {
+      if (!Buffer.isBuffer(value))
+        throw new Error(`${fmt(key)} must be a buffer.`);
+      return value;
+    }
+
+    const data = Buffer.from(value, enc);
+
+    if (data.length !== Buffer.byteLength(value, enc))
+      throw new Error(`${fmt(key)} must be a ${enc} string.`);
+
+    return data;
+  }
+
+  /**
+   * Get a config option (as an array of strings).
+   * @param {String} key
+   * @param {Object?} fallback
+   * @returns {String[]|null}
+   */
+
+  array(key, fallback) {
+    const value = this.get(key);
+
+    if (fallback === undefined)
+      fallback = null;
+
+    if (value === null)
+      return fallback;
+
+    if (typeof value !== 'string') {
+      if (!Array.isArray(value))
+        throw new Error(`${fmt(key)} must be an array.`);
+      return value;
+    }
+
+    const parts = value.trim().split(/\s*,\s*/);
+    const result = [];
+
+    for (const part of parts) {
+      if (part.length === 0)
+        continue;
+
+      result.push(part);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get a config option (as an object).
+   * @param {String} key
+   * @param {Object?} fallback
+   * @returns {Object|null}
+   */
+
+  obj(key, fallback) {
+    const value = this.get(key);
+
+    if (fallback === undefined)
+      fallback = null;
+
+    if (value === null)
+      return fallback;
+
+    if (typeof value !== 'object' || Array.isArray(value))
+      throw new Error(`${fmt(key)} must be an object.`);
+
+    return value;
+  }
+
+  /**
+   * Get a config option (as a function).
+   * @param {String} key
+   * @param {Object?} fallback
+   * @returns {Function|null}
+   */
+
+  func(key, fallback) {
+    const value = this.get(key);
+
+    if (fallback === undefined)
+      fallback = null;
+
+    if (value === null)
+      return fallback;
+
+    if (typeof value !== 'function')
+      throw new Error(`${fmt(key)} must be a function.`);
+
+    return value;
+  }
+
+  /**
+   * Get a config option (as a string).
+   * @param {String} key
+   * @param {Object?} fallback
+   * @returns {String|null}
+   */
+
+  path(key, fallback) {
+    let value = this.str(key);
+
+    if (fallback === undefined)
+      fallback = null;
+
+    if (value === null)
+      return fallback;
+
+    if (value.length === 0)
+      return fallback;
+
+    switch (value[0]) {
+      case '~': // home dir
+        value = Path.join(HOME, value.substring(1));
+        break;
+      case '@': // prefix
+        value = Path.join(this.prefix, value.substring(1));
+        break;
+      default: // cwd
+        break;
+    }
+
+    return Path.normalize(value);
+  }
+
+  /**
+   * Get a config option (in MB).
+   * @param {String} key
+   * @param {Object?} fallback
+   * @returns {Number|null}
+   */
+
+  mb(key, fallback) {
+    const value = this.uint(key);
+
+    if (fallback === undefined)
+      fallback = null;
+
+    if (value === null)
+      return fallback;
+
+    return value * 1024 * 1024;
+  }
+
+  /**
+   * Grab suffix from config data.
+   * @returns {String}
+   */
+
+  getSuffix() {
+    if (!this.suffix)
+      throw new Error('No suffix presented.');
+
+    const suffix = this.str(this.suffix, this.fallback);
+
+    assert(isAlpha(suffix), 'Bad suffix.');
+
+    return suffix;
+  }
+
+  /**
+   * Grab prefix from config data.
+   * @private
+   * @returns {String}
+   */
+
+  getPrefix() {
+    let prefix = this.str('prefix');
+
+    if (prefix) {
+      if (prefix[0] === '~')
+        prefix = Path.join(HOME, prefix.substring(1));
+    } else {
+      prefix = Path.join(HOME, `.${this.module}`);
+    }
+
+    if (this.suffix) {
+      const suffix = this.str(this.suffix);
+
+      if (suffix) {
+        assert(isAlpha(suffix), 'Bad suffix.');
+        if (this.fallback && suffix !== this.fallback)
+          prefix = Path.join(prefix, suffix);
+      }
+    }
+
+    return Path.normalize(prefix);
+  }
+
+  /**
+   * Grab config filename from config data.
+   * @private
+   * @param {String} file
+   * @returns {String}
+   */
+
+  getFile(file) {
+    const name = this.str('config');
+
+    if (name)
+      return name;
+
+    return Path.join(this.prefix, file);
+  }
+
+  /**
+   * Create a file path using `prefix`.
+   * @param {String} file
+   * @returns {String}
+   */
+
+  location(file) {
+    return Path.join(this.prefix, file);
+  }
+
+  /**
+   * Parse config text.
+   * @private
+   * @param {String} text
+   */
+
+  parseConfig(text) {
+    assert(typeof text === 'string', 'Config must be text.');
+
+    if (text.charCodeAt(0) === 0xfeff)
+      text = text.substring(1);
+
+    text = text.replace(/\r\n/g, '\n');
+    text = text.replace(/\r/g, '\n');
+    text = text.replace(/\\\n/g, '');
+
+    let num = 0;
+
+    for (const chunk of text.split('\n')) {
+      const line = chunk.trim();
+
+      num += 1;
+
+      if (line.length === 0)
+        continue;
+
+      if (line[0] === '#')
+        continue;
+
+      const index = line.indexOf(':');
+
+      if (index === -1)
+        throw new Error(`Expected ':' on line ${num}: "${line}".`);
+
+      let key = line.substring(0, index).trim();
+
+      key = key.replace(/\-/g, '');
+
+      if (!isLowerKey(key))
+        throw new Error(`Invalid option on line ${num}: ${key}.`);
+
+      const value = line.substring(index + 1).trim();
+
+      if (value.length === 0)
+        continue;
+
+      const alias = this.alias[key];
+
+      if (alias)
+        key = alias;
+
+      this.data[key] = value;
+    }
+  }
+
+  /**
+   * Parse arguments.
+   * @private
+   * @param {Array?} argv
+   */
+
+  parseArg(argv) {
+    if (!argv || typeof argv !== 'object')
+      argv = process.argv;
+
+    assert(Array.isArray(argv));
+
+    let last = null;
+    let pass = false;
+
+    for (let i = 2; i < argv.length; i++) {
+      const arg = argv[i];
+
+      assert(typeof arg === 'string');
+
+      if (arg === '--') {
+        pass = true;
+        continue;
+      }
+
+      if (pass) {
+        this.pass.push(arg);
+        continue;
+      }
+
+      if (arg.length === 0) {
+        last = null;
+        continue;
+      }
+
+      if (arg.indexOf('--') === 0) {
+        const index = arg.indexOf('=');
+
+        let key = null;
+        let value = null;
+        let empty = false;
+
+        if (index !== -1) {
+          // e.g. --opt=val
+          key = arg.substring(2, index);
+          value = arg.substring(index + 1);
+          last = null;
+          empty = false;
+        } else {
+          // e.g. --opt
+          key = arg.substring(2);
+          value = 'true';
+          last = null;
+          empty = true;
+        }
+
+        key = key.replace(/\-/g, '');
+
+        if (!isLowerKey(key))
+          throw new Error(`Invalid argument: --${key}.`);
+
+        if (value.length === 0)
+          continue;
+
+        // Do not allow one-letter aliases.
+        if (key.length > 1) {
+          const alias = this.alias[key];
+          if (alias)
+            key = alias;
+        }
+
+        this.args[key] = value;
+
+        if (empty)
+          last = key;
+
+        continue;
+      }
+
+      if (arg[0] === '-') {
+        // e.g. -abc
+        last = null;
+
+        for (let j = 1; j < arg.length; j++) {
+          let key = arg[j];
+
+          if ((key < 'a' || key > 'z')
+              && (key < 'A' || key > 'Z')
+              && (key < '0' || key > '9')
+              && key !== '?') {
+            throw new Error(`Invalid argument: -${key}.`);
+          }
+
+          const alias = this.alias[key];
+
+          if (alias)
+            key = alias;
+
+          this.args[key] = 'true';
+
+          last = key;
+        }
+
+        continue;
+      }
+
+      // e.g. foo
+      const value = arg;
+
+      if (value.length === 0) {
+        last = null;
+        continue;
+      }
+
+      if (last) {
+        this.args[last] = value;
+        last = null;
+      } else {
+        this.argv.push(value);
+      }
+    }
+  }
+
+  /**
+   * Parse environment variables.
+   * @private
+   * @param {Object?} env
+   * @returns {Object}
+   */
+
+  parseEnv(env) {
+    let prefix = this.module;
+
+    prefix = prefix.toUpperCase();
+    prefix = prefix.replace(/-/g, '_');
+    prefix += '_';
+
+    if (!env || typeof env !== 'object')
+      env = process.env;
+
+    assert(env && typeof env === 'object');
+
+    for (let key of Object.keys(env)) {
+      const value = env[key];
+
+      assert(typeof value === 'string');
+
+      if (key.indexOf(prefix) !== 0)
+        continue;
+
+      key = key.substring(prefix.length);
+      key = key.replace(/_/g, '');
+
+      if (!isUpperKey(key))
+        continue;
+
+      if (value.length === 0)
+        continue;
+
+      key = key.toLowerCase();
+
+      // Do not allow one-letter aliases.
+      if (key.length > 1) {
+        const alias = this.alias[key];
+        if (alias)
+          key = alias;
+      }
+
+      this.env[key] = value;
+    }
+  }
+
+  /**
+   * Parse uri querystring variables.
+   * @private
+   * @param {String} query
+   */
+
+  parseQuery(query) {
+    if (typeof query !== 'string') {
+      if (!global.location)
+        return {};
+
+      query = global.location.search;
+
+      if (typeof query !== 'string')
+        return {};
+    }
+
+    return this.parseForm(query, '?', this.query);
+  }
+
+  /**
+   * Parse uri hash variables.
+   * @private
+   * @param {String} hash
+   */
+
+  parseHash(hash) {
+    if (typeof hash !== 'string') {
+      if (!global.location)
+        return {};
+
+      hash = global.location.hash;
+
+      if (typeof hash !== 'string')
+        return {};
+    }
+
+    return this.parseForm(hash, '#', this.hash);
+  }
+
+  /**
+   * Parse form-urlencoded variables.
+   * @private
+   * @param {String} query
+   * @param {String} ch
+   * @param {Object} map
+   */
+
+  parseForm(query, ch, map) {
+    assert(typeof query === 'string');
+
+    if (query.length === 0)
+      return;
+
+    if (query[0] === ch)
+      query = query.substring(1);
+
+    for (const pair of query.split('&')) {
+      const index = pair.indexOf('=');
+
+      let key, value;
+      if (index !== -1) {
+        key = pair.substring(0, index);
+        value = pair.substring(index + 1);
+      } else {
+        key = pair;
+        value = 'true';
+      }
+
+      key = unescape(key);
+      key = key.replace(/\-/g, '');
+
+      if (!isLowerKey(key))
+        continue;
+
+      value = unescape(value);
+
+      if (value.length === 0)
+        continue;
+
+      const alias = this.alias[key];
+
+      if (alias)
+        key = alias;
+
+      map[key] = value;
+    }
+  }
+}
+
+/*
+ * Helpers
+ */
+
+function fmt(key) {
+  if (Array.isArray(key))
+    key = key[0];
+
+  if (typeof key === 'number')
+    return `Argument #${key}`;
+
+  return key;
+}
+
+function unescape(str) {
+  try {
+    str = decodeURIComponent(str);
+    str = str.replace(/\+/g, ' ');
+  } catch (e) {
+    ;
+  }
+  str = str.replace(/\0/g, '');
+  return str;
+}
+
+function isAlpha(str) {
+  return /^[a-z0-9_\-]+$/i.test(str);
+}
+
+function isKey(key) {
+  return /^[a-zA-Z0-9]+$/.test(key);
+}
+
+function isLowerKey(key) {
+  if (!isKey(key))
+    return false;
+
+  return !/[A-Z]/.test(key);
+}
+
+function isUpperKey(key) {
+  if (!isKey(key))
+    return false;
+
+  return !/[a-z]/.test(key);
+}
+
+function _filter(name, a, b) {
+  for (const key of Object.keys(a)) {
+    if (key.length > name.length && key.indexOf(name) === 0) {
+      const sub = key.substring(name.length);
+      b[sub] = a[key];
+    }
+  }
+}
+
+function fromFloat(num, exp) {
+  assert(typeof num === 'number' && isFinite(num));
+  assert(Number.isSafeInteger(exp));
+
+  let str = num.toFixed(exp);
+  let sign = 1;
+
+  if (str.length > 0 && str[0] === '-') {
+    str = str.substring(1);
+    sign = -1;
+  }
+
+  let hi = str;
+  let lo = '0';
+
+  const index = str.indexOf('.');
+
+  if (index !== -1) {
+    hi = str.substring(0, index);
+    lo = str.substring(index + 1);
+  }
+
+  hi = hi.replace(/^0+/, '');
+  lo = lo.replace(/0+$/, '');
+
+  assert(hi.length <= 16 - exp,
+    'Fixed number string exceeds 2^53-1.');
+
+  assert(lo.length <= exp,
+    'Too many decimal places in fixed number string.');
+
+  if (hi.length === 0)
+    hi = '0';
+
+  while (lo.length < exp)
+    lo += '0';
+
+  if (lo.length === 0)
+    lo = '0';
+
+  assert(/^\d+$/.test(hi) && /^\d+$/.test(lo),
+    'Non-numeric characters in fixed number string.');
+
+  hi = parseInt(hi, 10);
+  lo = parseInt(lo, 10);
+
+  const mult = Math.pow(10, exp);
+  const maxLo = Number.MAX_SAFE_INTEGER % mult;
+  const maxHi = (Number.MAX_SAFE_INTEGER - maxLo) / mult;
+
+  assert(hi < maxHi || (hi === maxHi && lo <= maxLo),
+    'Fixed number string exceeds 2^53-1.');
+
+  return sign * (hi * mult + lo);
+}
+
+/*
+ * Expose
+ */
+
+module.exports = Config;
+}],
+[/* 2 */ 'bsert', '/lib/assert.js', function(exports, module, __filename, __dirname, __meta) {
+/*!
+ * assert.js - assertions for javascript
+ * Copyright (c) 2018, Christopher Jeffrey (MIT License).
+ * https://github.com/chjj/bsert
+ */
+
+'use strict';
+
+/**
+ * AssertionError
+ */
+
+class AssertionError extends Error {
+  constructor(options) {
+    if (typeof options === 'string')
+      options = { message: options };
+
+    if (options === null || typeof options !== 'object')
+      options = {};
+
+    let message = null;
+    let operator = 'fail';
+    let generatedMessage = Boolean(options.generatedMessage);
+
+    if (options.message != null)
+      message = toString(options.message);
+
+    if (typeof options.operator === 'string')
+      operator = options.operator;
+
+    if (message == null) {
+      if (operator === 'fail') {
+        message = 'Assertion failed.';
+      } else {
+        const a = stringify(options.actual);
+        const b = stringify(options.expected);
+
+        message = `${a} ${operator} ${b}`;
+      }
+
+      generatedMessage = true;
+    }
+
+    super(message);
+
+    let start = this.constructor;
+
+    if (typeof options.stackStartFunction === 'function')
+      start = options.stackStartFunction;
+    else if (typeof options.stackStartFn === 'function')
+      start = options.stackStartFn;
+
+    this.type = 'AssertionError';
+    this.name = 'AssertionError [ERR_ASSERTION]';
+    this.code = 'ERR_ASSERTION';
+    this.generatedMessage = generatedMessage;
+    this.actual = options.actual;
+    this.expected = options.expected;
+    this.operator = operator;
+
+    if (Error.captureStackTrace)
+      Error.captureStackTrace(this, start);
+  }
+}
+
+/*
+ * Assert
+ */
+
+function assert(value, message) {
+  if (!value) {
+    let generatedMessage = false;
+
+    if (arguments.length === 0) {
+      message = 'No value argument passed to `assert()`.';
+      generatedMessage = true;
+    } else if (message == null) {
+      message = 'Assertion failed.';
+      generatedMessage = true;
+    } else if (isError(message)) {
+      throw message;
+    }
+
+    throw new AssertionError({
+      message,
+      actual: value,
+      expected: true,
+      operator: '==',
+      generatedMessage,
+      stackStartFn: assert
+    });
+  }
+}
+
+function equal(actual, expected, message) {
+  if (!Object.is(actual, expected)) {
+    if (isError(message))
+      throw message;
+
+    throw new AssertionError({
+      message,
+      actual,
+      expected,
+      operator: 'strictEqual',
+      stackStartFn: equal
+    });
+  }
+}
+
+function notEqual(actual, expected, message) {
+  if (Object.is(actual, expected)) {
+    if (isError(message))
+      throw message;
+
+    throw new AssertionError({
+      message,
+      actual,
+      expected,
+      operator: 'notStrictEqual',
+      stackStartFn: notEqual
+    });
+  }
+}
+
+function fail(message) {
+  let generatedMessage = false;
+
+  if (isError(message))
+    throw message;
+
+  if (message == null) {
+    message = 'Assertion failed.';
+    generatedMessage = true;
+  }
+
+  throw new AssertionError({
+    message,
+    actual: false,
+    expected: true,
+    operator: 'fail',
+    generatedMessage,
+    stackStartFn: fail
+  });
+}
+
+function throws(func, expected, message) {
+  if (typeof expected === 'string') {
+    message = expected;
+    expected = undefined;
+  }
+
+  let thrown = false;
+  let err = null;
+
+  enforce(typeof func === 'function', 'func', 'function');
+
+  try {
+    func();
+  } catch (e) {
+    thrown = true;
+    err = e;
+  }
+
+  if (!thrown) {
+    let generatedMessage = false;
+
+    if (message == null) {
+      message = 'Missing expected exception.';
+      generatedMessage = true;
+    }
+
+    throw new AssertionError({
+      message,
+      actual: undefined,
+      expected,
+      operator: 'throws',
+      generatedMessage,
+      stackStartFn: throws
+    });
+  }
+
+  if (!testError(err, expected, message, throws))
+    throw err;
+}
+
+function doesNotThrow(func, expected, message) {
+  if (typeof expected === 'string') {
+    message = expected;
+    expected = undefined;
+  }
+
+  let thrown = false;
+  let err = null;
+
+  enforce(typeof func === 'function', 'func', 'function');
+
+  try {
+    func();
+  } catch (e) {
+    thrown = true;
+    err = e;
+  }
+
+  if (!thrown)
+    return;
+
+  if (testError(err, expected, message, doesNotThrow)) {
+    let generatedMessage = false;
+
+    if (message == null) {
+      message = 'Got unwanted exception.';
+      generatedMessage = true;
+    }
+
+    throw new AssertionError({
+      message,
+      actual: err,
+      expected,
+      operator: 'doesNotThrow',
+      generatedMessage,
+      stackStartFn: doesNotThrow
+    });
+  }
+
+  throw err;
+}
+
+async function rejects(func, expected, message) {
+  if (typeof expected === 'string') {
+    message = expected;
+    expected = undefined;
+  }
+
+  let thrown = false;
+  let err = null;
+
+  if (typeof func !== 'function')
+    enforce(isPromise(func), 'func', 'promise');
+
+  try {
+    if (isPromise(func))
+      await func;
+    else
+      await func();
+  } catch (e) {
+    thrown = true;
+    err = e;
+  }
+
+  if (!thrown) {
+    let generatedMessage = false;
+
+    if (message == null) {
+      message = 'Missing expected rejection.';
+      generatedMessage = true;
+    }
+
+    throw new AssertionError({
+      message,
+      actual: undefined,
+      expected,
+      operator: 'rejects',
+      generatedMessage,
+      stackStartFn: rejects
+    });
+  }
+
+  if (!testError(err, expected, message, rejects))
+    throw err;
+}
+
+async function doesNotReject(func, expected, message) {
+  if (typeof expected === 'string') {
+    message = expected;
+    expected = undefined;
+  }
+
+  let thrown = false;
+  let err = null;
+
+  if (typeof func !== 'function')
+    enforce(isPromise(func), 'func', 'promise');
+
+  try {
+    if (isPromise(func))
+      await func;
+    else
+      await func();
+  } catch (e) {
+    thrown = true;
+    err = e;
+  }
+
+  if (!thrown)
+    return;
+
+  if (testError(err, expected, message, doesNotReject)) {
+    let generatedMessage = false;
+
+    if (message == null) {
+      message = 'Got unwanted rejection.';
+      generatedMessage = true;
+    }
+
+    throw new AssertionError({
+      message,
+      actual: undefined,
+      expected,
+      operator: 'doesNotReject',
+      generatedMessage,
+      stackStartFn: doesNotReject
+    });
+  }
+
+  throw err;
+}
+
+function ifError(err) {
+  if (err != null) {
+    let message = 'ifError got unwanted exception: ';
+
+    if (typeof err === 'object' && typeof err.message === 'string') {
+      if (err.message.length === 0 && err.constructor)
+        message += err.constructor.name;
+      else
+        message += err.message;
+    } else {
+      message += stringify(err);
+    }
+
+    throw new AssertionError({
+      message,
+      actual: err,
+      expected: null,
+      operator: 'ifError',
+      generatedMessage: true,
+      stackStartFn: ifError
+    });
+  }
+}
+
+function deepEqual(actual, expected, message) {
+  if (!isDeepEqual(actual, expected, false)) {
+    if (isError(message))
+      throw message;
+
+    throw new AssertionError({
+      message,
+      actual,
+      expected,
+      operator: 'deepStrictEqual',
+      stackStartFn: deepEqual
+    });
+  }
+}
+
+function notDeepEqual(actual, expected, message) {
+  if (isDeepEqual(actual, expected, true)) {
+    if (isError(message))
+      throw message;
+
+    throw new AssertionError({
+      message,
+      actual,
+      expected,
+      operator: 'notDeepStrictEqual',
+      stackStartFn: notDeepEqual
+    });
+  }
+}
+
+function bufferEqual(actual, expected, enc, message) {
+  if (!isEncoding(enc)) {
+    message = enc;
+    enc = null;
+  }
+
+  if (enc == null)
+    enc = 'hex';
+
+  expected = bufferize(actual, expected, enc);
+
+  enforce(isBuffer(actual), 'actual', 'buffer');
+  enforce(isBuffer(expected), 'expected', 'buffer');
+
+  if (actual !== expected && !actual.equals(expected)) {
+    if (isError(message))
+      throw message;
+
+    throw new AssertionError({
+      message,
+      actual: actual.toString(enc),
+      expected: expected.toString(enc),
+      operator: 'bufferEqual',
+      stackStartFn: bufferEqual
+    });
+  }
+}
+
+function notBufferEqual(actual, expected, enc, message) {
+  if (!isEncoding(enc)) {
+    message = enc;
+    enc = null;
+  }
+
+  if (enc == null)
+    enc = 'hex';
+
+  expected = bufferize(actual, expected, enc);
+
+  enforce(isBuffer(actual), 'actual', 'buffer');
+  enforce(isBuffer(expected), 'expected', 'buffer');
+
+  if (actual === expected || actual.equals(expected)) {
+    if (isError(message))
+      throw message;
+
+    throw new AssertionError({
+      message,
+      actual: actual.toString(enc),
+      expected: expected.toString(enc),
+      operator: 'notBufferEqual',
+      stackStartFn: notBufferEqual
+    });
+  }
+}
+
+function enforce(value, name, type) {
+  if (!value) {
+    let msg;
+
+    if (name == null) {
+      msg = 'Invalid type for parameter.';
+    } else {
+      if (type == null)
+        msg = `Invalid type for "${name}".`;
+      else
+        msg = `"${name}" must be a(n) ${type}.`;
+    }
+
+    const err = new TypeError(msg);
+
+    if (Error.captureStackTrace)
+      Error.captureStackTrace(err, enforce);
+
+    throw err;
+  }
+}
+
+function range(value, name) {
+  if (!value) {
+    const msg = name != null
+      ? `"${name}" is out of range.`
+      : 'Parameter is out of range.';
+
+    const err = new RangeError(msg);
+
+    if (Error.captureStackTrace)
+      Error.captureStackTrace(err, range);
+
+    throw err;
+  }
+}
+
+/*
+ * Stringification
+ */
+
+function stringify(value) {
+  switch (typeof value) {
+    case 'undefined':
+      return 'undefined';
+    case 'object':
+      if (value === null)
+        return 'null';
+      return `[${objectName(value)}]`;
+    case 'boolean':
+      return `${value}`;
+    case 'number':
+      return `${value}`;
+    case 'string':
+      if (value.length > 80)
+        value = `${value.substring(0, 77)}...`;
+      return JSON.stringify(value);
+    case 'symbol':
+      return tryString(value);
+    case 'function':
+      return `[${funcName(value)}]`;
+    case 'bigint':
+      return `${value}n`;
+    default:
+      return `[${typeof value}]`;
+  }
+}
+
+function toString(value) {
+  if (typeof value === 'string')
+    return value;
+
+  if (isError(value))
+    return tryString(value);
+
+  return stringify(value);
+}
+
+function tryString(value) {
+  try {
+    return String(value);
+  } catch (e) {
+    return 'Object';
+  }
+}
+
+/*
+ * Error Testing
+ */
+
+function testError(err, expected, message, func) {
+  if (expected == null)
+    return true;
+
+  if (isRegExp(expected))
+    return expected.test(err);
+
+  if (typeof expected !== 'function') {
+    if (func === doesNotThrow || func === doesNotReject)
+      throw new TypeError('"expected" must not be an object.');
+
+    if (typeof expected !== 'object')
+      throw new TypeError('"expected" must be an object.');
+
+    let generatedMessage = false;
+
+    if (message == null) {
+      const name = func === rejects ? 'rejection' : 'exception';
+      message = `Missing expected ${name}.`;
+      generatedMessage = true;
+    }
+
+    if (err == null || typeof err !== 'object') {
+      throw new AssertionError({
+        actual: err,
+        expected,
+        message,
+        operator: func.name,
+        generatedMessage,
+        stackStartFn: func
+      });
+    }
+
+    const keys = Object.keys(expected);
+
+    if (isError(expected))
+      keys.push('name', 'message');
+
+    if (keys.length === 0)
+      throw new TypeError('"expected" may not be an empty object.');
+
+    for (const key of keys) {
+      const expect = expected[key];
+      const value = err[key];
+
+      if (typeof value === 'string'
+          && isRegExp(expect)
+          && expect.test(value)) {
+        continue;
+      }
+
+      if ((key in err) && isDeepEqual(value, expect, false))
+        continue;
+
+      throw new AssertionError({
+        actual: err,
+        expected: expected,
+        message,
+        operator: func.name,
+        generatedMessage,
+        stackStartFn: func
+      });
+    }
+
+    return true;
+  }
+
+  if (expected.prototype !== undefined && (err instanceof expected))
+    return true;
+
+  if (Error.isPrototypeOf(expected))
+    return false;
+
+  return expected.call({}, err) === true;
+}
+
+/*
+ * Comparisons
+ */
+
+function isDeepEqual(x, y, fail) {
+  try {
+    return compare(x, y, null);
+  } catch (e) {
+    return fail;
+  }
+}
+
+function compare(a, b, cache) {
+  // Primitives.
+  if (Object.is(a, b))
+    return true;
+
+  if (!isObject(a) || !isObject(b))
+    return false;
+
+  // Semi-primitives.
+  if (objectString(a) !== objectString(b))
+    return false;
+
+  if (Object.getPrototypeOf(a) !== Object.getPrototypeOf(b))
+    return false;
+
+  if (isBuffer(a) && isBuffer(b))
+    return a.equals(b);
+
+  if (isDate(a))
+    return Object.is(a.getTime(), b.getTime());
+
+  if (isRegExp(a)) {
+    return a.source === b.source
+        && a.global === b.global
+        && a.multiline === b.multiline
+        && a.lastIndex === b.lastIndex
+        && a.ignoreCase === b.ignoreCase;
+  }
+
+  if (isError(a)) {
+    if (a.message !== b.message)
+      return false;
+  }
+
+  if (isArrayBuffer(a)) {
+    a = new Uint8Array(a);
+    b = new Uint8Array(b);
+  }
+
+  if (isView(a) && !isBuffer(a)) {
+    if (isBuffer(b))
+      return false;
+
+    const x = new Uint8Array(a.buffer);
+    const y = new Uint8Array(b.buffer);
+
+    if (x.length !== y.length)
+      return false;
+
+    for (let i = 0; i < x.length; i++) {
+      if (x[i] !== y[i])
+        return false;
+    }
+
+    return true;
+  }
+
+  if (isSet(a)) {
+    if (a.size !== b.size)
+      return false;
+
+    const keys = new Set([...a, ...b]);
+
+    return keys.size === a.size;
+  }
+
+  // Recursive.
+  if (!cache) {
+    cache = {
+      a: new Map(),
+      b: new Map(),
+      p: 0
+    };
+  } else {
+    const aa = cache.a.get(a);
+
+    if (aa != null) {
+      const bb = cache.b.get(b);
+      if (bb != null)
+        return aa === bb;
+    }
+
+    cache.p += 1;
+  }
+
+  cache.a.set(a, cache.p);
+  cache.b.set(b, cache.p);
+
+  const ret = recurse(a, b, cache);
+
+  cache.a.delete(a);
+  cache.b.delete(b);
+
+  return ret;
+}
+
+function recurse(a, b, cache) {
+  if (isMap(a)) {
+    if (a.size !== b.size)
+      return false;
+
+    const keys = new Set([...a.keys(), ...b.keys()]);
+
+    if (keys.size !== a.size)
+      return false;
+
+    for (const key of keys) {
+      if (!compare(a.get(key), b.get(key), cache))
+        return false;
+    }
+
+    return true;
+  }
+
+  if (isArray(a)) {
+    if (a.length !== b.length)
+      return false;
+
+    for (let i = 0; i < a.length; i++) {
+      if (!compare(a[i], b[i], cache))
+        return false;
+    }
+
+    return true;
+  }
+
+  const ak = ownKeys(a);
+  const bk = ownKeys(b);
+
+  if (ak.length !== bk.length)
+    return false;
+
+  const keys = new Set([...ak, ...bk]);
+
+  if (keys.size !== ak.length)
+    return false;
+
+  for (const key of keys) {
+    if (!compare(a[key], b[key], cache))
+      return false;
+  }
+
+  return true;
+}
+
+function ownKeys(obj) {
+  const keys = Object.keys(obj);
+
+  if (!Object.getOwnPropertySymbols)
+    return keys;
+
+  if (!Object.getOwnPropertyDescriptor)
+    return keys;
+
+  const symbols = Object.getOwnPropertySymbols(obj);
+
+  for (const symbol of symbols) {
+    const desc = Object.getOwnPropertyDescriptor(obj, symbol);
+
+    if (desc && desc.enumerable)
+      keys.push(symbol);
+  }
+
+  return keys;
+}
+
+/*
+ * Helpers
+ */
+
+function objectString(obj) {
+  if (obj === undefined)
+    return '[object Undefined]';
+
+  if (obj === null)
+    return '[object Null]';
+
+  try {
+    return Object.prototype.toString.call(obj);
+  } catch (e) {
+    return '[object Object]';
+  }
+}
+
+function objectType(obj) {
+  return objectString(obj).slice(8, -1);
+}
+
+function objectName(obj) {
+  const type = objectType(obj);
+
+  if (obj == null)
+    return type;
+
+  if (type !== 'Object' && type !== 'Error')
+    return type;
+
+  let ctor, name;
+
+  try {
+    ctor = obj.constructor;
+  } catch (e) {
+    ;
+  }
+
+  if (ctor == null)
+    return type;
+
+  try {
+    name = ctor.name;
+  } catch (e) {
+    return type;
+  }
+
+  if (typeof name !== 'string' || name.length === 0)
+    return type;
+
+  return name;
+}
+
+function funcName(func) {
+  let name;
+
+  try {
+    name = func.name;
+  } catch (e) {
+    ;
+  }
+
+  if (typeof name !== 'string' || name.length === 0)
+    return 'Function';
+
+  return `Function: ${name}`;
+}
+
+function isArray(obj) {
+  return Array.isArray(obj);
+}
+
+function isArrayBuffer(obj) {
+  return obj instanceof ArrayBuffer;
+}
+
+function isBuffer(obj) {
+  return isObject(obj)
+      && typeof obj.writeUInt32LE === 'function'
+      && typeof obj.equals === 'function';
+}
+
+function isDate(obj) {
+  return obj instanceof Date;
+}
+
+function isError(obj) {
+  return obj instanceof Error;
+}
+
+function isMap(obj) {
+  return obj instanceof Map;
+}
+
+function isObject(obj) {
+  return obj && typeof obj === 'object';
+}
+
+function isPromise(obj) {
+  return obj instanceof Promise;
+}
+
+function isRegExp(obj) {
+  return obj instanceof RegExp;
+}
+
+function isSet(obj) {
+  return obj instanceof Set;
+}
+
+function isView(obj) {
+  return ArrayBuffer.isView(obj);
+}
+
+function isEncoding(enc) {
+  if (typeof enc !== 'string')
+    return false;
+
+  switch (enc) {
+    case 'ascii':
+    case 'binary':
+    case 'base64':
+    case 'hex':
+    case 'latin1':
+    case 'ucs2':
+    case 'utf8':
+    case 'utf16le':
+      return true;
+  }
+
+  return false;
+}
+
+function bufferize(actual, expected, enc) {
+  if (typeof expected === 'string') {
+    if (!isBuffer(actual))
+      return null;
+
+    const {constructor} = actual;
+
+    if (!constructor || typeof constructor.from !== 'function')
+      return null;
+
+    if (!isEncoding(enc))
+      return null;
+
+    if (enc === 'hex' && (expected.length & 1))
+      return null;
+
+    const raw = constructor.from(expected, enc);
+
+    if (enc === 'hex' && raw.length !== (expected.length >>> 1))
+      return null;
+
+    return raw;
+  }
+
+  return expected;
+}
+
+/*
+ * API
+ */
+
+assert.AssertionError = AssertionError;
+assert.assert = assert;
+assert.strict = assert;
+assert.ok = assert;
+assert.equal = equal;
+assert.notEqual = notEqual;
+assert.strictEqual = equal;
+assert.notStrictEqual = notEqual;
+assert.fail = fail;
+assert.throws = throws;
+assert.doesNotThrow = doesNotThrow;
+assert.rejects = rejects;
+assert.doesNotReject = doesNotReject;
+assert.ifError = ifError;
+assert.deepEqual = deepEqual;
+assert.notDeepEqual = notDeepEqual;
+assert.deepStrictEqual = deepEqual;
+assert.notDeepStrictEqual = notDeepEqual;
+assert.bufferEqual = bufferEqual;
+assert.notBufferEqual = notBufferEqual;
+assert.enforce = enforce;
+assert.range = range;
+
+/*
+ * Expose
+ */
+
+module.exports = assert;
+}],
+[/* 3 */ 'bcfg', '/lib/fs.js', function(exports, module, __filename, __dirname, __meta) {
+'use strict';
+
+module.exports = require('fs');
+}]
+];
+
+var __node_cache__ = [];
+
+function __node_error__(location) {
+  var err = new Error('Cannot find module \'' + location + '\'');
+  err.code = 'MODULE_NOT_FOUND';
+  throw err;
+}
+
+function __node_require__(id) {
+  if ((id >>> 0) !== id || id > __node_modules__.length)
+    return __node_error__(id);
+
+  while (__node_cache__.length <= id)
+    __node_cache__.push(null);
+
+  var cache = __node_cache__[id];
+
+  if (cache)
+    return cache.exports;
+
+  var mod = __node_modules__[id];
+  var name = mod[0];
+  var path = mod[1];
+  var func = mod[2];
+  var meta;
+
+  var _exports = exports;
+  var _module = module;
+
+  if (id !== 0) {
+    _exports = {};
+    _module = {
+      id: '/' + name + path,
+      exports: _exports,
+      parent: module.parent,
+      filename: module.filename,
+      loaded: false,
+      children: module.children,
+      paths: module.paths
+    };
+  }
+
+  __node_cache__[id] = _module;
+
+  try {
+    func.call(_exports, _exports, _module,
+              __filename, __dirname, meta);
+  } catch (e) {
+    __node_cache__[id] = null;
+    throw e;
+  }
+
+  __node_modules__[id] = null;
+
+  if (id !== 0)
+    _module.loaded = true;
+
+  return _module.exports;
+}
+
+__node_require__(0);
