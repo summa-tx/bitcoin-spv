@@ -118,7 +118,7 @@ describe('ValidateSPV', () => {
           ValidateSPV.parseHeader(parseHeaderError[i].input);
           assert(false, 'expected an error');
         } catch (e) {
-          let error = utils.getErrMsg(e)
+          const error = utils.getErrMsg(e);
           assert.equal(error, parseHeaderError[i].errorMessage);
         }
       }
@@ -139,7 +139,7 @@ describe('ValidateSPV', () => {
           ValidateSPV.validateHeaderChain(validateHeaderChainError[i].input);
           assert(false, 'expected an error');
         } catch (e) {
-          let error = utils.getErrMsg(e)
+          const error = utils.getErrMsg(e);
           assert.equal(error, validateHeaderChainError[i].errorMessage);
         }
       }
@@ -186,7 +186,7 @@ describe('ValidateSPV', () => {
           ValidateSPV.validateHeader(badHeaders[i].header);
           assert(false, 'expected an error');
         } catch (e) {
-          let error = utils.getErrMsg(e)
+          const error = utils.getErrMsg(e);
           assert.equal(error, badHeaders[i].e);
         }
       }
@@ -205,7 +205,7 @@ describe('ValidateSPV', () => {
           ValidateSPV.validateProof(badSPVProofs[i].proof);
           assert(false, 'expected an error');
         } catch (e) {
-          let error = utils.getErrMsg(e)
+          const error = utils.getErrMsg(e);
           assert.equal(error, badSPVProofs[i].e);
         }
       }

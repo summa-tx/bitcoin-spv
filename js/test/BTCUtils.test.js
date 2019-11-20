@@ -131,7 +131,7 @@ describe('BTCUtils', () => {
         BTCUtils.extractHash(extractHashError[i].input);
         assert(false, 'expected an error');
       } catch (e) {
-        let error = utils.getErrMsg(e)
+        const error = utils.getErrMsg(e);
         assert.equal(error, extractHashError[i].errorMessage);
       }
     }
@@ -162,7 +162,7 @@ describe('BTCUtils', () => {
         BTCUtils.extractOpReturnData(extractOpReturnDataError[i].input);
         assert(false, 'expected an error');
       } catch (e) {
-        let error = utils.getErrMsg(e)
+        const error = utils.getErrMsg(e);
         assert.equal(error, extractOpReturnDataError[i].errorMessage);
       }
     }
@@ -234,7 +234,7 @@ describe('BTCUtils', () => {
         BTCUtils.determineOutputLength(determineOutputLengthError[i].input);
         assert(false, 'Expected an error');
       } catch (e) {
-        let error = utils.getErrMsg(e)
+        const error = utils.getErrMsg(e);
         assert.equal(error, determineOutputLengthError[i].errorMessage);
       }
     }

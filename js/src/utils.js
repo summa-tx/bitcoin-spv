@@ -4,6 +4,30 @@ import rmdlib from './lib/ripemd160';
 
 import * as vectors from '../../testVectors.json';
 
+export function updateJSON(element) {
+  if (Array.isArray(element)) {
+    for (let i = 0; i < element.length; i += 1) {
+      // may want to refine this if statement to check if it's a hex value in the actual function
+      if (typeof element[i] === 'string' && element[i].slice(0, 2) === '0x') {
+        /* eslint-disable-next-line */
+        element[i] = deserializeHex(element[i]);
+      } else {
+        updateJSON(element[i]);
+      }
+    }
+  } else if (typeof element === 'object') {
+    /* eslint-disable-next-line */
+    for (const prop in element) {
+      if (typeof element[prop] === 'object') {
+        updateJSON(element[prop]);
+      } else if (typeof element[prop] === 'string' && element[prop].slice(0, 2) === '0x') {
+        /* eslint-disable-next-line */
+        element[prop] = deserializeHex(element[prop]);
+      }
+    }
+  }
+}
+
 const vectorObj = JSON.parse(JSON.stringify(vectors));
 updateJSON(vectorObj);
 
@@ -259,69 +283,47 @@ export function lastBytes(arr, num) {
 
 export function getErrMsg(e) {
   switch (e.message) {
-    case "1":
-      return errors.headerChain.ERR_INVALID_CHAIN
-    case "2":
-      return errors.headerChain.ERR_BAD_LENGTH
-    case "3":
-      return errors.headerChain.ERR_LOW_WORK
-    case "4":
-      return errors.header.ERR_BAD_LENGTH
-    case "5":
-      return errors.header.ERR_HASH_LE
-    case "6":
-      return errors.header.ERR_HASH_BE
-    case "7":
-      return errors.header.ERR_MERKLE_ROOT_LE
-    case "8":
-      return errors.header.ERR_MERKLE_ROOT_BE
-    case "9":
-      return errors.header.ERR_PREV_HASH
-    case "10":
-      return errors.proof.ERR_VIN
-    case "11":
-      return errors.proof.ERR_VOUT
-    case "12":
-      return errors.proof.ERR_TXID
-    case "13":
-      return errors.proof.ERR_MERKLE_PROOF
-    case "14":
-      return errors.output.ERR_BAD_LENGTH
-    case "15":
-      return errors.output.ERR_OP_RETURN_FORMAT
-    case "16":
-      return errors.output.ERR_WITNESS_FORMAT
-    case "17":
-      return errors.output.ERR_P2PKH_FORMAT
-    case "18":
-      return errors.output.ERR_P2SH_FORMAT
-    case "19":
-      return errors.output.ERR_ABNORMAL_OUTPUT
+    case '1':
+      return errors.headerChain.ERR_INVALID_CHAIN;
+    case '2':
+      return errors.headerChain.ERR_BAD_LENGTH;
+    case '3':
+      return errors.headerChain.ERR_LOW_WORK;
+    case '4':
+      return errors.header.ERR_BAD_LENGTH;
+    case '5':
+      return errors.header.ERR_HASH_LE;
+    case '6':
+      return errors.header.ERR_HASH_BE;
+    case '7':
+      return errors.header.ERR_MERKLE_ROOT_LE;
+    case '8':
+      return errors.header.ERR_MERKLE_ROOT_BE;
+    case '9':
+      return errors.header.ERR_PREV_HASH_LE;
+    case '10':
+      return errors.header.ERR_PREV_HASH;
+    case '11':
+      return errors.proof.ERR_VIN;
+    case '12':
+      return errors.proof.ERR_VOUT;
+    case '13':
+      return errors.proof.ERR_TXID;
+    case '14':
+      return errors.proof.ERR_MERKLE_PROOF;
+    case '15':
+      return errors.output.ERR_BAD_LENGTH;
+    case '16':
+      return errors.output.ERR_OP_RETURN_FORMAT;
+    case '17':
+      return errors.output.ERR_WITNESS_FORMAT;
+    case '18':
+      return errors.output.ERR_P2PKH_FORMAT;
+    case '19':
+      return errors.output.ERR_P2SH_FORMAT;
+    case '20':
+      return errors.output.ERR_ABNORMAL_OUTPUT;
     default:
-      return errors.ERR_INVALID_CHAIN
-  }
-}
-
-export function updateJSON(element) {
-  if (Array.isArray(element)) {
-    for (let i = 0; i < element.length; i += 1) {
-      // may want to refine this if statement to check if it's a hex value in the actual function
-      if (typeof element[i] === 'string' && element[i].slice(0, 2) === '0x') {
-        /* eslint-disable-next-line */
-        element[i] = deserializeHex(element[i]);
-      } else {
-        updateJSON(element[i]);
-      }
-    }
-  } else if (typeof element === 'object') {
-    /* eslint-disable-next-line */
-    for (const prop in element) {
-      if (typeof element[prop] === 'object') {
-        updateJSON(element[prop]);
-      } else if (typeof element[prop] === 'string' && element[prop].slice(0, 2) === '0x') {
-        /* eslint-disable-next-line */
-        element[prop] = deserializeHex(element[prop]);
-      }
-    }
+      return errors.ERR_INVALID_CHAIN;
   }
 }

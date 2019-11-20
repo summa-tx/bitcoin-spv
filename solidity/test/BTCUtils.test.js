@@ -267,10 +267,9 @@ contract('BTCUtils', () => {
     for (let i = 0; i < determineOutputLengthError.length; i += 1) {
       try {
         await instance.determineOutputLength(determineOutputLengthError[i].input);
-        assert(false, 'Expected an error');
+        assert(false, 'expected an error');
       } catch (e) {
-        let error = utils.getErrMsg(e)
-        assert.equal(error, determineOutputLengthError[i].errorMessage);
+        assert.include(e.message, determineOutputLengthError[i].errorMessage);
       }
     }
   });

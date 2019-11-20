@@ -287,7 +287,7 @@ export function validateHeader(header) {
   if (!utils.typedArraysAreEqual(merkleRootLE, header.merkle_root_le)) {
     throw new Error(7);
   }
-  
+
   // Check that MerkleRootLE is the reverse of MerkleRoot
   const reversedMerkleRoot = utils.reverseEndianness(header.merkle_root);
   if (!utils.typedArraysAreEqual(reversedMerkleRoot, header.merkle_root_le)) {
@@ -299,14 +299,14 @@ export function validateHeader(header) {
   const extractedPrevHash = BTCUtils.extractPrevBlockLE(header.raw);
   if (!utils.typedArraysAreEqual(extractedPrevHash, header.prevhash_le)) {
     // throw new Error('PrevhashLE is not the correct parent hash of the header');
-    throw new Error(9)
+    throw new Error(9);
   }
 
   // Check that PrevhashLE is the reverse of Prevhash
   const reversedPrevhash = utils.reverseEndianness(header.prevhash);
   if (!utils.typedArraysAreEqual(reversedPrevhash, header.prevhash_le)) {
     // throw new Error('PrevhashLE is not the LE version of Prevhash');
-    throw new Error(10)
+    throw new Error(10);
   }
 
   return true;
@@ -353,24 +353,24 @@ export function validateProof(proof) {
 
   const validVin = BTCUtils.validateVin(vin);
   if (!validVin) {
-    throw new Error(10);
+    throw new Error(11);
   }
 
   const validVout = BTCUtils.validateVout(vout);
   if (!validVout) {
-    throw new Error(11);
+    throw new Error(12);
   }
 
   const txID = calculateTxId(version, vin, vout, locktime);
   if (!utils.typedArraysAreEqual(txID, txIdLE)) {
-    throw new Error(12);
+    throw new Error(13);
   }
 
   validateHeader(confirmingHeader);
 
   const validProof = prove(txIdLE, merkleRootLE, intermediateNodes, index);
   if (!validProof) {
-    throw new Error(13);
+    throw new Error(14);
   }
 
   return true;

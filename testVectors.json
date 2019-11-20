@@ -24,11 +24,12 @@
     },
     "header": {
       "ERR_BAD_LENGTH": "Malformatted header. Must be exactly 80 bytes.",
-      "ERR_HASH_LE": "Hash LE is not the correct hash of the header.",
+      "ERR_HASH_LE": "HashLE is not the correct hash of the header.",
       "ERR_HASH_BE": "HashLE is not the LE version of Hash.",
       "ERR_MERKLE_ROOT_LE": "MerkleRootLE is not the correct merkle root of the header.",
       "ERR_MERKLE_ROOT_BE": "MerkleRootLE is not the LE version of MerkleRoot.",
-      "ERR_PREV_HASH": "Prev hash is not the correct previous hash of the header."
+      "ERR_PREV_HASH_LE": "PrevhashLE is not the correct parent hash of the header.",
+      "ERR_PREV_HASH": "PrevhashLE is not the LE version of Prevhash."
     },
     "proof": {
       "ERR_VIN": "Vin is not valid.",
