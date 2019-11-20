@@ -291,21 +291,18 @@ export function validateHeader(header) {
   // Check that MerkleRootLE is the reverse of MerkleRoot
   const reversedMerkleRoot = utils.reverseEndianness(header.merkle_root);
   if (!utils.typedArraysAreEqual(reversedMerkleRoot, header.merkle_root_le)) {
-    // TODO: update this error wording: "MerkleRootBE is not the BE version of MerkleRootLE"
     throw new Error(8);
   }
 
   // Check that PrevHash is the correct PrevHash for the header
   const extractedPrevHash = BTCUtils.extractPrevBlockLE(header.raw);
   if (!utils.typedArraysAreEqual(extractedPrevHash, header.prevhash_le)) {
-    // throw new Error('PrevhashLE is not the correct parent hash of the header');
     throw new Error(9);
   }
 
   // Check that PrevhashLE is the reverse of Prevhash
   const reversedPrevhash = utils.reverseEndianness(header.prevhash);
   if (!utils.typedArraysAreEqual(reversedPrevhash, header.prevhash_le)) {
-    // throw new Error('PrevhashLE is not the LE version of Prevhash');
     throw new Error(10);
   }
 
