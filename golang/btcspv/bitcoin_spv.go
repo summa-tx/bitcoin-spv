@@ -64,6 +64,12 @@ func ReverseEndianness(b []byte) []byte {
 	return out
 }
 
+// ReverseHash256Endianness returns a new digest with opposite byteorder
+func ReverseHash256Endianness(h Hash256Digest) Hash256Digest {
+	reversed, _ := NewHash256Digest(ReverseEndianness(h[:]))
+	return reversed
+}
+
 // LastBytes returns the last num in from a byte array
 func LastBytes(in []byte, num int) []byte {
 	out := make([]byte, num)
@@ -72,21 +78,23 @@ func LastBytes(in []byte, num int) []byte {
 }
 
 // Hash160 takes a byte slice and returns a hashed byte slice.
-func Hash160(in []byte) []byte {
+func Hash160(in []byte) Hash160Digest {
 	sha := sha256.New()
 	sha.Write(in)
 	sum := sha.Sum(nil)
 
 	r := ripemd160.New()
 	r.Write(sum)
-	return r.Sum(nil)
+
+	digest, _ := NewHash160Digest(r.Sum(nil))
+	return digest
 }
 
 // Hash256 implements bitcoin's hash256 (double sha2)
-func Hash256(in []byte) []byte {
+func Hash256(in []byte) Hash256Digest {
 	first := sha256.Sum256(in)
 	second := sha256.Sum256(first[:])
-	return second[:]
+	return Hash256Digest(second)
 }
 
 //
@@ -170,13 +178,16 @@ func ExtractOutpoint(input []byte) []byte {
 }
 
 // ExtractInputTxIDLE returns the LE tx input index from the input in a tx
-func ExtractInputTxIDLE(input []byte) []byte {
-	return input[0:32]
+func ExtractInputTxIDLE(input []byte) Hash256Digest {
+	res, _ := NewHash256Digest(input[0:32])
+	return res
 }
 
 // ExtractInputTxID returns the input tx id bytes
-func ExtractInputTxID(input []byte) []byte {
-	return ReverseEndianness(input[0:32])
+func ExtractInputTxID(input []byte) Hash256Digest {
+	LE := ExtractInputTxIDLE(input)
+	txID := ReverseHash256Endianness(LE)
+	return txID
 }
 
 // ExtractTxIndexLE extracts the LE tx input index from the input in a tx
@@ -338,18 +349,19 @@ func ValidateVout(vout []byte) bool {
 
 // ExtractMerkleRootLE returns the transaction merkle root from a given block header
 // The returned merkle root is little-endian
-func ExtractMerkleRootLE(header []byte) []byte {
-	return header[36:68]
+func ExtractMerkleRootLE(header RawHeader) Hash256Digest {
+	res, _ := NewHash256Digest(header[36:68])
+	return res
 }
 
 // ExtractMerkleRootBE returns the transaction merkle root from a given block header
 // The returned merkle root is big-endian
-func ExtractMerkleRootBE(header []byte) []byte {
-	return ReverseEndianness(ExtractMerkleRootLE(header))
+func ExtractMerkleRootBE(header RawHeader) Hash256Digest {
+	return ReverseHash256Endianness(ExtractMerkleRootLE(header))
 }
 
 // ExtractTarget returns the target from a given block hedaer
-func ExtractTarget(header []byte) sdk.Uint {
+func ExtractTarget(header RawHeader) sdk.Uint {
 	// nBits encoding. 3 byte mantissa, 1 byte exponent
 	m := header[72:75]
 	e := sdk.NewInt(int64(header[75]))
@@ -377,35 +389,36 @@ func CalculateDifficulty(target sdk.Uint) sdk.Uint {
 
 // ExtractPrevBlockHashLE returns the previous block's hash from a block header
 // Returns the hash as a little endian []byte
-func ExtractPrevBlockHashLE(header []byte) []byte {
-	return header[4:36]
+func ExtractPrevBlockHashLE(header RawHeader) Hash256Digest {
+	res, _ := NewHash256Digest(header[4:36])
+	return res
 }
 
 // ExtractPrevBlockHashBE returns the previous block's hash from a block header
 // Returns the hash as a big endian []byte
-func ExtractPrevBlockHashBE(header []byte) []byte {
-	return ReverseEndianness(ExtractPrevBlockHashLE(header))
+func ExtractPrevBlockHashBE(header RawHeader) Hash256Digest {
+	return ReverseHash256Endianness(ExtractPrevBlockHashLE(header))
 }
 
 // ExtractTimestampLE returns the timestamp from a block header
 // It returns the timestamp as a little endian []byte
 // Time is not 100% reliable
-func ExtractTimestampLE(header []byte) []byte {
+func ExtractTimestampLE(header RawHeader) []byte {
 	return header[68:72]
 }
 
 // ExtractTimestamp returns the timestamp from a block header as a uint
 // Time is not 100% reliable
-func ExtractTimestamp(header []byte) uint {
+func ExtractTimestamp(header RawHeader) uint {
 	return BytesToUint(ReverseEndianness(ExtractTimestampLE(header)))
 }
 
 // ExtractDifficulty calculates the difficulty of a header
-func ExtractDifficulty(header []byte) sdk.Uint {
+func ExtractDifficulty(header RawHeader) sdk.Uint {
 	return CalculateDifficulty(ExtractTarget(header))
 }
 
-func hash256MerkleStep(a []byte, b []byte) []byte {
+func hash256MerkleStep(a []byte, b []byte) Hash256Digest {
 	c := []byte{}
 	c = append(c, a...)
 	c = append(c, b...)
@@ -414,6 +427,7 @@ func hash256MerkleStep(a []byte, b []byte) []byte {
 
 // VerifyHash256Merkle checks a merkle inclusion proof's validity
 func VerifyHash256Merkle(proof []byte, index uint) bool {
+	var current Hash256Digest
 	idx := index
 	proofLength := len(proof)
 
@@ -430,20 +444,23 @@ func VerifyHash256Merkle(proof []byte, index uint) bool {
 	}
 
 	root := proof[proofLength-32:]
-	current := proof[:32]
+
+	cur := proof[:32]
+	copy(current[:], cur)
+
 	numSteps := (proofLength / 32) - 1
 
 	for i := 1; i < numSteps; i++ {
 		next := proof[i*32 : i*32+32]
 		if idx%2 == 1 {
-			current = hash256MerkleStep(next, current)
+			current = hash256MerkleStep(next, current[:])
 		} else {
-			current = hash256MerkleStep(current, next)
+			current = hash256MerkleStep(current[:], next)
 		}
 		idx >>= 1
 	}
 
-	return bytes.Equal(current, root)
+	return bytes.Equal(current[:], root)
 }
 
 // RetargetAlgorithm performs Bitcoin consensus retargets

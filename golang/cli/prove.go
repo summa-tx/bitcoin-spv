@@ -12,7 +12,7 @@ func Prove(
 	vin []byte,
 	vout []byte,
 	locktime []byte,
-	merkleRoot []byte,
+	merkleRoot btcspv.Hash256Digest,
 	intermediateNodes []byte,
 	index uint) string {
 	// Calculate the tx id

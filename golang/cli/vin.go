@@ -7,8 +7,8 @@ import (
 	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
-func prettifyInput(numInput int, outpoint []byte, index uint, inputType btcspv.InputType, sequence uint) string {
-	outpointStr := hex.EncodeToString(outpoint)
+func prettifyInput(numInput int, outpoint btcspv.Hash256Digest, index uint, inputType btcspv.InputType, sequence uint) string {
+	outpointStr := hex.EncodeToString(outpoint[:])
 
 	// Get the input type in readable format
 	inputTypeString := btcspv.GetInputType(inputType)

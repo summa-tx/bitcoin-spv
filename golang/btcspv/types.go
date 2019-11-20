@@ -5,6 +5,9 @@ import (
 	"fmt"
 )
 
+// Hash160Digest is a 20-byte ripemd160+sha2 hash
+type Hash160Digest [20]byte
+
 // Hash256Digest is a 32-byte double-sha2 hash
 type Hash256Digest [32]byte
 
@@ -21,6 +24,7 @@ type BitcoinHeader struct {
 	HashLE       Hash256Digest `json:"hash_le"`
 	Height       uint32        `json:"height"`
 	PrevHash     Hash256Digest `json:"prevhash"`
+	PrevHashLE   Hash256Digest `json:"prevhash_le"`
 	MerkleRoot   Hash256Digest `json:"merkle_root"`
 	MerkleRootLE Hash256Digest `json:"merkle_root_le"`
 }
@@ -36,6 +40,96 @@ type SPVProof struct {
 	Index             uint32        `json:"index"`
 	ConfirmingHeader  BitcoinHeader `json:"confirming_header"`
 	IntermediateNodes HexBytes      `json:"intermediate_nodes"`
+}
+
+// InputType an enum of types of bitcoin inputs
+type InputType int
+
+// possible input types
+const (
+	InputNone     InputType = 0
+	Legacy        InputType = 1
+	Compatibility InputType = 2
+	Witness       InputType = 3
+)
+
+// OutputType an enum of types of bitcoin outputs
+type OutputType int
+
+// possible output types
+const (
+	OutputNone  OutputType = 0
+	WPKH        OutputType = 1
+	WSH         OutputType = 2
+	OpReturn    OutputType = 3
+	PKH         OutputType = 4
+	SH          OutputType = 5
+	Nonstandard OutputType = 6
+)
+
+// NewHash160Digest instantiates a Hash160Digest from a byte slice
+func NewHash160Digest(b []byte) (Hash160Digest, error) {
+	var h Hash160Digest
+	copied := copy(h[:], b)
+	if copied != 20 {
+		return Hash160Digest{}, fmt.Errorf("Expected 20 bytes in a Hash160Digest, got %d", copied)
+	}
+	return h, nil
+}
+
+// NewHash256Digest instantiates a Hash256Digest from a byte slice
+func NewHash256Digest(b []byte) (Hash256Digest, error) {
+	var h Hash256Digest
+	copied := copy(h[:], b)
+	if copied != 32 {
+		return Hash256Digest{}, fmt.Errorf("Expected 32 bytes in a Hash256Digest, got %d", copied)
+	}
+	return h, nil
+}
+
+// NewRawHeader instantiates a RawHeader from a byte slice
+func NewRawHeader(b []byte) (RawHeader, error) {
+	var h RawHeader
+	copied := copy(h[:], b)
+	if copied != 80 {
+		return RawHeader{}, fmt.Errorf("Expected 80 bytes in a RawHeader got %d", copied)
+	}
+	return h, nil
+}
+
+// HeaderFromRaw builds a BitcoinHeader from a raw bytestring and height
+func HeaderFromRaw(raw RawHeader, height uint32) BitcoinHeader {
+	digestLE := Hash256(raw[:])
+	digestBE := ReverseHash256Endianness(digestLE)
+	prevhashLE := ExtractPrevBlockHashLE(raw)
+	prevhash := ReverseHash256Endianness(prevhashLE)
+	return BitcoinHeader{
+		raw,
+		digestBE,
+		digestLE,
+		height,
+		prevhash,
+		prevhashLE,
+		ExtractMerkleRootBE(raw),
+		ExtractMerkleRootLE(raw),
+	}
+}
+
+// HeaderFromHex buidls a BitcoinHeader from a hex string and height
+func HeaderFromHex(s string, height uint32) (BitcoinHeader, error) {
+	var raw RawHeader
+
+	buf, err := hex.DecodeString(strip0xPrefix(s))
+	if err != nil {
+		return BitcoinHeader{}, err
+	}
+
+	copied := copy(raw[:], buf)
+	if copied != 80 {
+		return BitcoinHeader{}, fmt.Errorf("Expected 80 bytes in a Hash256 digest, got %d", copied)
+	}
+
+	return HeaderFromRaw(raw, height), nil
 }
 
 // UnmarshalJSON unmarshalls 32 byte digests

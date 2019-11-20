@@ -11,7 +11,6 @@ mypy \
     --show-error-codes \
     --warn-return-any \
     --ignore-missing-imports && \
-pipenv run mypy relay/
 coverage erase && \
 pytest \
     btcspv/ \

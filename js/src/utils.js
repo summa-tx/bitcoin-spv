@@ -66,7 +66,7 @@ export function serializeHex(uint8arr) {
  *
  * Deserializes a hex string into a Uint8Array
  *
- * @param {Uint8Array}    uint8arr The value as a hex string
+ * @param {Uint8Array}    hexStr The value as a hex string
  * @returns {string}      The value as a u8a
  */
 export function deserializeHex(hexStr) {

@@ -515,7 +515,7 @@ library BTCUtils {
     }
 
     /// @notice          Verifies a Bitcoin-style merkle tree
-    /// @dev             Leaves are 1-indexed.
+    /// @dev             Leaves are 0-indexed.
     /// @param _proof    The proof. Tightly packed LE sha256 hashes. The last hash is the root
     /// @param _index    The index of the leaf
     /// @return          true if the proof is valid, else false

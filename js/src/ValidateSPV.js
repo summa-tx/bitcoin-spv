@@ -159,14 +159,14 @@ export function parseHeader(header) {
 
   const digest = utils.reverseEndianness(BTCUtils.hash256(header));
   const version = utils.bytesToUint(utils.reverseEndianness(utils.safeSlice(header, 0, 4)));
-  const prevHash = BTCUtils.extractPrevBlockLE(header);
+  const prevhashLE = BTCUtils.extractPrevBlockLE(header);
   const merkleRoot = BTCUtils.extractMerkleRootLE(header);
   const timestamp = BTCUtils.extractTimestamp(header);
   const target = BTCUtils.extractTarget(header);
   const nonce = utils.bytesToUint(utils.reverseEndianness(utils.safeSlice(header, 76, 80)));
 
   return {
-    digest, version, prevHash, merkleRoot, timestamp, target, nonce
+    digest, version, prevhashLE, merkleRoot, timestamp, target, nonce
   };
 }
 
@@ -189,17 +189,17 @@ export function validateHeaderWork(digest, target) {
  *
  * Checks validity of header chain
  *
- * @dev                   Compares current header prevHash to previous header's digest
+ * @dev                   Compares current header prevHashLE to previous header's digest
  * @param {Uint8Array}    header The raw bytes header
  * @param {Uint8Array}    prevHeaderDigest The previous header's digest
  * @returns {Boolean}     True if header chain is valid, false otherwise
  */
-export function validateHeaderPrevHash(header, prevHeaderDigest) {
+export function validateHeaderPrevHashLE(header, prevHeaderDigest) {
   // Extract prevHash of current header
-  const prevHash = BTCUtils.extractPrevBlockLE(header);
+  const prevHashLE = BTCUtils.extractPrevBlockLE(header);
 
   // Compare prevHash of current header to previous header's digest
-  if (!utils.typedArraysAreEqual(prevHash, prevHeaderDigest)) {
+  if (!utils.typedArraysAreEqual(prevHashLE, prevHeaderDigest)) {
     return false;
   }
 
@@ -232,7 +232,7 @@ export function validateHeaderChain(headers) {
 
     // After the first header, check that headers are in a chain
     if (i !== 0) {
-      if (!validateHeaderPrevHash(header, digest)) {
+      if (!validateHeaderPrevHashLE(header, digest)) {
         throw new Error(1);
       }
     }
@@ -265,6 +265,7 @@ export function validateHeaderChain(headers) {
  * @param {Uint8Array}    header.merkle_root The merkle root of the header
  * @param {Uint8Array}    header.merkle_root_le The LE merkle root
  * @param {Uint8Array}    header.prevhash The hash of the previous header
+ * @param {Uint8Array}    header.prevhash_le The LE hash of the previous header
  * @returns {Boolean}     True if the header object is syntactically valid
  * @throws {Error}        If any of the bitcoin header elements are invalid
 */
@@ -295,9 +296,17 @@ export function validateHeader(header) {
   }
 
   // Check that PrevHash is the correct PrevHash for the header
-  const extractedPrevHash = BTCUtils.extractPrevBlockBE(header.raw);
-  if (!utils.typedArraysAreEqual(extractedPrevHash, header.prevhash)) {
-    throw new Error(9);
+  const extractedPrevHash = BTCUtils.extractPrevBlockLE(header.raw);
+  if (!utils.typedArraysAreEqual(extractedPrevHash, header.prevhash_le)) {
+    // throw new Error('PrevhashLE is not the correct parent hash of the header');
+    throw new Error(9)
+  }
+
+  // Check that PrevhashLE is the reverse of Prevhash
+  const reversedPrevhash = utils.reverseEndianness(header.prevhash);
+  if (!utils.typedArraysAreEqual(reversedPrevhash, header.prevhash_le)) {
+    // throw new Error('PrevhashLE is not the LE version of Prevhash');
+    throw new Error(10)
   }
 
   return true;
@@ -325,7 +334,8 @@ export function validateHeader(header) {
  * @param {Uint8Array}    proof.confirming_header.merkle_root The merkle root of the header
  * @param {Uint8Array}    proof.confirming_header.merkle_root_le The LE merkle root
  * @param {Uint8Array}    proof.confirming_header.prevhash The hash of the previous header
- * @returns {Boolean}     Teturns true if the SPV Proof object is syntactically valid
+ * @param {Uint8Array}    proof.confirming_header.prevhash_le The LE hash of the previous header
+ * @returns {Boolean}     Returns true if the SPV Proof object is syntactically valid
  * @throws {Error}        If any of the SPV Proof elements are invalid
 */
 export function validateProof(proof) {
