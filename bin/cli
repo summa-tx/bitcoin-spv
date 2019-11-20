@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /*!
- * bin/proof - bitcoin SES proofs
+ * bin/cli - bitcoin spv proofs
  * Copyright (c) 2019, Mark Tyneway (Apache-2.0 License).
  * https://github.com/summa-tx/agoric-bitcoin-spv
  */
@@ -10,8 +10,10 @@
 
 const BcoinClient = require('../clients/BcoinClient');
 const Config = require('./vendor/bcfg');
-const pkg = require('./package.json');
+const pkg = {author: 'Mark Tyneway <mark.tyneway@gmail.com>', version: '0.0.1'};
 
+// bcoin HTTP server ports
+// by network.
 const ports = {
   main: 8332,
   testnet: 18332,
@@ -23,6 +25,7 @@ const ports = {
  * Fetch proofs to create an SPVProof object
  * or a chain of headers.
  */
+
 class CLI {
   constructor() {
     this.config = new Config('bitcoin-verifier-ses', {
@@ -129,7 +132,7 @@ class CLI {
       str += `Unrecognized command: ${this.cmd}\n`;
 
     return str
-    + 'bitcoin-verifier-ses proof builder\n'
+    + 'Bitcoin SPV Proof Builder\n'
     + `Version: ${pkg.version} Author: ${pkg.author}\n`
     + 'Commands:\n'
     + '  $ proof [txid]: Get SPV Proof\n'
