@@ -209,17 +209,14 @@ func (suite *UtilsSuite) TestBytesToUint() {
 	}
 }
 
-func (suite *UtilsSuite) TestBytesToBigInt() {
+func (suite *UtilsSuite) TestBytesToBigUint() {
 	hexString := "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-	// hexString := "0xffffffffffffffff"
-	// decoded := DecodeIfHex(hexString)
-	// decoded := bytes.Repeat([]byte{255}, 32)
+	decoded := DecodeIfHex(hexString)
 
 	expected := sdk.NewUintFromString(hexString)
-	// expected := 115792089237316195423570985008687907853269984665640564039457584007913129639935
-	// actual := BytesToBigInt(decoded)
+	actual := BytesToBigUint(decoded)
 
-	suite.Equal(expected, "hi")
+	suite.Equal(expected, actual)
 }
 
 func (suite *UtilsSuite) TestExtractSequenceWitness() {
@@ -539,7 +536,7 @@ func (suite *UtilsSuite) TestExtractTarget() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := BytesToBigInt(testCase.Output.([]byte))
+		expected := BytesToBigUint(testCase.Output.([]byte))
 		actual := ExtractTarget(testCase.Input.(RawHeader))
 		suite.Equal(expected, actual)
 	}
