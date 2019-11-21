@@ -70,6 +70,53 @@ func GetInputType(inputType InputType) string {
 	return typeString
 }
 
+func GetErrMsg(err BtcspvError) string {
+	var errString string
+	switch err {
+	case HeaderChainInvalid:
+		errString = "hi"
+	case HeaderChainBadLength:
+		errString = "hi"
+	case HeaderChainLowWork:
+		errString = "hi"
+	case HeaderBadLength:
+		errString = "hi"
+	case HeaderHashLE:
+		errString = "hi"
+	case HeaderHashBE:
+		errString = "hi"
+	case HeaderMerkleRootLE:
+		errString = "hi"
+	case HeaderMerkleRootBE:
+		errString = "hi"
+	case HeaderPrevHashLE:
+		errString = "hi"
+	case HeaderPrevHash:
+		errString = "hi"
+	case ProofVin:
+		errString = "hi"
+	case ProofVout:
+		errString = "hi"
+	case ProofTxID:
+		errString = "hi"
+	case ProofMerkleProof:
+		errString = "hi"
+	case OutputBadLength:
+		errString = "hi"
+	case OutputOpReturnFormat:
+		errString = "hi"
+	case OutputWitnessFormat:
+		errString = "hi"
+	case OutputP2PKHFormat:
+		errString = "hi"
+	case OutputP2SHFormat:
+		errString = "hi"
+	case OutputAbnormal:
+		errString = "hi"
+	}
+	return errString
+}
+
 // EncodeP2SH turns a scripthash into an address
 func EncodeP2SH(sh []byte) (string, error) {
 	if len(sh) != 20 {

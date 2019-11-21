@@ -284,45 +284,45 @@ export function lastBytes(arr, num) {
 export function getErrMsg(e) {
   switch (e.message) {
     case '1':
-      return errors.headerChain.ERR_INVALID_CHAIN;
+      return errors.HEADER_CHAIN_INVALID;
     case '2':
-      return errors.headerChain.ERR_BAD_LENGTH;
+      return errors.HEADER_CHAIN_BAD_LENGTH;
     case '3':
-      return errors.headerChain.ERR_LOW_WORK;
+      return errors.HEADER_CHAIN_LOW_WORK;
     case '4':
-      return errors.header.ERR_BAD_LENGTH;
+      return errors.HEADER_BAD_LENGTH;
     case '5':
-      return errors.header.ERR_HASH_LE;
+      return errors.HEADER_HASH_LE;
     case '6':
-      return errors.header.ERR_HASH_BE;
+      return errors.HEADER_HASH_BE;
     case '7':
-      return errors.header.ERR_MERKLE_ROOT_LE;
+      return errors.HEADER_MERKLE_ROOT_LE;
     case '8':
-      return errors.header.ERR_MERKLE_ROOT_BE;
+      return errors.HEADER_MERKLE_ROOT_BE;
     case '9':
-      return errors.header.ERR_PREV_HASH_LE;
+      return errors.HEADER_PREV_HASH_LE;
     case '10':
-      return errors.header.ERR_PREV_HASH;
+      return errors.HEADER_PREV_HASH;
     case '11':
-      return errors.proof.ERR_VIN;
+      return errors.PROOF_VIN;
     case '12':
-      return errors.proof.ERR_VOUT;
+      return errors.PROOF_VOUT;
     case '13':
-      return errors.proof.ERR_TXID;
+      return errors.PROOF_TXID;
     case '14':
-      return errors.proof.ERR_MERKLE_PROOF;
+      return errors.PROOF_MERKLE_PROOF;
     case '15':
-      return errors.output.ERR_BAD_LENGTH;
+      return errors.OUTPUT_BAD_LENGTH;
     case '16':
-      return errors.output.ERR_OP_RETURN_FORMAT;
+      return errors.OUTPUT_OP_RETURN_FORMAT;
     case '17':
-      return errors.output.ERR_WITNESS_FORMAT;
+      return errors.OUTPUT_WITNESS_FORMAT;
     case '18':
-      return errors.output.ERR_P2PKH_FORMAT;
+      return errors.OUTPUT_P2PKH_FORMAT;
     case '19':
-      return errors.output.ERR_P2SH_FORMAT;
+      return errors.OUTPUT_P2SH_FORMAT;
     case '20':
-      return errors.output.ERR_ABNORMAL_OUTPUT;
+      return errors.OUTPUT_ABNORMAL_OUTPUT;
     default:
       return errors.ERR_INVALID_CHAIN;
   }

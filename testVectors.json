@@ -17,34 +17,26 @@
     }
   ],
   "errors": {
-    "headerChain": {
-      "ERR_INVALID_CHAIN": "Header bytes not a valid chain.",
-      "ERR_BAD_LENGTH": "Header bytes not multiple of 80.",
-      "ERR_LOW_WORK": "Header does not meet its own difficulty target."
-    },
-    "header": {
-      "ERR_BAD_LENGTH": "Malformatted header. Must be exactly 80 bytes.",
-      "ERR_HASH_LE": "HashLE is not the correct hash of the header.",
-      "ERR_HASH_BE": "HashLE is not the LE version of Hash.",
-      "ERR_MERKLE_ROOT_LE": "MerkleRootLE is not the correct merkle root of the header.",
-      "ERR_MERKLE_ROOT_BE": "MerkleRootBE is not the BE version of MerkleRootLE.",
-      "ERR_PREV_HASH_LE": "PrevhashLE is not the correct parent hash of the header.",
-      "ERR_PREV_HASH": "PrevhashBE is not the BE version of Prevhash."
-    },
-    "proof": {
-      "ERR_VIN": "Vin is not valid.",
-      "ERR_VOUT": "Vout is not valid.",
-      "ERR_TXID": "Version, Vin, Vout and Locktime did not yield correct TxID.",
-      "ERR_MERKLE_PROOF": "Merkle Proof is not valid."
-    },
-    "output": {
-      "ERR_BAD_LENGTH": "Multi-byte VarInts not supported.",
-      "ERR_OP_RETURN_FORMAT": "Malformatted data. Must be an op return.",
-      "ERR_WITNESS_FORMAT": "Maliciously formatted witness output.",
-      "ERR_P2PKH_FORMAT": "Maliciously formatted p2pkh output.",
-      "ERR_P2SH_FORMAT": "Maliciously formatted p2sh output.",
-      "ERR_ABNORMAL_OUTPUT": "Nonstandard, OP_RETURN, or malformatted output."
-    }
+    "HEADER_CHAIN_INVALID": "Header bytes not a valid chain.",
+    "HEADER_CHAIN_BAD_LENGTH": "Header bytes not multiple of 80.",
+    "HEADER_CHAIN_LOW_WORK": "Header does not meet its own difficulty target.",
+    "HEADER_BAD_LENGTH": "Malformatted header. Must be exactly 80 bytes.",
+    "HEADER_HASH_LE": "HashLE is not the correct hash of the header.",
+    "HEADER_HASH_BE": "HashLE is not the LE version of Hash.",
+    "HEADER_MERKLE_ROOT_LE": "MerkleRootLE is not the correct merkle root of the header.",
+    "HEADER_MERKLE_ROOT_BE": "MerkleRootBE is not the BE version of MerkleRootLE.",
+    "HEADER_PREV_HASH_LE": "PrevhashLE is not the correct parent hash of the header.",
+    "HEADER_PREV_HASH": "PrevhashBE is not the BE version of Prevhash.",
+    "PROOF_VIN": "Vin is not valid.",
+    "PROOF_VOUT": "Vout is not valid.",
+    "PROOF_TXID": "Version, Vin, Vout and Locktime did not yield correct TxID.",
+    "PROOF_MERKLE_PROOF": "Merkle Proof is not valid.",
+    "OUTPUT_BAD_LENGTH": "Multi-byte VarInts not supported.",
+    "OUTPUT_OP_RETURN_FORMAT": "Malformatted data. Must be an op return.",
+    "OUTPUT_WITNESS_FORMAT": "Maliciously formatted witness output.",
+    "OUTPUT_P2PKH_FORMAT": "Maliciously formatted p2pkh output.",
+    "OUTPUT_P2SH_FORMAT": "Maliciously formatted p2sh output.",
+    "OUTPUT_ABNORMAL_OUTPUT": "Nonstandard, OP_RETURN, or malformatted output."
   },
   "determineVarIntDataLength": [
     {
