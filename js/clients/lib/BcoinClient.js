@@ -1,16 +1,22 @@
-/*!
- * BcoinClient.js - bcoin based proof fetcher
- * Copyright (c) 2019, Mark Tyneway (Apache-2.0 License).
- * https://github.com/summa-tx/agoric-bitcoin-spv
- */
+/**
+*
+* @file Part of the [bitcoin-spv]{@link https://github.com/summa-tx/bitcoin-spv} project
+*
+* @title BcoinClient
+* @summary bcoin based proof fetcher
+* @author Mark Tyneway <mark.tyneway@gmail.com>
+* @copyright (c) [Summa]{@link https://summa.one} 2019
+* @module clients
+*
+*/
 
 'use strict';
 
 const {NodeClient} = require('./vendor/bclient');
 const assert = require('./vendor/bsert');
-const hash256 = require('./vendor/hash256');
-const merkle = require('./vendor/merkle');
-const {utils, BTCUtils} = require('../js/dist');
+const hash256 = require('../vendor/hash256');
+const merkle = require('../vendor/merkle');
+const {utils, BTCUtils} = require('../../dist');
 
 /**
  * BcoinClient extends the bcoin NodeClient
