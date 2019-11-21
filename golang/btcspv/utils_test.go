@@ -1,5 +1,7 @@
 package btcspv
 
+import "errors"
+
 func (suite *UtilsSuite) TestStrip0xPrefix() {
 	suite.Equal("0", strip0xPrefix("0"))
 	suite.Equal("", strip0xPrefix(""))
@@ -82,6 +84,12 @@ func (suite *UtilsSuite) TestGetInputType() {
 	expected = "Witness"
 	actual = GetInputType(3)
 	suite.Equal(expected, actual)
+}
+
+func (suite *UtilsSuite) TestGetErrMsg() {
+	myErr := errors.New("11")
+	myErrMsg := GetErrMsg(myErr)
+	suite.Equal(myErrMsg, "Vin is not valid.")
 }
 
 func (suite *UtilsSuite) TestEncodeP2SH() {

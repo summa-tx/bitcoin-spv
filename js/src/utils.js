@@ -281,7 +281,16 @@ export function lastBytes(arr, num) {
   return safeSlice(arr, arr.length - num);
 }
 
+/**
+ *
+ * Get the message associated with an error code
+ *
+ * @param {Error}      e The error
+ * @returns {String}   The string associated with the error code
+ */
 export function getErrMsg(e) {
+  // TODO: Add a check at the beginning to make sure error uses error code and not string
+  // TODO: Add test for this
   switch (e.message) {
     case '1':
       return errors.HEADER_CHAIN_INVALID;

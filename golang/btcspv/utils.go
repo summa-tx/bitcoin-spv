@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/btcsuite/btcutil/bech32"
@@ -70,49 +71,52 @@ func GetInputType(inputType InputType) string {
 	return typeString
 }
 
-func GetErrMsg(err BtcspvError) string {
+func GetErrMsg(err error) string {
+	errors := UnmarshalErrors()
+	errInt, _ := strconv.Atoi(err.Error())
+
 	var errString string
-	switch err {
+	switch BtcspvError(errInt) {
 	case HeaderChainInvalid:
-		errString = "hi"
+		errString = errors.HeaderChainInvalid
 	case HeaderChainBadLength:
-		errString = "hi"
+		errString = errors.HeaderChainBadLength
 	case HeaderChainLowWork:
-		errString = "hi"
+		errString = errors.HeaderChainLowWork
 	case HeaderBadLength:
-		errString = "hi"
+		errString = errors.HeaderBadLength
 	case HeaderHashLE:
-		errString = "hi"
+		errString = errors.HeaderHashLE
 	case HeaderHashBE:
-		errString = "hi"
+		errString = errors.HeaderHashBE
 	case HeaderMerkleRootLE:
-		errString = "hi"
+		errString = errors.HeaderMerkleRootLE
 	case HeaderMerkleRootBE:
-		errString = "hi"
+		errString = errors.HeaderMerkleRootBE
 	case HeaderPrevHashLE:
-		errString = "hi"
+		errString = errors.HeaderPrevHashLE
 	case HeaderPrevHash:
-		errString = "hi"
+		errString = errors.HeaderPrevHash
 	case ProofVin:
-		errString = "hi"
+		errString = errors.ProofVin
 	case ProofVout:
-		errString = "hi"
+		errString = errors.ProofVout
 	case ProofTxID:
-		errString = "hi"
+		errString = errors.ProofTxID
 	case ProofMerkleProof:
-		errString = "hi"
+		errString = errors.ProofMerkleProof
 	case OutputBadLength:
-		errString = "hi"
+		errString = errors.OutputBadLength
 	case OutputOpReturnFormat:
-		errString = "hi"
+		errString = errors.OutputOpReturnFormat
 	case OutputWitnessFormat:
-		errString = "hi"
+		errString = errors.OutputWitnessFormat
 	case OutputP2PKHFormat:
-		errString = "hi"
+		errString = errors.OutputP2PKHFormat
 	case OutputP2SHFormat:
-		errString = "hi"
+		errString = errors.OutputP2SHFormat
 	case OutputAbnormal:
-		errString = "hi"
+		errString = errors.OutputAbnormal
 	}
 	return errString
 }

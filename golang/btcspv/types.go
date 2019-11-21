@@ -122,7 +122,7 @@ type Errors struct {
 	OutputAbnormal       string `json:"OUTPUT_ABNORMAL_OUTPUT"`
 }
 
-func (e *BtcspvErrors) UnmarshalJSONErrors() {
+func UnmarshalErrors() Errors {
 	jsonFile, err := os.Open("../../testVectors.json")
 	if err != nil {
 		fmt.Println(err)
@@ -136,7 +136,8 @@ func (e *BtcspvErrors) UnmarshalJSONErrors() {
 
 	var btcspvErrors BtcspvErrors
 	json.Unmarshal(byteValue, &btcspvErrors)
-	fmt.Println(btcspvErrors.Errors.HeaderChainInvalid)
+	// fmt.Println(btcspvErrors.Errors.HeaderChainInvalid)
+	return btcspvErrors.Errors
 }
 
 // NewHash160Digest instantiates a Hash160Digest from a byte slice
