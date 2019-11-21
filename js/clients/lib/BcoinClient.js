@@ -45,10 +45,9 @@ class BcoinClient extends NodeClient {
 
   /**
    * @params {String} txid - big endian
-   * @params {Number} count
    */
 
-  async getProof(txid, enc) {
+  async getProof(txid) {
     assert(typeof txid === 'string');
 
     const tx = await super.getTX(txid);
@@ -64,7 +63,7 @@ class BcoinClient extends NodeClient {
     if (!json)
       throw new Error('Cannot find header');
 
-    const header = await this.getHeader(tx.height, enc);
+    const header = await this.getHeader(tx.height);
 
     const txinfo = parseTxHex(tx.hex);
 
