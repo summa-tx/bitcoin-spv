@@ -1107,4 +1107,31 @@ mod tests {
             }
         })
     }
+
+    #[test]
+    fn it_performs_consensus_correct_retargets() {
+        test_utils::run_test(|fixtures| {
+            let test_cases = test_utils::get_test_cases("retargetAlgorithm", &fixtures);
+            for case in test_cases {
+                let headers = test_utils::get_headers(&case.input);
+                let previous_target = &headers[0].target;
+                let first_timestamp = headers[0].timestamp;
+                let second_timestamp = headers[1].timestamp;
+
+                let expected = &headers[2].target;
+                let actual = retarget_algorithm(previous_target, first_timestamp, second_timestamp);
+                assert_eq!(
+                    actual & expected,
+                    *expected);
+
+                let fake_long = first_timestamp + 5 * 2016 * 10 * 60;
+                let long_res = retarget_algorithm(previous_target, first_timestamp, fake_long);
+                assert_eq!(long_res, previous_target * 4 as u64);
+
+                let fake_short = first_timestamp + 2016 * 10 * 14;
+                let short_res = retarget_algorithm(previous_target, first_timestamp, fake_short);
+                assert_eq!(short_res, previous_target / 4 as u64);
+            }
+        })
+    }
 }
