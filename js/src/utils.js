@@ -289,11 +289,9 @@ export function lastBytes(arr, num) {
  * @returns {String}   The string associated with the error code
  */
 export function getErrMsg(e) {
-  // TODO: Add a check at the beginning to make sure error uses error code and not string
-  // TODO: Add test for this
-  const parsed = parseInt(e.message)
-  if (isNaN(parsed)) {
-    return e.message
+  const parsed = parseInt(e.message, 10);
+  if (Number.isNaN(parsed)) {
+    return e.message;
   }
 
   switch (e.message) {
@@ -338,6 +336,6 @@ export function getErrMsg(e) {
     case '20':
       return errors.OUTPUT_ABNORMAL_OUTPUT;
     default:
-      return errors.ERR_INVALID_CHAIN;
+      return errors.HEADER_CHAIN_INVALID;
   }
 }

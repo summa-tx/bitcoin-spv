@@ -286,26 +286,23 @@ describe('utils', () => {
 
   describe('#getErrMsg', () => {
     it('returns string associated with error code', () => {
-      let errKeys = [];
-      for (var key in errors) {
-        errKeys.push(key);
-      }
+      const errKeys = Object.keys(errors);
 
-      for (var i = 0; i < errKeys.length; i += 1) {
+      for (let i = 0; i < errKeys.length; i += 1) {
         const err = new Error(`${i + 1}`);
         const errMsg = utils.getErrMsg(err);
         assert.equal(errMsg, errors[errKeys[i]]);
       }
     });
     it('returns error message if it is not a code', () => {
-      const err = new Error("Not an error code");
+      const err = new Error('Not an error code');
       const errMsg = utils.getErrMsg(err);
-      assert.equal(errMsg, "Not an error code");
+      assert.equal(errMsg, 'Not an error code');
     });
     it('returns invalid chain error as default', () => {
-      const err = new Error("200");
+      const err = new Error('200');
       const errMsg = utils.getErrMsg(err);
-      suite.equal(errMsg, "Header bytes not a valid chain.")
-    })
+      assert.equal(errMsg, 'Header bytes not a valid chain.');
+    });
   });
 });
