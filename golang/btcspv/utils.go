@@ -73,7 +73,11 @@ func GetInputType(inputType InputType) string {
 
 func GetErrMsg(err error) string {
 	errors := UnmarshalErrors()
-	errInt, _ := strconv.Atoi(err.Error())
+	errInt, conversionErr := strconv.Atoi(err.Error())
+
+	if conversionErr != nil {
+		return err.Error()
+	}
 
 	var errString string
 	switch BtcspvError(errInt) {
