@@ -291,6 +291,11 @@ export function lastBytes(arr, num) {
 export function getErrMsg(e) {
   // TODO: Add a check at the beginning to make sure error uses error code and not string
   // TODO: Add test for this
+  const parsed = parseInt(e.message)
+  if (isNaN(parsed)) {
+    return e.message
+  }
+
   switch (e.message) {
     case '1':
       return errors.HEADER_CHAIN_INVALID;

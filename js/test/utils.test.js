@@ -8,6 +8,7 @@ const vectorObj = JSON.parse(JSON.stringify(vectors));
 utils.updateJSON(vectorObj);
 
 const {
+  errors,
   lastBytes,
   lastBytesError,
   reverseEndianness,
@@ -281,5 +282,30 @@ describe('utils', () => {
         assert.include(e.message, 'Arrays must be of type Uint8Array');
       }
     });
+  });
+
+  describe('#getErrMsg', () => {
+    it('returns string associated with error code', () => {
+      let errKeys = [];
+      for (var key in errors) {
+        errKeys.push(key);
+      }
+
+      for (var i = 0; i < errKeys.length; i += 1) {
+        const err = new Error(`${i + 1}`);
+        const errMsg = utils.getErrMsg(err);
+        assert.equal(errMsg, errors[errKeys[i]]);
+      }
+    });
+    it('returns error message if it is not a code', () => {
+      const err = new Error("Not an error code");
+      const errMsg = utils.getErrMsg(err);
+      assert.equal(errMsg, "Not an error code");
+    });
+    it('returns invalid chain error as default', () => {
+      const err = new Error("200");
+      const errMsg = utils.getErrMsg(err);
+      suite.equal(errMsg, "Header bytes not a valid chain.")
+    })
   });
 });
