@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
-	"encoding/hex"
 	"errors"
 	"math/big"
 
@@ -361,7 +360,7 @@ func ExtractTarget(header RawHeader) sdk.Uint {
 	e := sdk.NewInt(int64(header[75]))
 
 	// hacks
-	mantissa := sdk.NewUintFromString("0x" + hex.EncodeToString(ReverseEndianness(m)))
+	mantissa := BytesToBigUint(ReverseEndianness(m))
 	exponent := e.SubRaw(3)
 
 	// Have to convert to underlying big.Int as the sdk does not expose exponentiation
