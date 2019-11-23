@@ -1,0 +1,28 @@
+{
+  "name": "bitcoin-spv-cli",
+  "version": "0.1.0",
+  "description": "Create Bitcoin Stateless SPV Proofs using this command line tool.",
+  "main": "cli",
+  "engines": {
+    "node": ">10.0.0"
+  },
+  "engineStrict": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "bitcoin",
+    "verification",
+    "cryptocurrency",
+    "utilities",
+    "cli"
+  ],
+  "author": "Summa",
+  "contributors": [
+    "Mark Tyneway <mark.tyneway@gmail.com>"
+  ],
+  "license": "LGPLv3",
+  "dependencies": {
+    "@summa-tx/bitcoin-spv-js-clients": "0.1.0"
+  }
+}
