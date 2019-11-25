@@ -1,7 +1,6 @@
 package btcspv
 
 import (
-	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -210,19 +209,14 @@ func (suite *UtilsSuite) TestBytesToUint() {
 	}
 }
 
-func (suite *UtilsSuite) TestBytesToBigInt() {
-	hexString := "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+func (suite *UtilsSuite) TestBytesToBigUint() {
+	hexString := "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 	decoded := DecodeIfHex(hexString)
 
-	buf := bytes.Buffer{}
-	buf.WriteString("0x")
-	buf.WriteString(hexString)
+	expected := sdk.NewUintFromString(hexString)
+	actual := BytesToBigUint(decoded)
 
-	expected := sdk.NewUintFromString(buf.String())
-
-	result := BytesToBigInt(decoded)
-
-	suite.True(expected.Equal(result))
+	suite.Equal(expected, actual)
 }
 
 func (suite *UtilsSuite) TestExtractSequenceWitness() {
@@ -542,7 +536,7 @@ func (suite *UtilsSuite) TestExtractTarget() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := BytesToBigInt(testCase.Output.([]byte))
+		expected := BytesToBigUint(testCase.Output.([]byte))
 		actual := ExtractTarget(testCase.Input.(RawHeader))
 		suite.Equal(expected, actual)
 	}

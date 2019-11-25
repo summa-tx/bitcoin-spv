@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
-	"encoding/hex"
 	"errors"
 	"math/big"
 
@@ -24,16 +23,10 @@ func BytesToUint(b []byte) uint {
 	return total
 }
 
-// BytesToBigInt converts a bytestring to a cosmos-sdk Int
-func BytesToBigInt(b []byte) sdk.Uint {
-	ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
-	return ret
-}
-
 // BytesToBigUint converts a bytestring of up to 32 bytes to a cosmos sdk uint
 func BytesToBigUint(b []byte) sdk.Uint {
-	ret := sdk.NewUintFromString("0x" + hex.EncodeToString(b))
-	return ret
+	myInt := new(big.Int).SetBytes(b)
+	return sdk.NewUintFromBigInt(myInt)
 }
 
 // DetermineVarIntDataLength extracts the payload length of a Bitcoin VarInt
@@ -367,7 +360,7 @@ func ExtractTarget(header RawHeader) sdk.Uint {
 	e := sdk.NewInt(int64(header[75]))
 
 	// hacks
-	mantissa := sdk.NewUintFromString("0x" + hex.EncodeToString(ReverseEndianness(m)))
+	mantissa := BytesToBigUint(ReverseEndianness(m))
 	exponent := e.SubRaw(3)
 
 	// Have to convert to underlying big.Int as the sdk does not expose exponentiation
