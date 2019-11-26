@@ -26,7 +26,7 @@
     "HEADER_MERKLE_ROOT_LE": "MerkleRootLE is not the correct merkle root of the header.",
     "HEADER_MERKLE_ROOT_BE": "MerkleRootBE is not the BE version of MerkleRootLE.",
     "HEADER_PREV_HASH_LE": "PrevhashLE is not the correct parent hash of the header.",
-    "HEADER_PREV_HASH": "PrevhashBE is not the BE version of Prevhash.",
+    "HEADER_PREV_HASH": "Prevhash is not the BE version of PrevhashLE.",
     "PROOF_VIN": "Vin is not valid.",
     "PROOF_VOUT": "Vout is not valid.",
     "PROOF_TXID": "Version, Vin, Vout and Locktime did not yield correct TxID.",

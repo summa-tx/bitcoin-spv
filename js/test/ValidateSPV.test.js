@@ -186,7 +186,8 @@ describe('ValidateSPV', () => {
           ValidateSPV.validateHeader(badHeaders[i].header);
           assert(false, 'expected an error');
         } catch (e) {
-          assert.equal(e.message, badHeaders[i].e);
+          const errString = utils.getErrMsg(e);
+          assert.equal(errString, badHeaders[i].e);
         }
       }
     });
@@ -204,7 +205,8 @@ describe('ValidateSPV', () => {
           ValidateSPV.validateProof(badSPVProofs[i].proof);
           assert(false, 'expected an error');
         } catch (e) {
-          assert.equal(e.message, badSPVProofs[i].e);
+          const errString = utils.getErrMsg(e);
+          assert.equal(errString, badSPVProofs[i].e);
         }
       }
     });

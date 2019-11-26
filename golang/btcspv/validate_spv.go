@@ -169,7 +169,7 @@ func (b BitcoinHeader) Validate() (bool, error) {
 	// Check that HashLE is the reverse of Hash
 	reversedHash := ReverseEndianness(b.Hash[:])
 	if !bytes.Equal(reversedHash, b.HashLE[:]) {
-		return false, errors.New("HashLE is not the LE version of Hash.")
+		return false, errors.New("HashBE is not the BE version of Hash.")
 	}
 
 	// Check that the MerkleRootLE is the correct MerkleRoot for the header
@@ -193,7 +193,7 @@ func (b BitcoinHeader) Validate() (bool, error) {
 	// Check that PrevHashLE is the reverse of Prevhash
 	reversedPrevHash := ReverseEndianness(b.PrevHash[:])
 	if !bytes.Equal(reversedPrevHash, b.PrevHashLE[:]) {
-		return false, errors.New("PrevhashLE is not the LE version of Prevhash.")
+		return false, errors.New("Prevhash is not the BE version of PrevhashLE.")
 	}
 
 	return true, nil
