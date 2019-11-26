@@ -1,10 +1,5 @@
 package btcspv
 
-import (
-	"errors"
-	"strconv"
-)
-
 func (suite *UtilsSuite) TestStrip0xPrefix() {
 	suite.Equal("0", strip0xPrefix("0"))
 	suite.Equal("", strip0xPrefix(""))
@@ -87,19 +82,6 @@ func (suite *UtilsSuite) TestGetInputType() {
 	expected = "Witness"
 	actual = GetInputType(3)
 	suite.Equal(expected, actual)
-}
-
-func (suite *UtilsSuite) TestGetErrMsg() {
-	e := UnmarshalErrors()
-	btcspvErrors := [20]string{e.HeaderChainInvalid, e.HeaderChainBadLength, e.HeaderChainLowWork, e.HeaderBadLength, e.HeaderHashLE, e.HeaderHashBE, e.HeaderMerkleRootLE, e.HeaderMerkleRootBE, e.HeaderPrevHashLE, e.HeaderPrevHash, e.ProofVin, e.ProofVout, e.ProofTxID, e.ProofMerkleProof, e.OutputBadLength, e.OutputOpReturnFormat, e.OutputWitnessFormat, e.OutputP2PKHFormat, e.OutputP2SHFormat, e.OutputAbnormal}
-	for i := range btcspvErrors {
-		myErr := errors.New(strconv.Itoa(i + 1))
-		myErrMsg := GetErrMsg(myErr)
-		suite.Equal(myErrMsg, btcspvErrors[i])
-	}
-	myErr := errors.New("Not an error code")
-	myErrMsg := GetErrMsg(myErr)
-	suite.Equal(myErrMsg, "Not an error code")
 }
 
 func (suite *UtilsSuite) TestEncodeP2SH() {

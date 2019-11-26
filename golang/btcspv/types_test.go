@@ -147,12 +147,6 @@ func (suite *TypesSuite) TestUnmarshalBadLenRawHeader() {
 	suite.EqualError(err, "Expected 80 bytes, got 79 bytes")
 }
 
-func (suite *TypesSuite) TestUnmarshalErrors() {
-	errors := UnmarshalErrors()
-	suite.Equal(errors.HeaderChainInvalid, "Header bytes not a valid chain.")
-	suite.Equal(errors.ProofVin, "Vin is not valid.")
-}
-
 func (suite *TypesSuite) TestValidateBitcoinHeader() {
 	validHeaders := suite.ValidHeaders
 	invalidHeaders := suite.Fixtures.InvalidHeaders
@@ -185,7 +179,7 @@ func (suite *TypesSuite) TestValidateSPVProof() {
 	invalidHeader.ConfirmingHeader.MerkleRoot = Hash256Digest{0xdd, 0xe2, 0x5e, 0x5d, 0x1c, 0xb2, 0x9a, 0xc6, 0xc0, 0x8b, 0xe7, 0x37, 0x83, 0x73, 0xc6, 0x46, 0xad, 0x18, 0xfc, 0x90, 0xb1, 0x44, 0x35, 0xa9, 0x2a, 0xc8, 0xab, 0x42, 0x28, 0xc9, 0x1a, 0xb6}
 	invalidProof, validationErr := invalidHeader.Validate()
 	suite.Equal(invalidProof, false)
-	suite.EqualError(validationErr, "8")
+	suite.EqualError(validationErr, "MerkleRootBE is not the BE version of MerkleRootLE.")
 
 	invalidProofs := suite.Fixtures.InvalidProofs
 

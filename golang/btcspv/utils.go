@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/btcsuite/btcutil/bech32"
@@ -69,60 +68,6 @@ func GetInputType(inputType InputType) string {
 		typeString = "Witness"
 	}
 	return typeString
-}
-
-func GetErrMsg(err error) string {
-	errors := UnmarshalErrors()
-	errInt, conversionErr := strconv.Atoi(err.Error())
-
-	if conversionErr != nil {
-		return err.Error()
-	}
-
-	var errString string
-	switch BtcspvError(errInt) {
-	case HeaderChainInvalid:
-		errString = errors.HeaderChainInvalid
-	case HeaderChainBadLength:
-		errString = errors.HeaderChainBadLength
-	case HeaderChainLowWork:
-		errString = errors.HeaderChainLowWork
-	case HeaderBadLength:
-		errString = errors.HeaderBadLength
-	case HeaderHashLE:
-		errString = errors.HeaderHashLE
-	case HeaderHashBE:
-		errString = errors.HeaderHashBE
-	case HeaderMerkleRootLE:
-		errString = errors.HeaderMerkleRootLE
-	case HeaderMerkleRootBE:
-		errString = errors.HeaderMerkleRootBE
-	case HeaderPrevHashLE:
-		errString = errors.HeaderPrevHashLE
-	case HeaderPrevHash:
-		errString = errors.HeaderPrevHash
-	case ProofVin:
-		errString = errors.ProofVin
-	case ProofVout:
-		errString = errors.ProofVout
-	case ProofTxID:
-		errString = errors.ProofTxID
-	case ProofMerkleProof:
-		errString = errors.ProofMerkleProof
-	case OutputBadLength:
-		errString = errors.OutputBadLength
-	case OutputOpReturnFormat:
-		errString = errors.OutputOpReturnFormat
-	case OutputWitnessFormat:
-		errString = errors.OutputWitnessFormat
-	case OutputP2PKHFormat:
-		errString = errors.OutputP2PKHFormat
-	case OutputP2SHFormat:
-		errString = errors.OutputP2SHFormat
-	case OutputAbnormal:
-		errString = errors.OutputAbnormal
-	}
-	return errString
 }
 
 // EncodeP2SH turns a scripthash into an address

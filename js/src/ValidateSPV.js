@@ -273,37 +273,37 @@ export function validateHeader(header) {
   // Check that HashLE is the correct hash of the raw header
   const headerHash = BTCUtils.hash256(header.raw);
   if (!utils.typedArraysAreEqual(headerHash, header.hash_le)) {
-    throw new Error(5);
+    throw new Error('HashLE is not the correct hash of the header.');
   }
 
   // Check that HashLE is the reverse of Hash
   const reversedHash = utils.reverseEndianness(header.hash);
   if (!utils.typedArraysAreEqual(reversedHash, header.hash_le)) {
-    throw new Error(6);
+    throw new Error('HashLE is not the LE version of Hash.');
   }
 
   // Check that the MerkleRootLE is the correct MerkleRoot for the header
   const merkleRootLE = BTCUtils.extractMerkleRootLE(header.raw);
   if (!utils.typedArraysAreEqual(merkleRootLE, header.merkle_root_le)) {
-    throw new Error(7);
+    throw new Error('MerkleRootLE is not the correct merkle root of the header.');
   }
 
   // Check that MerkleRootLE is the reverse of MerkleRoot
   const reversedMerkleRoot = utils.reverseEndianness(header.merkle_root);
   if (!utils.typedArraysAreEqual(reversedMerkleRoot, header.merkle_root_le)) {
-    throw new Error(8);
+    throw new Error('MerkleRootBE is not the BE version of MerkleRootLE.');
   }
 
   // Check that PrevHash is the correct PrevHash for the header
   const extractedPrevHash = BTCUtils.extractPrevBlockLE(header.raw);
   if (!utils.typedArraysAreEqual(extractedPrevHash, header.prevhash_le)) {
-    throw new Error(9);
+    throw new Error('PrevhashLE is not the correct parent hash of the header.');
   }
 
   // Check that PrevhashLE is the reverse of Prevhash
   const reversedPrevhash = utils.reverseEndianness(header.prevhash);
   if (!utils.typedArraysAreEqual(reversedPrevhash, header.prevhash_le)) {
-    throw new Error(10);
+    throw new Error('PrevhashLE is not the LE version of Prevhash.');
   }
 
   return true;
@@ -350,24 +350,24 @@ export function validateProof(proof) {
 
   const validVin = BTCUtils.validateVin(vin);
   if (!validVin) {
-    throw new Error(11);
+    throw new Error('Vin is not valid.');
   }
 
   const validVout = BTCUtils.validateVout(vout);
   if (!validVout) {
-    throw new Error(12);
+    throw new Error('Vout is not valid.');
   }
 
   const txID = calculateTxId(version, vin, vout, locktime);
   if (!utils.typedArraysAreEqual(txID, txIdLE)) {
-    throw new Error(13);
+    throw new Error('Version, Vin, Vout and Locktime did not yield correct TxID.');
   }
 
   validateHeader(confirmingHeader);
 
   const validProof = prove(txIdLE, merkleRootLE, intermediateNodes, index);
   if (!validProof) {
-    throw new Error(14);
+    throw new Error('Merkle Proof is not valid.');
   }
 
   return true;

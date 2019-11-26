@@ -2,10 +2,7 @@ package btcspv
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 )
 
 // Hash160Digest is a 20-byte ripemd160+sha2 hash
@@ -69,76 +66,6 @@ const (
 	SH          OutputType = 5
 	Nonstandard OutputType = 6
 )
-
-type BtcspvError int
-
-const (
-	HeaderChainInvalid   BtcspvError = 1
-	HeaderChainBadLength BtcspvError = 2
-	HeaderChainLowWork   BtcspvError = 3
-	HeaderBadLength      BtcspvError = 4
-	HeaderHashLE         BtcspvError = 5
-	HeaderHashBE         BtcspvError = 6
-	HeaderMerkleRootLE   BtcspvError = 7
-	HeaderMerkleRootBE   BtcspvError = 8
-	HeaderPrevHashLE     BtcspvError = 9
-	HeaderPrevHash       BtcspvError = 10
-	ProofVin             BtcspvError = 11
-	ProofVout            BtcspvError = 12
-	ProofTxID            BtcspvError = 13
-	ProofMerkleProof     BtcspvError = 14
-	OutputBadLength      BtcspvError = 15
-	OutputOpReturnFormat BtcspvError = 16
-	OutputWitnessFormat  BtcspvError = 17
-	OutputP2PKHFormat    BtcspvError = 18
-	OutputP2SHFormat     BtcspvError = 19
-	OutputAbnormal       BtcspvError = 20
-)
-
-type BtcspvErrors struct {
-	Errors Errors `json:"errors"`
-}
-
-type Errors struct {
-	HeaderChainInvalid   string `json:"HEADER_CHAIN_INVALID"`
-	HeaderChainBadLength string `json:"HEADER_CHAIN_BAD_LENGTH"`
-	HeaderChainLowWork   string `json:"HEADER_CHAIN_LOW_WORK"`
-	HeaderBadLength      string `json:"HEADER_BAD_LENGTH"`
-	HeaderHashLE         string `json:"HEADER_HASH_LE"`
-	HeaderHashBE         string `json:"HEADER_HASH_BE"`
-	HeaderMerkleRootLE   string `json:"HEADER_MERKLE_ROOT_LE"`
-	HeaderMerkleRootBE   string `json:"HEADER_MERKLE_ROOT_BE"`
-	HeaderPrevHashLE     string `json:"HEADER_PREV_HASH_LE"`
-	HeaderPrevHash       string `json:"HEADER_PREV_HASH"`
-	ProofVin             string `json:"PROOF_VIN"`
-	ProofVout            string `json:"PROOF_VOUT"`
-	ProofTxID            string `json:"PROOF_TXID"`
-	ProofMerkleProof     string `json:"PROOF_MERKLE_PROOF"`
-	OutputBadLength      string `json:"OUTPUT_BAD_LENGTH"`
-	OutputOpReturnFormat string `json:"OUTPUT_OP_RETURN_FORMAT"`
-	OutputWitnessFormat  string `json:"OUTPUT_WITNESS_FORMAT"`
-	OutputP2PKHFormat    string `json:"OUTPUT_P2PKH_FORMAT"`
-	OutputP2SHFormat     string `json:"OUTPUT_P2SH_FORMAT"`
-	OutputAbnormal       string `json:"OUTPUT_ABNORMAL_OUTPUT"`
-}
-
-func UnmarshalErrors() Errors {
-	jsonFile, err := os.Open("../../testVectors.json")
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer jsonFile.Close()
-
-	byteValue, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	var btcspvErrors BtcspvErrors
-	json.Unmarshal(byteValue, &btcspvErrors)
-	// fmt.Println(btcspvErrors.Errors.HeaderChainInvalid)
-	return btcspvErrors.Errors
-}
 
 // NewHash160Digest instantiates a Hash160Digest from a byte slice
 func NewHash160Digest(b []byte) (Hash160Digest, error) {
