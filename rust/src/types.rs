@@ -575,7 +575,7 @@ mod tests {
             let invalid = &cases.badHeaders;
             for i in invalid {
                 let res = i.header.validate();
-                let expected = test_utils::match_string_to_err(&i.e);
+                let expected = test_utils::match_num_to_err(&i.e);
                 match res {
                     Ok(_) => assert!(false, "Expected an error"),
                     Err(e) => assert_eq!(e, expected)
@@ -594,7 +594,7 @@ mod tests {
             let invalid = &cases.badSPVProofs;
             for i in invalid {
                 let res = i.proof.validate();
-                let expected = test_utils::match_string_to_err(&i.e);
+                let expected = test_utils::match_num_to_err(&i.e);
                 match res {
                     Ok(_) => assert!(false, "Expected an error"),
                     Err(e) => assert_eq!(e, expected)

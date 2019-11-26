@@ -900,7 +900,7 @@ mod tests {
             let test_cases = test_utils::get_test_cases("determineOutputLengthError", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = test_utils::match_string_to_err(case.error_message.as_str().unwrap());
+                let expected = test_utils::match_num_to_err(case.error_message.as_str().unwrap());
                 match determine_output_length(&input) {
                     Ok(_) => assert!(false, "expected an error"),
                     Err(e) => assert_eq!(e, expected)
@@ -979,7 +979,7 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractOpReturnDataError", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = test_utils::match_string_to_err(case.error_message.as_str().unwrap());
+                let expected = test_utils::match_num_to_err(case.error_message.as_str().unwrap());
                 match extract_op_return_data(&input) {
                     Ok(_) => assert!(false, "expected an error"),
                     Err(e) => assert_eq!(e, expected)
@@ -1006,7 +1006,7 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractHashError", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = test_utils::match_string_to_err(case.error_message.as_str().unwrap());
+                let expected = test_utils::match_num_to_err(case.error_message.as_str().unwrap());
                 match extract_hash(&input) {
                     Ok(_) => assert!(false, "expected an error"),
                     Err(e) => assert_eq!(e, expected)

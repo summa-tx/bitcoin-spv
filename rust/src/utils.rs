@@ -167,30 +167,30 @@ pub mod test_utils {
         }
     }
 
-    pub fn match_string_to_err(s: &str) -> SPVError {
-        match s {
-            "Multi-byte VarInts not supported" => SPVError::LargeVarInt,
-            "Malformatted data. Must be an op return" => SPVError::MalformattedOpReturnOutput,
-            "Maliciously formatted p2sh output" => SPVError::MalformattedP2SHOutput,
-            "Maliciously formatted p2pkh output" => SPVError::MalformattedP2PKHOutput,
-            "Maliciously formatted witness output" => SPVError::MalformattedWitnessOutput,
-            "Nonstandard, OP_RETURN, or malformatted output" => SPVError::MalformattedOutput,
-            "Header bytes not multiple of 80" => SPVError::WrongLengthHeader,
-            "Header does not meet its own difficulty target" => SPVError::InsufficientWork,
-            "Header bytes not a valid chain" => SPVError::InvalidChain,
-            "HashLE is not the correct hash of the header" => SPVError::WrongDigest,
-            "HashLE is not the LE version of Hash" => SPVError::NonMatchingDigests,
-            "MerkleRootLE is not the LE version of MerkleRoot" => SPVError::NonMatchingMerkleRoots,
-            "MerkleRootLE is not the correct merkle root of the header" => SPVError::WrongMerkleRoot,
-            "PrevhashLE is not the correct parent hash of the header" => SPVError::WrongPrevHash,
-            "PrevhashLE is not the LE version of Prevhash" => SPVError::NonMatchingPrevhashes,
-            "Vin is not valid" => SPVError::InvalidVin,
-            "Vout is not valid" => SPVError::InvalidVout,
-            "Version, Vin, Vout and Locktime did not yield correct TxID" => SPVError::WrongTxID,
-            "Merkle Proof is not valid" => SPVError::BadMerkleProof,
-            _ => SPVError::UnknownError
-        }
-    }
+    pub fn match_num_to_err(s: &str) -> SPVError {
+      match s {
+        "1" => SPVError::InvalidChain,
+        "2" => SPVError::WrongLengthHeader,
+        "3" => SPVError::InsufficientWork,
+        "5" => SPVError::WrongDigest,
+        "6" => SPVError::NonMatchingDigests,
+        "7" => SPVError::WrongMerkleRoot,
+        "8" => SPVError::NonMatchingMerkleRoots,
+        "9" => SPVError::WrongPrevHash,
+        "10" => SPVError::NonMatchingPrevhashes,
+        "11" => SPVError::InvalidVin,
+        "12" => SPVError::InvalidVout,
+        "13" => SPVError::WrongTxID,
+        "14" => SPVError::BadMerkleProof,
+        "15" => SPVError::LargeVarInt,
+        "16" => SPVError::MalformattedOpReturnOutput,
+        "17" => SPVError::MalformattedWitnessOutput,
+        "18" => SPVError::MalformattedP2PKHOutput,
+        "19" => SPVError::MalformattedP2SHOutput,
+        "20" => SPVError::MalformattedOutput,
+          _ => SPVError::UnknownError
+      }
+  }
 
     pub fn run_test<T>(test: T) -> ()
         where T: FnOnce(&serde_json::Value) -> () + panic::UnwindSafe

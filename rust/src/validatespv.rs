@@ -397,7 +397,7 @@ use crate::utils::*;
             let test_cases = test_utils::get_test_cases("validateHeaderChainError", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = test_utils::match_string_to_err(case.error_message.as_str().unwrap());
+                let expected = test_utils::match_num_to_err(case.error_message.as_str().unwrap());
                 match validate_header_chain(&input) {
                     Ok(_) => assert!(false, "expected an error"),
                     Err(v) => assert_eq!(v, expected)
