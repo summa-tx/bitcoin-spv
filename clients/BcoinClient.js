@@ -155,7 +155,6 @@ class BcoinClient extends NodeClient {
     for (let i = 0; i < count; i++) {
       const next = height + i;
       if (enc === 'btcspv') {
-        console.log(`next: ${next}`)
         headers.push(await this.getHeader(next));
       } else {
         const json = await this.getBlockHeader(next);
