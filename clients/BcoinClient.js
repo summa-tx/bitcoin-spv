@@ -99,6 +99,7 @@ class BcoinClient extends NodeClient {
       hash_le: reverse(json.hash),
       height: height,
       prevhash: json.prevBlock,
+      prevhash_le: reverse(json.prevBlock),
       merkle_root: json.merkleRoot,
       merkle_root_le: reverse(json.merkleRoot)
     }
@@ -150,17 +151,23 @@ class BcoinClient extends NodeClient {
 
     const headers = [];
 
+
     for (let i = 0; i < count; i++) {
-      const json = await this.getBlockHeader(height);
-
-      if (!json)
-        throw new Error('Cannot find header');
-
-      if (enc === 'json') {
-        headers.push(json);
+      const next = height + i;
+      if (enc === 'btcspv') {
+        headers.push(await this.getHeader(next));
       } else {
-        const hex = await this.execute('getblockheader', [json.hash, false]);
-        headers.push(hex);
+        const json = await this.getBlockHeader(next);
+
+        if (!json)
+          throw new Error('Cannot find header');
+
+        if (enc === 'json') {
+          headers.push(json);
+        } else {
+          const hex = await this.execute('getblockheader', [json.hash, false]);
+          headers.push(hex);
+        }
       }
     }
 
