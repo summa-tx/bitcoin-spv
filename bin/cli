@@ -34,16 +34,17 @@ const ports = {
 
 class CLI {
   constructor() {
-    this.config = new Config('bitcoin-verifier-ses', {
+    this.config = new Config('bitcoin-spv-cli', {
       alias: {
         t: 'txid',
         n: 'network',
         e: 'height',
         u: 'url',
-        k: 'api-key',
+        k: 'apikey',
         s: 'ssl',
         h: 'httphost',
-        p: 'httpport'
+        p: 'httpport',
+        x: 'encoding'
       }
     });
 
@@ -116,6 +117,7 @@ class CLI {
   }
 
   async getHeaders() {
+    let enc = this.config.str('encoding', 'btcspv')
     let height = this.config.uint('height');
     const count = this.config.uint(0, 0);
 
@@ -127,7 +129,7 @@ class CLI {
       height = parseInt(info.chain.height);
     }
 
-    const headers = await this.client.getHeaderChainByCount(height, count, 'hex');
+    const headers = await this.client.getHeaderChainByCount(height, count, enc);
 
     this.log(headers);
   }
@@ -163,4 +165,3 @@ class CLI {
   console.log(error);
   process.exit(1);
 });
-
