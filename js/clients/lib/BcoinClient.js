@@ -165,7 +165,7 @@ class BcoinClient extends NodeClient {
    * Fetch a header chain by count.
    * @param {Number} height - starting block height
    * @param {Number} count - number of headers
-   * @param {String} enc - json or hex
+   * @param {String} enc - 'json', 'hex', or 'btcpsv'
    * @returns {Object}
    */
 
@@ -189,8 +189,9 @@ class BcoinClient extends NodeClient {
       }
     }
 
-    if (enc === 'hex')
+    if (enc === 'hex') {
       return {headers: headers.join('')};
+    }
 
     return {headers};
   }

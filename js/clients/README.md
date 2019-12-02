@@ -22,7 +22,7 @@ const { BcoinClient } = require('@summa-tx/bitcoin-spv-js-clients');
 ES6 module:
 
 ```js
-import { BconClient } from '@summa-tx/bitcoin-spv-js-clients';
+import { BcoinClient } from '@summa-tx/bitcoin-spv-js-clients';
 ```
 
 ### Use
@@ -133,7 +133,7 @@ const header = client.getMerkleProof(txid, height);
 #### client.getHeaderChainByCount(height, count, enc)
 * `@param {Number} height` - starting block height
 * `@param {Number} count` - number of headers
-* `@param {String} enc` - json or hex
+* `@param {String} enc` - 'json' or 'hex' or 'btcspv'
 * `@returns {Object}`
 
 Fetch a header chain by count.
