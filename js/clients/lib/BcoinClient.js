@@ -16,6 +16,7 @@ const {NodeClient} = require('./vendor/bclient');
 const assert = require('./vendor/bsert');
 const hash256 = require('../vendor/hash256');
 const merkle = require('../vendor/merkle');
+const BN = require('../vendor/bn');
 const {utils, BTCUtils} = require('../../dist');
 
 /**
@@ -44,7 +45,23 @@ class BcoinClient extends NodeClient {
   }
 
   /**
-   * @params {String} txid - big endian
+  * Get the block height of a transaction by txid.
+  * Note: requires bcoin tx-indexer enabled.
+  * @param {String} txid
+  * @returns {Number}
+  */
+  async getHeightByTX (txid) {
+    const tx = await super.getTX(txid);
+    if (!tx) {
+      return null;
+    }
+
+    return tx.height;
+  }
+
+  /**
+   * @param {String} txid - big endian
+   * @returns {Object}
    */
 
   async getProof(txid) {
@@ -88,10 +105,12 @@ class BcoinClient extends NodeClient {
 
   /**
    * Fetch a header by height or hash.
+   * @param {Hash|Number} block block height or hash
+   * @returns {Object} header proof object
    */
 
-  async getHeader(height) {
-    const json = await this.getBlockHeader(height);
+  async getHeader(block) {
+    const json = await this.getBlockHeader(block);
 
     if (!json)
       return null;
@@ -102,7 +121,7 @@ class BcoinClient extends NodeClient {
       raw: hex,
       hash: json.hash,
       hash_le: reverse(json.hash),
-      height: height,
+      height: typeof block === 'number' ? block : json.height,
       prevhash: json.prevBlock,
       merkle_root: json.merkleRoot,
       merkle_root_le: reverse(json.merkleRoot)
@@ -147,6 +166,7 @@ class BcoinClient extends NodeClient {
    * @param {Number} height - starting block height
    * @param {Number} count - number of headers
    * @param {String} enc - json or hex
+   * @returns {Object}
    */
 
   async getHeaderChainByCount(height, count, enc) {
@@ -173,6 +193,43 @@ class BcoinClient extends NodeClient {
       return {headers: headers.join('')};
 
     return {headers};
+  }
+
+  /**
+   * Get a valid chain of headers starting at a height
+   * that have greater than or equal to an amount of work.
+   * @param {Number} height
+   * @param {String} nwork - hex number
+   * @returns {[]String} - a list of hex headers
+   */
+  async getHeaderChain (height, nwork) {
+    const headers = [];
+    let accumulated = new BN(0);
+
+    const target = new BN(nwork, 16, 'be');
+
+    if (target.eq(new BN(0))) {
+      throw new Error('nwork is too small.');
+    }
+
+    while (accumulated.lte(target)) {
+      const json = await super.getBlock(height);
+      const block = Block.fromJSON(json);
+      const header = block.toHeaders();
+
+      const valid = consensus.verifyPOW(block.hash(), block.bits);
+      assert(valid, 'Invalid Proof of Work.');
+
+      headers.push(header.toRaw().toString('hex'));
+
+      const entry = ChainEntry.fromBlock(block);
+      const proof = entry.getProof();
+
+      accumulated = accumulated.add(proof);
+      height += 1;
+    }
+
+    return headers;
   }
 }
 
