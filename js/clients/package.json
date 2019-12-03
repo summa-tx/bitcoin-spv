@@ -8,11 +8,10 @@
   },
   "engineStrict": true,
   "scripts": {
-    "lint": "eslint ./test ./src",
-    "lint:fix": "eslint --fix ./test ./src",
+    "lint": "eslint ./test ./lib",
+    "lint:fix": "eslint --fix ./test ./lib",
     "test": "mocha test -r esm",
     "test:coverage": "jest --coverage",
-    "build": "babel src -d dist",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -27,7 +26,7 @@
     "Barbara Liau <barbara@summa.one>"
   ],
   "license": "LGPLv3",
-  "homepage": "https://github.com/summa-tx/bitcoin-spv/clients/",
+  "homepage": "https://github.com/summa-tx/bitcoin-spv/js/clients/",
   "devDependencies": {
     "chai": "4.2.0",
     "eslint": "5.16.0",
