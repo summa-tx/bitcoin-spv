@@ -13,7 +13,6 @@
  *   https://github.com/indutny/hash.js/blob/master/lib/hash/sha/256.js
  */
 
-'use strict';
 
 const assert = require('./bsert');
 
@@ -118,8 +117,7 @@ class SHA256 {
     if (pos > 0) {
       let want = 64 - pos;
 
-      if (want > len)
-        want = len;
+      if (want > len) { want = len; }
 
       data.copy(this.block, pos, off, off + want);
 
@@ -127,8 +125,7 @@ class SHA256 {
       len -= want;
       off += want;
 
-      if (pos < 64)
-        return;
+      if (pos < 64) { return; }
 
       this.transform(this.block, 0);
     }
@@ -139,8 +136,7 @@ class SHA256 {
       len -= 64;
     }
 
-    if (len > 0)
-      data.copy(this.block, 0, off, off + len);
+    if (len > 0) { data.copy(this.block, 0, off, off + len); }
   }
 
   /**
@@ -167,11 +163,9 @@ class SHA256 {
       this.state[i] = 0;
     }
 
-    for (let i = 0; i < 64; i++)
-      this.msg[i] = 0;
+    for (let i = 0; i < 64; i++) { this.msg[i] = 0; }
 
-    for (let i = 0; i < 64; i++)
-      this.block[i] = 0;
+    for (let i = 0; i < 64; i++) { this.block[i] = 0; }
 
     this.size = FINALIZED;
 
@@ -197,11 +191,9 @@ class SHA256 {
     let h = this.state[7];
     let i = 0;
 
-    for (; i < 16; i++)
-      W[i] = readU32(chunk, pos + i * 4);
+    for (; i < 16; i++) { W[i] = readU32(chunk, pos + i * 4); }
 
-    for (; i < 64; i++)
-      W[i] = sigma1(W[i - 2]) + W[i - 7] + sigma0(W[i - 15]) + W[i - 16];
+    for (; i < 64; i++) { W[i] = sigma1(W[i - 2]) + W[i - 7] + sigma0(W[i - 15]) + W[i - 16]; }
 
     for (i = 0; i < 64; i++) {
       let t1 = h + Sigma1(e);
@@ -251,12 +243,11 @@ class SHA256 {
   }
 
   static multi(x, y, z) {
-    const ctx = SHA256.ctx;
+    const { ctx } = SHA256;
     ctx.init();
     ctx.update(x);
     ctx.update(y);
-    if (z)
-      ctx.update(z);
+    if (z) { ctx.update(z); }
     return ctx.final();
   }
 }
