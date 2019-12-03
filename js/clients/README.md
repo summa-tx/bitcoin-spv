@@ -77,15 +77,15 @@ const txid =
 
 // proof object
 // {
-//   version: txinfo.version,
-//   vin: txinfo.vin,
-//   vout: txinfo.vout,
-//   locktime: txinfo.locktime,
-//   tx_id: txid,
-//   tx_id_le: reverse(txid),
-//   index: index,
-//   confirming_header: header,
-//   intermediate_nodes: path
+//   version: {String},
+//   vin: {String},
+//   vout: {String},
+//   locktime: {String},
+//   tx_id: {String},
+//   tx_id_le: {String},
+//   index: {Number},
+//   confirming_header: {Object},
+//   intermediate_nodes: {String}
 // }
 ```
 
@@ -100,13 +100,14 @@ const block = 12345;
 const header = client.getHeader(block);
 
 // {
-//   raw: hex,
-//   hash: json.hash,
-//   hash_le: reverse(json.hash),
-//   height: typeof block === 'number' ? block : json.height,
-//   prevhash: json.prevBlock,
-//   merkle_root: json.merkleRoot,
-//   merkle_root_le: reverse(json.merkleRoot)
+//   raw: {String},
+//   hash: {String},
+//   hash_le: {String},
+//   height: {Number},
+//   prevhash: {String},
+//   prevhash_le: {String}
+//   merkle_root: {String},
+//   merkle_root_le: {String}
 // }
 ```
 
