@@ -1276,6 +1276,50 @@
         }
       ],
       "output": 6393023717201
+    },
+
+
+
+    {
+      "input": [
+        {
+          "hash": "0x0000000002216521d1a33de5bf19b3f8966395fbc81be449e2b2f1bdab2bd88f",
+          "version": 0,
+          "prev_block": "0x0000000000d14af55c4eae0121184919baba2deb8bf89c3af6b8e4c4f35c8e4e",
+          "merkle_root": "0x6bac1a25fa61b6e183880764cdb67bf1e56e10149408d87b0d2b11e844232a9f",
+          "timestamp": 1279008237,
+          "nbits": "0xf4a3051c",
+          "nonce": "0x4dcd2b02",
+          "difficulty": 45,
+          "hex": "0x010000004e8e5cf3c4e4b8f63a9cf88beb2dbaba1949182101ae4e5cf54ad100000000009f2a2344e8112b0d7bd8089414106ee5f17bb6cd64078883e1b661fa251aac6bed1d3c4cf4a3051c4dcd2b02",
+          "height": 66528
+        },
+        {
+          "hash": "0x000000000050aa3223d06ff9bea45292aa09c0a6ed5e87959ff88bb9d61fc459",
+          "version": 0,
+          "prev_block": "0x00000000053a2071014efc03941f023c805237ceee21a54c6c9425cb881d321e",
+          "merkle_root": "0x50af9f152114dd04016d45df95546f3dce8aebd9263a5a8a841404b5f8577031",
+          "timestamp": 1279011113,
+          "nbits": "0xf4a3051c",
+          "nonce": "0x73199005",
+          "difficulty": 45,
+          "hex": "0x010000001e321d88cb25946c4ca521eece3752803c021f9403fc4e0171203a0500000000317057f8b50414848a5a3a26d9eb8ace3d6f5495df456d0104dd1421159faf5029293c4cf4a3051c73199005",
+          "height": 66543
+        },
+        {
+          "hash": "0x0000000000519051eb5f3c5943cdbc176a0eff4e1fbc3e08287bdb76299b8e5c",
+          "version": 0,
+          "prev_block": "0x0000000003dfbfa2b33707e691ab2ab7cda7503be2c2cce43d1b21cd1cc757fb",
+          "merkle_root": "0x376043cd8410ca0bcda2408bc6715822ef0ce5b7525d0e885e9268dfd98aa888",
+          "timestamp": 1279297779,
+          "nbits": "0xfd68011c",
+          "nonce": "0xaeb1f801",
+          "difficulty": 181,
+          "hex": "0x01000000fb57c71ccd211b3de4ccc2e23b50a7cdb72aab91e60737b3a2bfdf030000000088a88ad9df68925e880e5d52b7e50cef225871c68b40a2cd0bca1084cd436037f388404cfd68011caeb1f801",
+          "height": 68544
+        }
+      ],
+      "output": 181
     }
   ],
   "encodeP2SH": [

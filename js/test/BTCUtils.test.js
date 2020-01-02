@@ -309,7 +309,6 @@ describe('BTCUtils', () => {
         retargetAlgorithm[i].input[2].hex
       );
       res = BTCUtils.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-      // (response & expected) == expected
       // this converts our full-length target into truncated block target
       assert.strictEqual(res & expectedNewTarget, expectedNewTarget);
 
