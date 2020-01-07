@@ -5,13 +5,13 @@ This
 ### Notes on project structure:
 
 `csrc` contains the C source code. `deps` contains vendored dependencies. `src`
-contains Rust tests that build a Nervos tramsaction and a sample lockscript.
+contains Rust tests that build a Nervos transaction and a sample lockscript.
 The sample script can be found in `csrc/main.c`.
 
-Unittests are in `check_*.c` in the `csrc` directory. To add tests, implement a
-new test function, then add it to the running suite using `tcase_add_test`. The
-tests pull vectors from `../testVectors.json`, and new vectors will
-automatically be run if properly formatted.
+Unit tests are in `check_btcspv.c` in the `csrc` directory. To add tests,
+implement a new test function, then add it to the running suite using
+`tcase_add_test`. The tests pull vectors from `../testVectors.json`, and new
+vectors will automatically be run if properly formatted.
 
 We implement a simple byte view type, consisting of a pointer (`loc`) and a
 length (`len`). This allows access to memory without having to copy it.
@@ -53,5 +53,5 @@ $ make
 ```
 
 This will print the coverage report and generate the gcov files. Coverage
-details can be view via `$ cat btcspv.c.gcov` and `$ cat evalspv.c.gcov`. This
-also builds the Rust test and runs it.
+details can be viewed via `$ cat btcspv.c.gcov` and `$ cat evalspv.c.gcov`.
+Running `make` also builds the Rust test and runs it.
