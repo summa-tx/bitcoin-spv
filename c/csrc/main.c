@@ -39,12 +39,9 @@
 
 /*
  * Args:
+ * - 8-bytes amount of CKB being sold
  * - 8-byte work requirement
- * - 36-byte Bitcoin UTXO outpoint
- *
- *  8-byte difficulty requirement
- * 36-byte outpoint
-
+ * - 36-byte outpoint
  */
 #define SCRIPT_ARGS_SIZE (8 + 8 + 36)
 bool load_args(uint8_t *view) {
