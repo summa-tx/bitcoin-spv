@@ -1,10 +1,5 @@
-#include "stdbool.h"  // CKB override
-#include "stdint.h"   // CKB override
-#include "stdio.h"
-#include "stdlib.h"  // CKB override
-#include "string.h"  // CKB override
-
 #include "evalspv.h"
+
 
 const uint64_t BTCSPV_ERR_BAD_LENGTH = 0xffffffffffffffff;
 const uint64_t BTCSPV_ERR_INVALID_CHAIN = 0xfffffffffffffffe;

@@ -1,8 +1,7 @@
-#include "btcspv.h"
 #include "rmd160.h"
 #include "sha256.h"
-#include "stdbool.h"  // CKB override
-#include "stdint.h"   // CKB override
+
+#include "btcspv.h"
 
 // Order matters
 bool btcspv_truncated_uint256_equality(const uint8_t *trun,

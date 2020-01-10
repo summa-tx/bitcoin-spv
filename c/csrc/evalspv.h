@@ -3,6 +3,8 @@
 
 #include "stdbool.h"  // CKB override
 #include "stdint.h"   // CKB override
+#include "stdlib.h"  // CKB override
+#include "string.h"  // CKB override
 
 #include "btcspv.h"
 
