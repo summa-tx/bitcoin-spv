@@ -97,6 +97,18 @@ mod tests {
     }
 
     fn setup_input_cell(dummy: &mut test_utils::DummyDataLoader) -> OutPoint {
+        // hardcode for the example
+        // This UTXO was spent by
+        // txid 736aee0e936516e6c0fbec70adf1899f29bcd35d13b9747e08ec25651d874da2
+        // As part of a solidity stateless swap
+        // First 8 bytes are CKB-value (1)
+        // next 8 bytes are reqDiffBE (1)
+        // final 36 bytes are the Bitcoin outpoint that must be spent
+        let args_vec = hex::decode("01000000000000000000000000000001a4af13e0aed3dda50af3719ab5e25a0155b013c4d7df188bf6fed7873489867e07000000")
+            .unwrap();
+
+        let args = Bytes::from(args_vec);
+
         let verifier_cell_data_hash = CellOutput::calc_data_hash(&VERIFIER_BIN);
         let dummy_capacity = Capacity::shannons(42);
 
@@ -107,6 +119,7 @@ mod tests {
         let previous_outpoint = OutPoint::new(previous_tx_hash, 0);
 
         let script = Script::new_builder()
+            .args(args.pack())
             .code_hash(verifier_cell_data_hash.clone())
             .hash_type(ScriptHashType::Data.into())
             .build();

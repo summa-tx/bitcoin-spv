@@ -15,6 +15,9 @@
 #include "evalspv.c"
 #include "evalspv.h"
 
+#include "blockchain.h"
+
+
 #define ERROR_ENCODING -2
 #define ERROR_SYSCALL -3
 
@@ -45,24 +48,37 @@
  */
 #define SCRIPT_ARGS_SIZE (8 + 8 + 36)
 bool load_args(uint8_t *view) {
-  // hardcode for the example
-  // This UTXO was spent by
-  // txid 736aee0e936516e6c0fbec70adf1899f29bcd35d13b9747e08ec25651d874da2
-  // As part of a solidity stateless swap
+  /* Load args */
+  int ret;
+  uint64_t len = 0;
+  unsigned char script[SCRIPT_SIZE];
 
-  // clang-format off
-  uint8_t script_args[SCRIPT_ARGS_SIZE] = {
-      0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // CBK value (1 sat)
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,  // reqDiff BE (1)
-      
-      0xa4, 0xaf, 0x13, 0xe0, 0xae, 0xd3, 0xdd, 0xa5,  // 36 byte outpoint
-      0x0a, 0xf3, 0x71, 0x9a, 0xb5, 0xe2, 0x5a, 0x01,
-      0x55, 0xb0, 0x13, 0xc4, 0xd7, 0xdf, 0x18, 0x8b,
-      0xf6, 0xfe, 0xd7, 0x87, 0x34, 0x89, 0x86, 0x7e,
-      0x07, 0x00, 0x00, 0x00};
-  // clang-format on
+  len = SCRIPT_SIZE;
+  ret = ckb_load_script(script, &len, 0);
 
-  memcpy(view, &script_args, SCRIPT_ARGS_SIZE);
+  if (ret != CKB_SUCCESS) {
+    return false;
+  }
+
+  if (len > SCRIPT_SIZE) {
+    return false;
+  }
+
+  mol_seg_t script_seg;
+  script_seg.ptr = (uint8_t *)script;
+  script_seg.size = len;
+  if (MolReader_Script_verify(&script_seg, false) != MOL_OK) {
+    return false;
+  }
+
+  mol_seg_t args_seg = MolReader_Script_get_args(&script_seg);
+  mol_seg_t args_bytes_seg = MolReader_Bytes_raw_bytes(&args_seg);
+
+  if (args_bytes_seg.size != SCRIPT_ARGS_SIZE) {
+    return false;
+  }
+
+  memcpy(view, args_bytes_seg.ptr, SCRIPT_ARGS_SIZE);
   return true;
 }
 
@@ -135,6 +151,8 @@ int main() {
   // Load witness of first input
   // This has 20 bytes at the front, and 8 at the end, and I don't understand
   // why
+  // Oh it's because it's molecule
+  // TODO: rewrite this to use molecule :)
   uint8_t witness[MAX_WITNESS_SIZE];
   uint64_t witness_len = MAX_WITNESS_SIZE;
   int wit_load_ret =
