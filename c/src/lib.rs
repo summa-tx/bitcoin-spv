@@ -22,7 +22,7 @@ mod tests {
 
     lazy_static! {
         pub static ref VERIFIER_BIN: Bytes =
-            Bytes::from(&include_bytes!("../build/main-risc")[..]);
+            Bytes::from(&include_bytes!("../build/swap-demo-risc")[..]);
     }
 
     /*

@@ -15,12 +15,12 @@ PROTOCOL_URL := https://raw.githubusercontent.com/nervosnetwork/ckb/${PROTOCOL_V
 # docker pull nervos/ckb-riscv-gnu-toolchain:gnu-bionic-20191012
 BUILDER_DOCKER := nervos/ckb-riscv-gnu-toolchain@sha256:aae8a3f79705f67d505d1f1d5ddc694a4fd537ed1c7e9622420a470d59ba2ec3
 
-all: build/main-risc
+all: build/swap-demo-risc
 
 all-via-docker: ${PROTOCOL_HEADER}
 	@docker run --rm -v `pwd`:/code ${BUILDER_DOCKER} bash -c "cd /code && make -f risc.Makefile"
 
-build/main-risc: csrc/main.c csrc/btcspv.c csrc/evalspv.c
+build/swap-demo-risc: csrc/swap-demo.c csrc/btcspv.c csrc/evalspv.c
 	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
 	@$(OBJCOPY) --only-keep-debug $@ $@.debug
 	@$(OBJCOPY) --strip-debug --strip-all $@
