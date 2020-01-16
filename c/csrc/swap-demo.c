@@ -161,6 +161,10 @@ int main() {
     return ERROR_WITNESS_SIZE;
   }
 
+  //
+  // Extract elements of the witness
+  //
+
   // This is our witness view. We'll parse headers, etc, out of it.
   uint32_t offset = 0;
   const_view_t wit = {witness + 20, witness_len - 20 - 8};
@@ -169,7 +173,6 @@ int main() {
   offset += 1 + headers.len;
 
   const_view_t intermediate_nodes = extract_intermediate_nodes(&wit, offset);
-  ;
   offset += 1 + intermediate_nodes.len;
 
   // offset 0x01d2 == -46
@@ -205,7 +208,7 @@ int main() {
   }
 
   //
-  // INCLUSION
+  // CHECK BTC TX INCLUSION
   //
 
   uint256 txid;
@@ -229,7 +232,9 @@ int main() {
     return ERROR_NOT_ENOUGH_WORK;
   }
 
-  // PAYMENT WAS MADE PROPERLY
+  //
+  // CHECK PAYMENT WAS MADE PROPERLY
+  //
 
   const_view_t actual_outpoint = {vin.loc + 1, 36};
   const_view_t expected_oupoint = {args + 16, 36};

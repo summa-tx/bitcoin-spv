@@ -58,6 +58,7 @@ mod tests {
 
     fn gen_output_script() -> Script {
         let mut dest = [0u8; 32];
+        // padded with junk data, because it originally represented a 20-byte Ethereum address
         let d = hex::decode("d727394c8d881145a2009bde6ec73d8a9db6ddb3777777777777777788888888")
             .unwrap();
 
@@ -128,6 +129,7 @@ mod tests {
             .capacity(dummy_capacity.pack())
             .lock(script)
             .build();
+
         dummy.cells.insert(
             previous_outpoint.clone(),
             (previous_output_cell.clone(), Bytes::new())

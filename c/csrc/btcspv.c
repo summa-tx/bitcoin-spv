@@ -20,12 +20,7 @@ bool buf_eq(const uint8_t *loc1, uint32_t len1, const uint8_t *loc2,
   if (len1 != len2) {
     return false;
   }
-  for (int i = 0; i < len1; i++) {
-    if (loc1[i] != loc2[i]) {
-      return false;
-    }
-  }
-  return true;
+  return 0 == memcmp(loc1, loc2, len1);
 }
 
 // equality for a view and a buffer
@@ -154,6 +149,11 @@ uint32_t btcspv_determine_input_length(const_view_t *tx_in) {
 }
 
 byte_view_t btcspv_extract_input_at_index(const_view_t *vin, uint8_t index) {
+  if (index > 0xfc) {
+    // Multi-byte varints not currently supported by vin parser
+    RET_NULL_VIEW;
+  }
+
   uint32_t length = 0;
   uint32_t offset = 1;
 
@@ -202,6 +202,11 @@ uint32_t btcspv_determine_output_length(const_view_t *tx_out) {
 }
 
 byte_view_t btcspv_extract_output_at_index(const_view_t *vout, uint8_t index) {
+  if (index > 0xfc) {
+    RET_NULL_VIEW;
+    // Multi-byte varints not currently supported by vout parser by vin parser
+  }
+
   byte_view_t *remaining = NULL;
 
   uint32_t output_len = 0;
@@ -221,7 +226,7 @@ byte_view_t btcspv_extract_output_at_index(const_view_t *vout, uint8_t index) {
     }
   }
 
-// remaining MUST be initialized, as our loop runs at least once
+// Remaining MUST be initialized, as our loop runs at least once
 // so we silence this error
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"

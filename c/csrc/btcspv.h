@@ -41,21 +41,21 @@
 
 typedef uint8_t uint256[32];
 
-struct byte_view_struct {
+// A simple memory view
+typedef struct {
   const uint8_t *loc;
   const uint32_t len;
-};
+} byte_view_t;
 
 // return type for extract_script_sig_len
-struct script_sig_struct {
+typedef struct x {
   const uint32_t var_int_len;
   const uint32_t script_sig_len;
-};
+} script_sig_t;
 
 // quickaccess aliases
-typedef struct byte_view_struct byte_view_t;
 typedef const byte_view_t const_view_t;
-typedef const struct script_sig_struct script_sig_t;
+
 
 // Utilities
 bool btcspv_truncated_uint256_equality(const uint8_t *trun,
