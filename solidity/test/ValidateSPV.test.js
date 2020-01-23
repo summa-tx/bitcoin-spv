@@ -77,6 +77,9 @@ contract('ValidateSPV', () => {
           sequence, txId, index, type
         } = parseInput[i].output;
 
+        // Execute within Tx to measure gas amount
+        await instance.parseInputTx(parseInput[i].input);
+
         assert(txIn._sequence.eq(new BN(sequence, 10)));
         assert.strictEqual(txIn._hash, txId);
         assert(txIn._index.eq(new BN(index, 10)));
@@ -97,6 +100,9 @@ contract('ValidateSPV', () => {
         }
 
         const txOut = await instance.parseOutput(parseOutput[i].input);
+
+        // Execute within Tx to measure gas amount
+        await instance.parseOutputTx(parseOutput[i].input);
 
         assert(txOut._value.eq(new BN(value, 10)));
         assert(txOut._outputType.eq(new BN(type, 10)));
@@ -146,6 +152,10 @@ contract('ValidateSPV', () => {
     it('returns true if header chain is valid', async () => {
       for (let i = 0; i < validateHeaderChain.length; i += 1) {
         const res = await instance.validateHeaderChain(validateHeaderChain[i].input);
+
+        // Execute within Tx to measure gas amount
+        await instance.validateHeaderChainTx(validateHeaderChain[i].input);
+
         assert(res.eq(new BN(validateHeaderChain[i].output, 10)));
       }
     });
@@ -153,6 +163,10 @@ contract('ValidateSPV', () => {
     it('returns error if header chain is invalid', async () => {
       for (let i = 0; i < validateHeaderChainError.length; i += 1) {
         const res = await instance.validateHeaderChain(validateHeaderChainError[i].input);
+
+        // Execute within Tx to measure gas amount
+        await instance.validateHeaderChainTx(validateHeaderChainError[i].input);
+
         assert(res.eq(new BN(validateHeaderChainError[i].solidityError, 16)));
       }
     });
