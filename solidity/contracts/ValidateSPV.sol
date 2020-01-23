@@ -168,25 +168,23 @@ library ValidateSPV {
     /// @notice             Compares the hash of each header to the prevHash in the next header
     /// @param _headers     Raw byte array of header chain
     /// @return             The total accumulated difficulty of the header chain, or an error code
-    function validateHeaderChain(bytes memory _headers) internal pure returns (uint256 _totalDifficulty) {
+    function validateHeaderChain(bytes memory _headers) internal view returns (uint256 _totalDifficulty) {
 
         // Check header chain length
         if (_headers.length % 80 != 0) {return ERR_BAD_LENGTH;}
 
         // Initialize header start index
         bytes32 _digest;
-        uint256 _start = 0;
 
         _totalDifficulty = 0;
 
-        for (uint i = 0; i < _headers.length / 80; i++) {
+        for (uint256 _start = 0; _start < _headers.length; _start += 80) {
 
             // ith header start index and ith header
-            _start = i * 80;
             bytes memory _header = _headers.slice(_start, 80);
 
             // After the first header, check that headers are in a chain
-            if (i != 0) {
+            if (_start != 0) {
                 if (!validateHeaderPrevHash(_header, _digest)) {return ERR_INVALID_CHAIN;}
             }
 
@@ -194,7 +192,7 @@ library ValidateSPV {
             uint256 _target = _header.extractTarget();
 
             // Require that the header has sufficient work
-            _digest = _header.hash256();
+            _digest = _header.hash256View();
             if(abi.encodePacked(_digest).reverseEndianness().bytesToUint() > _target) {
                 return ERR_LOW_WORK;
             }

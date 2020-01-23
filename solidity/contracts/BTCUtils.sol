@@ -92,6 +92,19 @@ library BTCUtils {
         return abi.encodePacked(sha256(abi.encodePacked(sha256(_b)))).toBytes32();
     }
 
+    /// @notice          Implements bitcoin's hash256 (double sha2)
+    /// @dev             sha2 is precompiled smart contract located at address(2)
+    /// @param _b        The pre-image
+    /// @return          The digest
+    function hash256View(bytes memory _b) internal view returns (bytes32 res) {
+        assembly {
+            let ptr := mload(0x40)
+            pop(staticcall(gas, 2, add(_b, 32), mload(_b), ptr, 32))
+            pop(staticcall(gas, 2, ptr, 32, ptr, 32))
+            res := mload(ptr)
+        }
+    }
+
     /* ************ */
     /* Legacy Input */
     /* ************ */

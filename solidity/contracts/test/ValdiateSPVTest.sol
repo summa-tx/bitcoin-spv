@@ -101,7 +101,7 @@ contract ValidateSPVTest {
     /// @notice             Compares the hash of each header to the prevHash in the next header
     /// @param _headers     Raw byte array of header chain
     /// @return             The total accumulated difficulty of the header chain
-    function validateHeaderChain(bytes memory _headers) public pure returns (uint256 _reqDiff) {
+    function validateHeaderChain(bytes memory _headers) public view returns (uint256 _reqDiff) {
         return ValidateSPV.validateHeaderChain(_headers);
     }
 
