@@ -80,9 +80,9 @@ library ValidateSPV {
     function parseInput(bytes memory _input) internal pure returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {
         // NB: If the scriptsig is exactly 00, we are witness.
         //     Otherwise we are compatibility
-        if (keccak256(_input.slice(36, 1)) != keccak256(hex"00")) {
+        if (_input.keccak256Slice(36, 1) != keccak256(hex"00")) {
             _sequence = _input.extractSequenceLegacy();
-            bytes32 _witnessTag = keccak256(_input.slice(36, 3));
+            bytes32 _witnessTag = _input.keccak256Slice(36, 3);
 
             if (_witnessTag == keccak256(hex"220020") || _witnessTag == keccak256(hex"160014")) {
                 _inputType = uint8(InputTypes.COMPATIBILITY);
@@ -106,12 +106,12 @@ library ValidateSPV {
 
         _value = _output.extractValue();
 
-        if (keccak256(_output.slice(9, 1)) == keccak256(hex"6a")) {
+        if (_output.keccak256Slice(9, 1) == keccak256(hex"6a")) {
             // OP_RETURN
             _outputType = uint8(OutputTypes.OP_RETURN);
             _payload = _output.extractOpReturnData();
         } else {
-            bytes32 _prefixHash = keccak256(_output.slice(8, 2));
+            bytes32 _prefixHash = _output.keccak256Slice(8, 2);
             if (_prefixHash == keccak256(hex"2200")) {
                 // P2WSH
                 _outputType = uint8(OutputTypes.WSH);
