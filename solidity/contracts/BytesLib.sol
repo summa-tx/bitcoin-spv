@@ -406,4 +406,12 @@ library BytesLib {
             result := mload(add(_source, 32))
         }
     }
+
+    function keccak256Slice(bytes memory _bytes, uint _start, uint _length) pure internal returns (bytes32 result) {
+        require(_bytes.length >= (_start + _length), "Slice out of bounds");
+
+        assembly {
+            result := keccak256(add(add(_bytes, 32), _start), _length)
+        }
+    }
 }

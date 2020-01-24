@@ -105,19 +105,6 @@ library BTCUtils {
         }
     }
 
-    /// @notice          Calculate keccak256 of slice
-    /// @param _bytes    The pre-image
-    /// @param _start    Offset of the slice
-    /// @param _length   Length of the slice
-    /// @return          The digest
-    function keccak256Slice(bytes memory _bytes, uint _start, uint _length) internal pure returns (bytes32 result) {
-        require(_bytes.length >= (_start + _length), "Slice out of bounds");
-
-        assembly {
-            result := keccak256(add(add(_bytes, 32), _start), _length)
-        }
-    }
-
     /* ************ */
     /* Legacy Input */
     /* ************ */
