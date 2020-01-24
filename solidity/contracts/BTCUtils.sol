@@ -136,7 +136,7 @@ library BTCUtils {
     /// @param _input    The input
     /// @return          True for legacy, False for witness
     function isLegacyInput(bytes memory _input) internal pure returns (bool) {
-        return keccak256(_input.slice(36, 1)) != keccak256(hex"00");
+        return _input.keccak256Slice(36, 1) != keccak256(hex"00");
     }
 
     /// @notice          Determines the length of an input from its scriptsig
@@ -332,7 +332,7 @@ library BTCUtils {
     /// @param _output   The output
     /// @return          Any data contained in the opreturn output, null if not an op return
     function extractOpReturnData(bytes memory _output) internal pure returns (bytes memory) {
-        if (keccak256(_output.slice(9, 1)) != keccak256(hex"6a")) {
+        if (_output.keccak256Slice(9, 1) != keccak256(hex"6a")) {
             return hex"";
         }
         bytes memory _dataLen = _output.slice(10, 1);
@@ -352,12 +352,12 @@ library BTCUtils {
             }
             return _output.slice(11, _len);
         } else {
-            bytes32 _tag = keccak256(_output.slice(8, 3));
+            bytes32 _tag = _output.keccak256Slice(8, 3);
             // p2pkh
             if (_tag == keccak256(hex"1976a9")) {
                 // Check for maliciously formatted p2pkh
                 if (uint8(_output.slice(11, 1)[0]) != 0x14 ||
-                    keccak256(_output.slice(_output.length - 2, 2)) != keccak256(hex"88ac")) {
+                    _output.keccak256Slice(_output.length - 2, 2) != keccak256(hex"88ac")) {
                     return hex"";
                 }
                 return _output.slice(12, 20);
