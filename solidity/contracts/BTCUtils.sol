@@ -52,7 +52,10 @@ library BTCUtils {
         return _newValue;
     }
 
-    // https://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel
+    /// @notice          Changes the endianness of a uin256
+    /// @dev             https://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel
+    /// @param _b        The unsigned integer to reverse
+    /// @return          The reversed value
     function reverseUint256(uint256 _b) internal pure returns (uint256 v) {
         v = _b;
 
