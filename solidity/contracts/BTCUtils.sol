@@ -52,6 +52,26 @@ library BTCUtils {
         return _newValue;
     }
 
+    // https://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel
+    function reverseUint256(uint256 _b) internal pure returns (uint256 v) {
+        v = _b;
+
+        // swap bytes
+        v = ((v >> 8) & 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF) |
+            ((v & 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF) << 8);
+        // swap 2-byte long pairs
+        v = ((v >> 16) & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) |
+            ((v & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) << 16);
+        // swap 4-byte long pairs
+        v = ((v >> 32) & 0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) |
+            ((v & 0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) << 32);
+        // swap 8-byte long pairs
+        v = ((v >> 64) & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) |
+            ((v & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) << 64);
+        // swap 16-byte long pairs
+        v = (v >> 128) | (v << 128);
+    }
+
     /// @notice          Converts big-endian bytes to a uint
     /// @dev             Traverses the byte array and sums the bytes
     /// @param _b        The big-endian bytes-encoded integer

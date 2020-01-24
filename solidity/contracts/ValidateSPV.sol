@@ -12,6 +12,7 @@ library ValidateSPV {
 
     using BTCUtils for bytes;
     using BTCUtils for uint256;
+    using BTCUtils for uint256;
     using BytesLib for bytes;
     using SafeMath for uint256;
 
@@ -193,7 +194,7 @@ library ValidateSPV {
 
             // Require that the header has sufficient work
             _digest = _header.hash256View();
-            if(abi.encodePacked(_digest).reverseEndianness().bytesToUint() > _target) {
+            if(uint256(_digest).reverseUint256() > _target) {
                 return ERR_LOW_WORK;
             }
 
