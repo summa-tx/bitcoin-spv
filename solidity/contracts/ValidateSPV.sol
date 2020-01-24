@@ -12,7 +12,6 @@ library ValidateSPV {
 
     using BTCUtils for bytes;
     using BTCUtils for uint256;
-    using BTCUtils for uint256;
     using BytesLib for bytes;
     using SafeMath for uint256;
 
