@@ -80,9 +80,9 @@ library ValidateSPV {
     function parseInput(bytes memory _input) internal pure returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {
         // NB: If the scriptsig is exactly 00, we are witness.
         //     Otherwise we are compatibility
-        if (keccak256(_input.slice(36, 1)) != keccak256(hex"00")) {
+        if (_input.keccak256Slice(36, 1) != keccak256(hex"00")) {
             _sequence = _input.extractSequenceLegacy();
-            bytes32 _witnessTag = keccak256(_input.slice(36, 3));
+            bytes32 _witnessTag = _input.keccak256Slice(36, 3);
 
             if (_witnessTag == keccak256(hex"220020") || _witnessTag == keccak256(hex"160014")) {
                 _inputType = uint8(InputTypes.COMPATIBILITY);
@@ -106,12 +106,12 @@ library ValidateSPV {
 
         _value = _output.extractValue();
 
-        if (keccak256(_output.slice(9, 1)) == keccak256(hex"6a")) {
+        if (_output.keccak256Slice(9, 1) == keccak256(hex"6a")) {
             // OP_RETURN
             _outputType = uint8(OutputTypes.OP_RETURN);
             _payload = _output.extractOpReturnData();
         } else {
-            bytes32 _prefixHash = keccak256(_output.slice(8, 2));
+            bytes32 _prefixHash = _output.keccak256Slice(8, 2);
             if (_prefixHash == keccak256(hex"2200")) {
                 // P2WSH
                 _outputType = uint8(OutputTypes.WSH);
@@ -168,25 +168,23 @@ library ValidateSPV {
     /// @notice             Compares the hash of each header to the prevHash in the next header
     /// @param _headers     Raw byte array of header chain
     /// @return             The total accumulated difficulty of the header chain, or an error code
-    function validateHeaderChain(bytes memory _headers) internal pure returns (uint256 _totalDifficulty) {
+    function validateHeaderChain(bytes memory _headers) internal view returns (uint256 _totalDifficulty) {
 
         // Check header chain length
         if (_headers.length % 80 != 0) {return ERR_BAD_LENGTH;}
 
         // Initialize header start index
         bytes32 _digest;
-        uint256 _start = 0;
 
         _totalDifficulty = 0;
 
-        for (uint i = 0; i < _headers.length / 80; i++) {
+        for (uint256 _start = 0; _start < _headers.length; _start += 80) {
 
             // ith header start index and ith header
-            _start = i * 80;
             bytes memory _header = _headers.slice(_start, 80);
 
             // After the first header, check that headers are in a chain
-            if (i != 0) {
+            if (_start != 0) {
                 if (!validateHeaderPrevHash(_header, _digest)) {return ERR_INVALID_CHAIN;}
             }
 
@@ -194,8 +192,8 @@ library ValidateSPV {
             uint256 _target = _header.extractTarget();
 
             // Require that the header has sufficient work
-            _digest = _header.hash256();
-            if(abi.encodePacked(_digest).reverseEndianness().bytesToUint() > _target) {
+            _digest = _header.hash256View();
+            if(uint256(_digest).reverseUint256() > _target) {
                 return ERR_LOW_WORK;
             }
 
