@@ -62,7 +62,8 @@ contract ValidateSPVTest {
     /// @dev            Supports Legacy Inputs now too
     /// @param _input   Raw bytes tx input
     /// @return         Tx input sequence number, tx hash, and index
-    function parseInputTx(bytes memory _input) public returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {
+    // DESPITE WHAT THE COMPILER TELLS YOU, THIS CANNOT BE SET TO PURE
+    function parseInputTx(bytes memory _input) public view returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {
         return ValidateSPV.parseInput(_input);
     }
 
@@ -78,7 +79,8 @@ contract ValidateSPVTest {
     /// @dev            Differentiates by output script prefix
     /// @param _output  Raw bytes tx output
     /// @return         Tx output value, output type, payload
-    function parseOutputTx(bytes memory _output) public returns (uint64 _value, uint8 _outputType, bytes memory _payload) {
+    // DESPITE WHAT THE COMPILER TELLS YOU, THIS CANNOT BE SET TO PURE
+    function parseOutputTx(bytes memory _output) public view returns (uint64 _value, uint8 _outputType, bytes memory _payload) {
         return ValidateSPV.parseOutput(_output);
     }
 
@@ -109,7 +111,7 @@ contract ValidateSPVTest {
     /// @notice             Compares the hash of each header to the prevHash in the next header
     /// @param _headers     Raw byte array of header chain
     /// @return             The total accumulated difficulty of the header chain
-    function validateHeaderChainTx(bytes memory _headers) public returns (uint256 _reqDiff) {
+    function validateHeaderChainTx(bytes memory _headers) public view returns (uint256 _reqDiff) {
         return ValidateSPV.validateHeaderChain(_headers);
     }
 

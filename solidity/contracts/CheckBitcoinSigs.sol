@@ -125,14 +125,14 @@ library CheckBitcoinSigs {
     /// @param _inputPKH        the input pubkeyhash (hash160(sender_pubkey))
     /// @param _inputValue      the value of the input in satoshi
     /// @param _outputValue     the value of the output in satoshi
-    /// @param _outputscript    the length-prefixed output script
+    /// @param _outputScript    the length-prefixed output script
     /// @return                 the double-sha256 (hash256) signature hash as defined by bip143
     function wpkhSpendSighash(
         bytes memory _outpoint,  // 36 byte UTXO id
         bytes20 _inputPKH,       // 20 byte hash160
         bytes8 _inputValue,      // 8-byte LE
         bytes8 _outputValue,     // 8-byte LE
-        bytes20 _outputScript    // lenght-prefixed output script
+        bytes memory _outputScript    // lenght-prefixed output script
     ) internal pure returns (bytes32) {
         // Fixes elements to easily make a 1-in 1-out sighash digest
         // Does not support timelocks
