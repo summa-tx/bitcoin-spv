@@ -302,7 +302,7 @@ describe('utils', () => {
     it('returns invalid chain error as default', () => {
       const err = new Error('200');
       const errMsg = utils.getErrMsg(err);
-      assert.equal(errMsg, 'Header bytes not a valid chain.');
+      assert.equal(errMsg, 'Header bytes not a valid chain');
     });
   });
 });

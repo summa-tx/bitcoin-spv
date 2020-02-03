@@ -573,7 +573,7 @@ export function extractTarget(header) {
 export function calculateDifficulty(target) {
   /* eslint-disable-next-line valid-typeof */
   if (typeof target !== 'bigint') {
-    throw new Error('Argument must be a BigInt.');
+    throw new Error('Argument must be a BigInt');
   }
   return DIFF_ONE_TARGET / target;
 }

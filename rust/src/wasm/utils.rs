@@ -9,15 +9,15 @@ use crate::types::{RawHeader, Hash256Digest, SPVError};
 /// * `e` - The SPV Error
 pub fn match_err_to_string(e: SPVError) -> &'static str {
     match e {
-        SPVError::LargeVarInt => "Multi-byte VarInts not supported.",
-        SPVError::MalformattedOpReturnOutput => "Malformatted data. Must be an op return.",
-        SPVError::MalformattedP2SHOutput => "Maliciously formatted p2sh output.",
-        SPVError::MalformattedP2PKHOutput => "Maliciously formatted p2pkh output.",
-        SPVError::MalformattedWitnessOutput => "Maliciously formatted witness output.",
-        SPVError::MalformattedOutput => "Nonstandard, OP_RETURN, or malformatted output.",
-        SPVError::WrongLengthHeader => "Header bytes not multiple of 80.",
-        SPVError::InsufficientWork => "Header does not meet its own difficulty target.",
-        SPVError::InvalidChain => "Header bytes not a valid chain.",
+        SPVError::LargeVarInt => "Multi-byte VarInts not supported",
+        SPVError::MalformattedOpReturnOutput => "Malformatted data. Must be an op return",
+        SPVError::MalformattedP2SHOutput => "Maliciously formatted p2sh output",
+        SPVError::MalformattedP2PKHOutput => "Maliciously formatted p2pkh output",
+        SPVError::MalformattedWitnessOutput => "Maliciously formatted witness output",
+        SPVError::MalformattedOutput => "Nonstandard, OP_RETURN, or malformatted output",
+        SPVError::WrongLengthHeader => "Header bytes not multiple of 80",
+        SPVError::InsufficientWork => "Header does not meet its own difficulty target",
+        SPVError::InvalidChain => "Header bytes not a valid chain",
         _ => "UnknownError"
     }
 }

@@ -17,26 +17,26 @@
     }
   ],
   "errors": {
-    "HEADER_CHAIN_INVALID": "Header bytes not a valid chain.",
-    "HEADER_CHAIN_BAD_LENGTH": "Header bytes not multiple of 80.",
-    "HEADER_CHAIN_LOW_WORK": "Header does not meet its own difficulty target.",
-    "HEADER_BAD_LENGTH": "Malformatted header. Must be exactly 80 bytes.",
-    "HEADER_HASH_LE": "HashLE is not the correct hash of the header.",
-    "HEADER_HASH_BE": "HashBE is not the BE version of Hash.",
-    "HEADER_MERKLE_ROOT_LE": "MerkleRootLE is not the correct merkle root of the header.",
-    "HEADER_MERKLE_ROOT_BE": "MerkleRootBE is not the BE version of MerkleRootLE.",
-    "HEADER_PREV_HASH_LE": "PrevhashLE is not the correct parent hash of the header.",
-    "HEADER_PREV_HASH": "Prevhash is not the BE version of PrevhashLE.",
-    "PROOF_VIN": "Vin is not valid.",
-    "PROOF_VOUT": "Vout is not valid.",
-    "PROOF_TXID": "Version, Vin, Vout and Locktime did not yield correct TxID.",
-    "PROOF_MERKLE_PROOF": "Merkle Proof is not valid.",
-    "OUTPUT_BAD_LENGTH": "Multi-byte VarInts not supported.",
-    "OUTPUT_OP_RETURN_FORMAT": "Malformatted data. Must be an op return.",
-    "OUTPUT_WITNESS_FORMAT": "Maliciously formatted witness output.",
-    "OUTPUT_P2PKH_FORMAT": "Maliciously formatted p2pkh output.",
-    "OUTPUT_P2SH_FORMAT": "Maliciously formatted p2sh output.",
-    "OUTPUT_ABNORMAL_OUTPUT": "Nonstandard, OP_RETURN, or malformatted output."
+    "HEADER_CHAIN_INVALID": "Header bytes not a valid chain",
+    "HEADER_CHAIN_BAD_LENGTH": "Header bytes not multiple of 80",
+    "HEADER_CHAIN_LOW_WORK": "Header does not meet its own difficulty target",
+    "HEADER_BAD_LENGTH": "Malformatted header. Must be exactly 80 bytes",
+    "HEADER_HASH_LE": "HashLE is not the correct hash of the header",
+    "HEADER_HASH_BE": "HashBE is not the BE version of Hash",
+    "HEADER_MERKLE_ROOT_LE": "MerkleRootLE is not the correct merkle root of the header",
+    "HEADER_MERKLE_ROOT_BE": "MerkleRootBE is not the BE version of MerkleRootLE",
+    "HEADER_PREV_HASH_LE": "PrevhashLE is not the correct parent hash of the header",
+    "HEADER_PREV_HASH": "Prevhash is not the BE version of PrevhashLE",
+    "PROOF_VIN": "Vin is not valid",
+    "PROOF_VOUT": "Vout is not valid",
+    "PROOF_TXID": "Version, Vin, Vout and Locktime did not yield correct TxID",
+    "PROOF_MERKLE_PROOF": "Merkle Proof is not valid",
+    "OUTPUT_BAD_LENGTH": "Multi-byte VarInts not supported",
+    "OUTPUT_OP_RETURN_FORMAT": "Malformatted data. Must be an op return",
+    "OUTPUT_WITNESS_FORMAT": "Maliciously formatted witness output",
+    "OUTPUT_P2PKH_FORMAT": "Maliciously formatted p2pkh output",
+    "OUTPUT_P2SH_FORMAT": "Maliciously formatted p2sh output",
+    "OUTPUT_ABNORMAL_OUTPUT": "Nonstandard, OP_RETURN, or malformatted output"
   },
   "determineVarIntDataLength": [
     {
@@ -267,7 +267,7 @@
   "determineOutputLengthError": [
     {
       "input": "0x0000000000000000FF00",
-      "errorMessage": "Multi-byte VarInts not supported."
+      "errorMessage": "Multi-byte VarInts not supported"
     }
   ],
   "extractOutputAtIndex": [
@@ -341,7 +341,7 @@
   "extractOpReturnDataError": [
     {
       "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
-      "errorMessage": "Malformatted data. Must be an op return."
+      "errorMessage": "Malformatted data. Must be an op return"
     }
   ],
   "extractHash": [
@@ -361,23 +361,23 @@
   "extractHashError": [
     {
       "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-      "errorMessage": "Nonstandard, OP_RETURN, or malformatted output."
+      "errorMessage": "Nonstandard, OP_RETURN, or malformatted output"
     },
     {
       "input": "0x0000000000000000220017",
-      "errorMessage": "Maliciously formatted witness output."
+      "errorMessage": "Maliciously formatted witness output"
     },
     {
       "input": "0x00000000000000001976a912",
-      "errorMessage": "Maliciously formatted p2pkh output."
+      "errorMessage": "Maliciously formatted p2pkh output"
     },
     {
       "input": "0x00000000000000001976a914FFFF",
-      "errorMessage": "Maliciously formatted p2pkh output."
+      "errorMessage": "Maliciously formatted p2pkh output"
     },
     {
       "input": "0x000000000000000017a914FF",
-      "errorMessage": "Maliciously formatted p2sh output."
+      "errorMessage": "Maliciously formatted p2sh output"
     }
   ],
   "validateVin": [
@@ -425,7 +425,7 @@
     },{
       "input": "0x024897070000000000ff0020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
       "output": false,
-      "solidityError": "Multi-byte VarInts not supported."
+      "solidityError": "Multi-byte VarInts not supported"
     }
   ],
   "extractMerkleRootBE": [
@@ -455,15 +455,15 @@
   "calculateDifficultyError": [
     {
       "input": 7,
-      "errorMessage": "Argument must be a BigInt."
+      "errorMessage": "Argument must be a BigInt"
     },
     {
       "input": "7",
-      "errorMessage": "Argument must be a BigInt."
+      "errorMessage": "Argument must be a BigInt"
     },
     {
       "input": "0x",
-      "errorMessage": "Argument must be a BigInt."
+      "errorMessage": "Argument must be a BigInt"
     }
   ],
   "verifyHash256Merkle": [
@@ -684,7 +684,7 @@
   "parseHeaderError": [
     {
       "input": "0x00002073bd2184edd9c4fc76642ea6754ee40136970efc10c4190000000000000000000296ef123ea96da5cf695f22bf7d94be87d49db1ad7ac371ac43c4da4161c8c216349c5ba11928170d38782b",
-      "errorMessage": "Malformatted header. Must be exactly 80 bytes."
+      "errorMessage": "Malformatted header. Must be exactly 80 bytes"
     }
   ],
   "parseHeaderSolErr": [
@@ -749,17 +749,17 @@
   "validateHeaderChainError": [
     {
       "input": "0x00002073bd2184edd9c4fc76642ea6754ee40136970efc10c4190000000000000000000296ef123ea96da5cf695f22bf7d94be87d49db1ad7ac371ac43c4da4161c8c216349c5ba11928170d38782b00000020fe70e48339d6b17fbbf1340d245338f57336e97767cc240000000000000000005af53b865c27c6e9b5e5db4c3ea8e024f8329178a79ddb39f7727ea2fe6e6825d1349c5ba1192817e2d9515900000020baaea6746f4c16ccb7cd961655b636d39b5fe1519b8f15000000000000000000c63a8848a448a43c9e4402bd893f701cd11856e14cbbe026699e8fdc445b35a8d93c9c5ba1192817b945dc6c00000020f402c0b551b944665332466753f1eebb846a64ef24c71700000000000000000033fc68e070964e908d961cd11033896fa6c9b8b76f64a2db7ea928afa7e304257d3f9c5ba11928176164145d0000ff3f63d40efa46403afd71a254b54f2b495b7b0164991c2d22000000000000000000f046dc1b71560b7d0786cfbdb25ae320bd9644c98d5c7c77bf9df05cbe96212758419c5ba1192817a2bb2caa00000020e2d4f0edd5edd80bdcb880535443747c6b22b48fb6200d0000000000000000001d3799aa3eb8d18916f46bf2cf807cb89a9b1b4c56c3f2693711bf1064d9a32435429c5ba1192817752e49ae0000002022dba41dff28b337ee3463bf1ab1acf0e57443e0f7ab1d000000000000000000c3aadcc8def003ecbd1ba514592a18baddddcd3a287ccf74f584b04c5c10044e97479c5ba1192817c341f595",
-      "errorMessage": "Header bytes not multiple of 80.",
+      "errorMessage": "Header bytes not multiple of 80",
       "solidityError": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     },
     {
       "input": "0x0000002073bd2184edd9c4fc76642ea6754ee40136970efc10c4190000000000000000000296ef123ea96da5cf695f22bf7d94be87d49db1ad7ac371ac43c4da4161c8c216349c5ba11928170d38782b0000002073bd2184edd9c4fc76642ea6754ee40136970efc10c4190000000000000000005af53b865c27c6e9b5e5db4c3ea8e024f8329178a79ddb39f7727ea2fe6e6825d1349c5ba1192817e2d951590000002073bd2184edd9c4fc76642ea6754ee40136970efc10c419000000000000000000c63a8848a448a43c9e4402bd893f701cd11856e14cbbe026699e8fdc445b35a8d93c9c5ba1192817b945dc6c00000020f402c0b551b944665332466753f1eebb846a64ef24c71700000000000000000033fc68e070964e908d961cd11033896fa6c9b8b76f64a2db7ea928afa7e304257d3f9c5ba11928176164145d0000ff3f63d40efa46403afd71a254b54f2b495b7b0164991c2d22000000000000000000f046dc1b71560b7d0786cfbdb25ae320bd9644c98d5c7c77bf9df05cbe96212758419c5ba1192817a2bb2caa00000020e2d4f0edd5edd80bdcb880535443747c6b22b48fb6200d0000000000000000001d3799aa3eb8d18916f46bf2cf807cb89a9b1b4c56c3f2693711bf1064d9a32435429c5ba1192817752e49ae0000002022dba41dff28b337ee3463bf1ab1acf0e57443e0f7ab1d000000000000000000c3aadcc8def003ecbd1ba514592a18baddddcd3a287ccf74f584b04c5c10044e97479c5ba1192817c341f595",
-      "errorMessage": "Header bytes not a valid chain.",
+      "errorMessage": "Header bytes not a valid chain",
       "solidityError": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe"
     },
     {
       "input": "0xbbbbbbbb7777777777777777777777777777777777777777777777777777777777777777e0e333d0fd648162d344c1a760a319f2184ab2dce1335353f36da2eea155f97fccccccccffff001fe85f0000bbbbbbbbcbee0f1f713bdfca4aa550474f7f252581268935ef8948f18d48ec0a2b4800008888888888888888888888888888888888888888888888888888888888888888ccccccccffff001f01440000bbbbbbbbfe6c72f9b42e11c339a9cbe1185b2e16b74acce90c8316f4a5c8a6c0a10f00008888888888888888888888888888888888888888888888888888888888888888dcccccccffff001f30340000",
-      "errorMessage": "Header does not meet its own difficulty target.",
+      "errorMessage": "Header does not meet its own difficulty target",
       "solidityError": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd"
     }
   ],
@@ -778,7 +778,7 @@
         "bytes": "0x00",
         "num": 2
       },
-      "errorMessage": "Slice must not use negative indexes.",
+      "errorMessage": "Slice must not use negative indexes",
       "solidityError": "Underflow during subtraction"
     }
   ],
@@ -871,7 +871,7 @@
         "arr1": "0xffffff",
         "arr2": "0xffffff"
       },
-      "errorMessage": "Arrays must be of type Uint8Array."
+      "errorMessage": "Arrays must be of type Uint8Array"
     }
   ],
   "safeSlice": [
@@ -919,7 +919,7 @@
         "start": 0,
         "end": 6
       },
-      "errorMessage": "Tried to slice past end of array."
+      "errorMessage": "Tried to slice past end of array"
     },
     {
       "input": {
@@ -927,7 +927,7 @@
         "start": -1,
         "end": 3
       },
-      "errorMessage": "Slice must not use negative indexes."
+      "errorMessage": "Slice must not use negative indexes"
     },
     {
       "input": {
@@ -935,7 +935,7 @@
         "start": 2,
         "end": -1
       },
-      "errorMessage": "Slice must not use negative indexes."
+      "errorMessage": "Slice must not use negative indexes"
     },
     {
       "input": {
@@ -943,7 +943,7 @@
         "start": 4,
         "end": 3
       },
-      "errorMessage": "Slice must not have 0 length."
+      "errorMessage": "Slice must not have 0 length"
     },
     {
       "input": {
@@ -951,7 +951,7 @@
         "start": 4,
         "end": 4
       },
-      "errorMessage": "Slice must not have 0 length."
+      "errorMessage": "Slice must not have 0 length"
     }
   ],
   "concatUint8Arrays": [

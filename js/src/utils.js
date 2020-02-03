@@ -73,7 +73,7 @@ export function serializeHex(uint8arr) {
   }
 
   if (!(uint8arr instanceof Uint8Array)) {
-    throw new Error('Cannot serialize hex, must be a Uint8Array.');
+    throw new Error('Cannot serialize hex, must be a Uint8Array');
   }
 
   let hexStr = '';
@@ -99,7 +99,7 @@ export function deserializeHex(hexStr) {
   }
 
   if (typeof hexStr !== 'string') {
-    throw new TypeError('Error deserializing hex, must be a string.');
+    throw new TypeError('Error deserializing hex, must be a string');
   }
 
   let hex = '';
@@ -110,7 +110,7 @@ export function deserializeHex(hexStr) {
   }
 
   if (hex.length % 2 !== 0) {
-    throw new TypeError('Error deserializing hex, string length is odd.');
+    throw new TypeError('Error deserializing hex, string length is odd');
   }
 
   const a = [];
@@ -161,7 +161,7 @@ export function ripemd160(buf) {
  */
 export function typedArraysAreEqual(a, b) {
   if (!(a instanceof Uint8Array) || !(b instanceof Uint8Array)) {
-    throw new Error('Arrays must be of type Uint8Array.');
+    throw new Error('Arrays must be of type Uint8Array');
   }
 
   if (a.byteLength !== b.byteLength) return false;
@@ -206,7 +206,7 @@ export function safeSlice(buf, first, last) {
 
   /* eslint-disable-next-line valid-typeof */
   if (typeof first === 'bigint') {
-    if (first > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('BigInt argument out of safe number range.');
+    if (first > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('BigInt argument out of safe number range');
     start = Number(first);
   } else {
     start = first;
@@ -214,15 +214,15 @@ export function safeSlice(buf, first, last) {
 
   /* eslint-disable-next-line valid-typeof */
   if (typeof last === 'bigint') {
-    if (last > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('BigInt argument out of safe number range.');
+    if (last > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('BigInt argument out of safe number range');
     end = Number(last);
   } else {
     end = last;
   }
 
-  if (end > buf.length) { throw new Error('Tried to slice past end of array.'); }
-  if (start < 0 || end < 0) { throw new Error('Slice must not use negative indexes.'); }
-  if (start >= end) { throw new Error('Slice must not have 0 length.'); }
+  if (end > buf.length) { throw new Error('Tried to slice past end of array'); }
+  if (start < 0 || end < 0) { throw new Error('Slice must not use negative indexes'); }
+  if (start >= end) { throw new Error('Slice must not have 0 length'); }
   return buf.slice(start, end);
 }
 
@@ -241,7 +241,7 @@ export function concatUint8Arrays(...arrays) {
     if (arr instanceof Uint8Array) {
       length += arr.length;
     } else {
-      throw new Error('Arrays must be of type Uint8Array.');
+      throw new Error('Arrays must be of type Uint8Array');
     }
   });
 

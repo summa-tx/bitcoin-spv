@@ -127,7 +127,7 @@ func ValidateHeaderPrevHash(header RawHeader, prevHeaderDigest Hash256Digest) bo
 func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 	// Check header chain length
 	if len(headers)%80 != 0 {
-		return sdk.ZeroUint(), errors.New("Header bytes not multiple of 80.")
+		return sdk.ZeroUint(), errors.New("Header bytes not multiple of 80")
 	}
 
 	var digest Hash256Digest
@@ -140,7 +140,7 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 		// After the first header, check that headers are in a chain
 		if i != 0 {
 			if !ValidateHeaderPrevHash(header, digest) {
-				return sdk.ZeroUint(), errors.New("Header bytes not a valid chain.")
+				return sdk.ZeroUint(), errors.New("Header bytes not a valid chain")
 			}
 		}
 
@@ -150,7 +150,7 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 		// Require that the header has sufficient work
 		digest = Hash256(header[:])
 		if !ValidateHeaderWork(digest, target) {
-			return sdk.ZeroUint(), errors.New("Header does not meet its own difficulty target.")
+			return sdk.ZeroUint(), errors.New("Header does not meet its own difficulty target")
 		}
 
 		totalDifficulty = totalDifficulty.Add(CalculateDifficulty(target))
@@ -163,37 +163,37 @@ func (b BitcoinHeader) Validate() (bool, error) {
 	// Check that HashLE is the correct hash of the raw header
 	headerHash := Hash256(b.Raw[:])
 	if !bytes.Equal(headerHash[:], b.HashLE[:]) {
-		return false, errors.New("HashLE is not the correct hash of the header.")
+		return false, errors.New("HashLE is not the correct hash of the header")
 	}
 
 	// Check that HashLE is the reverse of Hash
 	reversedHash := ReverseEndianness(b.Hash[:])
 	if !bytes.Equal(reversedHash, b.HashLE[:]) {
-		return false, errors.New("HashBE is not the BE version of Hash.")
+		return false, errors.New("HashBE is not the BE version of Hash")
 	}
 
 	// Check that the MerkleRootLE is the correct MerkleRoot for the header
 	extractedMerkleRootLE := ExtractMerkleRootLE(b.Raw)
 	if !bytes.Equal(extractedMerkleRootLE[:], b.MerkleRootLE[:]) {
-		return false, errors.New("MerkleRootLE is not the correct merkle root of the header.")
+		return false, errors.New("MerkleRootLE is not the correct merkle root of the header")
 	}
 
 	// Check that MerkleRootLE is the reverse of MerkleRoot
 	reversedMerkleRoot := ReverseEndianness(b.MerkleRoot[:])
 	if !bytes.Equal(reversedMerkleRoot, b.MerkleRootLE[:]) {
-		return false, errors.New("MerkleRootBE is not the BE version of MerkleRootLE.")
+		return false, errors.New("MerkleRootBE is not the BE version of MerkleRootLE")
 	}
 
 	// Check that PrevHash is the correct PrevHash for the header
 	extractedPrevHashLE := ExtractPrevBlockHashLE(b.Raw)
 	if bytes.Compare(extractedPrevHashLE[:], b.PrevHashLE[:]) != 0 {
-		return false, errors.New("PrevhashLE is not the correct parent hash of the header.")
+		return false, errors.New("PrevhashLE is not the correct parent hash of the header")
 	}
 
 	// Check that PrevHashLE is the reverse of Prevhash
 	reversedPrevHash := ReverseEndianness(b.PrevHash[:])
 	if !bytes.Equal(reversedPrevHash, b.PrevHashLE[:]) {
-		return false, errors.New("Prevhash is not the BE version of PrevhashLE.")
+		return false, errors.New("Prevhash is not the BE version of PrevhashLE")
 	}
 
 	return true, nil
@@ -206,17 +206,17 @@ func (s SPVProof) Validate() (bool, error) {
 
 	validVin := ValidateVin(s.Vin)
 	if !validVin {
-		return false, errors.New("Vin is not valid.")
+		return false, errors.New("Vin is not valid")
 	}
 	validVout := ValidateVout(s.Vout)
 	if !validVout {
-		return false, errors.New("Vout is not valid.")
+		return false, errors.New("Vout is not valid")
 	}
 
 	// Calculate the Tx ID and compare it to the one in SPVProof
 	txid := CalculateTxID(s.Version, s.Vin, s.Vout, s.Locktime)
 	if !bytes.Equal(txid[:], s.TxIDLE[:]) {
-		return false, errors.New("Version, Vin, Vout and Locktime did not yield correct TxID.")
+		return false, errors.New("Version, Vin, Vout and Locktime did not yield correct TxID")
 	}
 
 	// Validate all the fields in ConfirmingHeader
@@ -228,7 +228,7 @@ func (s SPVProof) Validate() (bool, error) {
 	// Check that the proof is valid
 	validProof := Prove(s.TxIDLE, s.ConfirmingHeader.MerkleRootLE, intermediateNodes, index)
 	if !validProof {
-		return false, errors.New("Merkle Proof is not valid.")
+		return false, errors.New("Merkle Proof is not valid")
 	}
 
 	// If there are no errors, return true

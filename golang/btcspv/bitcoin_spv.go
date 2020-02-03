@@ -202,7 +202,7 @@ func ExtractTxIndex(input []byte) uint {
 func DetermineOutputLength(output []byte) (uint, error) {
 	length := uint(output[8])
 	if length > 0xfc {
-		return 0, errors.New("Multi-byte VarInts not supported.")
+		return 0, errors.New("Multi-byte VarInts not supported")
 	}
 	return length + uint(9), nil
 }
@@ -247,7 +247,7 @@ func ExtractValue(output []byte) uint {
 // Value is an 8byte little endian number
 func ExtractOpReturnData(output []byte) ([]byte, error) {
 	if output[9] != 0x6a {
-		return nil, errors.New("Malformatted data. Must be an op return.")
+		return nil, errors.New("Malformatted data. Must be an op return")
 	}
 
 	dataLen := output[10]
@@ -263,7 +263,7 @@ func ExtractHash(output []byte) ([]byte, error) {
 	if output[9] == 0 {
 		length := ExtractOutputScriptLen(output) - 2
 		if uint(output[10]) != length {
-			return nil, errors.New("Maliciously formatted witness output.")
+			return nil, errors.New("Maliciously formatted witness output")
 		}
 		return output[11 : 11+length], nil
 	}
@@ -272,7 +272,7 @@ func ExtractHash(output []byte) ([]byte, error) {
 	if bytes.Equal(tag, []byte{0x19, 0x76, 0xa9}) {
 		lastTwo := output[len(output)-2:]
 		if output[11] != 0x14 || !bytes.Equal(lastTwo, []byte{0x88, 0xac}) {
-			return nil, errors.New("Maliciously formatted p2pkh output.")
+			return nil, errors.New("Maliciously formatted p2pkh output")
 		}
 		return output[12:32], nil
 	}
@@ -280,12 +280,12 @@ func ExtractHash(output []byte) ([]byte, error) {
 	/* P2SH */
 	if bytes.Equal(tag, []byte{0x17, 0xa9, 0x14}) {
 		if output[len(output)-1] != 0x87 {
-			return nil, errors.New("Maliciously formatted p2sh output.")
+			return nil, errors.New("Maliciously formatted p2sh output")
 		}
 		return output[11:31], nil
 	}
 
-	return nil, errors.New("Nonstandard, OP_RETURN, or malformatted output.")
+	return nil, errors.New("Nonstandard, OP_RETURN, or malformatted output")
 }
 
 //
