@@ -289,7 +289,6 @@ describe('utils', () => {
       const headerKeys = Object.keys(errors.HEADER);
       const proofKeys = Object.keys(errors.PROOF);
       const outputKeys = Object.keys(errors.OUTPUT)
-      const errCodes = [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 201, 202, 203, 204, 301, 302, 303, 304, 305, 306];
 
       // returns correct header error
       for (let i = 0; i < headerKeys.length; i += 1) {
