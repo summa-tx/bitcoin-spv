@@ -58,11 +58,29 @@ contract ValidateSPVTest {
         return ValidateSPV.parseInput(_input);
     }
 
+    /// @notice         Parses a tx input from raw input bytes
+    /// @dev            Supports Legacy Inputs now too
+    /// @param _input   Raw bytes tx input
+    /// @return         Tx input sequence number, tx hash, and index
+    // DESPITE WHAT THE COMPILER TELLS YOU, THIS CANNOT BE SET TO PURE
+    function parseInputTx(bytes memory _input) public view returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {
+        return ValidateSPV.parseInput(_input);
+    }
+
     /// @notice         Parses a tx output from raw output bytes
     /// @dev            Differentiates by output script prefix
     /// @param _output  Raw bytes tx output
     /// @return         Tx output value, output type, payload
     function parseOutput(bytes memory _output) public pure returns (uint64 _value, uint8 _outputType, bytes memory _payload) {
+        return ValidateSPV.parseOutput(_output);
+    }
+
+    /// @notice         Parses a tx output from raw output bytes
+    /// @dev            Differentiates by output script prefix
+    /// @param _output  Raw bytes tx output
+    /// @return         Tx output value, output type, payload
+    // DESPITE WHAT THE COMPILER TELLS YOU, THIS CANNOT BE SET TO PURE
+    function parseOutputTx(bytes memory _output) public view returns (uint64 _value, uint8 _outputType, bytes memory _payload) {
         return ValidateSPV.parseOutput(_output);
     }
 
@@ -80,11 +98,20 @@ contract ValidateSPVTest {
     ) {
         return ValidateSPV.parseHeader(_header);
     }
+
     /// @notice             Checks validity of header chain
     /// @notice             Compares the hash of each header to the prevHash in the next header
     /// @param _headers     Raw byte array of header chain
     /// @return             The total accumulated difficulty of the header chain
-    function validateHeaderChain(bytes memory _headers) public pure returns (uint256 _reqDiff) {
+    function validateHeaderChain(bytes memory _headers) public view returns (uint256 _reqDiff) {
+        return ValidateSPV.validateHeaderChain(_headers);
+    }
+
+    /// @notice             Checks validity of header chain
+    /// @notice             Compares the hash of each header to the prevHash in the next header
+    /// @param _headers     Raw byte array of header chain
+    /// @return             The total accumulated difficulty of the header chain
+    function validateHeaderChainTx(bytes memory _headers) public view returns (uint256 _reqDiff) {
         return ValidateSPV.validateHeaderChain(_headers);
     }
 

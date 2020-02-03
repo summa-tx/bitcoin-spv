@@ -52,6 +52,29 @@ library BTCUtils {
         return _newValue;
     }
 
+    /// @notice          Changes the endianness of a uint256
+    /// @dev             https://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel
+    /// @param _b        The unsigned integer to reverse
+    /// @return          The reversed value
+    function reverseUint256(uint256 _b) internal pure returns (uint256 v) {
+        v = _b;
+
+        // swap bytes
+        v = ((v >> 8) & 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF) |
+            ((v & 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF) << 8);
+        // swap 2-byte long pairs
+        v = ((v >> 16) & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) |
+            ((v & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) << 16);
+        // swap 4-byte long pairs
+        v = ((v >> 32) & 0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) |
+            ((v & 0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) << 32);
+        // swap 8-byte long pairs
+        v = ((v >> 64) & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) |
+            ((v & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) << 64);
+        // swap 16-byte long pairs
+        v = (v >> 128) | (v << 128);
+    }
+
     /// @notice          Converts big-endian bytes to a uint
     /// @dev             Traverses the byte array and sums the bytes
     /// @param _b        The big-endian bytes-encoded integer
@@ -92,6 +115,19 @@ library BTCUtils {
         return abi.encodePacked(sha256(abi.encodePacked(sha256(_b)))).toBytes32();
     }
 
+    /// @notice          Implements bitcoin's hash256 (double sha2)
+    /// @dev             sha2 is precompiled smart contract located at address(2)
+    /// @param _b        The pre-image
+    /// @return          The digest
+    function hash256View(bytes memory _b) internal view returns (bytes32 res) {
+        assembly {
+            let ptr := mload(0x40)
+            pop(staticcall(gas, 2, add(_b, 32), mload(_b), ptr, 32))
+            pop(staticcall(gas, 2, ptr, 32, ptr, 32))
+            res := mload(ptr)
+        }
+    }
+
     /* ************ */
     /* Legacy Input */
     /* ************ */
@@ -123,7 +159,7 @@ library BTCUtils {
     /// @param _input    The input
     /// @return          True for legacy, False for witness
     function isLegacyInput(bytes memory _input) internal pure returns (bool) {
-        return keccak256(_input.slice(36, 1)) != keccak256(hex"00");
+        return _input.keccak256Slice(36, 1) != keccak256(hex"00");
     }
 
     /// @notice          Determines the length of an input from its scriptsig
@@ -319,7 +355,7 @@ library BTCUtils {
     /// @param _output   The output
     /// @return          Any data contained in the opreturn output, null if not an op return
     function extractOpReturnData(bytes memory _output) internal pure returns (bytes memory) {
-        if (keccak256(_output.slice(9, 1)) != keccak256(hex"6a")) {
+        if (_output.keccak256Slice(9, 1) != keccak256(hex"6a")) {
             return hex"";
         }
         bytes memory _dataLen = _output.slice(10, 1);
@@ -339,12 +375,12 @@ library BTCUtils {
             }
             return _output.slice(11, _len);
         } else {
-            bytes32 _tag = keccak256(_output.slice(8, 3));
+            bytes32 _tag = _output.keccak256Slice(8, 3);
             // p2pkh
             if (_tag == keccak256(hex"1976a9")) {
                 // Check for maliciously formatted p2pkh
                 if (uint8(_output.slice(11, 1)[0]) != 0x14 ||
-                    keccak256(_output.slice(_output.length - 2, 2)) != keccak256(hex"88ac")) {
+                    _output.keccak256Slice(_output.length - 2, 2) != keccak256(hex"88ac")) {
                     return hex"";
                 }
                 return _output.slice(12, 20);
