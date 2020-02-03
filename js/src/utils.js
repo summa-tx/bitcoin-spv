@@ -295,47 +295,50 @@ export function getErrMsg(e) {
   }
 
   switch (e.message) {
-    case '1':
-      return errors.HEADER_CHAIN_INVALID;
-    case '2':
-      return errors.HEADER_CHAIN_BAD_LENGTH;
-    case '3':
-      return errors.HEADER_CHAIN_LOW_WORK;
-    case '4':
-      return errors.HEADER_BAD_LENGTH;
-    case '5':
-      return errors.HEADER_HASH_LE;
-    case '6':
-      return errors.HEADER_HASH_BE;
-    case '7':
-      return errors.HEADER_MERKLE_ROOT_LE;
-    case '8':
-      return errors.HEADER_MERKLE_ROOT_BE;
-    case '9':
-      return errors.HEADER_PREV_HASH_LE;
-    case '10':
-      return errors.HEADER_PREV_HASH;
-    case '11':
-      return errors.PROOF_VIN;
-    case '12':
-      return errors.PROOF_VOUT;
-    case '13':
-      return errors.PROOF_TXID;
-    case '14':
-      return errors.PROOF_MERKLE_PROOF;
-    case '15':
-      return errors.OUTPUT_BAD_LENGTH;
-    case '16':
-      return errors.OUTPUT_OP_RETURN_FORMAT;
-    case '17':
-      return errors.OUTPUT_WITNESS_FORMAT;
-    case '18':
-      return errors.OUTPUT_P2PKH_FORMAT;
-    case '19':
-      return errors.OUTPUT_P2SH_FORMAT;
-    case '20':
-      return errors.OUTPUT_ABNORMAL_OUTPUT;
+    /* 100 block: Header errors */
+    case '101':
+      return errors.HEADER.CHAIN_INVALID;
+    case '102':
+      return errors.HEADER.CHAIN_BAD_LENGTH;
+    case '103':
+      return errors.HEADER.CHAIN_LOW_WORK;
+    case '104':
+      return errors.HEADER.BAD_LENGTH;
+    case '105':
+      return errors.HEADER.HASH_LE;
+    case '106':
+      return errors.HEADER.HASH_BE;
+    case '107':
+      return errors.HEADER.MERKLE_ROOT_LE;
+    case '108':
+      return errors.HEADER.MERKLE_ROOT_BE;
+    case '109':
+      return errors.HEADER.PREV_HASH_LE;
+    case '110':
+      return errors.HEADER.PREV_HASH;
+    /* 200 block: Proof errors */
+    case '201':
+      return errors.PROOF.VIN;
+    case '202':
+      return errors.PROOF.VOUT;
+    case '203':
+      return errors.PROOF.TXID;
+    case '204':
+      return errors.PROOF.MERKLE_PROOF;
+    /* 300 block: Output errors */
+    case '301':
+      return errors.OUTPUT.BAD_LENGTH;
+    case '302':
+      return errors.OUTPUT.OP_RETURN_FORMAT;
+    case '303':
+      return errors.OUTPUT.WITNESS_FORMAT;
+    case '304':
+      return errors.OUTPUT.P2PKH_FORMAT;
+    case '305':
+      return errors.OUTPUT.P2SH_FORMAT;
+    case '306':
+      return errors.OUTPUT.ABNORMAL_OUTPUT;
     default:
-      return errors.HEADER_CHAIN_INVALID;
+      return errors.HEADER.CHAIN_INVALID;
   }
 }

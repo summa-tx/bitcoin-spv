@@ -286,12 +286,30 @@ describe('utils', () => {
 
   describe('#getErrMsg', () => {
     it('returns string associated with error code', () => {
-      const errKeys = Object.keys(errors);
+      const headerKeys = Object.keys(errors.HEADER);
+      const proofKeys = Object.keys(errors.PROOF);
+      const outputKeys = Object.keys(errors.OUTPUT)
+      const errCodes = [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 201, 202, 203, 204, 301, 302, 303, 304, 305, 306];
 
-      for (let i = 0; i < errKeys.length; i += 1) {
-        const err = new Error(`${i + 1}`);
+      // returns correct header error
+      for (let i = 0; i < headerKeys.length; i += 1) {
+        const err = new Error(`${101 + i}`);
         const errMsg = utils.getErrMsg(err);
-        assert.equal(errMsg, errors[errKeys[i]]);
+        assert.equal(errMsg, errors.HEADER[headerKeys[i]]);
+      }
+
+      // returns correct proof error
+      for (let i = 0; i < proofKeys.length; i += 1) {
+        const err = new Error(`${201 + i}`);
+        const errMsg = utils.getErrMsg(err);
+        assert.equal(errMsg, errors.PROOF[proofKeys[i]]);
+      }
+
+      // returns correct output error
+      for (let i = 0; i < outputKeys.length; i += 1) {
+        const err = new Error(`${301 + i}`);
+        const errMsg = utils.getErrMsg(err);
+        assert.equal(errMsg, errors.OUTPUT[outputKeys[i]]);
       }
     });
     it('returns error message if it is not a code', () => {

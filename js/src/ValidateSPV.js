@@ -154,7 +154,7 @@ export function parseOutput(output) {
 export function parseHeader(header) {
   // If header has an invalid length, bubble up error
   if (header.length !== 80) {
-    throw new TypeError(4);
+    throw new TypeError(104);
   }
 
   const digest = utils.reverseEndianness(BTCUtils.hash256(header));
@@ -219,7 +219,7 @@ export function validateHeaderPrevHashLE(header, prevHeaderDigest) {
 export function validateHeaderChain(headers) {
   // Check header chain length
   if (headers.length % 80 !== 0) {
-    throw new TypeError(2);
+    throw new TypeError(102);
   }
 
   let digest;
@@ -233,7 +233,7 @@ export function validateHeaderChain(headers) {
     // After the first header, check that headers are in a chain
     if (i !== 0) {
       if (!validateHeaderPrevHashLE(header, digest)) {
-        throw new Error(1);
+        throw new Error(101);
       }
     }
 
@@ -243,7 +243,7 @@ export function validateHeaderChain(headers) {
     // Require that the header has sufficient work
     digest = BTCUtils.hash256(header);
     if (!validateHeaderWork(digest, target)) {
-      throw new Error(3);
+      throw new Error(103);
     }
 
     totalDifficulty += BTCUtils.calculateDifficulty(target);
@@ -273,37 +273,37 @@ export function validateHeader(header) {
   // Check that HashLE is the correct hash of the raw header
   const headerHash = BTCUtils.hash256(header.raw);
   if (!utils.typedArraysAreEqual(headerHash, header.hash_le)) {
-    throw new Error(5);
+    throw new Error(105);
   }
 
   // Check that HashLE is the reverse of Hash
   const reversedHash = utils.reverseEndianness(header.hash);
   if (!utils.typedArraysAreEqual(reversedHash, header.hash_le)) {
-    throw new Error(6);
+    throw new Error(106);
   }
 
   // Check that the MerkleRootLE is the correct MerkleRoot for the header
   const merkleRootLE = BTCUtils.extractMerkleRootLE(header.raw);
   if (!utils.typedArraysAreEqual(merkleRootLE, header.merkle_root_le)) {
-    throw new Error(7);
+    throw new Error(107);
   }
 
   // Check that MerkleRootLE is the reverse of MerkleRoot
   const reversedMerkleRoot = utils.reverseEndianness(header.merkle_root);
   if (!utils.typedArraysAreEqual(reversedMerkleRoot, header.merkle_root_le)) {
-    throw new Error(8);
+    throw new Error(108);
   }
 
   // Check that PrevHash is the correct PrevHash for the header
   const extractedPrevHash = BTCUtils.extractPrevBlockLE(header.raw);
   if (!utils.typedArraysAreEqual(extractedPrevHash, header.prevhash_le)) {
-    throw new Error(9);
+    throw new Error(109);
   }
 
   // Check that PrevhashLE is the reverse of Prevhash
   const reversedPrevhash = utils.reverseEndianness(header.prevhash);
   if (!utils.typedArraysAreEqual(reversedPrevhash, header.prevhash_le)) {
-    throw new Error(10);
+    throw new Error(110);
   }
 
   return true;
@@ -350,24 +350,24 @@ export function validateProof(proof) {
 
   const validVin = BTCUtils.validateVin(vin);
   if (!validVin) {
-    throw new Error(11);
+    throw new Error(201);
   }
 
   const validVout = BTCUtils.validateVout(vout);
   if (!validVout) {
-    throw new Error(12);
+    throw new Error(202);
   }
 
   const txID = calculateTxId(version, vin, vout, locktime);
   if (!utils.typedArraysAreEqual(txID, txIdLE)) {
-    throw new Error(13);
+    throw new Error(203);
   }
 
   validateHeader(confirmingHeader);
 
   const validProof = prove(txIdLE, merkleRootLE, intermediateNodes, index);
   if (!validProof) {
-    throw new Error(14);
+    throw new Error(204);
   }
 
   return true;
