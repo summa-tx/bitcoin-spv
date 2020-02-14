@@ -160,7 +160,7 @@ contract('BTCUtils', () => {
     }
   });
 
-  it('extracts the hash from an output', async () => {
+  it('extracts the hash from a standard output', async () => {
     for (let i = 0; i < extractHash.length; i += 1) {
       const res = await instance.extractHash(extractHash[i].input);
       assert.strictEqual(res, extractHash[i].output);
