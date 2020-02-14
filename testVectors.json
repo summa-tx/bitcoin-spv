@@ -240,6 +240,10 @@
     {
       "input": "0x000000000000000088",
       "output": 145
+    },
+    {
+      "input": "0x0000000000000000fc",
+      "output": 261
     }
   ],
   "determineOutputLengthError": [
