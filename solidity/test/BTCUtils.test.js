@@ -258,7 +258,7 @@ contract('BTCUtils', () => {
     }
   });
 
-  it.only('determines output length properly', async () => {
+  it('determines output length properly', async () => {
     for (let i = 0; i < determineOutputLength.length; i += 1) {
       const res = await instance.determineOutputLength(determineOutputLength[i].input);
       const expected = new BN(determineOutputLength[i].output, 10);
