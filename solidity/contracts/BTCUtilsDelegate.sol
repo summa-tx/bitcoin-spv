@@ -59,6 +59,14 @@ library BTCUtilsDelegate {
         return BTCUtils.hash256(_b);
     }
 
+    /// @notice          Implements bitcoin's hash256 (double sha2)
+    /// @dev             sha2 is precompiled smart contract located at address(2)
+    /// @param _b        The pre-image
+    /// @return          The digest
+    function hash256View(bytes memory _b) internal view returns (bytes32) {
+        return BTCUtils.hash256View(_b);
+    }
+
     /* ************ */
     /* Legacy Input */
     /* ************ */
