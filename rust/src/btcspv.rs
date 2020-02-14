@@ -366,7 +366,9 @@ pub fn extract_hash(tx_out: &Vec<u8>) -> Result<Vec<u8>, SPVError> {
 
     /* Witness */
     if tx_out[9] == 0 {
-        let length = extract_output_script_len(tx_out) - 2;
+        let mut length = extract_output_script_len(tx_out);
+        if length < 2 { return Err(SPVError::MalformattedWitnessOutput); }
+        length -= 2;
         if tx_out[10] == length as u8 {
             return Ok(tx_out[11..11+length as usize].to_vec());
         } else {
