@@ -299,7 +299,7 @@ library BTCUtils {
         uint8 _len = uint8(_output.slice(8, 1)[0]);
         require(_len < 0xfd, "Multi-byte VarInts not supported");
 
-        return _len + 8 + 1; // 8 byte value, 1 byte for _len itself
+        return uint256(_len) + 8 + 1; // 8 byte value, 1 byte for _len itself
     }
 
     /// @notice          Extracts the output at a given index in the TxIns vector

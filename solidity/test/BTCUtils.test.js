@@ -258,10 +258,14 @@ contract('BTCUtils', () => {
     }
   });
 
-  it('determines output length properly', async () => {
+  it.only('determines output length properly', async () => {
     for (let i = 0; i < determineOutputLength.length; i += 1) {
       const res = await instance.determineOutputLength(determineOutputLength[i].input);
-      assert(res.eq(new BN(determineOutputLength[i].output, 10)));
+      const expected = new BN(determineOutputLength[i].output, 10);
+      assert(
+        res.eq(expected),
+        `Output Length Test Failed: expected ${expected.toString()}, got ${res.toString()}`
+      );
     }
 
     for (let i = 0; i < determineOutputLengthError.length; i += 1) {
