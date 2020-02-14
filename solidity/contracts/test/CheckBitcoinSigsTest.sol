@@ -112,5 +112,4 @@ contract CheckBitcoinSigsTest {
             _outputValue,
             _outputPKH);
     }
-
 }
