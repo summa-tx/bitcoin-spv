@@ -7,7 +7,7 @@
 bool btcspv_truncated_uint256_equality(const uint8_t *trun,
                                        const uint8_t *full) {
   for (int i = 0; i < 32; i++) {
-    if ((trun[i] & full[i]) != trun[i]) {
+    if (trun[i] == 0 || (trun[i] & full[i]) != trun[i]) {
       return false;
     }
   }

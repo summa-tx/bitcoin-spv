@@ -54,15 +54,27 @@ typedef struct x {
   const uint32_t script_sig_len; /** The number of bytes in the scriptsig */
 } script_sig_t;
 
-// quickaccess aliases
+/// Alias for constant view
 typedef const byte_view_t const_view_t;
 
 // Utilities
+
+/// @brief    equality for truncated and full-length Bitcoin targets
+/// @note     Simplified logic is ``(trun & full) == trun`
+/// @warning  Caller must ensure that both buffers have 32 bytes
 bool btcspv_truncated_uint256_equality(const uint8_t *trun,
                                        const uint8_t *full);
+
+/// @brief equality of 2 memory regions using `memcmp`
 bool buf_eq(const uint8_t *loc1, uint32_t len1, const uint8_t *loc2,
             uint32_t len2);
+
+/// @brief equality between byte_view_t and any other buffer type.
+/// @note  uses buf_eq under the hood
 bool view_eq_buf(const_view_t *view, const uint8_t *loc, uint32_t len);
+
+/// @brief equality for byte_view_t.
+/// @note  uses buf_eq under the hood
 bool view_eq(const_view_t *view1, const_view_t *view2);
 
 /// @brief    reverse from, write reversed buffer to `to`
