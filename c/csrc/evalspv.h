@@ -60,6 +60,7 @@ bool evalspv_validate_header_prev_hash(const_view_t *header,
 /// @param _headers     Raw byte array of header chain
 /// @return             The total accumulated difficulty of the header chain,
 ///                     or an error code
+/// @warning            Caller must check response to ensure it is not an error code
 uint64_t evalspv_validate_header_chain(const_view_t *headers);
 
 #endif /* SUMMA_CKB_EVALSPV_H_ */
