@@ -26,6 +26,8 @@ pub type RawBytes = Vec<u8>;
 #[wasm_bindgen]
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum SPVError {
+    /// Overran a checked read on a slice
+    ReadOverrun,
     /// VarInt represents a number larger than 253.
     /// Large VarInts are not supported.
     LargeVarInt,

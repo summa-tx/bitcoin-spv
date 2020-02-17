@@ -256,6 +256,10 @@ byte_view_t btcspv_extract_op_return_data(const_view_t *tx_out) {
   }
   uint8_t data_len = tx_out->loc[10];
 
+  if (tx_out->len < data_len + 8 + 3) {
+    RET_NULL_VIEW;
+  }
+
   const_view_t payload = {tx_out->loc + 11, data_len};
   return payload;
 }

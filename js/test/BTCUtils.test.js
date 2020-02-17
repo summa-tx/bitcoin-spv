@@ -161,7 +161,9 @@ describe('BTCUtils', () => {
         BTCUtils.extractOpReturnData(extractOpReturnDataError[i].input);
         assert(false, 'expected an error');
       } catch (e) {
-        assert.include(e.message, extractOpReturnDataError[i].errorMessage);
+        const errorMessage = extractOpReturnDataError[i].jsError
+          ? extractOpReturnDataError[i].jsError : extractOpReturnDataError[i].errorMessage;
+        assert.include(e.message, errorMessage);
       }
     }
   });

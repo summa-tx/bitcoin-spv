@@ -346,6 +346,7 @@ func (suite *UtilsSuite) TestExtractOpReturnData() {
 		testCase := fixtureError[i]
 		expected := testCase.ErrorMessage.(string)
 		actual, err := ExtractOpReturnData(testCase.Input.([]byte))
+		log.Println(testCase.Input, cap(testCase.Input.([]byte)), actual, err)
 		suite.Nil(actual)
 		suite.EqualError(err, expected)
 	}

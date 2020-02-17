@@ -345,6 +345,9 @@ pub fn extract_op_return_data(tx_out: &Vec<u8>) -> Result<Vec<u8>, SPVError> {
     match tx_out[9] {
         0x6a => {
             let data_len = tx_out[10] as u64;
+            if (data_len + 8 + 3) as usize > tx_out.len() {
+                return Err(SPVError::ReadOverrun)
+            }
             Ok(tx_out[11..11+data_len as usize].to_vec())
         },
         _ => Err(SPVError::MalformattedOpReturnOutput)

@@ -198,8 +198,13 @@ contract('BTCUtils', () => {
     }
 
     for (let i = 0; i < extractOpReturnDataError.length; i += 1) {
-      const res = await instance.extractOpReturnData(extractOpReturnDataError[i].input);
-      assert.isNull(res);
+      try {
+        const res = await instance.extractOpReturnData(extractOpReturnDataError[i].input);
+        assert(!(extractOpReturnDataError[i].solidityError), 'expected an error message');
+        assert.isNull(res);
+      } catch (e) {
+        assert.include(e.message, extractOpReturnDataError[i].solidityError);
+      }
     }
   });
 

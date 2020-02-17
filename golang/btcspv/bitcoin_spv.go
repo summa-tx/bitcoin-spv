@@ -250,7 +250,11 @@ func ExtractOpReturnData(output []byte) ([]byte, error) {
 		return nil, errors.New("Malformatted data. Must be an op return")
 	}
 
-	dataLen := output[10]
+	dataLen := int(output[10])
+	if dataLen + 8 + 3 > len(output) {
+		return nil, errors.New("Malformatted data. Read overrun")
+	}
+
 	return output[11 : 11+dataLen], nil
 }
 
