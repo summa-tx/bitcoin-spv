@@ -6,7 +6,7 @@ use crate::utils;
 use crate::btcspv;
 use crate::types::{RawHeader, Hash256Digest, InputType, OutputType, SPVError};
 
-/// Validates a tx inclusion in the block.
+/// Evaluates a Bitcoin merkle inclusion proof.
 ///
 /// # Arguments
 ///
