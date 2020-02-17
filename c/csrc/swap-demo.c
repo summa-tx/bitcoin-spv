@@ -17,7 +17,6 @@
 
 #include "blockchain.h"
 
-
 #define ERROR_ENCODING -2
 #define ERROR_SYSCALL -3
 

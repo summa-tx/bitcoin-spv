@@ -1,6 +1,5 @@
 #include "evalspv.h"
 
-
 const uint64_t BTCSPV_ERR_BAD_LENGTH = 0xffffffffffffffff;
 const uint64_t BTCSPV_ERR_INVALID_CHAIN = 0xfffffffffffffffe;
 const uint64_t BTCSPV_ERR_LOW_WORK = 0xfffffffffffffffd;
@@ -81,13 +80,13 @@ uint64_t evalspv_validate_header_chain(const_view_t *headers) {
 
     uint256 target = {0};
     btcspv_extract_target(target, &header);
+    uint64_t header_work = btcspv_calculate_difficulty(target);
 
     btcspv_hash256(digest, &header);
-    if (!(evalspv_validate_header_work(digest, target))) {
+    if (header_work == 0 || !(evalspv_validate_header_work(digest, target))) {
       return BTCSPV_ERR_LOW_WORK;
     }
-
-    accumulated_work += btcspv_calculate_difficulty(target);
+    accumulated_work += header_work;
   }
   return accumulated_work;
 }

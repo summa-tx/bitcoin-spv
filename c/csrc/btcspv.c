@@ -165,6 +165,10 @@ byte_view_t btcspv_extract_input_at_index(const_view_t *vin, uint8_t index) {
     }
   }
 
+  if (offset + length > vin->len) {
+    RET_NULL_VIEW
+  }
+
   byte_view_t input = {(vin->loc) + offset, length};
   return input;
 }
@@ -177,6 +181,11 @@ byte_view_t btcspv_extract_outpoint(const_view_t *tx_in) {
 byte_view_t btcspv_extract_input_tx_id_le(const_view_t *tx_in) {
   byte_view_t tx_id_le = {tx_in->loc, 32};
   return tx_id_le;
+}
+
+void btcspv_extract_extract_input_tx_id_be(uint256 hash, const_view_t *tx_in) {
+  const_view_t le = btcspv_extract_input_tx_id_le(tx_in);
+  buf_rev(hash, le.loc, le.len);
 }
 
 byte_view_t btcspv_extract_tx_index_le(const_view_t *tx_in) {
