@@ -1,6 +1,22 @@
 ## bitcoin-spv-c
 
-This
+`bitcoin-spv` is a low-level toolkit for working with Bitcoin from other
+blockchains. It supplies a set of pure functions that can be used to validate
+almost all Bitcoin transactions and headers, as well as higher-level
+functions that can evaluate header chains and transaction inclusion proofs.
+
+
+### Important Notes
+
+`btcspv` is a low-level toolkit. It usually **does NOT check bounds**, and
+**MAY read past the end of a view** if the input is bad. In order to prevent
+this, ALWAYS verify the input using tools in `evalspv` BEFORE passing it to the
+functions in `btcspv`.
+
+**It is extremely easy to write insecure code using these libraries.**
+We do not recommend a specific security model. Any SPV verification involves
+complex security assumptions. Please seek external review for your design
+before building with these libraries.
 
 ### Notes on project structure:
 
@@ -46,6 +62,7 @@ $ docker pull nervos/ckb-riscv-gnu-toolchain:gnu-bionic-20191012
 $ git submodule update --init
 ```
 
+
 ### Build and run tests
 
 ```
@@ -54,4 +71,4 @@ $ make
 
 This will print the coverage report and generate the gcov files. Coverage
 details can be viewed via `$ cat btcspv.c.gcov` and `$ cat evalspv.c.gcov`.
-Running `make` also builds the Rust test and runs it.
+Running `make` also builds the RISC-V exectuable, and runs the Rust tests.
