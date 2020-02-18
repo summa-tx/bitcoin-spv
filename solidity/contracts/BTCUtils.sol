@@ -299,7 +299,7 @@ library BTCUtils {
         uint8 _len = uint8(_output.slice(8, 1)[0]);
         require(_len < 0xfd, "Multi-byte VarInts not supported");
 
-        return _len + 8 + 1; // 8 byte value, 1 byte for _len itself
+        return uint256(_len) + 8 + 1; // 8 byte value, 1 byte for _len itself
     }
 
     /// @notice          Extracts the output at a given index in the TxIns vector
@@ -368,7 +368,11 @@ library BTCUtils {
     /// @return          The hash committed to by the pk_script, or null for errors
     function extractHash(bytes memory _output) internal pure returns (bytes memory) {
         if (uint8(_output.slice(9, 1)[0]) == 0) {
-            uint256 _len = uint8(extractOutputScriptLen(_output)[0]) - 2;
+            uint256 _len = uint8(extractOutputScriptLen(_output)[0]);
+            if (_len < 2) {
+              return hex"";
+            }
+            _len -= 2;
             // Check for maliciously formatted witness outputs
             if (uint8(_output.slice(10, 1)[0]) != uint8(_len)) {
                 return hex"";

@@ -11,3 +11,4 @@ scTopics
 coverage/
 coverageEnv/
 coverage.json
+target/

@@ -1,16 +1,16 @@
-extern crate num;
-extern crate sha2;
 extern crate js_sys;
-extern crate ripemd160;
+extern crate num;
 extern crate num_bigint as bigint;
+extern crate ripemd160;
+extern crate sha2;
 
-use sha2::Sha256;
-use num::pow::Pow;
 use bigint::BigUint;
-use ripemd160::{Ripemd160, Digest};
+use num::pow::Pow;
+use ripemd160::{Digest, Ripemd160};
+use sha2::Sha256;
 
+use crate::types::{Hash160Digest, Hash256Digest, RawHeader, SPVError};
 use crate::utils;
-use crate::types::{SPVError, RawHeader, Hash256Digest, Hash160Digest};
 
 /// Determines the length of a VarInt in bytes.
 /// A VarInt of > 1 byte is prefixed with a flag indicating its length.
@@ -79,27 +79,52 @@ pub fn hash256(preimage: &[u8]) -> Hash256Digest {
 ///
 /// * `vin` - The vin as a tightly-packed u8 array
 /// * `index` - The 0-indexed location of the input to extract
-pub fn extract_input_at_index(vin: &Vec<u8>, index: u8) -> Vec<u8> {
+pub fn extract_input_at_index(vin: &[u8], index: u8) -> Vec<u8> {
     let mut length = 0;
     let mut offset = 1;
 
-    for i in 0..index + 1 {
+    for i in 0..=index {
         let remaining = vin[offset..].to_vec();
         length = determine_input_length(&remaining);
         if i != index {
             offset += length as usize;
         }
     }
-    vin[offset..offset+length as usize].to_vec()
+    vin[offset..offset + length as usize].to_vec()
 }
 
 /// Determines whether an input is legacy.
 /// True for LEGACY, False for WITNESS,
 /// False if no scriptSig.
 ///
+/// # Arguments
+///
 /// * `tx_in` - The input
-pub fn is_legacy_input(tx_in: &Vec<u8>) -> bool {
+///
+/// # Panics
+///
+/// If the tx_in is malformatted, i.e. <= 36 bytes long
+pub fn is_legacy_input(tx_in: &[u8]) -> bool {
     tx_in[36] != 0
+}
+
+/// Determines the length of a scriptSig in an input.
+/// Will return 0 if passed a witness input.
+///
+/// # Arguments
+///
+/// * `tx_in` - The LEGACY input
+pub fn extract_script_sig_len(tx_in: &[u8]) -> (u64, u64) {
+    let tag = tx_in[36];
+    let data_len = determine_var_int_data_length(tag) as u64;
+    let scriptsig_len = if data_len != 0 {
+        let mut arr: [u8; 8] = Default::default();
+        arr[..data_len as usize].copy_from_slice(&tx_in[37..37 + data_len as usize]);
+        u64::from_le_bytes(arr)
+    } else {
+        tag as u64
+    };
+    (data_len, scriptsig_len)
 }
 
 /// Determines the length of an input from its scriptsig:
@@ -108,7 +133,7 @@ pub fn is_legacy_input(tx_in: &Vec<u8>) -> bool {
 /// # Arguments
 ///
 /// * `tx_in` - The input as a u8 array
-pub fn determine_input_length(tx_in: &Vec<u8>) -> u64 {
+pub fn determine_input_length(tx_in: &[u8]) -> u64 {
     let (data_len, scriptsig_len) = extract_script_sig_len(tx_in);
     41 + data_len + scriptsig_len
 }
@@ -119,10 +144,10 @@ pub fn determine_input_length(tx_in: &Vec<u8>) -> u64 {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_sequence_le_legacy(tx_in: &Vec<u8>) -> Vec<u8> {
+pub fn extract_sequence_le_legacy(tx_in: &[u8]) -> Vec<u8> {
     let (data_len, scriptsig_len) = extract_script_sig_len(tx_in);
     let offset: usize = 36 + 1 + data_len as usize + scriptsig_len as usize;
-    tx_in[offset..offset+4].to_vec()
+    tx_in[offset..offset + 4].to_vec()
 }
 
 /// Extracts the sequence from the input.
@@ -131,7 +156,7 @@ pub fn extract_sequence_le_legacy(tx_in: &Vec<u8>) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_sequence_legacy(tx_in: &Vec<u8>) -> u32 {
+pub fn extract_sequence_legacy(tx_in: &[u8]) -> u32 {
     let mut arr: [u8; 4] = [0, 0, 0, 0];
     let b = extract_sequence_le_legacy(tx_in);
     arr.copy_from_slice(&b[..]);
@@ -144,29 +169,10 @@ pub fn extract_sequence_legacy(tx_in: &Vec<u8>) -> u32 {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_script_sig(tx_in: &Vec<u8>) -> Vec<u8> {
+pub fn extract_script_sig(tx_in: &[u8]) -> Vec<u8> {
     let (data_len, scriptsig_len) = extract_script_sig_len(tx_in);
     let length = 1 + data_len + scriptsig_len;
     tx_in[36..36 + length as usize].to_vec()
-}
-
-/// Determines the length of a scriptSig in an input.
-/// Will return 0 if passed a witness input.
-///
-/// # Arguments
-///
-/// * `tx_in` - The LEGACY input
-pub fn extract_script_sig_len(tx_in: &Vec<u8>) -> (u64, u64) {
-    let tag = tx_in[36];
-    let data_len = determine_var_int_data_length(tag) as u64;
-    let mut scriptsig_len = tag as u64;
-
-    if data_len != 0 {
-        let mut arr: [u8; 8] = Default::default();
-        arr[..data_len as usize].copy_from_slice(&tx_in[37..37+data_len as usize]);
-        scriptsig_len = u64::from_le_bytes(arr);
-    }
-    (data_len, scriptsig_len)
 }
 
 //
@@ -179,7 +185,7 @@ pub fn extract_script_sig_len(tx_in: &Vec<u8>) -> (u64, u64) {
 /// # Arguments
 ///
 /// * `tx_in` - The WITNESS input
-pub fn extract_sequence_le_witness(tx_in: &Vec<u8>) -> Vec<u8> {
+pub fn extract_sequence_le_witness(tx_in: &[u8]) -> Vec<u8> {
     tx_in[37..41].to_vec()
 }
 
@@ -189,7 +195,7 @@ pub fn extract_sequence_le_witness(tx_in: &Vec<u8>) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `tx_in` - The WITNESS input
-pub fn extract_sequence_witness(tx_in: &Vec<u8>) -> u32 {
+pub fn extract_sequence_witness(tx_in: &[u8]) -> u32 {
     let mut arr: [u8; 4] = [0, 0, 0, 0];
     let b = extract_sequence_le_witness(tx_in);
     arr.copy_from_slice(&b[..]);
@@ -202,7 +208,7 @@ pub fn extract_sequence_witness(tx_in: &Vec<u8>) -> u32 {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_outpoint(tx_in: &Vec<u8>) -> Vec<u8> {
+pub fn extract_outpoint(tx_in: &[u8]) -> Vec<u8> {
     tx_in[0..36].to_vec()
 }
 
@@ -212,7 +218,7 @@ pub fn extract_outpoint(tx_in: &Vec<u8>) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_input_tx_id_le(tx_in: &Vec<u8>) -> Vec<u8> {
+pub fn extract_input_tx_id_le(tx_in: &[u8]) -> Vec<u8> {
     tx_in[0..32].to_vec()
 }
 
@@ -222,7 +228,7 @@ pub fn extract_input_tx_id_le(tx_in: &Vec<u8>) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_input_tx_id(tx_in: &Vec<u8>) -> Vec<u8> {
+pub fn extract_input_tx_id(tx_in: &[u8]) -> Vec<u8> {
     utils::reverse_endianness(&tx_in[0..32].to_vec())
 }
 
@@ -232,7 +238,7 @@ pub fn extract_input_tx_id(tx_in: &Vec<u8>) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_tx_index_le(tx_in: &Vec<u8>) -> Vec<u8> {
+pub fn extract_tx_index_le(tx_in: &[u8]) -> Vec<u8> {
     tx_in[32..36].to_vec()
 }
 
@@ -242,7 +248,7 @@ pub fn extract_tx_index_le(tx_in: &Vec<u8>) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_tx_index(tx_in: &Vec<u8>) -> u32 {
+pub fn extract_tx_index(tx_in: &[u8]) -> u32 {
     let mut arr: [u8; 4] = [0, 0, 0, 0];
     let b = extract_tx_index_le(tx_in);
     arr.copy_from_slice(&b[..]);
@@ -263,11 +269,11 @@ pub fn extract_tx_index(tx_in: &Vec<u8>) -> u32 {
 /// # Errors
 ///
 /// * Errors if VarInt represents a number larger than 253; large VarInts are not supported.
-pub fn determine_output_length(tx_out: &Vec<u8>) -> Result<u64, SPVError> {
+pub fn determine_output_length(tx_out: &[u8]) -> Result<u64, SPVError> {
     let length = tx_out[8] as u64;
     match length {
         0xfd | 0xfe | 0xff => Err(SPVError::LargeVarInt),
-        _ => Ok(length + 9)
+        _ => Ok(length + 9),
     }
 }
 
@@ -284,19 +290,19 @@ pub fn determine_output_length(tx_out: &Vec<u8>) -> Result<u64, SPVError> {
 /// # Errors
 ///
 /// * Errors if VarInt represents a number larger than 253.  Large VarInts are not supported.
-pub fn extract_output_at_index(vout: &Vec<u8>, index: u8) -> Result<Vec<u8>, SPVError> {
+pub fn extract_output_at_index(vout: &[u8], index: u8) -> Result<Vec<u8>, SPVError> {
     let mut length: u64 = 0;
     let mut offset = 1;
     let idx = index as u64;
 
-    for i in 0..idx + 1 {
+    for i in 0..=idx {
         let remaining = vout[offset..].to_vec();
         length = determine_output_length(&remaining)?;
         if i != idx {
             offset += length as usize
         }
     }
-    Ok(vout[offset..offset+length as usize].to_vec())
+    Ok(vout[offset..offset + length as usize].to_vec())
 }
 
 /// Extracts the output script length.
@@ -305,8 +311,8 @@ pub fn extract_output_at_index(vout: &Vec<u8>, index: u8) -> Result<Vec<u8>, SPV
 /// # Arguments
 ///
 /// * `tx_out` - The output
-pub fn extract_output_script_len(tx_out: &Vec<u8>) -> u64 {
-    return tx_out[8] as u64;
+pub fn extract_output_script_len(tx_out: &[u8]) -> u64 {
+    tx_out[8] as u64
 }
 
 /// Extracts the value bytes from the output in a tx.
@@ -315,7 +321,7 @@ pub fn extract_output_script_len(tx_out: &Vec<u8>) -> u64 {
 /// # Arguments
 ///
 /// * `tx_out` - The output
-pub fn extract_value_le(tx_out: &Vec<u8>) -> [u8; 8] {
+pub fn extract_value_le(tx_out: &[u8]) -> [u8; 8] {
     let mut arr: [u8; 8] = Default::default();
     arr.copy_from_slice(&tx_out[..8]);
     arr
@@ -327,7 +333,7 @@ pub fn extract_value_le(tx_out: &Vec<u8>) -> [u8; 8] {
 /// # Arguments
 ///
 /// * `tx_out` - The output
-pub fn extract_value(tx_out: &Vec<u8>) -> u64 {
+pub fn extract_value(tx_out: &[u8]) -> u64 {
     u64::from_le_bytes(extract_value_le(tx_out))
 }
 
@@ -341,13 +347,16 @@ pub fn extract_value(tx_out: &Vec<u8>) -> u64 {
 /// # Errors
 ///
 /// * Errors if the op return output is malformatted
-pub fn extract_op_return_data(tx_out: &Vec<u8>) -> Result<Vec<u8>, SPVError> {
+pub fn extract_op_return_data(tx_out: &[u8]) -> Result<Vec<u8>, SPVError> {
     match tx_out[9] {
         0x6a => {
             let data_len = tx_out[10] as u64;
-            Ok(tx_out[11..11+data_len as usize].to_vec())
-        },
-        _ => Err(SPVError::MalformattedOpReturnOutput)
+            if (data_len + 8 + 3) as usize > tx_out.len() {
+                return Err(SPVError::ReadOverrun);
+            }
+            Ok(tx_out[11..11 + data_len as usize].to_vec())
+        }
+        _ => Err(SPVError::MalformattedOpReturnOutput),
     }
 }
 
@@ -361,14 +370,18 @@ pub fn extract_op_return_data(tx_out: &Vec<u8>) -> Result<Vec<u8>, SPVError> {
 /// # Errors
 ///
 /// * Errors if the WITNESS, P2PKH or P2SH outputs are malformatted
-pub fn extract_hash(tx_out: &Vec<u8>) -> Result<Vec<u8>, SPVError> {
+pub fn extract_hash(tx_out: &[u8]) -> Result<Vec<u8>, SPVError> {
     let tag = &tx_out[8..11];
 
     /* Witness */
     if tx_out[9] == 0 {
-        let length = extract_output_script_len(tx_out) - 2;
+        let mut length = extract_output_script_len(tx_out);
+        if length < 2 {
+            return Err(SPVError::MalformattedWitnessOutput);
+        }
+        length -= 2;
         if tx_out[10] == length as u8 {
-            return Ok(tx_out[11..11+length as usize].to_vec());
+            return Ok(tx_out[11..11 + length as usize].to_vec());
         } else {
             return Err(SPVError::MalformattedWitnessOutput);
         }
@@ -404,7 +417,7 @@ pub fn extract_hash(tx_out: &Vec<u8>) -> Result<Vec<u8>, SPVError> {
 /// # Arguments
 ///
 /// * `vin` - Raw bytes length-prefixed input vector
-pub fn validate_vin(vin: &Vec<u8>) -> bool {
+pub fn validate_vin(vin: &[u8]) -> bool {
     let mut offset = 1;
     let vin_length = vin.len();
     let n_ins = vin[0];
@@ -428,7 +441,7 @@ pub fn validate_vin(vin: &Vec<u8>) -> bool {
 /// # Arguments
 ///
 /// * `vout` - Raw bytes length-prefixed output vector
-pub fn validate_vout(vout: &Vec<u8>) -> bool {
+pub fn validate_vout(vout: &[u8]) -> bool {
     let mut offset = 1;
     let vout_length = vout.len();
     let n_outs = vout[0];
@@ -440,7 +453,7 @@ pub fn validate_vout(vout: &Vec<u8>) -> bool {
             let result = determine_output_length(&vout[offset..].to_vec());
             match result {
                 Ok(v) => offset += v as usize,
-                Err(_) => return false
+                Err(_) => return false,
             };
             if offset > vout_length {
                 return false;
@@ -473,7 +486,9 @@ pub fn extract_merkle_root_le(header: RawHeader) -> Hash256Digest {
 /// * `header` - An 80-byte Bitcoin header
 pub fn extract_merkle_root_be(header: RawHeader) -> Hash256Digest {
     let mut root: [u8; 32] = Default::default();
-    root.copy_from_slice(&utils::reverse_endianness(&extract_merkle_root_le(header).to_vec()));
+    root.copy_from_slice(&utils::reverse_endianness(
+        &extract_merkle_root_le(header).to_vec(),
+    ));
     root
 }
 
@@ -527,7 +542,9 @@ pub fn extract_prev_block_hash_le(header: RawHeader) -> Hash256Digest {
 /// * `header` - The header
 pub fn extract_prev_block_hash_be(header: RawHeader) -> Hash256Digest {
     let mut root: [u8; 32] = Default::default();
-    root.copy_from_slice(&utils::reverse_endianness(&extract_prev_block_hash_le(header).to_vec()));
+    root.copy_from_slice(&utils::reverse_endianness(
+        &extract_prev_block_hash_le(header).to_vec(),
+    ));
     root
 }
 
@@ -569,8 +586,8 @@ pub fn extract_difficulty(header: RawHeader) -> BigUint {
 ///
 /// * `a` - The first hash
 /// * `b` - The second hash
-pub fn hash256_merkle_step(a: &Vec<u8>, b: &Vec<u8>) -> Hash256Digest {
-    let mut res: Vec<u8> = vec!();
+pub fn hash256_merkle_step(a: &[u8], b: &[u8]) -> Hash256Digest {
+    let mut res: Vec<u8> = vec![];
     res.extend(a);
     res.extend(b);
     hash256(&res)
@@ -583,7 +600,7 @@ pub fn hash256_merkle_step(a: &Vec<u8>, b: &Vec<u8>) -> Hash256Digest {
 ///
 /// * `proof` - The proof. Tightly packed LE sha256 hashes.  The last hash is the root
 /// * `index` - The index of the leaf
-pub fn verify_hash256_merkle(proof: &Vec<u8>, index: u64) -> bool {
+pub fn verify_hash256_merkle(proof: &[u8], index: u64) -> bool {
     let mut idx = index;
     let proof_len = proof.len();
 
@@ -604,8 +621,8 @@ pub fn verify_hash256_merkle(proof: &Vec<u8>, index: u64) -> bool {
     let num_steps = proof_len / 32 - 1;
 
     for i in 1..num_steps {
-        let next = proof[i * 32..i*32 + 32].to_vec();
-        if idx%2 == 1 {
+        let next = proof[i * 32..i * 32 + 32].to_vec();
+        if idx % 2 == 1 {
             current = hash256_merkle_step(&next, &current).to_vec();
         } else {
             current = hash256_merkle_step(&current, &next).to_vec();
@@ -613,7 +630,7 @@ pub fn verify_hash256_merkle(proof: &Vec<u8>, index: u64) -> bool {
         idx >>= 1;
     }
 
-    return current == root
+    current == root
 }
 
 /// Performs the bitcoin difficulty retarget.
@@ -627,30 +644,31 @@ pub fn verify_hash256_merkle(proof: &Vec<u8>, index: u64) -> bool {
 pub fn retarget_algorithm(
     previous_target: &BigUint,
     first_timestamp: u32,
-    second_timestamp: u32) -> BigUint {
-        let retarget_period = 1209600;
-        let lower_bound = retarget_period / 4;
-        let upper_bound = retarget_period * 4;
+    second_timestamp: u32,
+) -> BigUint {
+    let retarget_period = 1_209_600;
+    let lower_bound = retarget_period / 4;
+    let upper_bound = retarget_period * 4;
 
-        let mut elapsed_time = second_timestamp - first_timestamp;
+    let mut elapsed_time = second_timestamp - first_timestamp;
 
-        if elapsed_time > upper_bound {
-            elapsed_time = upper_bound;
-        } else if elapsed_time < lower_bound {
-            elapsed_time = lower_bound;
-        }
-
-        previous_target * elapsed_time / retarget_period
+    if elapsed_time > upper_bound {
+        elapsed_time = upper_bound;
+    } else if elapsed_time < lower_bound {
+        elapsed_time = lower_bound;
     }
+
+    previous_target * elapsed_time / retarget_period
+}
 
 #[cfg(test)]
 #[cfg_attr(tarpaulin, skip)]
 mod tests {
-    use bigint::{BigUint};
+    use bigint::BigUint;
 
     use super::*;
-    use crate::utils::*;
     use crate::utils::test_utils;
+    use crate::utils::*;
 
     #[test]
     fn it_determines_var_int_data_length() {
@@ -769,7 +787,7 @@ mod tests {
                 let vin = force_deserialize_hex(inputs.get("vin").unwrap().as_str().unwrap());
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as u8;
                 let expected = force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_input_at_index(&vin, index), expected);
+                assert_eq!(extract_input_at_index(&vin[..], index), expected);
             }
         })
     }
@@ -900,10 +918,11 @@ mod tests {
             let test_cases = test_utils::get_test_cases("determineOutputLengthError", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = test_utils::match_string_to_err(case.error_message.as_str().unwrap());
+                let expected =
+                    test_utils::match_string_to_err(case.error_message.as_str().unwrap());
                 match determine_output_length(&input) {
                     Ok(_) => assert!(false, "expected an error"),
-                    Err(e) => assert_eq!(e, expected)
+                    Err(e) => assert_eq!(e, expected),
                 }
             }
         })
@@ -944,7 +963,7 @@ mod tests {
                 let mut expected: [u8; 8] = Default::default();
                 let val = force_deserialize_hex(case.output.as_str().unwrap());
                 expected.copy_from_slice(&val);
-                assert_eq!(extract_value_le(&input), expected);
+                assert_eq!(extract_value_le(&input[..]), expected);
             }
         })
     }
@@ -956,7 +975,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = case.output.as_u64().unwrap();
-                assert_eq!(extract_value(&input), expected);
+                assert_eq!(extract_value(&input[..]), expected);
             }
         })
     }
@@ -979,10 +998,11 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractOpReturnDataError", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = test_utils::match_string_to_err(case.error_message.as_str().unwrap());
+                let expected =
+                    test_utils::match_string_to_err(case.error_message.as_str().unwrap());
                 match extract_op_return_data(&input) {
                     Ok(_) => assert!(false, "expected an error"),
-                    Err(e) => assert_eq!(e, expected)
+                    Err(e) => assert_eq!(e, expected),
                 }
             }
         })
@@ -1006,10 +1026,11 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractHashError", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = test_utils::match_string_to_err(case.error_message.as_str().unwrap());
+                let expected =
+                    test_utils::match_string_to_err(case.error_message.as_str().unwrap());
                 match extract_hash(&input) {
                     Ok(_) => assert!(false, "expected an error"),
-                    Err(e) => assert_eq!(e, expected)
+                    Err(e) => assert_eq!(e, expected),
                 }
             }
         })
@@ -1104,6 +1125,31 @@ mod tests {
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as u64;
                 let expected = case.output.as_bool().unwrap();
                 assert_eq!(verify_hash256_merkle(&proof, index), expected);
+            }
+        })
+    }
+
+    #[test]
+    fn it_performs_consensus_correct_retargets() {
+        test_utils::run_test(|fixtures| {
+            let test_cases = test_utils::get_test_cases("retargetAlgorithm", &fixtures);
+            for case in test_cases {
+                let headers = test_utils::get_headers(&case.input);
+                let previous_target = &headers[0].target;
+                let first_timestamp = headers[0].timestamp;
+                let second_timestamp = headers[1].timestamp;
+
+                let expected = &headers[2].target;
+                let actual = retarget_algorithm(previous_target, first_timestamp, second_timestamp);
+                assert_eq!(actual & expected, *expected);
+
+                let fake_long = first_timestamp + 5 * 2016 * 10 * 60;
+                let long_res = retarget_algorithm(previous_target, first_timestamp, fake_long);
+                assert_eq!(long_res, previous_target * 4 as u64);
+
+                let fake_short = first_timestamp + 2016 * 10 * 14;
+                let short_res = retarget_algorithm(previous_target, first_timestamp, fake_short);
+                assert_eq!(short_res, previous_target / 4 as u64);
             }
         })
     }

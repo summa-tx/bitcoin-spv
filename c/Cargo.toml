@@ -1,0 +1,21 @@
+[package]
+name = "bitcoin-spv-ckb"
+version = "0.1.0"
+authors = ["James Prestwich <james@prestwi.ch>", "Summa <team@summa.one>"]
+edition = "2018"
+license = "LGPL-3.0-or-later"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[dev-dependencies]
+byteorder = "1.3.1"
+ckb-types = { git = "https://github.com/nervosnetwork/ckb.git", rev = "d75e4c5" }
+ckb-script = { git = "https://github.com/nervosnetwork/ckb.git", rev = "d75e4c5" }
+ckb-crypto = { git = "https://github.com/nervosnetwork/ckb.git", rev = "d75e4c5" }
+ckb-dao-utils = { git = "https://github.com/nervosnetwork/ckb.git", rev = "d75e4c5" }
+ckb-hash = { git = "https://github.com/nervosnetwork/ckb.git", rev = "d75e4c5" }
+ckb-error = { git = "https://github.com/nervosnetwork/ckb.git", rev = "d75e4c5" }
+hex = "0.4.0"
+lazy_static = "1.3.0"

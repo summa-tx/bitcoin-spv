@@ -61,7 +61,7 @@ library ValidateSPV {
     /// @param _version     4-bytes version
     /// @param _vin         Raw bytes length-prefixed input vector
     /// @param _vout        Raw bytes length-prefixed output vector
-    /// @ param _locktime   4-byte tx locktime
+    /// @param _locktime   4-byte tx locktime
     /// @return             32-byte transaction id, little endian
     function calculateTxId(
         bytes memory _version,
@@ -215,7 +215,7 @@ library ValidateSPV {
     /// @dev                        Compares current header prevHash to previous header's digest
     /// @param _header              The raw bytes header
     /// @param _prevHeaderDigest    The previous header's digest
-    /// @return                     true if header chain is valid, false otherwise
+    /// @return                     true if the connect is valid, false otherwise
     function validateHeaderPrevHash(bytes memory _header, bytes32 _prevHeaderDigest) internal pure returns (bool) {
 
         // Extract prevHash of current header

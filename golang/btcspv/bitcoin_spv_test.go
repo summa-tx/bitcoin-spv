@@ -346,6 +346,7 @@ func (suite *UtilsSuite) TestExtractOpReturnData() {
 		testCase := fixtureError[i]
 		expected := testCase.ErrorMessage.(string)
 		actual, err := ExtractOpReturnData(testCase.Input.([]byte))
+		log.Println(testCase.Input, cap(testCase.Input.([]byte)), actual, err)
 		suite.Nil(actual)
 		suite.EqualError(err, expected)
 	}
@@ -535,8 +536,18 @@ func (suite *UtilsSuite) TestExtractTarget() {
 	fixture := suite.Fixtures["extractTarget"]
 
 	for i := range fixture {
+		var output []byte
 		testCase := fixture[i]
-		expected := BytesToBigUint(testCase.Output.([]byte))
+
+		switch testCase.Output.(type) {
+		case Hash256Digest:
+			digest := testCase.Output.(Hash256Digest)
+			output = digest[:]
+		case []byte:
+			output = testCase.Output.([]byte)
+		}
+
+		expected := BytesToBigUint(output)
 		actual := ExtractTarget(testCase.Input.(RawHeader))
 		suite.Equal(expected, actual)
 	}

@@ -3,11 +3,11 @@ extern crate wasm_bindgen;
 
 use std::fmt;
 
-use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
+use wasm_bindgen::prelude::*;
 
-use crate::utils;
 use crate::btcspv;
+use crate::utils;
 use crate::validatespv;
 
 /// A raw bitcoin header.
@@ -26,6 +26,8 @@ pub type RawBytes = Vec<u8>;
 #[wasm_bindgen]
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum SPVError {
+    /// Overran a checked read on a slice
+    ReadOverrun,
     /// VarInt represents a number larger than 253.
     /// Large VarInts are not supported.
     LargeVarInt,
@@ -74,7 +76,7 @@ pub enum SPVError {
     /// merkle proof connecting the `tx_id_le` to the `confirming_header`.
     BadMerkleProof,
     /// Any other error
-    UnknownError
+    UnknownError,
 }
 
 /// Enum for transaction input types
@@ -88,7 +90,7 @@ pub enum InputType {
     /// Witness-over-scripthash Compatibility input
     Compatibility,
     /// Witness input
-    Witness
+    Witness,
 }
 
 /// Enum for transaction output types
@@ -108,7 +110,7 @@ pub enum OutputType {
     /// Legacy scripthash output script.
     SH,
     /// Any other output script.
-    Nonstandard
+    Nonstandard,
 }
 
 /// BitcoinHeader is a parsed Bitcoin header with height information appended.
@@ -133,10 +135,10 @@ pub struct BitcoinHeader {
     pub prevhash_le: Hash256Digest,
     /// The double-sha2 merkle tree root of the block transactions encoded BE.
     #[serde(with = "internal_ser::digest_ser")]
-    pub merkle_root:   Hash256Digest,
+    pub merkle_root: Hash256Digest,
     /// The double-sha2 merkle tree root of the block transactions encoded LE.
     #[serde(with = "internal_ser::digest_ser")]
-    pub merkle_root_le: Hash256Digest
+    pub merkle_root_le: Hash256Digest,
 }
 
 impl BitcoinHeader {
@@ -164,7 +166,7 @@ impl BitcoinHeader {
             return Err(SPVError::NonMatchingMerkleRoots);
         }
         if self.prevhash_le[..] != btcspv::extract_prev_block_hash_le(self.raw) {
-            return Err(SPVError::WrongPrevHash)
+            return Err(SPVError::WrongPrevHash);
         }
         if self.prevhash_le[..] != utils::reverse_endianness(&self.prevhash.to_vec())[..] {
             return Err(SPVError::NonMatchingPrevhashes);
@@ -172,7 +174,6 @@ impl BitcoinHeader {
         Ok(())
     }
 }
-
 
 impl PartialEq for BitcoinHeader {
     /// Compares two Bitcoin headers
@@ -182,16 +183,14 @@ impl PartialEq for BitcoinHeader {
     /// * `self` - The Bitcoin header
     /// * ` other` - The second Bitcoin header
     fn eq(&self, other: &Self) -> bool {
-        (
-            self.raw[..] == other.raw[..] &&
-            self.hash == other.hash &&
-            self.hash_le == other.hash_le &&
-            self.height == other.height &&
-            self.prevhash == other.prevhash &&
-            self.prevhash_le == other.prevhash_le &&
-            self.merkle_root == other.merkle_root &&
-            self.merkle_root_le == other.merkle_root_le
-        )
+        (self.raw[..] == other.raw[..]
+            && self.hash == other.hash
+            && self.hash_le == other.hash_le
+            && self.height == other.height
+            && self.prevhash == other.prevhash
+            && self.prevhash_le == other.prevhash_le
+            && self.merkle_root == other.merkle_root
+            && self.merkle_root_le == other.merkle_root_le)
     }
 }
 
@@ -205,10 +204,12 @@ impl fmt::Debug for BitcoinHeader {
     ///
     /// * `self` - The Bitcoin header
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f,
+        write!(
+            f,
             "Header (height {:?}:\t{})",
             self.height,
-            utils::serialize_hex(&self.raw[..]))
+            utils::serialize_hex(&self.raw[..])
+        )
     }
 }
 
@@ -220,10 +221,12 @@ impl fmt::Display for BitcoinHeader {
     ///
     /// * `self` - The Bitcoin header
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
+        write!(
+            f,
             "Header (height {:?}:\t{})",
             self.height,
-            utils::serialize_hex(&self.raw[..]))
+            utils::serialize_hex(&self.raw[..])
+        )
     }
 }
 
@@ -254,7 +257,7 @@ pub struct SPVProof {
     pub confirming_header: BitcoinHeader,
     /// The intermediate nodes (digests between leaf and root)
     #[serde(with = "internal_ser::vec_ser")]
-    pub intermediate_nodes: RawBytes
+    pub intermediate_nodes: RawBytes,
 }
 
 impl SPVProof {
@@ -276,20 +279,25 @@ impl SPVProof {
             return Err(SPVError::InvalidVout);
         }
 
-        let tx_id = validatespv::calculate_txid(&self.version, &self.vin, &self.vout, &self.locktime);
+        let tx_id =
+            validatespv::calculate_txid(&self.version, &self.vin, &self.vout, &self.locktime);
         if tx_id[..] != self.tx_id_le[..] {
             return Err(SPVError::WrongTxID);
         }
 
         self.confirming_header.validate()?;
 
-        if !validatespv::prove(tx_id, self.confirming_header.merkle_root_le, &self.intermediate_nodes, self.index as u64) {
+        if !validatespv::prove(
+            tx_id,
+            self.confirming_header.merkle_root_le,
+            &self.intermediate_nodes,
+            self.index as u64,
+        ) {
             return Err(SPVError::BadMerkleProof);
         }
         Ok(())
     }
 }
-
 
 #[cfg_attr(tarpaulin, skip)]
 impl fmt::Debug for SPVProof {
@@ -299,12 +307,15 @@ impl fmt::Debug for SPVProof {
     ///
     /// * `self` - The SPV Proof
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f,
+        write!(
+            f,
             "\nSPVProof (\n\ttx_id:\t{}\n\tindex:\t{}\n\th:\t",
             utils::serialize_hex(&self.tx_id[..]),
-            self.index)?;
+            self.index
+        )?;
         self.confirming_header.fmt(f)?;
-        write!(f,
+        write!(
+            f,
             "\n\tproof:\t{})\n",
             utils::serialize_hex(&self.intermediate_nodes[..])
         )
@@ -319,12 +330,15 @@ impl fmt::Display for SPVProof {
     ///
     /// * `self` - The SPV Proof
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
+        write!(
+            f,
             "\nSPVProof (\n\ttx_id:\t{}\n\tindex:\t{}\n\th:\t",
             utils::serialize_hex(&self.tx_id[..]),
-            self.index)?;
+            self.index
+        )?;
         self.confirming_header.fmt(f)?;
-        write!(f,
+        write!(
+            f,
             "\n\tproof:\t{})\n",
             utils::serialize_hex(&self.intermediate_nodes[..])
         )
@@ -332,8 +346,8 @@ impl fmt::Display for SPVProof {
 }
 
 mod internal_ser {
-    use crate::utils;
     use super::{Hash256Digest, RawHeader};
+    use crate::utils;
     use serde::{Deserialize, Deserializer, Serializer};
 
     pub mod vec_ser {
@@ -341,19 +355,19 @@ mod internal_ser {
 
         pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
         where
-        D: Deserializer<'de>,
+            D: Deserializer<'de>,
         {
             let s: &str = Deserialize::deserialize(deserializer)?;
             let result = utils::deserialize_hex(s);
             match result {
                 Ok(v) => Ok(v),
-                Err(e) => Err(serde::de::Error::custom(e.to_string()))
+                Err(e) => Err(serde::de::Error::custom(e.to_string())),
             }
         }
 
-        pub fn serialize<S>(d: &Vec<u8>, serializer: S) -> Result<S::Ok, S::Error>
+        pub fn serialize<S>(d: &[u8], serializer: S) -> Result<S::Ok, S::Error>
         where
-        S: Serializer,
+            S: Serializer,
         {
             let s: &str = &utils::serialize_hex(&d[..]);
             serializer.serialize_str(s)
@@ -365,7 +379,7 @@ mod internal_ser {
 
         pub fn deserialize<'de, D>(deserializer: D) -> Result<Hash256Digest, D::Error>
         where
-        D: Deserializer<'de>,
+            D: Deserializer<'de>,
         {
             let s: &str = Deserialize::deserialize(deserializer)?;
             let mut digest: Hash256Digest = Default::default();
@@ -374,7 +388,7 @@ mod internal_ser {
             let deser: Vec<u8>;
             match result {
                 Ok(v) => deser = v,
-                Err(e) => return Err(serde::de::Error::custom(e.to_string()))
+                Err(e) => return Err(serde::de::Error::custom(e.to_string())),
             }
             if deser.len() != 32 {
                 let err_string: String = format!("Expected 32 bytes, got {:?} bytes", deser.len());
@@ -386,7 +400,7 @@ mod internal_ser {
 
         pub fn serialize<S>(d: &Hash256Digest, serializer: S) -> Result<S::Ok, S::Error>
         where
-        S: Serializer,
+            S: Serializer,
         {
             let s: &str = &utils::serialize_hex(&d[..]);
             serializer.serialize_str(s)
@@ -398,7 +412,7 @@ mod internal_ser {
 
         pub fn deserialize<'de, D>(deserializer: D) -> Result<RawHeader, D::Error>
         where
-        D: Deserializer<'de>,
+            D: Deserializer<'de>,
         {
             let s: &str = Deserialize::deserialize(deserializer)?;
             let mut header: RawHeader = [0; 80];
@@ -408,7 +422,7 @@ mod internal_ser {
             let deser: Vec<u8>;
             match result {
                 Ok(v) => deser = v,
-                Err(e) => return Err(serde::de::Error::custom(e.to_string()))
+                Err(e) => return Err(serde::de::Error::custom(e.to_string())),
             }
             if deser.len() != 80 {
                 let err_string: String = format!("Expected 80 bytes, got {:?} bytes", deser.len());
@@ -420,7 +434,7 @@ mod internal_ser {
 
         pub fn serialize<S>(d: &RawHeader, serializer: S) -> Result<S::Ok, S::Error>
         where
-        S: Serializer,
+            S: Serializer,
         {
             let s: &str = &utils::serialize_hex(&d[..]);
             serializer.serialize_str(s)
@@ -428,14 +442,13 @@ mod internal_ser {
     }
 }
 
-
 #[cfg(test)]
 #[cfg_attr(tarpaulin, skip)]
 mod tests {
     use serde_json;
-    use std::panic;
     use std::fs::File;
     use std::io::Read;
+    use std::panic;
 
     use super::*;
     use crate::utils::test_utils;
@@ -443,13 +456,13 @@ mod tests {
     #[derive(Debug, Deserialize)]
     struct InvalidHeadersCases {
         header: BitcoinHeader,
-        e:  String
+        e: String,
     }
 
     #[derive(Debug, Deserialize)]
     struct InvalidProofsCases {
         proof: SPVProof,
-        e: String
+        e: String,
     }
 
     #[allow(non_snake_case)]
@@ -458,11 +471,11 @@ mod tests {
         valid: Vec<String>,
         badHeaders: Vec<InvalidHeadersCases>,
         badSPVProofs: Vec<InvalidProofsCases>,
-        errBadHexBytes:     String,
-        errBadHexHash256:   String,
-        errBadLenHash256:   String,
+        errBadHexBytes: String,
+        errBadHexHash256: String,
+        errBadLenHash256: String,
         errBadHexRawHeader: String,
-        errBadLenRawHeader: String
+        errBadLenRawHeader: String,
     }
 
     fn setup() -> TestCases {
@@ -475,13 +488,12 @@ mod tests {
     }
 
     fn run_test<T>(test: T) -> ()
-        where T: FnOnce(&TestCases) -> () + panic::UnwindSafe
+    where
+        T: FnOnce(&TestCases) -> () + panic::UnwindSafe,
     {
         let cases = setup();
 
-        let result = panic::catch_unwind(|| {
-            test(&cases)
-        });
+        let result = panic::catch_unwind(|| test(&cases));
 
         assert!(result.is_ok())
     }
@@ -507,7 +519,7 @@ mod tests {
             let expected = "Invalid character \'Q\' at position";
             match proof {
                 Ok(_) => assert!(false, "Expected error"),
-                Err(v) => assert!(v.to_string().contains(expected))
+                Err(v) => assert!(v.to_string().contains(expected)),
             }
         })
     }
@@ -520,7 +532,7 @@ mod tests {
             let expected = "Invalid character \'R\' at position";
             match proof {
                 Ok(_) => assert!(false, "Expected error"),
-                Err(v) => assert!(v.to_string().contains(expected))
+                Err(v) => assert!(v.to_string().contains(expected)),
             }
         })
     }
@@ -533,7 +545,7 @@ mod tests {
             let expected = "Expected 32 bytes, got 31 bytes";
             match proof {
                 Ok(_) => assert!(false, "Expected error"),
-                Err(v) => assert!(v.to_string().contains(expected))
+                Err(v) => assert!(v.to_string().contains(expected)),
             }
         })
     }
@@ -546,7 +558,7 @@ mod tests {
             let expected = "Invalid character \'S\' at position";
             match proof {
                 Ok(_) => assert!(false, "Expected error"),
-                Err(v) => assert!(v.to_string().contains(expected))
+                Err(v) => assert!(v.to_string().contains(expected)),
             }
         })
     }
@@ -559,7 +571,7 @@ mod tests {
             let expected = "Expected 80 bytes, got 79 bytes";
             match proof {
                 Ok(_) => assert!(false, "Expected error"),
-                Err(v) => assert!(v.to_string().contains(expected))
+                Err(v) => assert!(v.to_string().contains(expected)),
             }
         })
     }
@@ -578,7 +590,7 @@ mod tests {
                 let expected = test_utils::match_string_to_err(&i.e);
                 match res {
                     Ok(_) => assert!(false, "Expected an error"),
-                    Err(e) => assert_eq!(e, expected)
+                    Err(e) => assert_eq!(e, expected),
                 }
             }
         })
@@ -597,7 +609,7 @@ mod tests {
                 let expected = test_utils::match_string_to_err(&i.e);
                 match res {
                     Ok(_) => assert!(false, "Expected an error"),
-                    Err(e) => assert_eq!(e, expected)
+                    Err(e) => assert_eq!(e, expected),
                 }
             }
         })
