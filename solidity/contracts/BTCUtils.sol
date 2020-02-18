@@ -112,7 +112,7 @@ library BTCUtils {
     /// @param _b        The pre-image
     /// @return          The digest
     function hash256(bytes memory _b) internal pure returns (bytes32) {
-        return abi.encodePacked(sha256(abi.encodePacked(sha256(_b)))).toBytes32();
+        return sha256(abi.encodePacked(sha256(_b)));
     }
 
     /// @notice          Implements bitcoin's hash256 (double sha2)
