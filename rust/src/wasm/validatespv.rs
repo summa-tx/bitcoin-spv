@@ -1,5 +1,5 @@
-extern crate wasm_bindgen;
 extern crate num_bigint as bigint;
+extern crate wasm_bindgen;
 
 use js_sys::Uint8Array;
 use wasm_bindgen::prelude::*;
@@ -7,8 +7,8 @@ use wasm_bindgen::JsValue;
 
 use bigint::BigUint;
 
-use crate::validatespv;
 use crate::types::{InputType, OutputType};
+use crate::validatespv;
 
 use super::utils;
 
@@ -21,7 +21,7 @@ pub struct ParsedInput {
     sequence: u32,
     inputId: Uint8Array,
     inputIndex: u32,
-    inputType: InputType
+    inputType: InputType,
 }
 
 // Imitate behavior of JS implementation
@@ -32,7 +32,7 @@ pub struct ParsedInput {
 pub struct ParsedOutput {
     value: u64,
     outputType: OutputType,
-    payload: Uint8Array
+    payload: Uint8Array,
 }
 
 // Imitate behavior of JS implementation
@@ -47,7 +47,7 @@ pub struct ParsedHeader {
     merkleRoot: Uint8Array,
     timestamp: u32,
     target: Uint8Array,
-    nonce: u32
+    nonce: u32,
 }
 
 /// Validates a tx inclusion in the block.
@@ -59,7 +59,12 @@ pub struct ParsedHeader {
 /// * `intermediate_nodes` - The proof's intermediate nodes (digests between leaf and root)
 /// * `index` - The leaf's index in the tree (0-indexed)
 #[wasm_bindgen]
-pub fn prove(txid: &Uint8Array, merkle_root: &Uint8Array, intermediate_nodes: &Uint8Array, index: u64) -> bool {
+pub fn prove(
+    txid: &Uint8Array,
+    merkle_root: &Uint8Array,
+    intermediate_nodes: &Uint8Array,
+    index: u64,
+) -> bool {
     let t = utils::u8a_to_hash256_digest(txid);
     let m = utils::u8a_to_hash256_digest(merkle_root);
     let i = utils::u8a_to_vec(intermediate_nodes);
@@ -75,7 +80,12 @@ pub fn prove(txid: &Uint8Array, merkle_root: &Uint8Array, intermediate_nodes: &U
 /// * `vout` - Raw bytes length-prefixed output vector
 /// * `locktime` - 4-byte tx locktime
 #[wasm_bindgen]
-pub fn calculate_txid(version: &Uint8Array, vin: &Uint8Array, vout: &Uint8Array, locktime: &Uint8Array) -> Uint8Array {
+pub fn calculate_txid(
+    version: &Uint8Array,
+    vin: &Uint8Array,
+    vout: &Uint8Array,
+    locktime: &Uint8Array,
+) -> Uint8Array {
     let ver = utils::u8a_to_vec(version);
     let vi = utils::u8a_to_vec(vin);
     let vo = utils::u8a_to_vec(vout);
@@ -94,11 +104,12 @@ pub fn parse_input(tx_in: &Uint8Array) -> ParsedInput {
     let t = utils::u8a_to_vec(tx_in);
     let (a, b, c, d) = validatespv::parse_input(&t);
 
-    ParsedInput{
+    ParsedInput {
         sequence: a,
         inputId: Uint8Array::from(&b[..]),
         inputIndex: c,
-        inputType: d }
+        inputType: d,
+    }
 }
 
 /// Parses a tx output from raw output bytes.
@@ -111,10 +122,11 @@ pub fn parse_output(tx_out: &Uint8Array) -> ParsedOutput {
     let t = utils::u8a_to_vec(tx_out);
     let (a, b, c) = validatespv::parse_output(&t);
 
-    ParsedOutput{
+    ParsedOutput {
         value: a,
         outputType: b,
-        payload: Uint8Array::from(&c[..]) }
+        payload: Uint8Array::from(&c[..]),
+    }
 }
 
 /// Parses a block header struct from a bytestring.
@@ -127,14 +139,14 @@ pub fn parse_output(tx_out: &Uint8Array) -> ParsedOutput {
 pub fn parse_header(header: &Uint8Array) -> ParsedHeader {
     let h = utils::u8a_to_header(header);
     let (a, b, c, d, e, f, g) = validatespv::parse_header(h);
-    ParsedHeader{
+    ParsedHeader {
         digest: Uint8Array::from(&a[..]),
         version: b,
         prevHash: Uint8Array::from(&c[..]),
         merkleRoot: Uint8Array::from(&d[..]),
         timestamp: e,
         target: Uint8Array::from(&f.to_bytes_be()[..]),
-        nonce: g
+        nonce: g,
     }
 }
 
@@ -181,6 +193,6 @@ pub fn validate_header_chain(headers: &Uint8Array) -> Result<Uint8Array, JsValue
     let res = validatespv::validate_header_chain(&h);
     match res {
         Ok(v) => Ok(Uint8Array::from(&v.to_bytes_be()[..])),
-        Err(e) => Err(JsValue::from_str(utils::match_err_to_string(e)))
+        Err(e) => Err(JsValue::from_str(utils::match_err_to_string(e))),
     }
 }

@@ -1,6 +1,6 @@
 use js_sys::Uint8Array;
 
-use crate::types::{RawHeader, Hash256Digest, SPVError};
+use crate::types::{Hash256Digest, RawHeader, SPVError};
 
 /// Returns the error message.
 ///
@@ -18,7 +18,7 @@ pub fn match_err_to_string(e: SPVError) -> &'static str {
         SPVError::WrongLengthHeader => "Header bytes not multiple of 80",
         SPVError::InsufficientWork => "Header does not meet its own difficulty target",
         SPVError::InvalidChain => "Header bytes not a valid chain",
-        _ => "UnknownError"
+        _ => "UnknownError",
     }
 }
 
@@ -72,9 +72,7 @@ pub fn u8a_to_vec(u: &Uint8Array) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `f` - The function
-pub fn input_vec<'a, T>(f: &'a dyn Fn(&Vec<u8>) -> T)
-    -> Box<dyn Fn(&Uint8Array) -> T + 'a>
-{
+pub fn input_vec<'a, T>(f: &'a dyn Fn(&Vec<u8>) -> T) -> Box<dyn Fn(&Uint8Array) -> T + 'a> {
     Box::new(move |x: &Uint8Array| -> T {
         let vec = u8a_to_vec(x);
         f(&vec)
@@ -89,9 +87,7 @@ pub fn input_vec<'a, T>(f: &'a dyn Fn(&Vec<u8>) -> T)
 /// # Arguments
 ///
 /// * `f` - The function
-pub fn input_header<'a, T>(f: &'a dyn Fn(RawHeader) -> T)
-    -> Box<dyn Fn(&Uint8Array) -> T + 'a>
-{
+pub fn input_header<'a, T>(f: &'a dyn Fn(RawHeader) -> T) -> Box<dyn Fn(&Uint8Array) -> T + 'a> {
     Box::new(move |x: &Uint8Array| -> T {
         let arr = u8a_to_header(x);
         f(arr)

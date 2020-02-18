@@ -1,5 +1,5 @@
-extern crate wasm_bindgen;
 extern crate num_bigint as bigint;
+extern crate wasm_bindgen;
 
 use js_sys::Uint8Array;
 use wasm_bindgen::prelude::*;
@@ -11,7 +11,6 @@ use crate::btcspv;
 
 use super::utils;
 
-
 // Imitate behavior of JS implementation
 /// Script Sig length, object returned from `extract_script_sig_len`
 #[allow(dead_code)]
@@ -19,7 +18,7 @@ use super::utils;
 #[wasm_bindgen]
 pub struct ScriptSigLenResult {
     dataLen: u64,
-    scriptSigLen: u64
+    scriptSigLen: u64,
 }
 
 /// Determines the length of a VarInt in bytes.
@@ -105,7 +104,9 @@ pub fn determine_input_length(tx_in: &Uint8Array) -> u64 {
 /// * `tx_in` - The LEGACY input
 #[wasm_bindgen]
 pub fn extract_sequence_le_legacy(tx_in: &Uint8Array) -> Uint8Array {
-    utils::output_u8a(&utils::input_vec(&btcspv::extract_sequence_le_legacy)(tx_in))
+    utils::output_u8a(&utils::input_vec(&btcspv::extract_sequence_le_legacy)(
+        tx_in,
+    ))
 }
 
 /// Extracts the sequence from the input.
@@ -139,7 +140,10 @@ pub fn extract_script_sig(tx_in: &Uint8Array) -> Uint8Array {
 #[wasm_bindgen]
 pub fn extract_script_sig_len(tx_in: &Uint8Array) -> ScriptSigLenResult {
     let (l, r) = utils::input_vec(&btcspv::extract_script_sig_len)(tx_in);
-    ScriptSigLenResult{ dataLen: l, scriptSigLen: r }
+    ScriptSigLenResult {
+        dataLen: l,
+        scriptSigLen: r,
+    }
 }
 
 //
@@ -154,7 +158,9 @@ pub fn extract_script_sig_len(tx_in: &Uint8Array) -> ScriptSigLenResult {
 /// * `tx_in` - The WITNESS input
 #[wasm_bindgen]
 pub fn extract_sequence_le_witness(tx_in: &Uint8Array) -> Uint8Array {
-    utils::output_u8a(&utils::input_vec(&btcspv::extract_sequence_le_witness)(tx_in))
+    utils::output_u8a(&utils::input_vec(&btcspv::extract_sequence_le_witness)(
+        tx_in,
+    ))
 }
 
 /// Extracts the sequence from the input in a tx.
@@ -242,7 +248,7 @@ pub fn determine_output_length(tx_out: &Uint8Array) -> Result<u64, JsValue> {
     let res = utils::input_vec(&btcspv::determine_output_length)(tx_out);
     match res {
         Ok(v) => Ok(v),
-        Err(e) => Err(JsValue::from_str(utils::match_err_to_string(e)))
+        Err(e) => Err(JsValue::from_str(utils::match_err_to_string(e))),
     }
 }
 
@@ -265,7 +271,7 @@ pub fn extract_output_at_index(vout: &Uint8Array, index: u8) -> Result<Uint8Arra
     let res = btcspv::extract_output_at_index(&vec, index);
     match res {
         Ok(v) => Ok(Uint8Array::from(&v[..])),
-        Err(e) => Err(JsValue::from_str(utils::match_err_to_string(e)))
+        Err(e) => Err(JsValue::from_str(utils::match_err_to_string(e))),
     }
 }
 
@@ -318,7 +324,7 @@ pub fn extract_op_return_data(tx_out: &Uint8Array) -> Result<Uint8Array, JsValue
     let res = btcspv::extract_op_return_data(&vec);
     match res {
         Ok(v) => Ok(Uint8Array::from(&v[..])),
-        Err(e) => Err(JsValue::from_str(utils::match_err_to_string(e)))
+        Err(e) => Err(JsValue::from_str(utils::match_err_to_string(e))),
     }
 }
 
@@ -338,7 +344,7 @@ pub fn extract_hash(tx_out: &Uint8Array) -> Result<Uint8Array, JsValue> {
     let res = btcspv::extract_hash(&vec);
     match res {
         Ok(v) => Ok(Uint8Array::from(&v[..])),
-        Err(e) => Err(JsValue::from_str(utils::match_err_to_string(e)))
+        Err(e) => Err(JsValue::from_str(utils::match_err_to_string(e))),
     }
 }
 
@@ -519,7 +525,11 @@ pub fn verify_hash256_merkle(proof: &Uint8Array, index: u64) -> bool {
 /// * `first_timestamp` - The timestamp of the first block in the difficulty period
 /// * `second_timestamp` - The timestamp of the last block in the difficulty period
 #[wasm_bindgen]
-pub fn retarget_algorithm(previous_target: &Uint8Array, first_timestamp: u32, second_timestamp: u32) -> Uint8Array {
+pub fn retarget_algorithm(
+    previous_target: &Uint8Array,
+    first_timestamp: u32,
+    second_timestamp: u32,
+) -> Uint8Array {
     let p = utils::u8a_to_vec(previous_target);
     let prev = BigUint::from_bytes_be(&p);
     let new_target = btcspv::retarget_algorithm(&prev, first_timestamp, second_timestamp);

@@ -2,9 +2,9 @@ extern crate num_bigint as bigint;
 
 use bigint::BigUint;
 
-use crate::utils;
 use crate::btcspv;
-use crate::types::{RawHeader, Hash256Digest, InputType, OutputType, SPVError};
+use crate::types::{Hash256Digest, InputType, OutputType, RawHeader, SPVError};
+use crate::utils;
 
 /// Evaluates a Bitcoin merkle inclusion proof.
 ///
@@ -14,11 +14,16 @@ use crate::types::{RawHeader, Hash256Digest, InputType, OutputType, SPVError};
 /// * `merkle_root` - The merkle root (as in the block header)
 /// * `intermediate_nodes` - The proof's intermediate nodes (digests between leaf and root)
 /// * `index` - The leaf's index in the tree (0-indexed)
-pub fn prove(txid: Hash256Digest, merkle_root: Hash256Digest, intermediate_nodes: &Vec<u8>, index: u64) -> bool {
+pub fn prove(
+    txid: Hash256Digest,
+    merkle_root: Hash256Digest,
+    intermediate_nodes: &Vec<u8>,
+    index: u64,
+) -> bool {
     if txid == merkle_root && index == 0 && intermediate_nodes.len() == 0 {
         return true;
     }
-    let mut proof: Vec<u8> = vec!();
+    let mut proof: Vec<u8> = vec![];
     proof.extend(&txid);
     proof.extend(intermediate_nodes);
     proof.extend(&merkle_root);
@@ -34,8 +39,13 @@ pub fn prove(txid: Hash256Digest, merkle_root: Hash256Digest, intermediate_nodes
 /// * `vin` - Raw bytes length-prefixed input vector
 /// * `vout` - Raw bytes length-prefixed output vector
 /// * `locktime` - 4-byte tx locktime
-pub fn calculate_txid(version: &Vec<u8>, vin: &Vec<u8>, vout: &Vec<u8>, locktime: &Vec<u8>) -> Hash256Digest {
-    let mut tx: Vec<u8> = vec!();
+pub fn calculate_txid(
+    version: &Vec<u8>,
+    vin: &Vec<u8>,
+    vout: &Vec<u8>,
+    locktime: &Vec<u8>,
+) -> Hash256Digest {
+    let mut tx: Vec<u8> = vec![];
     tx.extend(version);
     tx.extend(vin);
     tx.extend(vout);
@@ -57,7 +67,7 @@ pub fn parse_input(tx_in: &Vec<u8>) -> (u32, Vec<u8>, u32, InputType) {
         0 => {
             sequence = btcspv::extract_sequence_witness(&tx_in);
             input_type = InputType::Witness;
-        },
+        }
         _ => {
             sequence = btcspv::extract_sequence_legacy(&tx_in);
             let witness_tag = tx_in[36..39].to_vec();
@@ -97,22 +107,22 @@ pub fn parse_output(output: &Vec<u8>) -> (u64, OutputType, Vec<u8>) {
         [0x22, 0x00] => {
             output_type = OutputType::WSH;
             payload = output[11..43].to_vec();
-        },
+        }
         [0x16, 0x00] => {
             output_type = OutputType::WPKH;
             payload = output[11..31].to_vec();
-        },
+        }
         [0x19, 0x76] => {
             output_type = OutputType::PKH;
             payload = output[12..32].to_vec();
-        },
+        }
         [0x17, 0xa9] => {
             output_type = OutputType::SH;
             payload = output[11..31].to_vec();
-        },
+        }
         _ => {
             output_type = OutputType::Nonstandard;
-            payload = vec!();
+            payload = vec![];
         }
     }
 
@@ -125,9 +135,21 @@ pub fn parse_output(output: &Vec<u8>) -> (u64, OutputType, Vec<u8>) {
 /// # Arguments
 ///
 /// * `header` - The header
-pub fn parse_header(header: RawHeader) -> (Hash256Digest, u32, Hash256Digest, Hash256Digest, u32, BigUint, u32) {
+pub fn parse_header(
+    header: RawHeader,
+) -> (
+    Hash256Digest,
+    u32,
+    Hash256Digest,
+    Hash256Digest,
+    u32,
+    BigUint,
+    u32,
+) {
     let mut digest: Hash256Digest = Default::default();
-    digest.copy_from_slice(&utils::reverse_endianness(&btcspv::hash256(&header).to_vec()));
+    digest.copy_from_slice(&utils::reverse_endianness(
+        &btcspv::hash256(&header).to_vec(),
+    ));
 
     let mut vers: [u8; 4] = Default::default();
     vers.copy_from_slice(&header[0..4]);
@@ -142,7 +164,15 @@ pub fn parse_header(header: RawHeader) -> (Hash256Digest, u32, Hash256Digest, Ha
     n.copy_from_slice(&header[76..80]);
     let nonce = u32::from_le_bytes(n);
 
-    (digest, version, prev_hash, merkle_root, timestamp, target, nonce)
+    (
+        digest,
+        version,
+        prev_hash,
+        merkle_root,
+        timestamp,
+        target,
+        nonce,
+    )
 }
 
 /// Checks validity of header work.
@@ -193,7 +223,7 @@ pub fn validate_header_chain(headers: &Vec<u8>) -> Result<BigUint, SPVError> {
     for i in 0..headers.len() / 80 {
         let start = i * 80;
         let mut header: RawHeader = [0; 80];
-        header.copy_from_slice(&headers[start..start+80]);
+        header.copy_from_slice(&headers[start..start + 80]);
 
         if i != 0 {
             if !validate_header_prev_hash(header, digest) {
@@ -210,13 +240,12 @@ pub fn validate_header_chain(headers: &Vec<u8>) -> Result<BigUint, SPVError> {
     Ok(total_difficulty)
 }
 
-
 #[cfg(test)]
 #[cfg_attr(tarpaulin, skip)]
 mod tests {
 
-use super::*;
-use crate::utils::*;
+    use super::*;
+    use crate::utils::*;
 
     #[test]
     fn it_verifies_merkle_inclusion_proofs() {
@@ -230,7 +259,8 @@ use crate::utils::*;
                 txid.copy_from_slice(&id);
 
                 let mut merkle_root: Hash256Digest = Default::default();
-                let root = force_deserialize_hex(inputs.get("merkleRootLE").unwrap().as_str().unwrap());
+                let root =
+                    force_deserialize_hex(inputs.get("merkleRootLE").unwrap().as_str().unwrap());
                 merkle_root.copy_from_slice(&root);
 
                 let proof = force_deserialize_hex(inputs.get("proof").unwrap().as_str().unwrap());
@@ -248,11 +278,12 @@ use crate::utils::*;
             let test_cases = test_utils::get_test_cases("calculateTxId", &fixtures);
             for case in test_cases {
                 let inputs = case.input.as_object().unwrap();
-                let version = force_deserialize_hex(inputs.get("version").unwrap().as_str().unwrap());
+                let version =
+                    force_deserialize_hex(inputs.get("version").unwrap().as_str().unwrap());
                 let vin = force_deserialize_hex(inputs.get("vin").unwrap().as_str().unwrap());
                 let vout = force_deserialize_hex(inputs.get("vout").unwrap().as_str().unwrap());
-                let locktime = force_deserialize_hex(inputs.get("locktime").unwrap().as_str().unwrap())
-                ;
+                let locktime =
+                    force_deserialize_hex(inputs.get("locktime").unwrap().as_str().unwrap());
                 let mut expected: Hash256Digest = Default::default();
                 expected.copy_from_slice(&force_deserialize_hex(case.output.as_str().unwrap()));
 
@@ -293,7 +324,8 @@ use crate::utils::*;
 
                 let t = outputs.get("type").unwrap().as_u64().unwrap();
                 let output_type = test_utils::match_number_to_output_type(t);
-                let payload = force_deserialize_hex(outputs.get("payload").unwrap().as_str().unwrap());
+                let payload =
+                    force_deserialize_hex(outputs.get("payload").unwrap().as_str().unwrap());
                 let expected = (value, output_type, payload);
                 assert_eq!(parse_output(&input), expected);
             }
@@ -321,17 +353,27 @@ use crate::utils::*;
                 prev_hash.copy_from_slice(&p);
 
                 let mut merkle_root: Hash256Digest = Default::default();
-                let root = force_deserialize_hex(outputs.get("merkleRoot").unwrap().as_str().unwrap());
+                let root =
+                    force_deserialize_hex(outputs.get("merkleRoot").unwrap().as_str().unwrap());
                 merkle_root.copy_from_slice(&root);
 
                 let timestamp = outputs.get("timestamp").unwrap().as_u64().unwrap() as u32;
 
-                let target_bytes = force_deserialize_hex(outputs.get("target").unwrap().as_str().unwrap());
+                let target_bytes =
+                    force_deserialize_hex(outputs.get("target").unwrap().as_str().unwrap());
                 let target = BigUint::from_bytes_be(&target_bytes);
 
                 let nonce = outputs.get("nonce").unwrap().as_u64().unwrap() as u32;
 
-                let expected = (digest, version, prev_hash, merkle_root, timestamp, target, nonce);
+                let expected = (
+                    digest,
+                    version,
+                    prev_hash,
+                    merkle_root,
+                    timestamp,
+                    target,
+                    nonce,
+                );
                 assert_eq!(parse_header(input), expected);
             }
         })
@@ -345,12 +387,14 @@ use crate::utils::*;
                 let inputs = case.input.as_object().unwrap();
 
                 let mut digest: Hash256Digest = Default::default();
-                digest.copy_from_slice(&force_deserialize_hex(inputs.get("digest").unwrap().as_str().unwrap()));
+                digest.copy_from_slice(&force_deserialize_hex(
+                    inputs.get("digest").unwrap().as_str().unwrap(),
+                ));
 
                 let t = inputs.get("target").unwrap();
                 let target = match t.is_u64() {
                     true => BigUint::from(t.as_u64().unwrap()),
-                    false => BigUint::from_bytes_be(&force_deserialize_hex(t.as_str().unwrap()))
+                    false => BigUint::from_bytes_be(&force_deserialize_hex(t.as_str().unwrap())),
                 };
 
                 let expected = case.output.as_bool().unwrap();
@@ -367,10 +411,14 @@ use crate::utils::*;
                 let inputs = case.input.as_object().unwrap();
 
                 let mut prev_hash: Hash256Digest = Default::default();
-                prev_hash.copy_from_slice(&force_deserialize_hex(inputs.get("prevHash").unwrap().as_str().unwrap()));
+                prev_hash.copy_from_slice(&force_deserialize_hex(
+                    inputs.get("prevHash").unwrap().as_str().unwrap(),
+                ));
 
                 let mut header: RawHeader = [0; 80];
-                header.copy_from_slice(&force_deserialize_hex(inputs.get("header").unwrap().as_str().unwrap()));
+                header.copy_from_slice(&force_deserialize_hex(
+                    inputs.get("header").unwrap().as_str().unwrap(),
+                ));
 
                 let expected = case.output.as_bool().unwrap();
                 assert_eq!(validate_header_prev_hash(header, prev_hash), expected);
@@ -397,10 +445,11 @@ use crate::utils::*;
             let test_cases = test_utils::get_test_cases("validateHeaderChainError", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = test_utils::match_string_to_err(case.error_message.as_str().unwrap());
+                let expected =
+                    test_utils::match_string_to_err(case.error_message.as_str().unwrap());
                 match validate_header_chain(&input) {
                     Ok(_) => assert!(false, "expected an error"),
-                    Err(v) => assert_eq!(v, expected)
+                    Err(v) => assert_eq!(v, expected),
                 }
             }
         })
