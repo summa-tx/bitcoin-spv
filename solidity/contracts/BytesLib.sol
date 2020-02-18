@@ -400,8 +400,7 @@ library BytesLib {
     }
 
     function toBytes32(bytes memory _source) pure internal returns (bytes32 result) {
-        bytes memory tempEmptyStringTest = bytes(_source);
-        if (tempEmptyStringTest.length == 0) {
+        if (_source.length == 0) {
             return 0x0;
         }
 
