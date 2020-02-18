@@ -97,10 +97,10 @@ pub mod test_utils {
         let target = btcspv::extract_target(raw);
         let difficulty = btcspv::calculate_difficulty(&target);
         TestHeader {
-            raw: raw,
-            timestamp: timestamp,
-            target: target,
-            difficulty: difficulty,
+            raw,
+            timestamp,
+            target,
+            difficulty,
         }
     }
 
@@ -201,7 +201,7 @@ pub mod test_utils {
         }
     }
 
-    pub fn run_test<T>(test: T) -> ()
+    pub fn run_test<T>(test: T)
     where
         T: FnOnce(&serde_json::Value) -> () + panic::UnwindSafe,
     {

@@ -83,7 +83,7 @@ pub fn extract_input_at_index(vin: &Vec<u8>, index: u8) -> Vec<u8> {
     let mut length = 0;
     let mut offset = 1;
 
-    for i in 0..index + 1 {
+    for i in 0..=index {
         let remaining = vin[offset..].to_vec();
         length = determine_input_length(&remaining);
         if i != index {
@@ -159,13 +159,13 @@ pub fn extract_script_sig(tx_in: &Vec<u8>) -> Vec<u8> {
 pub fn extract_script_sig_len(tx_in: &Vec<u8>) -> (u64, u64) {
     let tag = tx_in[36];
     let data_len = determine_var_int_data_length(tag) as u64;
-    let mut scriptsig_len = tag as u64;
-
-    if data_len != 0 {
+    let scriptsig_len = if data_len != 0 {
         let mut arr: [u8; 8] = Default::default();
         arr[..data_len as usize].copy_from_slice(&tx_in[37..37 + data_len as usize]);
-        scriptsig_len = u64::from_le_bytes(arr);
-    }
+        u64::from_le_bytes(arr)
+    } else {
+        tag as u64
+    };
     (data_len, scriptsig_len)
 }
 
@@ -289,7 +289,7 @@ pub fn extract_output_at_index(vout: &Vec<u8>, index: u8) -> Result<Vec<u8>, SPV
     let mut offset = 1;
     let idx = index as u64;
 
-    for i in 0..idx + 1 {
+    for i in 0..=idx {
         let remaining = vout[offset..].to_vec();
         length = determine_output_length(&remaining)?;
         if i != idx {
@@ -306,7 +306,7 @@ pub fn extract_output_at_index(vout: &Vec<u8>, index: u8) -> Result<Vec<u8>, SPV
 ///
 /// * `tx_out` - The output
 pub fn extract_output_script_len(tx_out: &Vec<u8>) -> u64 {
-    return tx_out[8] as u64;
+    tx_out[8] as u64
 }
 
 /// Extracts the value bytes from the output in a tx.
@@ -624,7 +624,7 @@ pub fn verify_hash256_merkle(proof: &Vec<u8>, index: u64) -> bool {
         idx >>= 1;
     }
 
-    return current == root;
+    current == root
 }
 
 /// Performs the bitcoin difficulty retarget.
@@ -640,7 +640,7 @@ pub fn retarget_algorithm(
     first_timestamp: u32,
     second_timestamp: u32,
 ) -> BigUint {
-    let retarget_period = 1209600;
+    let retarget_period = 1_209_600;
     let lower_bound = retarget_period / 4;
     let upper_bound = retarget_period * 4;
 

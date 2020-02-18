@@ -20,7 +20,7 @@ pub fn prove(
     intermediate_nodes: &Vec<u8>,
     index: u64,
 ) -> bool {
-    if txid == merkle_root && index == 0 && intermediate_nodes.len() == 0 {
+    if txid == merkle_root && index == 0 && intermediate_nodes.is_empty() {
         return true;
     }
     let mut proof: Vec<u8> = vec![];
@@ -225,11 +225,11 @@ pub fn validate_header_chain(headers: &Vec<u8>) -> Result<BigUint, SPVError> {
         let mut header: RawHeader = [0; 80];
         header.copy_from_slice(&headers[start..start + 80]);
 
-        if i != 0 {
-            if !validate_header_prev_hash(header, digest) {
-                return Err(SPVError::InvalidChain);
-            }
+
+        if i != 0 && !validate_header_prev_hash(header, digest) {
+            return Err(SPVError::InvalidChain);
         }
+
         let target = btcspv::extract_target(header);
         digest.copy_from_slice(&btcspv::hash256(&header));
         if !validate_header_work(digest, &target) {
