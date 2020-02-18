@@ -21,7 +21,7 @@ library CheckBitcoinSigs {
 
         // keccak hash of uncompressed unprefixed pubkey
         bytes32 _digest = keccak256(_pubkey);
-        return address(uint160(uint256(_digest)));
+        return address(uint256(_digest));
     }
 
     /// @notice          Calculates the p2wpkh output script of a pubkey
