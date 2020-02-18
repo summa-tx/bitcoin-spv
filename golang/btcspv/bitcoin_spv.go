@@ -251,7 +251,7 @@ func ExtractOpReturnData(output []byte) ([]byte, error) {
 	}
 
 	dataLen := int(output[10])
-	if dataLen + 8 + 3 > len(output) {
+	if dataLen+8+3 > len(output) {
 		return nil, errors.New("Malformatted data. Read overrun")
 	}
 
@@ -422,7 +422,8 @@ func hash256MerkleStep(a []byte, b []byte) Hash256Digest {
 	return Hash256(c)
 }
 
-// VerifyHash256Merkle checks a merkle inclusion proof's validity
+// VerifyHash256Merkle checks a merkle inclusion proof's validity.
+// Note that `index` is not a reliable indicator of location within a block.
 func VerifyHash256Merkle(proof []byte, index uint) bool {
 	var current Hash256Digest
 	idx := index

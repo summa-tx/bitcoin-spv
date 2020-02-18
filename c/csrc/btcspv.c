@@ -7,7 +7,7 @@
 bool btcspv_truncated_uint256_equality(const uint8_t *trun,
                                        const uint8_t *full) {
   for (int i = 0; i < 32; i++) {
-    if (trun[i] == 0 || (trun[i] & full[i]) != trun[i]) {
+    if ((trun[i] & full[i]) != trun[i]) {
       return false;
     }
   }
@@ -183,7 +183,7 @@ byte_view_t btcspv_extract_input_tx_id_le(const_view_t *tx_in) {
   return tx_id_le;
 }
 
-void btcspv_extract_extract_input_tx_id_be(uint256 hash, const_view_t *tx_in) {
+void btcspv_extract_input_tx_id_be(uint256 hash, const_view_t *tx_in) {
   const_view_t le = btcspv_extract_input_tx_id_le(tx_in);
   buf_rev(hash, le.loc, le.len);
 }

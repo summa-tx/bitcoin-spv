@@ -35,6 +35,7 @@ library ValidateSPV {
     }
 
     /// @notice                     Validates a tx inclusion in the block
+    /// @dev                        `index` is not a reliable indicator of location within a block
     /// @param _txid                The txid (LE)
     /// @param _merkleRoot          The merkle root (as in the block header)
     /// @param _intermediateNodes   The proof's intermediate nodes (digests between leaf and root)

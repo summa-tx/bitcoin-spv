@@ -7,6 +7,7 @@ use crate::types::{Hash256Digest, InputType, OutputType, RawHeader, SPVError};
 use crate::utils;
 
 /// Evaluates a Bitcoin merkle inclusion proof.
+/// Note that `index` is not a reliable indicator of location within a block.
 ///
 /// # Arguments
 ///
