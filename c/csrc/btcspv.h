@@ -186,7 +186,7 @@ byte_view_t btcspv_extract_input_tx_id_le(const_view_t *tx_in);
 /// @param input     The input
 /// @warning         overwrites `hash`
 /// @warning         caller must ensure `hash` is allocated and can hold 32 bytes
-void btcspv_extract_extract_input_tx_id_be(uint256 hash, const_view_t *tx_in);
+void btcspv_extract_input_tx_id_be(uint256 hash, const_view_t *tx_in);
 
 /// @brief           Extracts the LE tx input index from the input in a tx
 /// @note            4 byte tx index
@@ -351,6 +351,7 @@ void btcspv_hash256_merkle_step(uint8_t *result, const_view_t *a,
 /// @param proof     The proof. Tightly packed LE sha256 hashes. The last hash is the root
 /// @param index     The index of the leaf
 /// @return          true if the proof is valid, else false
+/// @warning         `index` is not a reliable indicator of location within a block.
 bool btcspv_verify_hash256_merkle(const_view_t *proof, uint32_t index);
 
 /// @brief                  performs the bitcoin difficulty retarget

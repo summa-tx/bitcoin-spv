@@ -20,7 +20,8 @@ import * as utils from './utils';
 
 /**
  *
- * Validates a tx inclusion in the block
+ * Validates a tx inclusion in the block.
+ * Note that `index` is not a reliable indicator of location within a block.
  *
  * @param {Uint8Array}    txid The txid (LE)
  * @param {Uint8Array}    merkleRoot The merkle root (as in the block header)

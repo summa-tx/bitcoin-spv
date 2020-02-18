@@ -82,7 +82,10 @@ def extract_prev_block_be(header: bytes) -> bytes:
 def prove(
     txid: bytes, merkle_root: bytes, intermediate_nodes: bytes, index: int) \
         -> bool:
-    '''Validates a tx inclusion in the block'''
+    '''
+    Validates a tx inclusion in the block.
+    Note that `index` is not a reliable indicator of location within a block.
+    '''
     if txid == merkle_root and index == 0 and len(intermediate_nodes) == 0:
         return True
 

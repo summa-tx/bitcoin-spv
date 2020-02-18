@@ -7,6 +7,7 @@ import (
 )
 
 // Prove checks the validity of a merkle proof
+// Note that `index` is not a reliable indicator of location within a block.
 func Prove(
 	version []byte,
 	vin []byte,
