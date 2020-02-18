@@ -244,7 +244,8 @@ library BytesLib {
     }
 
     function slice(bytes memory _bytes, uint _start, uint _length) internal  pure returns (bytes memory res) {
-        require(_bytes.length >= (_start + _length), "Slice out of bounds");
+        uint _end = _start + _length;
+        require(_end > _start && _bytes.length >= _end, "Slice out of bounds");
 
         assembly {
             // Alloc bytes array with additional 32 bytes afterspace and assign it's size
@@ -267,7 +268,8 @@ library BytesLib {
     }
 
     function toAddress(bytes memory _bytes, uint _start) internal  pure returns (address) {
-        require(_bytes.length >= (_start + 20), "Address conversion out of bounds.");
+        uint _totalLen = _start + 20;
+        require(_totalLen > _start && _bytes.length >= _totalLen, "Address conversion out of bounds.");
         address tempAddress;
 
         assembly {
@@ -278,7 +280,8 @@ library BytesLib {
     }
 
     function toUint(bytes memory _bytes, uint _start) internal  pure returns (uint256) {
-        require(_bytes.length >= (_start + 32), "Uint conversion out of bounds.");
+        uint _totalLen = _start + 32;
+        require(_totalLen > _start && _bytes.length >= _totalLen, "Uint conversion out of bounds.");
         uint256 tempUint;
 
         assembly {
@@ -408,7 +411,8 @@ library BytesLib {
     }
 
     function keccak256Slice(bytes memory _bytes, uint _start, uint _length) pure internal returns (bytes32 result) {
-        require(_bytes.length >= (_start + _length), "Slice out of bounds");
+        uint _end = _start + _length;
+        require(_end > _start && _bytes.length >= _end, "Slice out of bounds");
 
         assembly {
             result := keccak256(add(add(_bytes, 32), _start), _length)
