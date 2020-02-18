@@ -17,7 +17,7 @@ use crate::utils;
 pub fn prove(
     txid: Hash256Digest,
     merkle_root: Hash256Digest,
-    intermediate_nodes: &Vec<u8>,
+    intermediate_nodes: &[u8],
     index: u64,
 ) -> bool {
     if txid == merkle_root && index == 0 && intermediate_nodes.is_empty() {
@@ -39,12 +39,7 @@ pub fn prove(
 /// * `vin` - Raw bytes length-prefixed input vector
 /// * `vout` - Raw bytes length-prefixed output vector
 /// * `locktime` - 4-byte tx locktime
-pub fn calculate_txid(
-    version: &Vec<u8>,
-    vin: &Vec<u8>,
-    vout: &Vec<u8>,
-    locktime: &Vec<u8>,
-) -> Hash256Digest {
+pub fn calculate_txid(version: &[u8], vin: &[u8], vout: &[u8], locktime: &[u8]) -> Hash256Digest {
     let mut tx: Vec<u8> = vec![];
     tx.extend(version);
     tx.extend(vin);
@@ -59,7 +54,7 @@ pub fn calculate_txid(
 /// # Arguments
 ///
 /// * `tx_in` - The tx input
-pub fn parse_input(tx_in: &Vec<u8>) -> (u32, Vec<u8>, u32, InputType) {
+pub fn parse_input(tx_in: &[u8]) -> (u32, Vec<u8>, u32, InputType) {
     let sequence: u32;
     let input_type: InputType;
 
@@ -90,7 +85,7 @@ pub fn parse_input(tx_in: &Vec<u8>) -> (u32, Vec<u8>, u32, InputType) {
 /// # Arguments
 ///
 /// * `output` - The tx output
-pub fn parse_output(output: &Vec<u8>) -> (u64, OutputType, Vec<u8>) {
+pub fn parse_output(output: &[u8]) -> (u64, OutputType, Vec<u8>) {
     let value: u64 = btcspv::extract_value(&output);
     let output_type: OutputType;
     let payload: Vec<u8>;
@@ -212,7 +207,7 @@ pub fn validate_header_prev_hash(header: RawHeader, prev_hash: Hash256Digest) ->
 /// # Errors
 ///
 /// * Errors if header chain is the wrong length, chain is invalid or insufficient work
-pub fn validate_header_chain(headers: &Vec<u8>) -> Result<BigUint, SPVError> {
+pub fn validate_header_chain(headers: &[u8]) -> Result<BigUint, SPVError> {
     if headers.len() % 80 != 0 {
         return Err(SPVError::WrongLengthHeader);
     }
@@ -224,7 +219,6 @@ pub fn validate_header_chain(headers: &Vec<u8>) -> Result<BigUint, SPVError> {
         let start = i * 80;
         let mut header: RawHeader = [0; 80];
         header.copy_from_slice(&headers[start..start + 80]);
-
 
         if i != 0 && !validate_header_prev_hash(header, digest) {
             return Err(SPVError::InvalidChain);

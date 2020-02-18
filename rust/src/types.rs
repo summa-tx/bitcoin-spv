@@ -365,7 +365,7 @@ mod internal_ser {
             }
         }
 
-        pub fn serialize<S>(d: &Vec<u8>, serializer: S) -> Result<S::Ok, S::Error>
+        pub fn serialize<S>(d: &[u8], serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
         {

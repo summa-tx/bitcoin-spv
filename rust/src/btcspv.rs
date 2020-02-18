@@ -79,7 +79,7 @@ pub fn hash256(preimage: &[u8]) -> Hash256Digest {
 ///
 /// * `vin` - The vin as a tightly-packed u8 array
 /// * `index` - The 0-indexed location of the input to extract
-pub fn extract_input_at_index(vin: &Vec<u8>, index: u8) -> Vec<u8> {
+pub fn extract_input_at_index(vin: &[u8], index: u8) -> Vec<u8> {
     let mut length = 0;
     let mut offset = 1;
 
@@ -97,57 +97,15 @@ pub fn extract_input_at_index(vin: &Vec<u8>, index: u8) -> Vec<u8> {
 /// True for LEGACY, False for WITNESS,
 /// False if no scriptSig.
 ///
+/// # Arguments
+///
 /// * `tx_in` - The input
-pub fn is_legacy_input(tx_in: &Vec<u8>) -> bool {
+///
+/// # Panics
+///
+/// If the tx_in is malformatted, i.e. <= 36 bytes long
+pub fn is_legacy_input(tx_in: &[u8]) -> bool {
     tx_in[36] != 0
-}
-
-/// Determines the length of an input from its scriptsig:
-/// 36 for outpoint, 1 for scriptsig length, 4 for sequence.
-///
-/// # Arguments
-///
-/// * `tx_in` - The input as a u8 array
-pub fn determine_input_length(tx_in: &Vec<u8>) -> u64 {
-    let (data_len, scriptsig_len) = extract_script_sig_len(tx_in);
-    41 + data_len + scriptsig_len
-}
-
-/// Extracts the LE sequence bytes from an input.
-/// Sequence is used for relative time locks.
-///
-/// # Arguments
-///
-/// * `tx_in` - The LEGACY input
-pub fn extract_sequence_le_legacy(tx_in: &Vec<u8>) -> Vec<u8> {
-    let (data_len, scriptsig_len) = extract_script_sig_len(tx_in);
-    let offset: usize = 36 + 1 + data_len as usize + scriptsig_len as usize;
-    tx_in[offset..offset + 4].to_vec()
-}
-
-/// Extracts the sequence from the input.
-/// Sequence is a 4-byte little-endian number.
-///
-/// # Arguments
-///
-/// * `tx_in` - The LEGACY input
-pub fn extract_sequence_legacy(tx_in: &Vec<u8>) -> u32 {
-    let mut arr: [u8; 4] = [0, 0, 0, 0];
-    let b = extract_sequence_le_legacy(tx_in);
-    arr.copy_from_slice(&b[..]);
-    u32::from_le_bytes(arr)
-}
-
-/// Extracts the VarInt-prepended scriptSig from the input in a tx.
-/// Will return `vec![0]` if passed a witness input.
-///
-/// # Arguments
-///
-/// * `tx_in` - The LEGACY input
-pub fn extract_script_sig(tx_in: &Vec<u8>) -> Vec<u8> {
-    let (data_len, scriptsig_len) = extract_script_sig_len(tx_in);
-    let length = 1 + data_len + scriptsig_len;
-    tx_in[36..36 + length as usize].to_vec()
 }
 
 /// Determines the length of a scriptSig in an input.
@@ -156,7 +114,7 @@ pub fn extract_script_sig(tx_in: &Vec<u8>) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_script_sig_len(tx_in: &Vec<u8>) -> (u64, u64) {
+pub fn extract_script_sig_len(tx_in: &[u8]) -> (u64, u64) {
     let tag = tx_in[36];
     let data_len = determine_var_int_data_length(tag) as u64;
     let scriptsig_len = if data_len != 0 {
@@ -169,6 +127,54 @@ pub fn extract_script_sig_len(tx_in: &Vec<u8>) -> (u64, u64) {
     (data_len, scriptsig_len)
 }
 
+/// Determines the length of an input from its scriptsig:
+/// 36 for outpoint, 1 for scriptsig length, 4 for sequence.
+///
+/// # Arguments
+///
+/// * `tx_in` - The input as a u8 array
+pub fn determine_input_length(tx_in: &[u8]) -> u64 {
+    let (data_len, scriptsig_len) = extract_script_sig_len(tx_in);
+    41 + data_len + scriptsig_len
+}
+
+/// Extracts the LE sequence bytes from an input.
+/// Sequence is used for relative time locks.
+///
+/// # Arguments
+///
+/// * `tx_in` - The LEGACY input
+pub fn extract_sequence_le_legacy(tx_in: &[u8]) -> Vec<u8> {
+    let (data_len, scriptsig_len) = extract_script_sig_len(tx_in);
+    let offset: usize = 36 + 1 + data_len as usize + scriptsig_len as usize;
+    tx_in[offset..offset + 4].to_vec()
+}
+
+/// Extracts the sequence from the input.
+/// Sequence is a 4-byte little-endian number.
+///
+/// # Arguments
+///
+/// * `tx_in` - The LEGACY input
+pub fn extract_sequence_legacy(tx_in: &[u8]) -> u32 {
+    let mut arr: [u8; 4] = [0, 0, 0, 0];
+    let b = extract_sequence_le_legacy(tx_in);
+    arr.copy_from_slice(&b[..]);
+    u32::from_le_bytes(arr)
+}
+
+/// Extracts the VarInt-prepended scriptSig from the input in a tx.
+/// Will return `vec![0]` if passed a witness input.
+///
+/// # Arguments
+///
+/// * `tx_in` - The LEGACY input
+pub fn extract_script_sig(tx_in: &[u8]) -> Vec<u8> {
+    let (data_len, scriptsig_len) = extract_script_sig_len(tx_in);
+    let length = 1 + data_len + scriptsig_len;
+    tx_in[36..36 + length as usize].to_vec()
+}
+
 //
 // Witness Output
 //
@@ -179,7 +185,7 @@ pub fn extract_script_sig_len(tx_in: &Vec<u8>) -> (u64, u64) {
 /// # Arguments
 ///
 /// * `tx_in` - The WITNESS input
-pub fn extract_sequence_le_witness(tx_in: &Vec<u8>) -> Vec<u8> {
+pub fn extract_sequence_le_witness(tx_in: &[u8]) -> Vec<u8> {
     tx_in[37..41].to_vec()
 }
 
@@ -189,7 +195,7 @@ pub fn extract_sequence_le_witness(tx_in: &Vec<u8>) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `tx_in` - The WITNESS input
-pub fn extract_sequence_witness(tx_in: &Vec<u8>) -> u32 {
+pub fn extract_sequence_witness(tx_in: &[u8]) -> u32 {
     let mut arr: [u8; 4] = [0, 0, 0, 0];
     let b = extract_sequence_le_witness(tx_in);
     arr.copy_from_slice(&b[..]);
@@ -202,7 +208,7 @@ pub fn extract_sequence_witness(tx_in: &Vec<u8>) -> u32 {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_outpoint(tx_in: &Vec<u8>) -> Vec<u8> {
+pub fn extract_outpoint(tx_in: &[u8]) -> Vec<u8> {
     tx_in[0..36].to_vec()
 }
 
@@ -212,7 +218,7 @@ pub fn extract_outpoint(tx_in: &Vec<u8>) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_input_tx_id_le(tx_in: &Vec<u8>) -> Vec<u8> {
+pub fn extract_input_tx_id_le(tx_in: &[u8]) -> Vec<u8> {
     tx_in[0..32].to_vec()
 }
 
@@ -222,7 +228,7 @@ pub fn extract_input_tx_id_le(tx_in: &Vec<u8>) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_input_tx_id(tx_in: &Vec<u8>) -> Vec<u8> {
+pub fn extract_input_tx_id(tx_in: &[u8]) -> Vec<u8> {
     utils::reverse_endianness(&tx_in[0..32].to_vec())
 }
 
@@ -232,7 +238,7 @@ pub fn extract_input_tx_id(tx_in: &Vec<u8>) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_tx_index_le(tx_in: &Vec<u8>) -> Vec<u8> {
+pub fn extract_tx_index_le(tx_in: &[u8]) -> Vec<u8> {
     tx_in[32..36].to_vec()
 }
 
@@ -242,7 +248,7 @@ pub fn extract_tx_index_le(tx_in: &Vec<u8>) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_tx_index(tx_in: &Vec<u8>) -> u32 {
+pub fn extract_tx_index(tx_in: &[u8]) -> u32 {
     let mut arr: [u8; 4] = [0, 0, 0, 0];
     let b = extract_tx_index_le(tx_in);
     arr.copy_from_slice(&b[..]);
@@ -263,7 +269,7 @@ pub fn extract_tx_index(tx_in: &Vec<u8>) -> u32 {
 /// # Errors
 ///
 /// * Errors if VarInt represents a number larger than 253; large VarInts are not supported.
-pub fn determine_output_length(tx_out: &Vec<u8>) -> Result<u64, SPVError> {
+pub fn determine_output_length(tx_out: &[u8]) -> Result<u64, SPVError> {
     let length = tx_out[8] as u64;
     match length {
         0xfd | 0xfe | 0xff => Err(SPVError::LargeVarInt),
@@ -284,7 +290,7 @@ pub fn determine_output_length(tx_out: &Vec<u8>) -> Result<u64, SPVError> {
 /// # Errors
 ///
 /// * Errors if VarInt represents a number larger than 253.  Large VarInts are not supported.
-pub fn extract_output_at_index(vout: &Vec<u8>, index: u8) -> Result<Vec<u8>, SPVError> {
+pub fn extract_output_at_index(vout: &[u8], index: u8) -> Result<Vec<u8>, SPVError> {
     let mut length: u64 = 0;
     let mut offset = 1;
     let idx = index as u64;
@@ -305,7 +311,7 @@ pub fn extract_output_at_index(vout: &Vec<u8>, index: u8) -> Result<Vec<u8>, SPV
 /// # Arguments
 ///
 /// * `tx_out` - The output
-pub fn extract_output_script_len(tx_out: &Vec<u8>) -> u64 {
+pub fn extract_output_script_len(tx_out: &[u8]) -> u64 {
     tx_out[8] as u64
 }
 
@@ -315,7 +321,7 @@ pub fn extract_output_script_len(tx_out: &Vec<u8>) -> u64 {
 /// # Arguments
 ///
 /// * `tx_out` - The output
-pub fn extract_value_le(tx_out: &Vec<u8>) -> [u8; 8] {
+pub fn extract_value_le(tx_out: &[u8]) -> [u8; 8] {
     let mut arr: [u8; 8] = Default::default();
     arr.copy_from_slice(&tx_out[..8]);
     arr
@@ -327,7 +333,7 @@ pub fn extract_value_le(tx_out: &Vec<u8>) -> [u8; 8] {
 /// # Arguments
 ///
 /// * `tx_out` - The output
-pub fn extract_value(tx_out: &Vec<u8>) -> u64 {
+pub fn extract_value(tx_out: &[u8]) -> u64 {
     u64::from_le_bytes(extract_value_le(tx_out))
 }
 
@@ -341,7 +347,7 @@ pub fn extract_value(tx_out: &Vec<u8>) -> u64 {
 /// # Errors
 ///
 /// * Errors if the op return output is malformatted
-pub fn extract_op_return_data(tx_out: &Vec<u8>) -> Result<Vec<u8>, SPVError> {
+pub fn extract_op_return_data(tx_out: &[u8]) -> Result<Vec<u8>, SPVError> {
     match tx_out[9] {
         0x6a => {
             let data_len = tx_out[10] as u64;
@@ -364,7 +370,7 @@ pub fn extract_op_return_data(tx_out: &Vec<u8>) -> Result<Vec<u8>, SPVError> {
 /// # Errors
 ///
 /// * Errors if the WITNESS, P2PKH or P2SH outputs are malformatted
-pub fn extract_hash(tx_out: &Vec<u8>) -> Result<Vec<u8>, SPVError> {
+pub fn extract_hash(tx_out: &[u8]) -> Result<Vec<u8>, SPVError> {
     let tag = &tx_out[8..11];
 
     /* Witness */
@@ -411,7 +417,7 @@ pub fn extract_hash(tx_out: &Vec<u8>) -> Result<Vec<u8>, SPVError> {
 /// # Arguments
 ///
 /// * `vin` - Raw bytes length-prefixed input vector
-pub fn validate_vin(vin: &Vec<u8>) -> bool {
+pub fn validate_vin(vin: &[u8]) -> bool {
     let mut offset = 1;
     let vin_length = vin.len();
     let n_ins = vin[0];
@@ -435,7 +441,7 @@ pub fn validate_vin(vin: &Vec<u8>) -> bool {
 /// # Arguments
 ///
 /// * `vout` - Raw bytes length-prefixed output vector
-pub fn validate_vout(vout: &Vec<u8>) -> bool {
+pub fn validate_vout(vout: &[u8]) -> bool {
     let mut offset = 1;
     let vout_length = vout.len();
     let n_outs = vout[0];
@@ -580,7 +586,7 @@ pub fn extract_difficulty(header: RawHeader) -> BigUint {
 ///
 /// * `a` - The first hash
 /// * `b` - The second hash
-pub fn hash256_merkle_step(a: &Vec<u8>, b: &Vec<u8>) -> Hash256Digest {
+pub fn hash256_merkle_step(a: &[u8], b: &[u8]) -> Hash256Digest {
     let mut res: Vec<u8> = vec![];
     res.extend(a);
     res.extend(b);
@@ -594,7 +600,7 @@ pub fn hash256_merkle_step(a: &Vec<u8>, b: &Vec<u8>) -> Hash256Digest {
 ///
 /// * `proof` - The proof. Tightly packed LE sha256 hashes.  The last hash is the root
 /// * `index` - The index of the leaf
-pub fn verify_hash256_merkle(proof: &Vec<u8>, index: u64) -> bool {
+pub fn verify_hash256_merkle(proof: &[u8], index: u64) -> bool {
     let mut idx = index;
     let proof_len = proof.len();
 
@@ -781,7 +787,7 @@ mod tests {
                 let vin = force_deserialize_hex(inputs.get("vin").unwrap().as_str().unwrap());
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as u8;
                 let expected = force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_input_at_index(&vin, index), expected);
+                assert_eq!(extract_input_at_index(&vin[..], index), expected);
             }
         })
     }
@@ -957,7 +963,7 @@ mod tests {
                 let mut expected: [u8; 8] = Default::default();
                 let val = force_deserialize_hex(case.output.as_str().unwrap());
                 expected.copy_from_slice(&val);
-                assert_eq!(extract_value_le(&input), expected);
+                assert_eq!(extract_value_le(&input[..]), expected);
             }
         })
     }
@@ -969,7 +975,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = case.output.as_u64().unwrap();
-                assert_eq!(extract_value(&input), expected);
+                assert_eq!(extract_value(&input[..]), expected);
             }
         })
     }

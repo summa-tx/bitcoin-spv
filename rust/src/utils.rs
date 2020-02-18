@@ -6,7 +6,7 @@ extern crate hex;
 /// # Arguments
 ///
 /// * `b` - The bytes to reverse
-pub fn reverse_endianness(b: &Vec<u8>) -> Vec<u8> {
+pub fn reverse_endianness(b: &[u8]) -> Vec<u8> {
     let mut newvec = b.to_vec();
     newvec.reverse();
     newvec

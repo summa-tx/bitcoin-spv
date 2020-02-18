@@ -31,7 +31,3 @@ pub mod types;
 /// `utils` contains utility functions for working with bytestrings, including
 /// hex encoding and decoding.
 pub mod utils;
-
-/// `wasm` contains versions of `btcspv` and `validatespv` that can be
-/// compiled and used in any standard wasm environment.
-pub mod wasm;
