@@ -1,4 +1,3 @@
-extern crate js_sys;
 extern crate num;
 extern crate num_bigint as bigint;
 extern crate ripemd160;
@@ -10,7 +9,6 @@ use ripemd160::{Digest, Ripemd160};
 use sha2::Sha256;
 
 use crate::types::{Hash160Digest, Hash256Digest, RawHeader, SPVError};
-use crate::utils;
 
 /// Determines the length of a VarInt in bytes.
 /// A VarInt of > 1 byte is prefixed with a flag indicating its length.
@@ -84,8 +82,7 @@ pub fn extract_input_at_index(vin: &[u8], index: u8) -> Vec<u8> {
     let mut offset = 1;
 
     for i in 0..=index {
-        let remaining = vin[offset..].to_vec();
-        length = determine_input_length(&remaining);
+        length = determine_input_length(&vin[offset..]);
         if i != index {
             offset += length as usize;
         }
@@ -208,8 +205,8 @@ pub fn extract_sequence_witness(tx_in: &[u8]) -> u32 {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_outpoint(tx_in: &[u8]) -> Vec<u8> {
-    tx_in[0..36].to_vec()
+pub fn extract_outpoint<'a>(tx_in: &'a [u8]) -> &'a [u8] {
+    &tx_in[0..36]
 }
 
 /// Extracts the outpoint tx id from an input,
@@ -220,16 +217,6 @@ pub fn extract_outpoint(tx_in: &[u8]) -> Vec<u8> {
 /// * `tx_in` - The input
 pub fn extract_input_tx_id_le(tx_in: &[u8]) -> Vec<u8> {
     tx_in[0..32].to_vec()
-}
-
-/// Extracts the outpoint index from an input,
-/// 32 byte tx id.
-///
-/// # Arguments
-///
-/// * `tx_in` - The input
-pub fn extract_input_tx_id(tx_in: &[u8]) -> Vec<u8> {
-    utils::reverse_endianness(&tx_in[0..32].to_vec())
 }
 
 /// Extracts the LE tx input index from the input in a tx,
@@ -296,8 +283,7 @@ pub fn extract_output_at_index(vout: &[u8], index: u8) -> Result<Vec<u8>, SPVErr
     let idx = index as u64;
 
     for i in 0..=idx {
-        let remaining = vout[offset..].to_vec();
-        length = determine_output_length(&remaining)?;
+        length = determine_output_length(&vout[offset..])?;
         if i != idx {
             offset += length as usize
         }
@@ -426,7 +412,7 @@ pub fn validate_vin(vin: &[u8]) -> bool {
         false
     } else {
         for _ in 0..n_ins {
-            offset += determine_input_length(&vin[offset as usize..].to_vec());
+            offset += determine_input_length(&vin[offset as usize..]);
             if offset > vin_length as u64 {
                 return false;
             }
@@ -450,7 +436,7 @@ pub fn validate_vout(vout: &[u8]) -> bool {
         false
     } else {
         for _ in 0..n_outs {
-            let result = determine_output_length(&vout[offset..].to_vec());
+            let result = determine_output_length(&vout[offset..]);
             match result {
                 Ok(v) => offset += v as usize,
                 Err(_) => return false,
@@ -475,20 +461,6 @@ pub fn validate_vout(vout: &[u8]) -> bool {
 pub fn extract_merkle_root_le(header: RawHeader) -> Hash256Digest {
     let mut root: [u8; 32] = Default::default();
     root.copy_from_slice(&header[36..68]);
-    root
-}
-
-/// Extracts the transaction merkle root from a block header.
-/// Use `verify_hash256_merkle` to verify proofs with this root.
-///
-/// # Arguments
-///
-/// * `header` - An 80-byte Bitcoin header
-pub fn extract_merkle_root_be(header: RawHeader) -> Hash256Digest {
-    let mut root: [u8; 32] = Default::default();
-    root.copy_from_slice(&utils::reverse_endianness(
-        &extract_merkle_root_le(header).to_vec(),
-    ));
     root
 }
 
@@ -531,20 +503,6 @@ pub fn calculate_difficulty(target: &BigUint) -> BigUint {
 pub fn extract_prev_block_hash_le(header: RawHeader) -> Hash256Digest {
     let mut root: [u8; 32] = Default::default();
     root.copy_from_slice(&header[4..36]);
-    root
-}
-
-/// Extracts the previous block's hash from a block header.
-/// Block headers do NOT include block number :(
-///
-/// # Arguments
-///
-/// * `header` - The header
-pub fn extract_prev_block_hash_be(header: RawHeader) -> Hash256Digest {
-    let mut root: [u8; 32] = Default::default();
-    root.copy_from_slice(&utils::reverse_endianness(
-        &extract_prev_block_hash_le(header).to_vec(),
-    ));
     root
 }
 
@@ -616,16 +574,22 @@ pub fn verify_hash256_merkle(proof: &[u8], index: u64) -> bool {
         return false;
     }
 
-    let root = proof[proof_len - 32..].to_vec();
-    let mut current = proof[..32].to_vec();
     let num_steps = proof_len / 32 - 1;
 
+    let mut root = Hash256Digest::default();
+    let mut current = Hash256Digest::default();
+    let mut next = Hash256Digest::default();
+
+    root.copy_from_slice(&proof[proof_len - 32..]);
+    current.copy_from_slice(&proof[..32]);
+
     for i in 1..num_steps {
-        let next = proof[i * 32..i * 32 + 32].to_vec();
+        next.copy_from_slice(&proof[i * 32..i * 32 + 32]);
+
         if idx % 2 == 1 {
-            current = hash256_merkle_step(&next, &current).to_vec();
+            current = hash256_merkle_step(&next, &current);
         } else {
-            current = hash256_merkle_step(&current, &next).to_vec();
+            current = hash256_merkle_step(&current, &next);
         }
         idx >>= 1;
     }
@@ -847,7 +811,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_outpoint(&input), expected);
+                assert_eq!(extract_outpoint(&input), &expected[..]);
             }
         })
     }
@@ -860,18 +824,6 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(extract_input_tx_id_le(&input), expected);
-            }
-        })
-    }
-
-    #[test]
-    fn it_extracts_outpoint_be_txids() {
-        test_utils::run_test(|fixtures| {
-            let test_cases = test_utils::get_test_cases("extractInputTxId", &fixtures);
-            for case in test_cases {
-                let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_input_tx_id(&input), expected);
             }
         })
     }
@@ -1061,20 +1013,6 @@ mod tests {
     }
 
     #[test]
-    fn it_extracts_header_merkle_roots() {
-        test_utils::run_test(|fixtures| {
-            let test_cases = test_utils::get_test_cases("extractMerkleRootBE", &fixtures);
-            for case in test_cases {
-                let mut input: RawHeader = [0; 80];
-                input.copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
-                let mut expected: Hash256Digest = Default::default();
-                expected.copy_from_slice(&force_deserialize_hex(case.output.as_str().unwrap()));
-                assert_eq!(extract_merkle_root_be(input), expected);
-            }
-        })
-    }
-
-    #[test]
     fn it_extracts_header_target() {
         test_utils::run_test(|fixtures| {
             let test_cases = test_utils::get_test_cases("extractTarget", &fixtures);
@@ -1084,20 +1022,6 @@ mod tests {
                 let expected_bytes = force_deserialize_hex(case.output.as_str().unwrap());
                 let expected = BigUint::from_bytes_be(&expected_bytes);
                 assert_eq!(extract_target(input), expected);
-            }
-        })
-    }
-
-    #[test]
-    fn it_extracts_previous_block_hashes() {
-        test_utils::run_test(|fixtures| {
-            let test_cases = test_utils::get_test_cases("extractPrevBlockBE", &fixtures);
-            for case in test_cases {
-                let mut input: RawHeader = [0; 80];
-                input.copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
-                let mut expected: Hash256Digest = Default::default();
-                expected.copy_from_slice(&force_deserialize_hex(case.output.as_str().unwrap()));
-                assert_eq!(extract_prev_block_hash_be(input), expected);
             }
         })
     }

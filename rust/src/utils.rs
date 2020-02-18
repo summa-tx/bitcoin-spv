@@ -7,9 +7,7 @@ extern crate hex;
 ///
 /// * `b` - The bytes to reverse
 pub fn reverse_endianness(b: &[u8]) -> Vec<u8> {
-    let mut newvec = b.to_vec();
-    newvec.reverse();
-    newvec
+    b.iter().rev().copied().collect()
 }
 
 /// Strips the '0x' prefix off of hex string so it can be deserialized.

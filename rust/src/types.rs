@@ -1,10 +1,8 @@
 extern crate serde_json;
-extern crate wasm_bindgen;
 
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
-use wasm_bindgen::prelude::*;
 
 use crate::btcspv;
 use crate::utils;
@@ -23,7 +21,6 @@ pub type Hash160Digest = [u8; 20];
 pub type RawBytes = Vec<u8>;
 
 /// enum for bitcoin-spv errors
-#[wasm_bindgen]
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum SPVError {
     /// Overran a checked read on a slice
@@ -80,7 +77,6 @@ pub enum SPVError {
 }
 
 /// Enum for transaction input types
-#[wasm_bindgen]
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum InputType {
     /// Unknown input type, likely an error
@@ -94,7 +90,6 @@ pub enum InputType {
 }
 
 /// Enum for transaction output types
-#[wasm_bindgen]
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum OutputType {
     /// Unknown output type, likely an error.
