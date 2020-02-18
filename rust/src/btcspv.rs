@@ -222,16 +222,6 @@ pub fn extract_input_tx_id_le(tx_in: &[u8]) -> Vec<u8> {
     tx_in[0..32].to_vec()
 }
 
-/// Extracts the outpoint index from an input,
-/// 32 byte tx id.
-///
-/// # Arguments
-///
-/// * `tx_in` - The input
-pub fn extract_input_tx_id(tx_in: &[u8]) -> Vec<u8> {
-    utils::reverse_endianness(&tx_in[0..32].to_vec())
-}
-
 /// Extracts the LE tx input index from the input in a tx,
 /// 4 byte tx index.
 ///
@@ -478,20 +468,6 @@ pub fn extract_merkle_root_le(header: RawHeader) -> Hash256Digest {
     root
 }
 
-/// Extracts the transaction merkle root from a block header.
-/// Use `verify_hash256_merkle` to verify proofs with this root.
-///
-/// # Arguments
-///
-/// * `header` - An 80-byte Bitcoin header
-pub fn extract_merkle_root_be(header: RawHeader) -> Hash256Digest {
-    let mut root: [u8; 32] = Default::default();
-    root.copy_from_slice(&utils::reverse_endianness(
-        &extract_merkle_root_le(header).to_vec(),
-    ));
-    root
-}
-
 /// Extracts the target from a block header.
 ///
 /// Target is a 256 bit number encoded as a 3-byte mantissa
@@ -531,20 +507,6 @@ pub fn calculate_difficulty(target: &BigUint) -> BigUint {
 pub fn extract_prev_block_hash_le(header: RawHeader) -> Hash256Digest {
     let mut root: [u8; 32] = Default::default();
     root.copy_from_slice(&header[4..36]);
-    root
-}
-
-/// Extracts the previous block's hash from a block header.
-/// Block headers do NOT include block number :(
-///
-/// # Arguments
-///
-/// * `header` - The header
-pub fn extract_prev_block_hash_be(header: RawHeader) -> Hash256Digest {
-    let mut root: [u8; 32] = Default::default();
-    root.copy_from_slice(&utils::reverse_endianness(
-        &extract_prev_block_hash_le(header).to_vec(),
-    ));
     root
 }
 
@@ -866,18 +828,6 @@ mod tests {
     }
 
     #[test]
-    fn it_extracts_outpoint_be_txids() {
-        test_utils::run_test(|fixtures| {
-            let test_cases = test_utils::get_test_cases("extractInputTxId", &fixtures);
-            for case in test_cases {
-                let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_input_tx_id(&input), expected);
-            }
-        })
-    }
-
-    #[test]
     fn it_extracts_outpoint_indices_le() {
         test_utils::run_test(|fixtures| {
             let test_cases = test_utils::get_test_cases("extractTxIndexLE", &fixtures);
@@ -1064,13 +1014,13 @@ mod tests {
     #[test]
     fn it_extracts_header_merkle_roots() {
         test_utils::run_test(|fixtures| {
-            let test_cases = test_utils::get_test_cases("extractMerkleRootBE", &fixtures);
+            let test_cases = test_utils::get_test_cases("extractMerkleRootLE", &fixtures);
             for case in test_cases {
                 let mut input: RawHeader = [0; 80];
                 input.copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
                 let mut expected: Hash256Digest = Default::default();
                 expected.copy_from_slice(&force_deserialize_hex(case.output.as_str().unwrap()));
-                assert_eq!(extract_merkle_root_be(input), expected);
+                assert_eq!(extract_merkle_root_le(input), expected);
             }
         })
     }
@@ -1092,13 +1042,13 @@ mod tests {
     #[test]
     fn it_extracts_previous_block_hashes() {
         test_utils::run_test(|fixtures| {
-            let test_cases = test_utils::get_test_cases("extractPrevBlockBE", &fixtures);
+            let test_cases = test_utils::get_test_cases("extractPrevBlockLE", &fixtures);
             for case in test_cases {
                 let mut input: RawHeader = [0; 80];
                 input.copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
                 let mut expected: Hash256Digest = Default::default();
                 expected.copy_from_slice(&force_deserialize_hex(case.output.as_str().unwrap()));
-                assert_eq!(extract_prev_block_hash_be(input), expected);
+                assert_eq!(extract_prev_block_hash_le(input), expected);
             }
         })
     }

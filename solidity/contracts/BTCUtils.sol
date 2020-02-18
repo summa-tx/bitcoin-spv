@@ -259,16 +259,6 @@ library BTCUtils {
         return _input.slice(0, 32).toBytes32();
     }
 
-    /// @notice          Extracts the outpoint index from an input
-    /// @dev             32 byte tx id
-    /// @param _input    The input
-    /// @return          The tx id (big-endian bytes)
-    function extractInputTxId(bytes memory _input) internal pure returns (bytes32) {
-        bytes memory _leId = abi.encodePacked(extractInputTxIdLE(_input));
-        bytes memory _beId = reverseEndianness(_leId);
-        return _beId.toBytes32();
-    }
-
     /// @notice          Extracts the LE tx input index from the input in a tx
     /// @dev             4 byte tx index
     /// @param _input    The input
@@ -475,14 +465,6 @@ library BTCUtils {
         return _header.slice(36, 32);
     }
 
-    /// @notice          Extracts the transaction merkle root from a block header
-    /// @dev             Use verifyHash256Merkle to verify proofs with this root
-    /// @param _header   The header
-    /// @return          The merkle root (big-endian)
-    function extractMerkleRootBE(bytes memory _header) internal pure returns (bytes memory) {
-        return reverseEndianness(extractMerkleRootLE(_header));
-    }
-
     /// @notice          Extracts the target from a block header
     /// @dev             Target is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
     /// @param _header   The header
@@ -512,14 +494,6 @@ library BTCUtils {
     /// @return          The previous block's hash (little-endian)
     function extractPrevBlockLE(bytes memory _header) internal pure returns (bytes memory) {
         return _header.slice(4, 32);
-    }
-
-    /// @notice          Extracts the previous block's hash from a block header
-    /// @dev             Block headers do NOT include block number :(
-    /// @param _header   The header
-    /// @return          The previous block's hash (big-endian)
-    function extractPrevBlockBE(bytes memory _header) internal pure returns (bytes memory) {
-        return reverseEndianness(extractPrevBlockLE(_header));
     }
 
     /// @notice          Extracts the timestamp from a block header

@@ -14,10 +14,6 @@ const {
   getErrLowWork,
   prove,
   calculateTxId,
-  parseInput,
-  parseOutput,
-  parseHeader,
-  parseHeaderSolErr,
   validateHeaderChain,
   validateHeaderChainError,
   validateHeaderWork,
@@ -65,85 +61,6 @@ contract('ValidateSPV', () => {
         } = calculateTxId[i].input;
         const res = await instance.calculateTxId(version, vin, vout, locktime);
         assert.strictEqual(res, calculateTxId[i].output);
-      }
-    });
-  });
-
-  describe('#parseInput', async () => {
-    it('returns the tx input sequence and outpoint', async () => {
-      for (let i = 0; i < parseInput.length; i += 1) {
-        const txIn = await instance.parseInput(parseInput[i].input);
-        const {
-          sequence, txId, index, type
-        } = parseInput[i].output;
-
-        // Execute within Tx to measure gas amount
-        await instance.parseInputTx(parseInput[i].input);
-
-        assert(txIn._sequence.eq(new BN(sequence, 10)));
-        assert.strictEqual(txIn._hash, txId);
-        assert(txIn._index.eq(new BN(index, 10)));
-        assert(txIn._inputType.eq(new BN(type, 10)));
-      }
-    });
-  });
-
-  describe('#parseOutput', async () => {
-    it('returns the tx output value, output type, and payload for an OP_RETURN output', async () => {
-      for (let i = 0; i < parseOutput.length; i += 1) {
-        const { value, type } = parseOutput[i].output;
-        let { payload } = parseOutput[i].output;
-
-        // better way to do this?
-        if (payload === '0x') {
-          payload = null;
-        }
-
-        const txOut = await instance.parseOutput(parseOutput[i].input);
-
-        // Execute within Tx to measure gas amount
-        await instance.parseOutputTx(parseOutput[i].input);
-
-        assert(txOut._value.eq(new BN(value, 10)));
-        assert(txOut._outputType.eq(new BN(type, 10)));
-        assert.strictEqual(txOut._payload, payload);
-      }
-    });
-  });
-
-  describe('#parseHeader', async () => {
-    it('returns the header digest, version, prevHash, merkleRoot, timestamp, target, and nonce',
-      async () => {
-        for (let i = 0; i < parseHeader.length; i += 1) {
-          const validHeader = await instance.parseHeader(parseHeader[i].input);
-          const {
-            digest, version, prevHash, merkleRoot, timestamp, target, nonce
-          } = parseHeader[i].output;
-
-          assert.strictEqual(validHeader._digest, digest);
-          assert(validHeader._version.eq(new BN(version, 10)));
-          assert.strictEqual(validHeader._prevHash, prevHash);
-          assert.strictEqual(validHeader._merkleRoot, merkleRoot);
-          assert(validHeader._timestamp.eq(new BN(timestamp, 10)));
-          assert(validHeader._target.eq(new BN(target.slice(2), 16)));
-          assert(validHeader._nonce.eq(new BN(nonce, 10)));
-        }
-      });
-
-    it('bubble up errors if input header is not 80 bytes', async () => {
-      for (let i = 0; i < parseHeaderSolErr.length; i += 1) {
-        const invalidHeader = await instance.parseHeader(parseHeaderSolErr[i].input);
-        const {
-          digest, version, prevHash, merkleRoot, timestamp, target, nonce
-        } = parseHeaderSolErr[i].output;
-
-        assert.strictEqual(digest, invalidHeader._digest);
-        assert(new BN(version, 10).eq(invalidHeader._version));
-        assert.strictEqual(prevHash, invalidHeader._prevHash);
-        assert.strictEqual(merkleRoot, invalidHeader._merkleRoot);
-        assert(new BN(timestamp, 10).eq(invalidHeader._timestamp));
-        assert(new BN(target, 10).eq(invalidHeader._target));
-        assert(new BN(nonce, 10).eq(invalidHeader._nonce));
       }
     });
   });

@@ -51,36 +51,6 @@ library ValidateSPVDelegate {
         return ValidateSPV.calculateTxId(_version, _vin, _vout, _locktime);
     }
 
-    /// @notice         Parses a tx input from raw input bytes
-    /// @dev            Supports Legacy Inputs now too
-    /// @param _input   Raw bytes tx input
-    /// @return         Tx input sequence number, tx hash, and index
-    function parseInput(bytes memory _input) public pure returns (uint32 _sequence, bytes32 _hash, uint32 _index, uint8 _inputType) {
-        return ValidateSPV.parseInput(_input);
-    }
-
-    /// @notice         Parses a tx output from raw output bytes
-    /// @dev            Differentiates by output script prefix
-    /// @param _output  Raw bytes tx output
-    /// @return         Tx output value, output type, payload
-    function parseOutput(bytes memory _output) public pure returns (uint64 _value, uint8 _outputType, bytes memory _payload) {
-        return ValidateSPV.parseOutput(_output);
-    }
-
-    /// @notice             Parses a block header struct from a bytestring
-    /// @dev                Block headers are always 80 bytes, see Bitcoin docs
-    /// @return             Header digest, version, previous block header hash, merkle root, timestamp, target, nonce
-    function parseHeader(bytes memory _header) public pure returns (
-        bytes32 _digest,
-        uint32 _version,
-        bytes32 _prevHash,
-        bytes32 _merkleRoot,
-        uint32 _timestamp,
-        uint256 _target,
-        uint32 _nonce
-    ) {
-        return ValidateSPV.parseHeader(_header);
-    }
     /// @notice             Checks validity of header chain
     /// @notice             Compares the hash of each header to the prevHash in the next header
     /// @param _headers     Raw byte array of header chain

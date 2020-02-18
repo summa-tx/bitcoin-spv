@@ -42,31 +42,6 @@ type SPVProof struct {
 	IntermediateNodes HexBytes      `json:"intermediate_nodes"`
 }
 
-// InputType an enum of types of bitcoin inputs
-type InputType int
-
-// possible input types
-const (
-	InputNone     InputType = 0
-	Legacy        InputType = 1
-	Compatibility InputType = 2
-	Witness       InputType = 3
-)
-
-// OutputType an enum of types of bitcoin outputs
-type OutputType int
-
-// possible output types
-const (
-	OutputNone  OutputType = 0
-	WPKH        OutputType = 1
-	WSH         OutputType = 2
-	OpReturn    OutputType = 3
-	PKH         OutputType = 4
-	SH          OutputType = 5
-	Nonstandard OutputType = 6
-)
-
 // NewHash160Digest instantiates a Hash160Digest from a byte slice
 func NewHash160Digest(b []byte) (Hash160Digest, error) {
 	var h Hash160Digest
@@ -102,16 +77,19 @@ func HeaderFromRaw(raw RawHeader, height uint32) BitcoinHeader {
 	digestLE := Hash256(raw[:])
 	digestBE := ReverseHash256Endianness(digestLE)
 	prevhashLE := ExtractPrevBlockHashLE(raw)
-	prevhash := ReverseHash256Endianness(prevhashLE)
+	prevhashBE := ReverseHash256Endianness(prevhashLE)
+  merkleRootLE := ExtractMerkleRootLE(raw)
+	merkleRootBE := ReverseHash256Endianness(merkleRootLE)
+
 	return BitcoinHeader{
 		raw,
 		digestBE,
 		digestLE,
 		height,
-		prevhash,
+		prevhashBE,
 		prevhashLE,
-		ExtractMerkleRootBE(raw),
-		ExtractMerkleRootLE(raw),
+		merkleRootBE,
+		merkleRootLE,
 	}
 }
 
