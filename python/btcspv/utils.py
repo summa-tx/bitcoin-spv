@@ -6,6 +6,7 @@ def verify_proof(proof: bytes, index: int) -> bool:
     Verifies a hash256 merkle proof.
     The proof is encoded as a bytestring. The first 32 bytes are the leaf hash,
     the last 32 bytes are the roothash.
+    Note that `index` is not a reliable indicator of location within a block.
     Args:
         proof (bytes): The merkle proof as a bytestring
         index   (int): The 0-indexed position of the leaf in the leafset

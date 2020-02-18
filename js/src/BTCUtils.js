@@ -658,8 +658,9 @@ export function hash256MerkleStep(a, b) {
 
 /**
  *
- * Verifies a Bitcoin-style merkle tree
+ * Verifies a Bitcoin-style merkle tree.
  * Leaves are 0-indexed.
+ * Note that `index` is not a reliable indicator of location within a block.
  *
  * @param {Uint8Array}    proof The proof. Tightly packed LE sha256 hashes.
  *                        The last hash is the root

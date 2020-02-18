@@ -20,6 +20,7 @@ library ValidateSPVDelegate {
     }
 
     /// @notice                 Valides a tx inclusion in the block
+    /// @dev                    `index` is not a reliable indicator of location within a block.
     /// @param _txid            The txid (LE)
     /// @param _merkleRoot      The merkle root
     /// @param _proof           The proof (concatenated LE hashes)

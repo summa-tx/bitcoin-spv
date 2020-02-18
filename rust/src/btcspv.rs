@@ -595,6 +595,7 @@ pub fn hash256_merkle_step(a: &[u8], b: &[u8]) -> Hash256Digest {
 
 /// Verifies a Bitcoin-style merkle tree.
 /// Leaves are 0-indexed.
+/// Note that `index` is not a reliable indicator of location within a block.
 ///
 /// # Arguments
 ///
