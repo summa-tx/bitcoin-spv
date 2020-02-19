@@ -272,15 +272,6 @@ contract('BTCUtils', () => {
         `Output Length Test Failed: expected ${expected.toString()}, got ${res.toString()}`
       );
     }
-
-    for (let i = 0; i < determineOutputLengthError.length; i += 1) {
-      try {
-        await instance.determineOutputLength(determineOutputLengthError[i].input);
-        assert(false, 'Expected an error');
-      } catch (e) {
-        assert.include(e.message, determineOutputLengthError[i].errorMessage);
-      }
-    }
   });
 
   it('extracts outputs at specified indices', async () => {

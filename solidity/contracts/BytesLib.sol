@@ -244,6 +244,9 @@ library BytesLib {
     }
 
     function slice(bytes memory _bytes, uint _start, uint _length) internal  pure returns (bytes memory res) {
+        if (_length == 0) {
+            return hex"";
+        }
         uint _end = _start + _length;
         require(_end > _start && _bytes.length >= _end, "Slice out of bounds");
 

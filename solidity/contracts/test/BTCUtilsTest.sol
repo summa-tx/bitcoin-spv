@@ -68,7 +68,7 @@ contract BTCUtilsTest {
     /// @param _vin      The vin as a tightly-packed byte array
     /// @param _index    The 0-indexed location of the input to extract
     /// @return          The input as a byte array
-    function extractInputAtIndex(bytes memory _vin, uint8 _index) public pure returns (bytes memory) {
+    function extractInputAtIndex(bytes memory _vin, uint256 _index) public pure returns (bytes memory) {
         return BTCUtils.extractInputAtIndex(_vin, _index);
     }
 
@@ -115,7 +115,7 @@ contract BTCUtilsTest {
     /// @dev             Will return 0 if passed a witness input
     /// @param _input    The LEGACY input
     /// @return          The length of the script sig
-    function extractScriptSigLen(bytes memory _input) public pure returns (uint8, uint256) {
+    function extractScriptSigLen(bytes memory _input) public pure returns (uint256, uint256) {
         return BTCUtils.extractScriptSigLen(_input);
     }
 
@@ -192,7 +192,7 @@ contract BTCUtilsTest {
     /// @param _vout     The _vout to extract from
     /// @param _index    The 0-indexed location of the output to extract
     /// @return          The specified output
-    function extractOutputAtIndex(bytes memory _vout, uint8 _index) public pure returns (bytes memory) {
+    function extractOutputAtIndex(bytes memory _vout, uint256 _index) public pure returns (bytes memory) {
         return BTCUtils.extractOutputAtIndex(_vout, _index);
     }
 
