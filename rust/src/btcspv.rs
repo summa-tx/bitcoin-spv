@@ -43,7 +43,7 @@ pub fn parse_var_int(b: &[u8]) -> Result<(u64, u64), SPVError> {
     }
 
     let mut num_bytes = [0u8; 8];
-    num_bytes[..length].copy_from_slice(&b[1..1+length]);
+    num_bytes[..length].copy_from_slice(&b[1..=length]);
 
     Ok((length as u64, u64::from_le_bytes(num_bytes)))
 }
@@ -274,7 +274,7 @@ pub fn extract_tx_index(tx_in: &[u8]) -> u32 {
 /// * Errors if VarInt represents a number larger than 253; large VarInts are not supported.
 pub fn determine_output_length(tx_out: &[u8]) -> Result<u64, SPVError> {
     if tx_out.len() < 9 {
-        return Err(SPVError::MalformattedOutput);
+        return Err(SPVError::MalformattedOutput); // TODO: COVERAGE
     }
     let (data_len, script_pubkey_len) = parse_var_int(&tx_out[8..])?;
 
@@ -423,7 +423,7 @@ pub fn extract_hash(tx_out: &[u8]) -> Result<Vec<u8>, SPVError> {
 pub fn validate_vin(vin: &[u8]) -> bool {
     let (data_len, n_ins) = match parse_var_int(vin) {
         Ok(v) => v,
-        Err(_) => return false
+        Err(_) => return false, // TODO: COVERAGE
     };
 
     let vin_length = vin.len();
@@ -435,11 +435,11 @@ pub fn validate_vin(vin: &[u8]) -> bool {
 
     for _ in 0..n_ins {
         if offset >= vin_length as u64 {
-            return false;
+            return false; // TODO: COVERAGE
         }
         match determine_input_length(&vin[offset as usize..]) {
             Ok(v) => offset += v,
-            Err(_) => return false
+            Err(_) => return false,
         };
     }
 
@@ -455,7 +455,7 @@ pub fn validate_vin(vin: &[u8]) -> bool {
 pub fn validate_vout(vout: &[u8]) -> bool {
     let (data_len, n_outs) = match parse_var_int(vout) {
         Ok(v) => v,
-        Err(_) => return false
+        Err(_) => return false, // TODO: COVERAGE
     };
 
     let vout_length = vout.len() as u64;
@@ -471,7 +471,7 @@ pub fn validate_vout(vout: &[u8]) -> bool {
         }
         match determine_output_length(&vout[offset as usize..]) {
             Ok(v) => offset += v,
-            Err(_) => return false,
+            Err(_) => return false,  // TODO: COVERAGE
         };
     }
 
