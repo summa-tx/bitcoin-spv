@@ -677,6 +677,34 @@ mod tests {
     }
 
     #[test]
+    fn it_parses_var_ints() {
+        test_utils::run_test(|fixtures| {
+            let test_cases = test_utils::get_test_cases("parseVarInt", &fixtures);
+            for case in test_cases {
+                let input = force_deserialize_hex(case.input.as_str().unwrap());
+                let expected = case.output.as_array().unwrap();
+                let expected_len = expected[0].as_u64().unwrap();
+                let expected_num = expected[1].as_u64().unwrap();
+                assert_eq!(parse_var_int(&input).unwrap(), (expected_len, expected_num));
+            }
+        })
+    }
+
+    #[test]
+    fn it_parses_var_int_errors() {
+        test_utils::run_test(|fixtures| {
+            let test_cases = test_utils::get_test_cases("parseVarIntError", &fixtures);
+            for case in test_cases {
+                let input = force_deserialize_hex(case.input.as_str().unwrap());
+                match parse_var_int(&input) {
+                    Ok(_) => assert!(false, "expected an error"),
+                    Err(e) => assert_eq!(e, SPVError::BadVarInt),
+                }
+            }
+        })
+    }
+
+    #[test]
     fn it_does_bitcoin_hash160() {
         test_utils::run_test(|fixtures| {
             let test_cases = test_utils::get_test_cases("hash160", &fixtures);
