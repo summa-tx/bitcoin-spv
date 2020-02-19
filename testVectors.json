@@ -34,6 +34,38 @@
       "output": 8
     }
   ],
+  "parseVarInt": [
+    {
+      "input": "0x01",
+      "output": [0, 1]
+    },
+    {
+      "input": "0xff0000000000000000",
+      "output": [8, 0]
+    },
+    {
+      "input": "0xfe03000000",
+      "output": [4, 3]
+    },
+    {
+      "input": "0xfd0001",
+      "output": [2, 256]
+    }
+  ],
+  "parseVarIntError": [
+    {
+      "input": "0xfd01",
+      "comment": "Not enough bytes"
+    },
+    {
+      "input": "0xfe010000",
+      "comment": "Not enough bytes"
+    },
+    {
+      "input": "0xff01000000000000",
+      "comment": "Not enough bytes"
+    }
+  ],
   "hash160": [
     {
       "input": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",

@@ -42,6 +42,8 @@ const {
   extractTimestamp,
   verifyHash256Merkle,
   determineVarIntDataLength,
+  parseVarInt,
+  parseVarIntError,
   retargetAlgorithm
 } = vectors;
 
@@ -326,6 +328,22 @@ contract('BTCUtils', () => {
     for (let i = 0; i < determineVarIntDataLength.length; i += 1) {
       const res = await instance.determineVarIntDataLength(`0x${(determineVarIntDataLength[i].input).toString(16)}`);
       assert(res.eq(new BN(determineVarIntDataLength[i].output, 10)));
+    }
+  });
+
+  it('parses VarInts', async () => {
+    for (let i = 0; i < parseVarInt.length; i += 1) {
+      const res = await instance.parseVarInt(parseVarInt[i].input);
+      assert(res[0].eq(new BN(parseVarInt[i].output[0], 10)));
+      assert(res[1].eq(new BN(parseVarInt[i].output[1], 10)));
+    }
+  });
+
+  it('returns error for invalid VarInts', async () => {
+    for (let i = 0; i < parseVarIntError.length; i += 1) {
+      const res = await instance.parseVarInt(parseVarIntError[i].input);
+      assert(res[0].eq(new BN("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16)), "did not get error code");
+      assert(res[1].eq(new BN(0, 10)), `got non-0 value: ${res[1].toString()}`);
     }
   });
 

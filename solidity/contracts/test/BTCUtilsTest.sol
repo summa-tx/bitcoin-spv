@@ -19,6 +19,16 @@ contract BTCUtilsTest {
         return BTCUtils.determineVarIntDataLength(_flag);
     }
 
+    /// @notice     Parse a VarInt into its data length and the number it represents
+    /// @dev        Useful for Parsing Vins and Vouts. Returns ERR_BAD_ARG if insufficient bytes.
+    ///             Caller SHOULD explicitly handle this case (or bubble it up)
+    /// @param _b   A byte-string starting with a VarInt
+    /// @return     number of bytes in the encoding (not counting the tag), the encoded int
+    function parseVarInt(bytes memory _b) public pure returns (uint256, uint256) {
+        return BTCUtils.parseVarInt(_b);
+    }
+
+
     /// @notice          Changes the endianness of a byte array
     /// @dev             Returns a new, backwards, bytes
     /// @param _b        The bytes to reverse
