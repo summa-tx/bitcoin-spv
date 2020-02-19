@@ -26,6 +26,28 @@ pub fn determine_var_int_data_length(flag: u8) -> u8 {
     length
 }
 
+/// Parse a VarInt into its data length and the number it represents
+/// Useful for Parsing Vins and Vouts. Returns `BadVarInt` if insufficient bytes.
+///
+/// # Arguments
+///
+/// * `b` - A byte-string starting with a VarInt
+pub fn parse_var_int(b: &[u8]) -> Result<(u64, u64), SPVError> {
+    let length = determine_var_int_data_length(b[0]) as usize;
+
+    if length == 0 {
+        return Ok((0, b[0] as u64));
+    }
+    if b.len() < 1 + length as usize {
+        return Err(SPVError::BadVarInt);
+    }
+
+    let mut num_bytes = [0u8; 8];
+    num_bytes[..length].copy_from_slice(&b[1..1+length]);
+
+    Ok((length as u64, u64::from_le_bytes(num_bytes)))
+}
+
 /// Implements bitcoin's hash160 (rmd160(sha2())).
 /// Returns the digest.
 ///
@@ -77,17 +99,17 @@ pub fn hash256(preimage: &[u8]) -> Hash256Digest {
 ///
 /// * `vin` - The vin as a tightly-packed u8 array
 /// * `index` - The 0-indexed location of the input to extract
-pub fn extract_input_at_index(vin: &[u8], index: u8) -> Vec<u8> {
+pub fn extract_input_at_index(vin: &[u8], index: u8) -> Result<Vec<u8>, SPVError> {
     let mut length = 0;
     let mut offset = 1;
 
     for i in 0..=index {
-        length = determine_input_length(&vin[offset..]);
+        length = determine_input_length(&vin[offset..])?;
         if i != index {
             offset += length as usize;
         }
     }
-    vin[offset..offset + length as usize].to_vec()
+    Ok(vin[offset..offset + length as usize].to_vec())
 }
 
 /// Determines whether an input is legacy.
@@ -111,17 +133,11 @@ pub fn is_legacy_input(tx_in: &[u8]) -> bool {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_script_sig_len(tx_in: &[u8]) -> (u64, u64) {
-    let tag = tx_in[36];
-    let data_len = determine_var_int_data_length(tag) as u64;
-    let scriptsig_len = if data_len != 0 {
-        let mut arr: [u8; 8] = Default::default();
-        arr[..data_len as usize].copy_from_slice(&tx_in[37..37 + data_len as usize]);
-        u64::from_le_bytes(arr)
-    } else {
-        tag as u64
-    };
-    (data_len, scriptsig_len)
+pub fn extract_script_sig_len(tx_in: &[u8]) -> Result<(u64, u64), SPVError> {
+    if tx_in.len() < 37 {
+        return Err(SPVError::ReadOverrun);
+    }
+    parse_var_int(&tx_in[36..])
 }
 
 /// Determines the length of an input from its scriptsig:
@@ -130,9 +146,9 @@ pub fn extract_script_sig_len(tx_in: &[u8]) -> (u64, u64) {
 /// # Arguments
 ///
 /// * `tx_in` - The input as a u8 array
-pub fn determine_input_length(tx_in: &[u8]) -> u64 {
-    let (data_len, scriptsig_len) = extract_script_sig_len(tx_in);
-    41 + data_len + scriptsig_len
+pub fn determine_input_length(tx_in: &[u8]) -> Result<u64, SPVError> {
+    let (data_len, script_sig_len) = extract_script_sig_len(tx_in)?;
+    Ok(41 + data_len + script_sig_len)
 }
 
 /// Extracts the LE sequence bytes from an input.
@@ -141,10 +157,10 @@ pub fn determine_input_length(tx_in: &[u8]) -> u64 {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_sequence_le_legacy(tx_in: &[u8]) -> Vec<u8> {
-    let (data_len, scriptsig_len) = extract_script_sig_len(tx_in);
-    let offset: usize = 36 + 1 + data_len as usize + scriptsig_len as usize;
-    tx_in[offset..offset + 4].to_vec()
+pub fn extract_sequence_le_legacy(tx_in: &[u8]) -> Result<Vec<u8>, SPVError> {
+    let (data_len, script_sig_len) = extract_script_sig_len(tx_in)?;
+    let offset: usize = 36 + 1 + data_len as usize + script_sig_len as usize;
+    Ok(tx_in[offset..offset + 4].to_vec())
 }
 
 /// Extracts the sequence from the input.
@@ -153,11 +169,11 @@ pub fn extract_sequence_le_legacy(tx_in: &[u8]) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_sequence_legacy(tx_in: &[u8]) -> u32 {
+pub fn extract_sequence_legacy(tx_in: &[u8]) -> Result<u32, SPVError> {
     let mut arr: [u8; 4] = [0, 0, 0, 0];
-    let b = extract_sequence_le_legacy(tx_in);
+    let b = extract_sequence_le_legacy(tx_in)?;
     arr.copy_from_slice(&b[..]);
-    u32::from_le_bytes(arr)
+    Ok(u32::from_le_bytes(arr))
 }
 
 /// Extracts the VarInt-prepended scriptSig from the input in a tx.
@@ -166,10 +182,10 @@ pub fn extract_sequence_legacy(tx_in: &[u8]) -> u32 {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_script_sig(tx_in: &[u8]) -> Vec<u8> {
-    let (data_len, scriptsig_len) = extract_script_sig_len(tx_in);
-    let length = 1 + data_len + scriptsig_len;
-    tx_in[36..36 + length as usize].to_vec()
+pub fn extract_script_sig(tx_in: &[u8]) -> Result<Vec<u8>, SPVError> {
+    let (data_len, script_sig_len) = extract_script_sig_len(tx_in)?;
+    let length = 1 + data_len + script_sig_len;
+    Ok(tx_in[36..36 + length as usize].to_vec())
 }
 
 //
@@ -257,11 +273,12 @@ pub fn extract_tx_index(tx_in: &[u8]) -> u32 {
 ///
 /// * Errors if VarInt represents a number larger than 253; large VarInts are not supported.
 pub fn determine_output_length(tx_out: &[u8]) -> Result<u64, SPVError> {
-    let length = tx_out[8] as u64;
-    match length {
-        0xfd | 0xfe | 0xff => Err(SPVError::LargeVarInt),
-        _ => Ok(length + 9),
+    if tx_out.len() < 9 {
+        return Err(SPVError::MalformattedOutput);
     }
+    let (data_len, script_pubkey_len) = parse_var_int(&tx_out[8..])?;
+
+    Ok(8 + 1 + data_len as u64 + script_pubkey_len)
 }
 
 /// Extracts the output at a given index in the TxIns vector.
@@ -404,21 +421,29 @@ pub fn extract_hash(tx_out: &[u8]) -> Result<Vec<u8>, SPVError> {
 ///
 /// * `vin` - Raw bytes length-prefixed input vector
 pub fn validate_vin(vin: &[u8]) -> bool {
-    let mut offset = 1;
-    let vin_length = vin.len();
-    let n_ins = vin[0];
+    let (data_len, n_ins) = match parse_var_int(vin) {
+        Ok(v) => v,
+        Err(_) => return false
+    };
 
-    if n_ins > 0xfc || n_ins == 0 {
-        false
-    } else {
-        for _ in 0..n_ins {
-            offset += determine_input_length(&vin[offset as usize..]);
-            if offset > vin_length as u64 {
-                return false;
-            }
-        }
-        offset == vin_length as u64
+    let vin_length = vin.len();
+
+    let mut offset = 1 + data_len;
+    if n_ins == 0 {
+        return false;
     }
+
+    for _ in 0..n_ins {
+        if offset >= vin_length as u64 {
+            return false;
+        }
+        match determine_input_length(&vin[offset as usize..]) {
+            Ok(v) => offset += v,
+            Err(_) => return false
+        };
+    }
+
+    offset == vin_length as u64
 }
 
 /// Checks that the vout passed up is properly formatted;
@@ -428,25 +453,29 @@ pub fn validate_vin(vin: &[u8]) -> bool {
 ///
 /// * `vout` - Raw bytes length-prefixed output vector
 pub fn validate_vout(vout: &[u8]) -> bool {
-    let mut offset = 1;
-    let vout_length = vout.len();
-    let n_outs = vout[0];
+    let (data_len, n_outs) = match parse_var_int(vout) {
+        Ok(v) => v,
+        Err(_) => return false
+    };
 
-    if n_outs > 0xfc || n_outs == 0 {
-        false
-    } else {
-        for _ in 0..n_outs {
-            let result = determine_output_length(&vout[offset..]);
-            match result {
-                Ok(v) => offset += v as usize,
-                Err(_) => return false,
-            };
-            if offset > vout_length {
-                return false;
-            }
-        }
-        offset == vout_length
+    let vout_length = vout.len() as u64;
+
+    let mut offset = 1 + data_len;
+    if n_outs == 0 {
+        return false;
     }
+
+    for _ in 0..n_outs {
+        if offset >= vout_length {
+            return false;
+        }
+        match determine_output_length(&vout[offset as usize..]) {
+            Ok(v) => offset += v,
+            Err(_) => return false,
+        };
+    }
+
+    offset == vout_length
 }
 
 //
@@ -702,7 +731,7 @@ mod tests {
                 let a = outputs[0].as_u64().unwrap() as u64;
                 let b = outputs[1].as_u64().unwrap() as u64;
 
-                assert_eq!(extract_script_sig_len(&input), (a, b));
+                assert_eq!(extract_script_sig_len(&input).unwrap(), (a, b));
             }
         })
     }
@@ -714,7 +743,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_sequence_le_legacy(&input), expected);
+                assert_eq!(extract_sequence_le_legacy(&input).unwrap(), expected);
             }
         })
     }
@@ -726,7 +755,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = case.output.as_u64().unwrap() as u32;
-                assert_eq!(extract_sequence_legacy(&input), expected);
+                assert_eq!(extract_sequence_legacy(&input).unwrap(), expected);
             }
         })
     }
@@ -738,7 +767,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = case.output.as_u64().unwrap() as u64;
-                assert_eq!(determine_input_length(&input), expected);
+                assert_eq!(determine_input_length(&input).unwrap(), expected);
             }
         })
     }
@@ -752,7 +781,7 @@ mod tests {
                 let vin = force_deserialize_hex(inputs.get("vin").unwrap().as_str().unwrap());
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as u8;
                 let expected = force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_input_at_index(&vin[..], index), expected);
+                assert_eq!(extract_input_at_index(&vin[..], index).unwrap(), expected);
             }
         })
     }
@@ -776,7 +805,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_script_sig(&input), expected);
+                assert_eq!(extract_script_sig(&input).unwrap(), expected);
             }
         })
     }
@@ -861,22 +890,6 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = case.output.as_u64().unwrap() as u64;
                 assert_eq!(determine_output_length(&input).unwrap(), expected);
-            }
-        })
-    }
-
-    #[test]
-    fn it_determines_output_length_errors() {
-        test_utils::run_test(|fixtures| {
-            let test_cases = test_utils::get_test_cases("determineOutputLengthError", &fixtures);
-            for case in test_cases {
-                let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected =
-                    test_utils::match_string_to_err(case.error_message.as_str().unwrap());
-                match determine_output_length(&input) {
-                    Ok(_) => assert!(false, "expected an error"),
-                    Err(e) => assert_eq!(e, expected),
-                }
             }
         })
     }

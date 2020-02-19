@@ -174,7 +174,6 @@ pub mod test_utils {
     pub fn match_string_to_err(s: &str) -> SPVError {
         match s {
             "Malformatted data. Read overrun" => SPVError::ReadOverrun,
-            "Multi-byte VarInts not supported" => SPVError::LargeVarInt,
             "Malformatted data. Must be an op return" => SPVError::MalformattedOpReturnOutput,
             "Maliciously formatted p2sh output" => SPVError::MalformattedP2SHOutput,
             "Maliciously formatted p2pkh output" => SPVError::MalformattedP2PKHOutput,

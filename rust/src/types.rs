@@ -25,9 +25,8 @@ pub type RawBytes = Vec<u8>;
 pub enum SPVError {
     /// Overran a checked read on a slice
     ReadOverrun,
-    /// VarInt represents a number larger than 253.
-    /// Large VarInts are not supported.
-    LargeVarInt,
+    /// Attempted to parse a VarInt without enough bytes
+    BadVarInt,
     /// Called `extract_op_return_data` on an output without an op_return.
     MalformattedOpReturnOutput,
     /// `extract_hash` identified a SH output prefix without a SH postfix.
