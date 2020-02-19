@@ -238,12 +238,11 @@
     {
       "input": "0x0000000000000000fc",
       "output": 261
-    }
-  ],
-  "determineOutputLengthError": [
+    },
     {
-      "input": "0x0000000000000000FF00",
-      "errorMessage": "Multi-byte VarInts not supported"
+      "input": "0x0000000000000000FFfc00000000000000",
+      "output": 269,
+      "comment": "Non-minimal VarInt encoding"
     }
   ],
   "extractOutputAtIndex": [
@@ -380,6 +379,11 @@
       "output": true
     },
     {
+      "input": "0xFF01000000000000001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
+      "output": true,
+      "comment": "Non-minimal VarInt encoding"
+    },
+    {
       "input": "0xFF1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
       "output": false
     },
@@ -402,6 +406,11 @@
       "output": true
     },
     {
+      "input": "0xFF02000000000000004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
+      "output": true,
+      "comment": "Non-minimal VarInt Encoding"
+    },
+    {
       "input": "0xFF4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
       "output": false
     },
@@ -418,8 +427,7 @@
       "output": false
     },{
       "input": "0x024897070000000000ff0020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-      "output": false,
-      "solidityError": "Multi-byte VarInts not supported"
+      "output": false
     }
   ],
   "extractMerkleRootLE": [
