@@ -181,13 +181,6 @@ byte_view_t btcspv_extract_outpoint(const_view_t *tx_in);
 /// @return          The tx id (little-endian bytes)
 byte_view_t btcspv_extract_input_tx_id_le(const_view_t *tx_in);
 
-/// @brief           Extracts the outpoint index from an input
-/// @note            32 byte tx id from outpoint
-/// @param input     The input
-/// @warning         overwrites `hash`
-/// @warning         caller must ensure `hash` is allocated and can hold 32 bytes
-void btcspv_extract_input_tx_id_be(uint256 hash, const_view_t *tx_in);
-
 /// @brief           Extracts the LE tx input index from the input in a tx
 /// @note            4 byte tx index
 /// @param input     The input
@@ -276,13 +269,6 @@ bool btcspv_validate_vout(const_view_t *vout);
  /// @return          The merkle root (little-endian)
 byte_view_t btcspv_extract_merkle_root_le(const_view_t *header);
 
-/// @brief           Extracts the transaction merkle root from a block header
-/// @note            Use verifyHash256Merkle to verify proofs with this root
-/// @param header    The header
-/// @warning         overwrites `hash` with the merkle root
-/// @warning         caller must ensure `hash` is allocated and can hold 32 bytes
-void btcspv_extract_merkle_root_be(uint256 hash, const_view_t *header);
-
 /// @brief           Extracts the target from a block header
 /// @note            Target is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
 /// @param header    The header
@@ -311,13 +297,6 @@ uint64_t btcspv_calculate_difficulty(uint256 target);
 /// @param header    The header
 /// @return          The previous block's hash (little-endian)
 byte_view_t btcspv_extract_prev_block_hash_le(const_view_t *header);
-
-/// @brief           Extracts the previous block's hash from a block header
-/// @note            Block headers do NOT include block number :(
-/// @param header    The header
-/// @warning         overwrites `hash` with the block header hash
-/// @warning         caller must ensure `hash` is allocated and can hold 32 bytes
-void btcspv_extract_prev_block_hash_be(uint256 hash, const_view_t *header);
 
 /// @brief           Extracts the timestamp from a block header
 /// @note            Time is not 100% reliable
