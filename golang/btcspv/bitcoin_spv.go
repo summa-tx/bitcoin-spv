@@ -192,8 +192,8 @@ func ExtractSequenceLEWitness(input []byte) []byte {
 }
 
 // ExtractSequenceWitness extracts the sequence integer from a witness input
-func ExtractSequenceWitness(input []byte) uint {
-	return BytesToUint(ExtractSequenceLEWitness(input))
+func ExtractSequenceWitness(input []byte) uint32 {
+	return uint32(BytesToUint(ExtractSequenceLEWitness(input)))
 }
 
 // ExtractOutpoint returns the outpoint from the in input in a tx

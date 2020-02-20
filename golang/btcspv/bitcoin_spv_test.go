@@ -224,7 +224,7 @@ func (suite *UtilsSuite) TestExtractSequenceWitness() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := uint(testCase.Output.(int))
+		expected := uint32(testCase.Output.(int))
 		actual := ExtractSequenceWitness(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
