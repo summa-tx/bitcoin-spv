@@ -277,6 +277,12 @@
       "comment": "Non-minimal VarInt encoding"
     }
   ],
+  "determineOutputLengthError": [
+    {
+      "input": "0x01",
+      "errorMessage": "Read overrun"
+    }
+  ],
   "extractOutputAtIndex": [
     {
       "input": {

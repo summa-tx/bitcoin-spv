@@ -43,6 +43,21 @@ func DetermineVarIntDataLength(flag uint8) uint8 {
 	}
 }
 
+// ParseVarInt parses the length and value of a VarInt payload
+func ParseVarInt(b []byte) (uint64, uint64, error) {
+	dataLength := uint64(DetermineVarIntDataLength(b[0]))
+	if dataLength == 0 {
+		return 0, uint64(b[0]), nil
+	}
+	if (uint64(len(b)) < 1 + dataLength) {
+		return 0, 0, errors.New("Read overrun during VarInt parsing")
+	}
+
+	number := BytesToUint(ReverseEndianness(b[1:1+dataLength]))
+
+	return dataLength, uint64(number), nil
+}
+
 // ReverseEndianness takes in a byte slice and returns a
 // reversed endian byte slice.
 func ReverseEndianness(b []byte) []byte {
@@ -95,19 +110,25 @@ func Hash256(in []byte) Hash256Digest {
 //
 
 // ExtractInputAtIndex parses the input vector and returns the vin at a specified index
-func ExtractInputAtIndex(vin []byte, index uint8) []byte {
-	var len uint
-	offset := uint(1)
+func ExtractInputAtIndex(vin []byte, index uint8) ([]byte, error) {
+	var len uint64
+
+	offset := uint64(1)
 
 	for i := uint8(0); i <= index; i++ {
 		remaining := vin[offset:]
-		len = DetermineInputLength(remaining)
+
+		var err error
+		len, err = DetermineInputLength(remaining)
+		if err != nil {
+			return []byte{}, err
+		}
 		if i != index {
 			offset += len
 		}
 	}
 
-	return vin[offset : offset+len]
+	return vin[offset : offset+len], nil
 }
 
 // IsLegacyInput determines whether an input is legacy
@@ -115,43 +136,54 @@ func IsLegacyInput(input []byte) bool {
 	return input[36] != 0
 }
 
-// DetermineInputLength gets the length of an input by parsing the scriptSigLen
-func DetermineInputLength(input []byte) uint {
-	dataLen, scriptSigLen := ExtractScriptSigLen(input)
-	return 41 + dataLen + scriptSigLen
+// ExtractScriptSigLen determines the length of a scriptSig in an input
+func ExtractScriptSigLen(input []byte) (uint64, uint64, error) {
+	if len(input) < 37 {
+		return 0, 0, errors.New("Read overrun")
+	}
+
+	return ParseVarInt(input[36:])
+}
+
+// DetermineInputLength gets the length of an input by parsing the scriptSigLength
+func DetermineInputLength(input []byte) (uint64, error) {
+	dataLength, scriptSigLength, err := ExtractScriptSigLen(input)
+
+	if err != nil {
+		return 0, err
+	}
+	return 41 + dataLength + scriptSigLength, nil
 }
 
 // ExtractSequenceLELegacy returns the LE sequence in from a tx input
 // The sequence is a 4 byte little-endian number.
-func ExtractSequenceLELegacy(input []byte) []byte {
-	dataLen, scriptSigLen := ExtractScriptSigLen(input)
-	offset := 36 + 1 + dataLen + scriptSigLen
-	return input[offset : offset+4]
+func ExtractSequenceLELegacy(input []byte) ([]byte, error) {
+	dataLength, scriptSigLength, err := ExtractScriptSigLen(input)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	offset := 36 + 1 + dataLength + scriptSigLength
+	return input[offset : offset+4], nil
 }
 
 // ExtractSequenceLegacy returns the integer sequence in from a tx input
-func ExtractSequenceLegacy(input []byte) uint {
-	return uint(binary.LittleEndian.Uint32(ExtractSequenceLELegacy(input)))
+func ExtractSequenceLegacy(input []byte) (uint32, error) {
+	seqBytes, err := ExtractSequenceLELegacy(input)
+	if err != nil {
+		return 0, err
+	}
+	return binary.LittleEndian.Uint32(seqBytes), nil
 }
 
 // ExtractScriptSig extracts the VarInt-prepended scriptSig from the input in a tx
-func ExtractScriptSig(input []byte) []byte {
-	dataLen, scriptSigLen := ExtractScriptSigLen(input)
-	length := 1 + dataLen + scriptSigLen
-	return input[36 : 36+length]
-}
-
-// ExtractScriptSigLen determines the length of a scriptSig in an input
-func ExtractScriptSigLen(input []byte) (uint, uint) {
-	varIntTag := input[36]
-	varIntDataLen := DetermineVarIntDataLength(varIntTag)
-
-	length := uint(varIntTag)
-	if varIntDataLen != 0 {
-		length = BytesToUint(ReverseEndianness(input[37 : 37+varIntDataLen]))
+func ExtractScriptSig(input []byte) ([]byte, error) {
+	dataLength, scriptSigLength, err := ExtractScriptSigLen(input)
+	if err != nil {
+		return []byte{}, err
 	}
-
-	return uint(varIntDataLen), length
+	length := 1 + dataLength + scriptSigLength
+	return input[36 : 36+length], nil
 }
 
 // ExtractSequenceLEWitness extracts the LE sequence bytes from a witness input
@@ -192,12 +224,17 @@ func ExtractTxIndex(input []byte) uint {
 //
 
 // DetermineOutputLength returns the length of an output
-func DetermineOutputLength(output []byte) (uint, error) {
-	length := uint(output[8])
-	if length > 0xfc {
-		return 0, errors.New("Multi-byte VarInts not supported")
+func DetermineOutputLength(output []byte) (uint64, error) {
+	if len(output) < 9 {
+		return 0, errors.New("Read overrun")
 	}
-	return length + uint(9), nil
+
+	dataLength, scriptPubkeyLength, err := ParseVarInt(output[8:])
+	if err != nil {
+		return 0, err
+	}
+
+	return (8 + 1 + dataLength + scriptPubkeyLength), nil
 }
 
 // ExtractOutputAtIndex returns the output at a given index in the TxIns vector
@@ -208,12 +245,13 @@ func ExtractOutputAtIndex(vout []byte, index uint8) ([]byte, error) {
 	for i := uint8(0); i <= index; i++ {
 		remaining := vout[offset:]
 		l, err := DetermineOutputLength(remaining)
-		length = l
 		if err != nil {
 			return []byte{}, err
 		}
+
+		length = uint(l)
 		if i != index {
-			offset += l
+			offset += length
 		}
 	}
 	output := vout[offset : offset+length]
@@ -243,12 +281,12 @@ func ExtractOpReturnData(output []byte) ([]byte, error) {
 		return nil, errors.New("Malformatted data. Must be an op return")
 	}
 
-	dataLen := int(output[10])
-	if dataLen+8+3 > len(output) {
+	dataLength := int(output[10])
+	if dataLength+8+3 > len(output) {
 		return nil, errors.New("Malformatted data. Read overrun")
 	}
 
-	return output[11 : 11+dataLen], nil
+	return output[11 : 11+dataLength], nil
 }
 
 // ExtractHash extracts the hash from the output script
@@ -291,46 +329,53 @@ func ExtractHash(output []byte) ([]byte, error) {
 
 // ValidateVin checks that the vin passed up is properly formatted
 func ValidateVin(vin []byte) bool {
-	var offset uint = 1
-	vLength := uint(len(vin))
-	nIns := uint(vin[0])
+	vinLength := uint64(len(vin))
 
-	if nIns > 0xfc || nIns == 0 {
+	dataLength, nIns, err := ParseVarInt(vin)
+	if nIns == 0 || err != nil {
 		return false
 	}
 
-	for i := uint(0); i < nIns; i++ {
-		offset += DetermineInputLength(vin[offset:])
-		if offset > vLength {
+	offset := 1 + dataLength
+
+	for i := uint64(0); i < nIns; i++ {
+		if offset >= vinLength {
 			return false
 		}
+
+		length, err := DetermineInputLength(vin[offset:])
+		if err != nil {
+			return false
+		}
+		offset += length
 	}
 
-	return offset == vLength
+	return offset == vinLength
 }
 
 // ValidateVout checks that the vin passed up is properly formatted
 func ValidateVout(vout []byte) bool {
-	var offset uint = 1
-	vLength := uint(len(vout))
-	nOuts := uint(vout[0])
+	voutLength := uint64(len(vout))
 
-	if nOuts > 0xfc || nOuts == 0 {
+	dataLength, nOuts, err := ParseVarInt(vout)
+	if nOuts > 0xfc || err != nil {
 		return false
 	}
 
-	for i := uint(0); i < nOuts; i++ {
-		output, err := DetermineOutputLength(vout[offset:])
+	offset := 1 + dataLength
+
+	for i := uint64(0); i < nOuts; i++ {
+		length, err := DetermineOutputLength(vout[offset:])
 		if err != nil {
 			return false
 		}
-		offset += output
-		if offset > vLength {
+		offset += length
+		if offset > voutLength {
 			return false
 		}
 	}
 
-	return offset == vLength
+	return offset == voutLength
 }
 
 //
