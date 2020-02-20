@@ -1014,20 +1014,6 @@ mod tests {
     }
 
     #[test]
-    fn it_extracts_header_merkle_roots() {
-        test_utils::run_test(|fixtures| {
-            let test_cases = test_utils::get_test_cases("extractMerkleRootLE", &fixtures);
-            for case in test_cases {
-                let mut input: RawHeader = [0; 80];
-                input.copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
-                let mut expected: Hash256Digest = Default::default();
-                expected.copy_from_slice(&force_deserialize_hex(case.output.as_str().unwrap()));
-                assert_eq!(extract_merkle_root_le(input), expected);
-            }
-        })
-    }
-
-    #[test]
     fn it_extracts_header_target() {
         test_utils::run_test(|fixtures| {
             let test_cases = test_utils::get_test_cases("extractTarget", &fixtures);
@@ -1037,20 +1023,6 @@ mod tests {
                 let expected_bytes = force_deserialize_hex(case.output.as_str().unwrap());
                 let expected = BigUint::from_bytes_be(&expected_bytes);
                 assert_eq!(extract_target(input), expected);
-            }
-        })
-    }
-
-    #[test]
-    fn it_extracts_previous_block_hashes() {
-        test_utils::run_test(|fixtures| {
-            let test_cases = test_utils::get_test_cases("extractPrevBlockLE", &fixtures);
-            for case in test_cases {
-                let mut input: RawHeader = [0; 80];
-                input.copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
-                let mut expected: Hash256Digest = Default::default();
-                expected.copy_from_slice(&force_deserialize_hex(case.output.as_str().unwrap()));
-                assert_eq!(extract_prev_block_hash_le(input), expected);
             }
         })
     }
