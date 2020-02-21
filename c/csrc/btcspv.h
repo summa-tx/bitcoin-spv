@@ -39,6 +39,9 @@
 
 #define SET_UINT256(to, from) (memcpy(to, from, 32))
 
+/// Error code
+const uint64_t BTCSPV_ERR_BAD_ARG;
+
 /// A 256-bit integer to support Bitcoin operations.
 typedef uint8_t uint256[32];
 
@@ -48,10 +51,16 @@ typedef struct {
   const uint32_t len;  /** The number of bytes in the view */
 } byte_view_t;
 
-/// Return type for extract_script_sig_len. Contains information about tx_in structure
-typedef struct x {
+/// Return type for parse_var_int. Contains information about VarInt structure
+typedef struct {
   const uint32_t var_int_len;  /** The number of bytes of VarInt data */
-  const uint32_t script_sig_len; /** The number of bytes in the scriptsig */
+  const uint64_t number; /** The number of bytes in the scriptsig */
+} var_int_t;
+
+/// Return type for extract_script_sig_len. Contains information about tx_in structure
+typedef struct {
+  const uint32_t var_int_len;  /** The number of bytes of VarInt data */
+  const uint64_t script_sig_len; /** The number of bytes in the scriptsig */
 } script_sig_t;
 
 /// Alias for constant view
@@ -113,6 +122,13 @@ void btcspv_hash256(uint8_t *result, const_view_t *preimage);
  /// @return         The number of non-flag bytes in the VarInt
 uint8_t btcspv_determine_var_int_data_length(uint8_t tag);
 
+/// @brief           Parse a VarInt into its data length and the number it represents
+/// @note            Useful for Parsing Vins and Vouts. Returns ERR_BAD_ARG if insufficient bytes.
+/// @param b         A byte-view starting with a VarInt
+/// @return          A struct containing number of bytes in the encoding (not counting the tag) and the encoded int
+/// @warning         Caller MUST check that it does not error
+var_int_t btcspv_parse_var_int(const_view_t *b);
+
 /// @brief           Determines whether an input is legacy
 /// @note            False if no scriptSig, otherwise True
 /// @param input     The input
@@ -135,12 +151,14 @@ uint32_t btcspv_extract_sequence_witness(const_view_t *tx_in);
 /// @note            Will return 0 if passed a witness input
 /// @param input     The LEGACY input
 /// @return          The length of the script sig
+/// @warning         Caller MUST check that it does not error
 script_sig_t btcspv_extract_script_sig_len(const_view_t *tx_in);
 
 /// @brief           Extracts the VarInt-prepended scriptSig from the input in a tx
 /// @note            Will return hex"00" if passed a witness input
 /// @param input     The LEGACY input
 /// @return          The length-prepended script sig
+/// @warning         Caller MUST check that it does not error
 byte_view_t btcspv_extract_script_sig(const_view_t *tx_in);
 
 /// @brief           Extracts the LE sequence bytes from an input
@@ -159,7 +177,8 @@ uint32_t btcspv_extract_sequence_legacy(const_view_t *tx_in);
 /// @note            36 for outpoint, 1 for scriptsig length, 4 for sequence
 /// @param input     The input
 /// @return          The length of the input in bytes
-uint32_t btcspv_determine_input_length(const_view_t *tx_in);
+/// @warning         Caller MUST check that it does not error
+uint64_t btcspv_determine_input_length(const_view_t *tx_in);
 
 /// @brief           Extracts the nth input from the vin (0-indexed)
 /// @note            Iterates over the vin. If you need to extract several, write a custom function
@@ -194,14 +213,15 @@ byte_view_t btcspv_extract_tx_index_le(const_view_t *tx_in);
 uint32_t btcspv_extract_tx_index(const_view_t *tx_in);
 
 /*
- * --- tx_out & vin Functions ---
+ * --- tx_out & vout Functions ---
  */
 
  /// @brief           Determines the length of an output
  /// @note            5 types: WPKH, WSH, PKH, SH, and OP_RETURN
  /// @param output    The output
  /// @return          The length indicated by the prefix, error if invalid length
-uint32_t btcspv_determine_output_length(const_view_t *tx_out);
+ /// @warning         Caller MUST check that it does not error
+uint64_t btcspv_determine_output_length(const_view_t *tx_out);
 
 /// @brief           Extracts the output at a given index in the TxIns vector
 /// @note            Iterates over the vout. If you need to extract multiple, write a custom function
