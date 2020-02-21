@@ -55,6 +55,30 @@ export function determineVarIntDataLength(flag) {
 
 /**
  *
+ * Parse a VarInt into its data length and the number it represents.
+ * Useeful for Parsing Vins and Vouts
+ *
+ * @param {Uint8Array}    preImage The pre-image
+ * @returns {object}      The length of the payload, and the encoded integer
+ */
+export function parseVarInt(b) {
+  const dataLength = determineVarIntDataLength(b[0]);
+
+  if (dataLength === 0) {
+    return { dataLength: BigInt(dataLength), number: BigInt(b[0]) };
+  }
+
+  if (b.length < 1 + dataLength) {
+    throw new RangeError("Read overrun during VarInt parsing");  // TODO: COVERAGE
+  }
+
+  const number = utils.bytesToUint(utils.reverseEndianness(utils.safeSlice(b, 1, 1 + dataLength)));
+
+  return { dataLength: BigInt(dataLength), number: BigInt(number) };
+}
+
+/**
+ *
  * Implements bitcoin's hash160 (rmd160(sha2()))
  *
  * @param {Uint8Array}    preImage The pre-image
@@ -88,18 +112,11 @@ export function hash256(preImage) {
  * @returns {object}      The length of the script sig in object form
  */
 export function extractScriptSigLen(input) {
-  let len;
-
-  const varIntTag = input[36];
-  const varIntDataLen = determineVarIntDataLength(varIntTag);
-
-  if (varIntDataLen === 0) {
-    len = varIntTag;
-  } else {
-    const varIntData = utils.safeSlice(input, 37, 37 + varIntDataLen);
-    len = utils.bytesToUint(utils.reverseEndianness(varIntData));
+  if (input.length < 37) {
+    throw Error('Read overrun')
   }
-  return { dataLen: BigInt(varIntDataLen), scriptSigLen: BigInt(len) };
+  const { dataLength, number } = parseVarInt(utils.safeSlice(input, 36));
+  return { dataLength, scriptSigLen: number };
 }
 
 /**
@@ -111,8 +128,8 @@ export function extractScriptSigLen(input) {
  * @returns {Uint8Array}  The sequence bytes (LE uint)
  */
 export function extractSequenceLELegacy(input) {
-  const { dataLen, scriptSigLen } = extractScriptSigLen(input);
-  const length = 36 + 1 + Number(dataLen) + Number(scriptSigLen);
+  const { dataLength, scriptSigLen } = extractScriptSigLen(input);
+  const length = 36 + 1 + Number(dataLength) + Number(scriptSigLen);
   return utils.safeSlice(input, length, length + 4);
 }
 
@@ -125,8 +142,8 @@ export function extractSequenceLELegacy(input) {
  * @returns {BigInt}      The length of the input in bytes
  */
 export function determineInputLength(input) {
-  const { dataLen, scriptSigLen } = extractScriptSigLen(input);
-  return BigInt(41) + dataLen + scriptSigLen;
+  const { dataLength, scriptSigLen } = extractScriptSigLen(input);
+  return BigInt(41) + dataLength + scriptSigLen;
 }
 
 /**
@@ -190,8 +207,8 @@ export function extractSequenceLegacy(input) {
  * @returns {Uint8Array}  The length-prepended script sig
  */
 export function extractScriptSig(input) {
-  const { dataLen, scriptSigLen } = extractScriptSigLen(input);
-  const length = 1 + Number(dataLen) + Number(scriptSigLen);
+  const { dataLength, scriptSigLen } = extractScriptSigLen(input);
+  const length = 1 + Number(dataLength) + Number(scriptSigLen);
   return utils.safeSlice(input, 36, 36 + length);
 }
 
@@ -287,15 +304,17 @@ export function extractTxIndex(input) {
  *
  * @param {Uint8Array}    output The output
  * @returns {BigInt}      The length indicated by the prefix, error if invalid length
- * @throws {RangeError}   When output script is longer than 0xfc bytes
+ * @throws {RangeError}   When output is fewer than 9 bytes long
  */
 export function determineOutputLength(output) {
-  const len = output[8];
-  if (len > 0xfc) {
-    throw new RangeError('Multi-byte VarInts not supported');
+  if (output.length < 9) {
+    throw RangeError("Read overrun");
   }
 
-  return BigInt(len) + BigInt(8 + 1); // 8 byte value, 1 byte for len itself
+  const {dataLength, number} = parseVarInt(utils.safeSlice(output, 8));
+
+  // 8 byte value, 1 byte for len itself
+  return BigInt(8 + 1) + dataLength + number;
 }
 
 /**
@@ -375,8 +394,8 @@ export function extractOpReturnData(output) {
   if (output[9] !== 0x6a) {
     throw new TypeError('Malformatted data. Must be an op return.');
   }
-  const dataLen = output[10];
-  return utils.safeSlice(output, 11, 11 + dataLen);
+  const dataLength = output[10];
+  return utils.safeSlice(output, 11, 11 + dataLength);
 }
 
 /**
@@ -438,28 +457,32 @@ export function extractHash(output) {
  * @returns {Boolean}       True if it represents a validly formatted vin
  */
 export function validateVin(vin) {
-  let offset = BigInt(1);
-  const vLength = BigInt(vin.length);
-  const [nIns] = vin;
+  try {
+    const vLength = BigInt(vin.length);
 
-  // Not valid if it says there are too many or no inputs
-  if (nIns > 0xfc || nIns === 0) {
+    const {dataLength, number: nIns} = parseVarInt(vin);
+
+    // Not valid if it says there are too many or no inputs
+    if (nIns === 0) {
+      return false; // TODO: COVERAGE
+    }
+
+    let offset = BigInt(1) + dataLength;
+
+    for (let i = 0; i < nIns; i += 1) {
+      if (offset >= vLength) {
+        return false;  // TODO: COVERAGE
+      }
+      // Grab the next input and determine its length.
+      // Increase the offset by that much
+      offset += determineInputLength(utils.safeSlice(vin, offset));
+    }
+
+    // Returns false if we're not exactly at the end
+    return offset === vLength;
+  } catch (e) {
     return false;
   }
-
-  for (let i = 0; i < nIns; i += 1) {
-    // Grab the next input and determine its length.
-    // Increase the offset by that much
-    offset += determineInputLength(utils.safeSlice(vin, offset));
-
-    // Returns false if we jump past the end
-    if (offset > vLength) {
-      return false;
-    }
-  }
-
-  // Returns false if we're not exactly at the end
-  return offset === vLength;
 }
 
 /**
@@ -471,31 +494,32 @@ export function validateVin(vin) {
  * @returns {Boolean}     True if it represents a validly formatted vout
  */
 export function validateVout(vout) {
-  let offset = BigInt(1);
-  const vLength = BigInt(vout.length);
-  const [nOuts] = vout;
+  try {
+    const vLength = BigInt(vout.length);
 
-  // Not valid if it says there are too many or no inputs
-  if (nOuts > 0xfc || nOuts === 0) {
-    return false;
-  }
+    const {dataLength, number: nOuts} = parseVarInt(vout);
 
-  for (let i = 0; i < nOuts; i += 1) {
-    // Grab the next input and determine its length.
-    // Increase the offset by that much
-    try {
+    // Not valid if it says there are too many or no inputs
+    if (nOuts === 0) {
+      return false;  // TODO: COVERAGE
+    }
+
+    let offset = BigInt(1) + dataLength;
+
+    for (let i = 0; i < nOuts; i += 1) {
+      if (offset >= vLength) {
+        return false;
+      }
+      // Grab the next input and determine its length.
+      // Increase the offset by that much
       offset += determineOutputLength(utils.safeSlice(vout, offset));
-    } catch (e) {
-      return false;
     }
-    // Returns false if we jump past the end
-    if (offset > vLength) {
-      return false;
-    }
-  }
 
-  // Returns false if we're not exactly at the end
-  return offset === vLength;
+    // Returns false if we're not exactly at the end
+    return offset === vLength;
+  } catch (e) {
+    return false;  // TODO: COVERAGE
+  }
 }
 
 /* ************ */
@@ -546,7 +570,7 @@ export function extractTarget(header) {
 export function calculateDifficulty(target) {
   /* eslint-disable-next-line valid-typeof */
   if (typeof target !== 'bigint') {
-    throw new Error('Argument must be a BigInt');
+    throw new TypeError('Argument must be a BigInt');
   }
   return DIFF_ONE_TARGET / target;
 }

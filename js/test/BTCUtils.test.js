@@ -40,6 +40,7 @@ const {
   extractTimestamp,
   verifyHash256Merkle,
   determineVarIntDataLength,
+  parseVarInt,
   retargetAlgorithm,
   calculateDifficultyError
 } = vectorObj;
@@ -201,7 +202,7 @@ describe('BTCUtils', () => {
   it('extracts the length of the VarInt and scriptSig from inputs', () => {
     for (let i = 0; i < extractScriptSigLen.length; i += 1) {
       const res = BTCUtils.extractScriptSigLen(extractScriptSigLen[i].input);
-      assert.strictEqual(res.dataLen, BigInt(extractScriptSigLen[i].output[0]));
+      assert.strictEqual(res.dataLength, BigInt(extractScriptSigLen[i].output[0]));
       assert.strictEqual(res.scriptSigLen, BigInt(extractScriptSigLen[i].output[1]));
     }
   });
@@ -273,6 +274,14 @@ describe('BTCUtils', () => {
     for (let i = 0; i < determineVarIntDataLength.length; i += 1) {
       const res = BTCUtils.determineVarIntDataLength(determineVarIntDataLength[i].input);
       assert.strictEqual(res, determineVarIntDataLength[i].output);
+    }
+  });
+
+  it('parses VarInts', () => {
+    for (let i = 0; i < parseVarInt.length; i += 1) {
+      const res = BTCUtils.parseVarInt(parseVarInt[i].input);
+      assert.strictEqual(res.dataLength, BigInt(parseVarInt[i].output[0]));
+      assert.strictEqual(res.number, BigInt(parseVarInt[i].output[1]));
     }
   });
 
