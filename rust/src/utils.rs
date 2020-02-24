@@ -69,7 +69,7 @@ pub mod test_utils {
 
     use super::*;
     use crate::btcspv;
-    use crate::types::{InputType, OutputType, RawHeader, SPVError};
+    use crate::types::{RawHeader, SPVError};
 
     #[derive(Deserialize, Debug)]
     pub struct TestCase {
@@ -148,27 +148,6 @@ pub mod test_utils {
             cases.push(to_test_case(&i));
         }
         cases
-    }
-
-    pub fn match_number_to_input_type(i: u64) -> InputType {
-        match i {
-            1 => InputType::Legacy,
-            2 => InputType::Compatibility,
-            3 => InputType::Witness,
-            _ => InputType::InputNone,
-        }
-    }
-
-    pub fn match_number_to_output_type(i: u64) -> OutputType {
-        match i {
-            1 => OutputType::WPKH,
-            2 => OutputType::WSH,
-            3 => OutputType::OpReturn,
-            4 => OutputType::PKH,
-            5 => OutputType::SH,
-            6 => OutputType::Nonstandard,
-            _ => OutputType::OutputNone,
-        }
     }
 
     pub fn match_string_to_err(s: &str) -> SPVError {

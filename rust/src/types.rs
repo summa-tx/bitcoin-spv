@@ -75,38 +75,6 @@ pub enum SPVError {
     UnknownError,
 }
 
-/// Enum for transaction input types
-#[derive(PartialEq, Eq, Clone, Copy, Debug, Serialize, Deserialize)]
-pub enum InputType {
-    /// Unknown input type, likely an error
-    InputNone,
-    /// Legacy input
-    Legacy,
-    /// Witness-over-scripthash Compatibility input
-    Compatibility,
-    /// Witness input
-    Witness,
-}
-
-/// Enum for transaction output types
-#[derive(PartialEq, Eq, Clone, Copy, Debug, Serialize, Deserialize)]
-pub enum OutputType {
-    /// Unknown output type, likely an error.
-    OutputNone,
-    /// Witness pubkeyhash output script.
-    WPKH,
-    /// Witness scripthash output script.
-    WSH,
-    /// OpReturn data output.
-    OpReturn,
-    /// Legacy pubkeyhash output script.
-    PKH,
-    /// Legacy scripthash output script.
-    SH,
-    /// Any other output script.
-    Nonstandard,
-}
-
 /// BitcoinHeader is a parsed Bitcoin header with height information appended.
 #[derive(Clone, Deserialize, Serialize)]
 pub struct BitcoinHeader {

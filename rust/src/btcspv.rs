@@ -32,20 +32,20 @@ pub fn determine_var_int_data_length(flag: u8) -> u8 {
 /// # Arguments
 ///
 /// * `b` - A byte-string starting with a VarInt
-pub fn parse_var_int(b: &[u8]) -> Result<(u64, u64), SPVError> {
+pub fn parse_var_int(b: &[u8]) -> Result<(usize, usize), SPVError> {
     let length = determine_var_int_data_length(b[0]) as usize;
 
     if length == 0 {
-        return Ok((0, b[0] as u64));
+        return Ok((0, b[0] as usize));
     }
-    if b.len() < 1 + length as usize {
+    if b.len() < 1 + length {
         return Err(SPVError::BadVarInt);
     }
 
     let mut num_bytes = [0u8; 8];
     num_bytes[..length].copy_from_slice(&b[1..=length]);
 
-    Ok((length as u64, u64::from_le_bytes(num_bytes)))
+    Ok((length, u64::from_le_bytes(num_bytes) as usize))
 }
 
 /// Implements bitcoin's hash160 (rmd160(sha2())).
@@ -99,9 +99,14 @@ pub fn hash256(preimage: &[u8]) -> Hash256Digest {
 ///
 /// * `vin` - The vin as a tightly-packed u8 array
 /// * `index` - The 0-indexed location of the input to extract
-pub fn extract_input_at_index(vin: &[u8], index: u8) -> Result<Vec<u8>, SPVError> {
+pub fn extract_input_at_index(vin: &[u8], index: usize) -> Result<Vec<u8>, SPVError> {
+    let (data_len, n_ins) = parse_var_int(vin)?;
+    if index > n_ins {
+        return Err(SPVError::ReadOverrun);
+    }
+
     let mut length = 0;
-    let mut offset = 1;
+    let mut offset = 1 + data_len;
 
     for i in 0..=index {
         length = determine_input_length(&vin[offset..])?;
@@ -133,7 +138,7 @@ pub fn is_legacy_input(tx_in: &[u8]) -> bool {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_script_sig_len(tx_in: &[u8]) -> Result<(u64, u64), SPVError> {
+pub fn extract_script_sig_len(tx_in: &[u8]) -> Result<(usize, usize), SPVError> {
     if tx_in.len() < 37 {
         return Err(SPVError::ReadOverrun);
     }
@@ -146,7 +151,7 @@ pub fn extract_script_sig_len(tx_in: &[u8]) -> Result<(u64, u64), SPVError> {
 /// # Arguments
 ///
 /// * `tx_in` - The input as a u8 array
-pub fn determine_input_length(tx_in: &[u8]) -> Result<u64, SPVError> {
+pub fn determine_input_length(tx_in: &[u8]) -> Result<usize, SPVError> {
     let (data_len, script_sig_len) = extract_script_sig_len(tx_in)?;
     Ok(41 + data_len + script_sig_len)
 }
@@ -272,13 +277,13 @@ pub fn extract_tx_index(tx_in: &[u8]) -> u32 {
 /// # Errors
 ///
 /// * Errors if VarInt represents a number larger than 253; large VarInts are not supported.
-pub fn determine_output_length(tx_out: &[u8]) -> Result<u64, SPVError> {
+pub fn determine_output_length(tx_out: &[u8]) -> Result<usize, SPVError> {
     if tx_out.len() < 9 {
         return Err(SPVError::MalformattedOutput); // TODO: COVERAGE
     }
     let (data_len, script_pubkey_len) = parse_var_int(&tx_out[8..])?;
 
-    Ok(8 + 1 + data_len as u64 + script_pubkey_len)
+    Ok(8 + 1 + data_len + script_pubkey_len)
 }
 
 /// Extracts the output at a given index in the TxIns vector.
@@ -294,18 +299,22 @@ pub fn determine_output_length(tx_out: &[u8]) -> Result<u64, SPVError> {
 /// # Errors
 ///
 /// * Errors if VarInt represents a number larger than 253.  Large VarInts are not supported.
-pub fn extract_output_at_index(vout: &[u8], index: u8) -> Result<Vec<u8>, SPVError> {
-    let mut length: u64 = 0;
-    let mut offset = 1;
-    let idx = index as u64;
+pub fn extract_output_at_index(vout: &[u8], index: usize) -> Result<Vec<u8>, SPVError> {
+    let (data_len, n_outs) = parse_var_int(vout)?;
+    if index > n_outs {
+        return Err(SPVError::ReadOverrun);
+    }
 
-    for i in 0..=idx {
+    let mut length = 0;
+    let mut offset = 1 + data_len;
+
+    for i in 0..=index {
         length = determine_output_length(&vout[offset..])?;
-        if i != idx {
+        if i != index {
             offset += length as usize
         }
     }
-    Ok(vout[offset..offset + length as usize].to_vec())
+        Ok(vout[offset..offset + length].to_vec())
 }
 
 /// Extracts the output script length.
@@ -314,8 +323,8 @@ pub fn extract_output_at_index(vout: &[u8], index: u8) -> Result<Vec<u8>, SPVErr
 /// # Arguments
 ///
 /// * `tx_out` - The output
-pub fn extract_output_script_len(tx_out: &[u8]) -> u64 {
-    tx_out[8] as u64
+pub fn extract_output_script_len(tx_out: &[u8]) -> usize {
+    tx_out[8] as usize
 }
 
 /// Extracts the value bytes from the output in a tx.
@@ -434,16 +443,16 @@ pub fn validate_vin(vin: &[u8]) -> bool {
     }
 
     for _ in 0..n_ins {
-        if offset >= vin_length as u64 {
+        if offset >= vin_length {
             return false; // TODO: COVERAGE
         }
         match determine_input_length(&vin[offset as usize..]) {
-            Ok(v) => offset += v,
+            Ok(v) => offset += v as usize,
             Err(_) => return false,
         };
     }
 
-    offset == vin_length as u64
+    offset == vin_length
 }
 
 /// Checks that the vout passed up is properly formatted;
@@ -458,7 +467,7 @@ pub fn validate_vout(vout: &[u8]) -> bool {
         Err(_) => return false, // TODO: COVERAGE
     };
 
-    let vout_length = vout.len() as u64;
+    let vout_length = vout.len();
 
     let mut offset = 1 + data_len;
     if n_outs == 0 {
@@ -470,7 +479,7 @@ pub fn validate_vout(vout: &[u8]) -> bool {
             return false;
         }
         match determine_output_length(&vout[offset as usize..]) {
-            Ok(v) => offset += v,
+            Ok(v) => offset += v as usize,
             Err(_) => return false,  // TODO: COVERAGE
         };
     }
@@ -683,8 +692,8 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = case.output.as_array().unwrap();
-                let expected_len = expected[0].as_u64().unwrap();
-                let expected_num = expected[1].as_u64().unwrap();
+                let expected_len = expected[0].as_u64().unwrap() as usize;
+                let expected_num = expected[1].as_u64().unwrap() as usize;
                 assert_eq!(parse_var_int(&input).unwrap(), (expected_len, expected_num));
             }
         })
@@ -756,8 +765,8 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
 
                 let outputs = case.output.as_array().unwrap();
-                let a = outputs[0].as_u64().unwrap() as u64;
-                let b = outputs[1].as_u64().unwrap() as u64;
+                let a = outputs[0].as_u64().unwrap() as usize;
+                let b = outputs[1].as_u64().unwrap() as usize;
 
                 assert_eq!(extract_script_sig_len(&input).unwrap(), (a, b));
             }
@@ -794,7 +803,7 @@ mod tests {
             let test_cases = test_utils::get_test_cases("determineInputLength", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = case.output.as_u64().unwrap() as u64;
+                let expected = case.output.as_u64().unwrap() as usize;
                 assert_eq!(determine_input_length(&input).unwrap(), expected);
             }
         })
@@ -807,7 +816,7 @@ mod tests {
             for case in test_cases {
                 let inputs = case.input.as_object().unwrap();
                 let vin = force_deserialize_hex(inputs.get("vin").unwrap().as_str().unwrap());
-                let index = inputs.get("index").unwrap().as_u64().unwrap() as u8;
+                let index = inputs.get("index").unwrap().as_u64().unwrap() as usize;
                 let expected = force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(extract_input_at_index(&vin[..], index).unwrap(), expected);
             }
@@ -916,7 +925,7 @@ mod tests {
             let test_cases = test_utils::get_test_cases("determineOutputLength", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = case.output.as_u64().unwrap() as u64;
+                let expected = case.output.as_u64().unwrap() as usize;
                 assert_eq!(determine_output_length(&input).unwrap(), expected);
             }
         })
@@ -929,7 +938,7 @@ mod tests {
             for case in test_cases {
                 let inputs = case.input.as_object().unwrap();
                 let vout = force_deserialize_hex(inputs.get("vout").unwrap().as_str().unwrap());
-                let index = inputs.get("index").unwrap().as_u64().unwrap() as u8;
+                let index = inputs.get("index").unwrap().as_u64().unwrap() as usize;
                 let expected = force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(extract_output_at_index(&vout, index).unwrap(), expected);
             }
@@ -942,7 +951,7 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractOutputScriptLen", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = case.output.as_u64().unwrap() as u64;
+                let expected = case.output.as_u64().unwrap() as usize;
                 assert_eq!(extract_output_script_len(&input), expected);
             }
         })
