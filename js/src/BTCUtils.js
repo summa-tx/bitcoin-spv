@@ -69,7 +69,7 @@ export function parseVarInt(b) {
   }
 
   if (b.length < 1 + dataLength) {
-    throw new RangeError("Read overrun during VarInt parsing");  // TODO: COVERAGE
+    throw new RangeError('Read overrun during VarInt parsing'); // TODO: COVERAGE
   }
 
   const number = utils.bytesToUint(utils.reverseEndianness(utils.safeSlice(b, 1, 1 + dataLength)));
@@ -113,7 +113,7 @@ export function hash256(preImage) {
  */
 export function extractScriptSigLen(input) {
   if (input.length < 37) {
-    throw Error('Read overrun')
+    throw Error('Read overrun');
   }
   const { dataLength, number } = parseVarInt(utils.safeSlice(input, 36));
   return { dataLength, scriptSigLen: number };
@@ -153,23 +153,28 @@ export function determineInputLength(input) {
  * Iterates over the vin. If you need to extract several,
  * write a custom function
  *
- * @param {Uint8Array}    vinArr The vin as a tightly-packed uint8array
+ * @param {Uint8Array}    vin The vin as a tightly-packed uint8array
  * @param {index}         index The 0-indexed location of the input to extract
  * @returns {Uint8Array}  The input as a u8a
  */
-export function extractInputAtIndex(vinArr, index) {
-  let len;
-  let offset = BigInt(1);
+export function extractInputAtIndex(vin, index) {
+  const { dataLength, nIns } = parseVarInt(vin);
+  if (BigInt(index) > nIns) {
+    throw RangeError('Read overrun');
+  }
+
+  let len = 0;
+  let offset = BigInt(1) + dataLength;
 
   for (let i = 0; i <= index; i += 1) {
-    const remaining = utils.safeSlice(vinArr, offset, vinArr.length);
+    const remaining = utils.safeSlice(vin, offset, vin.length);
     len = determineInputLength(remaining);
     if (i !== index) {
       offset += len;
     }
   }
 
-  return utils.safeSlice(vinArr, offset, offset + len);
+  return utils.safeSlice(vin, offset, offset + len);
 }
 
 /**
@@ -308,10 +313,10 @@ export function extractTxIndex(input) {
  */
 export function determineOutputLength(output) {
   if (output.length < 9) {
-    throw RangeError("Read overrun");
+    throw RangeError('Read overrun');
   }
 
-  const {dataLength, number} = parseVarInt(utils.safeSlice(output, 8));
+  const { dataLength, number } = parseVarInt(utils.safeSlice(output, 8));
 
   // 8 byte value, 1 byte for len itself
   return BigInt(8 + 1) + dataLength + number;
@@ -329,8 +334,13 @@ export function determineOutputLength(output) {
  * @returns {Uint8Array}  The specified output
  */
 export function extractOutputAtIndex(vout, index) {
-  let len;
-  let offset = BigInt(1);
+  const { dataLength, nOuts } = parseVarInt(vout);
+  if (BigInt(index) > nOuts) {
+    throw RangeError('Read overrun');
+  }
+
+  let len = 0;
+  let offset = BigInt(1) + dataLength;
 
   for (let i = 0; i <= index; i += 1) {
     const remaining = utils.safeSlice(vout, offset, vout.length);
@@ -460,7 +470,7 @@ export function validateVin(vin) {
   try {
     const vLength = BigInt(vin.length);
 
-    const {dataLength, number: nIns} = parseVarInt(vin);
+    const { dataLength, number: nIns } = parseVarInt(vin);
 
     // Not valid if it says there are too many or no inputs
     if (nIns === 0) {
@@ -471,7 +481,7 @@ export function validateVin(vin) {
 
     for (let i = 0; i < nIns; i += 1) {
       if (offset >= vLength) {
-        return false;  // TODO: COVERAGE
+        return false; // TODO: COVERAGE
       }
       // Grab the next input and determine its length.
       // Increase the offset by that much
@@ -497,11 +507,11 @@ export function validateVout(vout) {
   try {
     const vLength = BigInt(vout.length);
 
-    const {dataLength, number: nOuts} = parseVarInt(vout);
+    const { dataLength, number: nOuts } = parseVarInt(vout);
 
     // Not valid if it says there are too many or no inputs
     if (nOuts === 0) {
-      return false;  // TODO: COVERAGE
+      return false; // TODO: COVERAGE
     }
 
     let offset = BigInt(1) + dataLength;
@@ -518,7 +528,7 @@ export function validateVout(vout) {
     // Returns false if we're not exactly at the end
     return offset === vLength;
   } catch (e) {
-    return false;  // TODO: COVERAGE
+    return false; // TODO: COVERAGE
   }
 }
 
