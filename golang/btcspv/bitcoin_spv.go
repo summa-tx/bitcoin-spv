@@ -111,24 +111,32 @@ func Hash256(in []byte) Hash256Digest {
 
 // ExtractInputAtIndex parses the input vector and returns the vin at a specified index
 func ExtractInputAtIndex(vin []byte, index uint8) ([]byte, error) {
-	var len uint64
+	dataLength, nIns, err := ParseVarInt(vin)
+	if err != nil {
+		return nil, err  // TODO: COVERAGE
+	}
+	if uint64(index) > nIns {
+		return nil, errors.New("Read overrun")  // TODO: COVERAGE
+	}
 
-	offset := uint64(1)
+	var length uint
+	var offset uint = 1 + uint(dataLength)
 
 	for i := uint8(0); i <= index; i++ {
 		remaining := vin[offset:]
 
-		var err error
-		len, err = DetermineInputLength(remaining)
+		l, err := DetermineInputLength(remaining)
 		if err != nil {
-			return []byte{}, err
+			return []byte{}, err  // TODO: COVERAGE
 		}
+
+		length = uint(l)
 		if i != index {
-			offset += len
+			offset += length
 		}
 	}
 
-	return vin[offset : offset+len], nil
+	return vin[offset : offset+length], nil
 }
 
 // IsLegacyInput determines whether an input is legacy
@@ -160,7 +168,7 @@ func DetermineInputLength(input []byte) (uint64, error) {
 func ExtractSequenceLELegacy(input []byte) ([]byte, error) {
 	dataLength, scriptSigLength, err := ExtractScriptSigLen(input)
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, err  // TODO: COVERAGE
 	}
 
 	offset := 36 + 1 + dataLength + scriptSigLength
@@ -171,7 +179,7 @@ func ExtractSequenceLELegacy(input []byte) ([]byte, error) {
 func ExtractSequenceLegacy(input []byte) (uint32, error) {
 	seqBytes, err := ExtractSequenceLELegacy(input)
 	if err != nil {
-		return 0, err
+		return 0, err  // TODO: COVERAGE
 	}
 	return binary.LittleEndian.Uint32(seqBytes), nil
 }
@@ -180,7 +188,7 @@ func ExtractSequenceLegacy(input []byte) (uint32, error) {
 func ExtractScriptSig(input []byte) ([]byte, error) {
 	dataLength, scriptSigLength, err := ExtractScriptSigLen(input)
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, err  // TODO: COVERAGE
 	}
 	length := 1 + dataLength + scriptSigLength
 	return input[36 : 36+length], nil
@@ -238,11 +246,19 @@ func DetermineOutputLength(output []byte) (uint64, error) {
 }
 
 // ExtractOutputAtIndex returns the output at a given index in the TxIns vector
-func ExtractOutputAtIndex(vout []byte, index uint8) ([]byte, error) {
-	var length uint
-	var offset uint = 1
+func ExtractOutputAtIndex(vout []byte, index uint) ([]byte, error) {
+	dataLength, nOuts, err := ParseVarInt(vout)
+	if err != nil {
+		return nil, err  // TODO: COVERAGE
+	}
+	if uint64(index) > nOuts {
+		return nil, errors.New("Read overrun")  // TODO: COVERAGE
+	}
 
-	for i := uint8(0); i <= index; i++ {
+	var length uint
+	var offset uint = 1 + uint(dataLength)
+
+	for i := uint(0); i <= index; i++ {
 		remaining := vout[offset:]
 		l, err := DetermineOutputLength(remaining)
 		if err != nil {
@@ -340,7 +356,7 @@ func ValidateVin(vin []byte) bool {
 
 	for i := uint64(0); i < nIns; i++ {
 		if offset >= vinLength {
-			return false
+			return false  // TODO: COVERAGE
 		}
 
 		length, err := DetermineInputLength(vin[offset:])
@@ -367,7 +383,7 @@ func ValidateVout(vout []byte) bool {
 	for i := uint64(0); i < nOuts; i++ {
 		length, err := DetermineOutputLength(vout[offset:])
 		if err != nil {
-			return false
+			return false  // TODO: COVERAGE
 		}
 		offset += length
 		if offset > voutLength {

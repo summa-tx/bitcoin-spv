@@ -500,7 +500,7 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 		inputs := testCase.Input.(map[string]interface{})
 		vout := inputs["vout"].([]byte)
 		index := inputs["index"].(int)
-		actual, err := ExtractOutputAtIndex(vout, uint8(index))
+		actual, err := ExtractOutputAtIndex(vout, uint(index))
 		if err != nil {
 			log.Fatal(err)
 		}
