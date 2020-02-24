@@ -158,10 +158,16 @@ library BTCUtils {
     /// @param _index    The 0-indexed location of the input to extract
     /// @return          The input as a byte array
     function extractInputAtIndex(bytes memory _vin, uint256 _index) internal pure returns (bytes memory) {
-        uint256 _len;
+        uint256 _varIntDataLen;
+        uint256 _nIns;
+
+        (_varIntDataLen, _nIns) = parseVarInt(_vin);
+        require(_index <= _nIns, "Read overrun");
+
         bytes memory _remaining;
 
-        uint256 _offset = 1;
+        uint256 _len = 0;
+        uint256 _offset = 1 + _varIntDataLen;
 
         for (uint256 _i = 0; _i < _index; _i ++) {
             _remaining = _vin.slice(_offset, _vin.length - _offset);
@@ -338,10 +344,16 @@ library BTCUtils {
     /// @param _index    The 0-indexed location of the output to extract
     /// @return          The specified output
     function extractOutputAtIndex(bytes memory _vout, uint256 _index) internal pure returns (bytes memory) {
-        uint256 _len;
+        uint256 _varIntDataLen;
+        uint256 _nOuts;
+
+        (_varIntDataLen, _nOuts) = parseVarInt(_vout);
+        require(_index <= _nOuts, "Read overrun");
+
         bytes memory _remaining;
 
-        uint256 _offset = 1;
+        uint256 _len = 0;
+        uint256 _offset = 1 + _varIntDataLen;
 
         for (uint256 _i = 0; _i < _index; _i ++) {
             _remaining = _vout.slice(_offset, _vout.length - _offset);
