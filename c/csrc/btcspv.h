@@ -186,7 +186,7 @@ uint64_t btcspv_determine_input_length(const_view_t *tx_in);
 /// @param index     The 0-indexed location of the input to extract
 /// @return          The input as a byte array
 /// @warning         Caller must check that resulting view loc is not null, and/or len !=0.
-byte_view_t btcspv_extract_input_at_index(const_view_t *vin, uint8_t index);
+byte_view_t btcspv_extract_input_at_index(const_view_t *vin, uint64_t index);
 
 /// @brief           Extracts the outpoint from the input in a tx
 /// @note            32 byte tx id with 4 byte index
@@ -229,7 +229,7 @@ uint64_t btcspv_determine_output_length(const_view_t *tx_out);
 /// @param index     The 0-indexed location of the output to extract
 /// @return          The specified output
 /// @warning         Caller must check that resulting view loc is not null, and/or len !=0.
-byte_view_t btcspv_extract_output_at_index(const_view_t *vout, uint8_t index);
+byte_view_t btcspv_extract_output_at_index(const_view_t *vout, uint64_t index);
 
 /// @brief           Extracts the output script length
 /// @note            Indexes the length prefix on the pk_script

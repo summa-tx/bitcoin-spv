@@ -172,18 +172,23 @@ uint64_t btcspv_determine_input_length(const_view_t *tx_in) {
   return 41 + ss.var_int_len + ss.script_sig_len;
 }
 
-byte_view_t btcspv_extract_input_at_index(const_view_t *vin, uint8_t index) {
-  if (index > 0xfc) {
-    // Multi-byte varints not currently supported by vin parser
-    RET_NULL_VIEW;
+byte_view_t btcspv_extract_input_at_index(const_view_t *vin, uint64_t index) {
+  var_int_t var_int = btcspv_parse_var_int(vin);
+
+  if (index > var_int.number) {
+    RET_NULL_VIEW;  // wanted to read more inputs than there are
   }
 
   uint32_t length = 0;
-  uint32_t offset = 1;
+  uint32_t offset = 1 + var_int.var_int_len;
 
-  for (uint8_t i = 0; i < index + 1; i++) {
+  for (int i = 0; i < index + 1; i++) {
     const_view_t remaining = {(vin->loc) + offset, (vin->len) - offset};
+
     length = btcspv_determine_input_length(&remaining);
+    if (length == 0) {
+      RET_NULL_VIEW;
+    }
     if (i != index) {
       offset += length;
     }
@@ -237,38 +242,33 @@ uint64_t btcspv_determine_output_length(const_view_t *tx_out) {
   return 8 + 1 + var_int.var_int_len + var_int.number;
 }
 
-byte_view_t btcspv_extract_output_at_index(const_view_t *vout, uint8_t index) {
-  if (index > 0xfc) {
-    RET_NULL_VIEW;
-    // Multi-byte varints not currently supported by vout parser by vin parser
+byte_view_t btcspv_extract_output_at_index(const_view_t *vout, uint64_t index) {
+  var_int_t var_int = btcspv_parse_var_int(vout);
+
+  if (index > var_int.number) {
+    RET_NULL_VIEW;  // wanted to read more outputs than there are
   }
 
-  byte_view_t *remaining = NULL;
-
-  uint32_t output_len = 0;
-  uint32_t offset = 1;
-  uint8_t idx = index;
+  uint32_t length = 0;
+  uint32_t offset = 1 + var_int.var_int_len;
 
   for (int i = 0; i < index + 1; i++) {
-    byte_view_t rem = {.loc = vout->loc + offset, .len = vout->len - offset};
-    remaining = &rem;
+    const_view_t remaining = {(vout->loc) + offset, (vout->len) - offset};
 
-    output_len = btcspv_determine_output_length(remaining);
-    if (output_len == 0) {
+    length = btcspv_determine_output_length(&remaining);
+    if (length == 0) {
       RET_NULL_VIEW;
     }
-    if (i != idx) {
-      offset += output_len;
+    if (i != index) {
+      offset += length;
     }
   }
 
-// Remaining MUST be initialized, as our loop runs at least once
-// so we silence this error
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-  const_view_t tx_out = {remaining->loc, output_len};
-#pragma GCC diagnostic pop
+  if (offset + length > vout->len) {
+    RET_NULL_VIEW
+  }
 
+  const_view_t tx_out = {(vout->loc) + offset, length};
   return tx_out;
 }
 

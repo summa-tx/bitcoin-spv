@@ -594,17 +594,6 @@ START_TEST(extract_output_at_index) {
   free(expected_buf);
 
   TEST_LOOP_END
-
-  // Also test the error case
-  uint8_t bad_vout[11] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
-                          0x00, 0x00, 0x00, 0xFF, 0x00};
-  byte_view_t bad_output_view = {bad_vout + 1, sizeof(bad_vout) - 1};
-  ck_assert_int_eq(btcspv_determine_output_length(&bad_output_view), 0);
-
-  byte_view_t bad_vout_view = VIEW_FROM_ARR(bad_vout);
-  byte_view_t extracted = btcspv_extract_output_at_index(&bad_vout_view, 0);
-  ck_assert(extracted.loc == NULL);
-  ck_assert_int_eq(extracted.len, 0);
 }
 END_TEST
 
