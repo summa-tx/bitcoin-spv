@@ -64,8 +64,8 @@ var_int_t btcspv_parse_var_int(const_view_t *b) {
   }
 
   if (b->len < 1 + data_length) {
-    var_int_t result = {.var_int_len = BTCSPV_ERR_BAD_ARG, .number = 0};
-    return result;
+    var_int_t result = {.var_int_len = BTCSPV_ERR_BAD_ARG, .number = 0};  // TODO: COVERAGE
+    return result;  // TODO: COVERAGE
   }
 
   const_view_t payload = {.loc = b->loc + 1, .len = data_length};
@@ -176,7 +176,7 @@ byte_view_t btcspv_extract_input_at_index(const_view_t *vin, uint64_t index) {
   var_int_t var_int = btcspv_parse_var_int(vin);
 
   if (index > var_int.number) {
-    RET_NULL_VIEW;  // wanted to read more inputs than there are
+    RET_NULL_VIEW;  // wanted to read more inputs than there are  // TODO: COVERAGE
   }
 
   uint32_t length = 0;
@@ -187,7 +187,7 @@ byte_view_t btcspv_extract_input_at_index(const_view_t *vin, uint64_t index) {
 
     length = btcspv_determine_input_length(&remaining);
     if (length == 0) {
-      RET_NULL_VIEW;
+      RET_NULL_VIEW;  // TODO: COVERAGE
     }
     if (i != index) {
       offset += length;
@@ -195,7 +195,7 @@ byte_view_t btcspv_extract_input_at_index(const_view_t *vin, uint64_t index) {
   }
 
   if (offset + length > vin->len) {
-    RET_NULL_VIEW
+    RET_NULL_VIEW;  // TODO: COVERAGE
   }
 
   byte_view_t input = {(vin->loc) + offset, length};
@@ -228,7 +228,7 @@ uint32_t btcspv_extract_tx_index(const_view_t *tx_in) {
 
 uint64_t btcspv_determine_output_length(const_view_t *tx_out) {
   if (tx_out->len < 9) {
-    return BTCSPV_ERR_BAD_ARG;
+    return BTCSPV_ERR_BAD_ARG;  // TODO: COVERAGE
   }
 
   const_view_t after_value = {.loc = tx_out->loc + 8, .len = tx_out->len - 8};
@@ -236,7 +236,7 @@ uint64_t btcspv_determine_output_length(const_view_t *tx_out) {
   var_int_t var_int = btcspv_parse_var_int(&after_value);
 
   if (var_int.var_int_len == BTCSPV_ERR_BAD_ARG) {
-    return BTCSPV_ERR_BAD_ARG;
+    return BTCSPV_ERR_BAD_ARG;  // TODO: COVERAGE
   }
 
   return 8 + 1 + var_int.var_int_len + var_int.number;
@@ -246,7 +246,7 @@ byte_view_t btcspv_extract_output_at_index(const_view_t *vout, uint64_t index) {
   var_int_t var_int = btcspv_parse_var_int(vout);
 
   if (index > var_int.number) {
-    RET_NULL_VIEW;  // wanted to read more outputs than there are
+    RET_NULL_VIEW;  // wanted to read more outputs than there are  // TODO: COVERAGE
   }
 
   uint32_t length = 0;
@@ -265,7 +265,7 @@ byte_view_t btcspv_extract_output_at_index(const_view_t *vout, uint64_t index) {
   }
 
   if (offset + length > vout->len) {
-    RET_NULL_VIEW
+    RET_NULL_VIEW;  // TODO: COVERAGE
   }
 
   const_view_t tx_out = {(vout->loc) + offset, length};
@@ -383,7 +383,7 @@ bool btcspv_validate_vout(const_view_t *vout) {
     const_view_t remaining = {vout->loc + offset, vout->len - offset};
     uint64_t output_len = btcspv_determine_output_length(&remaining);
     if (output_len == BTCSPV_ERR_BAD_ARG) {
-      return false;
+      return false;  // TODO: COVERAGE
     }
 
     offset += output_len;
@@ -396,8 +396,8 @@ bool btcspv_validate_vout(const_view_t *vout) {
 //
 
 byte_view_t btcspv_extract_merkle_root_le(const_view_t *header) {
-  const_view_t root = {header->loc + 36, 32};
-  return root;
+  const_view_t root = {header->loc + 36, 32};  // TODO: COVERAGE
+  return root;  // TODO: COVERAGE
 }
 
 void btcspv_extract_target_le(uint256 target, const_view_t *header) {
