@@ -8,7 +8,6 @@ import (
 	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
-
 // InputType an enum of types of bitcoin inputs
 type InputType int
 
@@ -19,7 +18,6 @@ const (
 	Compatibility InputType = 2
 	Witness       InputType = 3
 )
-
 
 func prettifyInput(numInput int, outpoint btcspv.Hash256Digest, index uint, inputType InputType, sequence uint) string {
 	outpointStr := hex.EncodeToString(outpoint[:])
@@ -59,7 +57,6 @@ func ParseVin(vin []byte) string {
 
 	return formattedInputs
 }
-
 
 // ExtractInputTxID returns the input tx id bytes
 func ExtractInputTxID(input []byte) btcspv.Hash256Digest {

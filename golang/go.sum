@@ -121,6 +121,8 @@ github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/summa-tx/bitcoin-spv v2.0.0+incompatible h1:so6fH4hvyZ7LI8mC9mLOiV5u+8gxFpsXG84g1dGyK7M=
 github.com/summa-tx/bitcoin-spv/golang v0.0.0-20190918131910-5bcae6491bf4 h1:bfj8QfBf7Po9Ak/j76dKtn08GuTHDi7IW0bPtGTj+kY=
+github.com/summa-tx/bitcoin-spv/golang v1.2.0 h1:d9VSHSb4HMQOYshbOTRh26g5yU4tUiBIn4cr9hlB2CE=
+github.com/summa-tx/bitcoin-spv/golang v1.2.0/go.mod h1:8VS5yAT8po0RU1YM86UIr1klFm0/JBf5bZHL0eHpYLs=
 github.com/syndtr/goleveldb v0.0.0-20180708030551-c4c61651e9e3 h1:sAlSBRDl4psFR3ysKXRSE8ss6Mt90+ma1zRTroTNBJA=
 github.com/syndtr/goleveldb v0.0.0-20180708030551-c4c61651e9e3/go.mod h1:Z4AUp2Km+PwemOoO/VB5AOx9XSsIItzFjoJlOSiYmn0=
 github.com/tendermint/btcd v0.1.1/go.mod h1:DC6/m53jtQzr/NFmMNEu0rxf18/ktVoVtMrnDD5pN+U=
