@@ -56,40 +56,26 @@ class TestValidateSPV(unittest.TestCase):
         )
 
     def test_extract_merkle_root_le(self):
-        cases = self.vectors['extractMerkleRootBE']
-
-        for case in cases:
-            input = bytes.fromhex(case['input'][2:])
-            output_be = bytes.fromhex(case['output'][2:])
-            output_le = output_be[::-1]
-
-            self.assertEqual(
-                validate_spv.extract_merkle_root_le(input),
-                output_le
-            )
-
-    def test_extract_prev_block_le(self):
-        cases = self.vectors['extractPrevBlockBE']
-
-        for case in cases:
-            input = bytes.fromhex(case['input'][2:])
-            output_be = bytes.fromhex(case['output'][2:])
-            output_le = output_be[::-1]
-
-            self.assertEqual(
-                validate_spv.extract_prev_block_le(input),
-                output_le
-            )
-
-    def test_extract_prev_block_be(self):
-        cases = self.vectors['extractPrevBlockBE']
+        cases = self.vectors['extractMerkleRootLE']
 
         for case in cases:
             input = bytes.fromhex(case['input'][2:])
             output = bytes.fromhex(case['output'][2:])
 
             self.assertEqual(
-                validate_spv.extract_prev_block_be(input),
+                validate_spv.extract_merkle_root_le(input),
+                output
+            )
+
+    def test_extract_prev_block_le(self):
+        cases = self.vectors['extractPrevBlockLE']
+
+        for case in cases:
+            input = bytes.fromhex(case['input'][2:])
+            output = bytes.fromhex(case['output'][2:])
+
+            self.assertEqual(
+                validate_spv.extract_prev_block_le(input),
                 output
             )
 

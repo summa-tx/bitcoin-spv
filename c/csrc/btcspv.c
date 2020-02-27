@@ -183,11 +183,6 @@ byte_view_t btcspv_extract_input_tx_id_le(const_view_t *tx_in) {
   return tx_id_le;
 }
 
-void btcspv_extract_input_tx_id_be(uint256 hash, const_view_t *tx_in) {
-  const_view_t le = btcspv_extract_input_tx_id_le(tx_in);
-  buf_rev(hash, le.loc, le.len);
-}
-
 byte_view_t btcspv_extract_tx_index_le(const_view_t *tx_in) {
   byte_view_t idx = {tx_in->loc + 32, 4};
   return idx;
@@ -361,11 +356,6 @@ byte_view_t btcspv_extract_merkle_root_le(const_view_t *header) {
   return root;
 }
 
-void btcspv_extract_merkle_root_be(uint256 hash, const_view_t *header) {
-  const_view_t le = btcspv_extract_merkle_root_le(header);
-  buf_rev(hash, le.loc, le.len);
-}
-
 void btcspv_extract_target_le(uint256 target, const_view_t *header) {
   uint8_t exponent = header->loc[75] - 3;
   target[exponent + 0] = header->loc[72];
@@ -391,11 +381,6 @@ uint64_t btcspv_calculate_difficulty(uint256 target) {
 byte_view_t btcspv_extract_prev_block_hash_le(const_view_t *header) {
   const_view_t prev_hash = {header->loc + 4, 32};
   return prev_hash;
-}
-
-void btcspv_extract_prev_block_hash_be(uint256 hash, const_view_t *header) {
-  const_view_t le = btcspv_extract_prev_block_hash_le(header);
-  buf_rev(hash, le.loc, le.len);
 }
 
 byte_view_t btcspv_extract_timestamp_le(const_view_t *header) {

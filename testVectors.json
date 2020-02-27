@@ -198,12 +198,6 @@
       "output": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba30"
     }
   ],
-  "extractInputTxId": [
-    {
-      "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff",
-      "output": "0x30baf9c04bfdefff1ca6b425fff0c458aae1834bc2448f4b49f3007486bd4617"
-    }
-  ],
   "extractTxIndexLE": [
     {
       "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff",
@@ -428,10 +422,10 @@
       "solidityError": "Multi-byte VarInts not supported"
     }
   ],
-  "extractMerkleRootBE": [
+  "extractMerkleRootLE": [
     {
       "input": "0x0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70",
-      "output": "0x7dac2c5666815c17a3b36427de37bb9d2e2c5ccec3f8633eb91a4205cb4c10ff"
+      "output": "0xff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d"
     }
   ],
   "extractTarget": [
@@ -440,10 +434,10 @@
       "output": "0x00000000ffff0000000000000000000000000000000000000000000000000000"
     }
   ],
-  "extractPrevBlockBE": [
+  "extractPrevBlockLE": [
     {
       "input": "0x0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70",
-      "output": "0x000000002a22cfee1f2c846adbd12b3e183d4f97683f85dad08a79780a84bd55"
+      "output": "0x55bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000"
     }
   ],
   "extractTimestamp": [
@@ -577,128 +571,6 @@
         "locktime": "0x00000000"
       },
       "output": "0x48e5a1a0e616d8fd92b4ef228c424e0c816799a256c6a90892195ccfc53300d6"
-    }
-  ],
-  "parseInput": [
-    {
-      "input": "0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffff",
-      "output": {
-        "sequence": 4294967295,
-        "txId": "0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b",
-        "index": 0,
-        "type": 3
-      }
-    },
-    {
-      "input": "0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab375000000000101ffffffff",
-      "output": {
-        "sequence": 4294967295,
-        "txId": "0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b",
-        "index": 0,
-        "type": 1
-      }
-    },
-    {
-      "input": "0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000160014eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff",
-      "output": {
-        "sequence": 4294967295,
-        "txId": "0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b",
-        "index": 0,
-        "type": 2
-      }
-    },
-    {
-      "input": "0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab37500000000220020eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeffffffff",
-      "output": {
-        "sequence": 4294967295,
-        "txId": "0x75b37afaab896321d175acdccd7cb7c79737c09d2f0a2baf13bf9e2bf3b8b27b",
-        "index": 0,
-        "type": 2
-      }
-    }
-  ],
-  "parseOutput": [
-    {
-      "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-      "output": {
-        "value": 0,
-        "type": 3,
-        "payload": "0xedb1b5c2f39af0fec151732585b1049b07895211"
-      }
-    },
-    {
-      "input": "0xe8cd9a3b000000001600147849e6bf5e4b1ba7235572d1b0cbc094f0213e6c",
-      "output": {
-        "value": 1000001000,
-        "type": 1,
-        "payload": "0x7849e6bf5e4b1ba7235572d1b0cbc094f0213e6c"
-      }
-    },
-    {
-      "input": "0x40420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922",
-      "output": {
-        "value": 1000000,
-        "type": 2,
-        "payload": "0xaedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922"
-      }
-    },
-    {
-      "input": "0x0000000000000000167a14edb1b5c2f39af0fec151732585b1049b07895211",
-      "output": {
-        "value": 0,
-        "type": 6,
-        "payload": "0x"
-      }
-    },
-    {
-      "input": "0xe8df05000000000017a914a654ebafa7a37e04a7ec3f684e34897e48f0496287",
-      "output": {
-        "value": 385000,
-        "type": 5,
-        "payload": "0xa654ebafa7a37e04a7ec3f684e34897e48f04962"
-      }
-    },
-    {
-      "input": "0x88080000000000001976a9141458514240d7287e5254af48cd292eb876cb07eb88ac",
-      "output": {
-        "value": 2184,
-        "type": 4,
-        "payload": "0x1458514240d7287e5254af48cd292eb876cb07eb"
-      }
-    }
-  ],
-  "parseHeader": [
-    {
-      "input": "0x0000002073bd2184edd9c4fc76642ea6754ee40136970efc10c4190000000000000000000296ef123ea96da5cf695f22bf7d94be87d49db1ad7ac371ac43c4da4161c8c216349c5ba11928170d38782b",
-      "output": {
-        "digest": "0x00000000000000000024cc6777e93673f53853240d34f1bb7fb1d63983e470fe",
-        "version": 536870912,
-        "prevHash": "0x73bd2184edd9c4fc76642ea6754ee40136970efc10c419000000000000000000",
-        "merkleRoot": "0x0296ef123ea96da5cf695f22bf7d94be87d49db1ad7ac371ac43c4da4161c8c2",
-        "timestamp": 1536963606,
-        "target": "0x2819a10000000000000000000000000000000000000000",
-        "nonce": 729298957
-      }
-    }
-  ],
-  "parseHeaderError": [
-    {
-      "input": "0x00002073bd2184edd9c4fc76642ea6754ee40136970efc10c4190000000000000000000296ef123ea96da5cf695f22bf7d94be87d49db1ad7ac371ac43c4da4161c8c216349c5ba11928170d38782b",
-      "errorMessage": "Malformatted header. Must be exactly 80 bytes"
-    }
-  ],
-  "parseHeaderSolErr": [
-    {
-      "input": "0x0000002073bd2184edd9c4fc76642ea6754ee40136970efc10c4190000000000000000000296ef123ea96da5cf695f22bf7d94be87d49db1ad7ac371ac43c4da4161c8c216349c5ba11928170d38782b000020fe70e48339d6b17fbbf1340d245338f57336e97767cc240000000000000000005af53b865c27c6e9b5e5db4c3ea8e024f8329178a79ddb39f7727ea2fe6e6825d1349c5ba1192817e2d9515900000020baaea6746f4c16ccb7cd961655b636d39b5fe1519b8f15000000000000000000c63a8848a448a43c9e4402bd893f701cd11856e14cbbe026699e8fdc445b35a8d93c9c5ba1192817b945dc6c00000020f402c0b551b944665332466753f1eebb846a64ef24c71700000000000000000033fc68e070964e908d961cd11033896fa6c9b8b76f64a2db7ea928afa7e304257d3f9c5ba11928176164145d0000ff3f63d40efa46403afd71a254b54f2b495b7b0164991c2d22000000000000000000f046dc1b71560b7d0786cfbdb25ae320bd9644c98d5c7c77bf9df05cbe96212758419c5ba1192817a2bb2caa00000020e2d4f0edd5edd80bdcb880535443747c6b22b48fb6200d0000000000000000001d3799aa3eb8d18916f46bf2cf807cb89a9b1b4c56c3f2693711bf1064d9a32435429c5ba1192817752e49ae0000002022dba41dff28b337ee3463bf1ab1acf0e57443e0f7ab1d000000000000000000c3aadcc8def003ecbd1ba514592a18baddddcd3a287ccf74f584b04c5c10044e97479c5ba1192817c341f595",
-      "output": {
-        "digest": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "version": 0,
-        "prevHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "merkleRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "timestamp": 0,
-        "target": 0,
-        "nonce": 0
-      }
     }
   ],
   "validateHeaderWork": [

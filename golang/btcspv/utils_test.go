@@ -30,60 +30,6 @@ func (suite *UtilsSuite) TestDecodeIfHex() {
 
 }
 
-func (suite *UtilsSuite) TestGetOutputType() {
-	var expected string
-	var actual string
-
-	expected = "Output None"
-	actual = GetOutputType(0)
-	suite.Equal(expected, actual)
-
-	expected = "WPKH"
-	actual = GetOutputType(1)
-	suite.Equal(expected, actual)
-
-	expected = "WSH"
-	actual = GetOutputType(2)
-	suite.Equal(expected, actual)
-
-	expected = "Op Return"
-	actual = GetOutputType(3)
-	suite.Equal(expected, actual)
-
-	expected = "PKH"
-	actual = GetOutputType(4)
-	suite.Equal(expected, actual)
-
-	expected = "SH"
-	actual = GetOutputType(5)
-	suite.Equal(expected, actual)
-
-	expected = "Nonstandard"
-	actual = GetOutputType(6)
-	suite.Equal(expected, actual)
-}
-
-func (suite *UtilsSuite) TestGetInputType() {
-	var expected string
-	var actual string
-
-	expected = "Input None"
-	actual = GetInputType(0)
-	suite.Equal(expected, actual)
-
-	expected = "Legacy"
-	actual = GetInputType(1)
-	suite.Equal(expected, actual)
-
-	expected = "Compatibility"
-	actual = GetInputType(2)
-	suite.Equal(expected, actual)
-
-	expected = "Witness"
-	actual = GetInputType(3)
-	suite.Equal(expected, actual)
-}
-
 func (suite *UtilsSuite) TestEncodeP2SH() {
 	fixture := suite.Fixtures["encodeP2SH"]
 

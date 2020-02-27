@@ -26,7 +26,6 @@ const {
   extractValueLE,
   extractValue,
   extractInputTxIdLE,
-  extractInputTxId,
   extractTxIndexLE,
   extractTxIndex,
   determineInputLength,
@@ -37,9 +36,7 @@ const {
   determineOutputLength,
   determineOutputLengthError,
   extractOutputAtIndex,
-  extractMerkleRootBE,
   extractTarget,
-  extractPrevBlockBE,
   extractTimestamp,
   verifyHash256Merkle,
   determineVarIntDataLength,
@@ -250,25 +247,9 @@ describe('BTCUtils', () => {
     }
   });
 
-  it('extracts a root from a header', () => {
-    for (let i = 0; i < extractMerkleRootBE.length; i += 1) {
-      const res = BTCUtils.extractMerkleRootBE(extractMerkleRootBE[i].input);
-      const arraysAreEqual = utils.typedArraysAreEqual(res, extractMerkleRootBE[i].output);
-      assert.isTrue(arraysAreEqual);
-    }
-  });
-
   it('extracts the target from a header', () => {
     const res = BTCUtils.extractTarget(extractTarget[0].input);
     assert.strictEqual(res, utils.bytesToUint(extractTarget[0].output));
-  });
-
-  it('extracts the prev block hash', () => {
-    for (let i = 0; i < BTCUtils.extractPrevBlockBE.length; i += 1) {
-      const res = BTCUtils.extractPrevBlockBE(extractPrevBlockBE[i].input);
-      const arraysAreEqual = utils.typedArraysAreEqual(res, extractPrevBlockBE[i].output);
-      assert.isTrue(arraysAreEqual);
-    }
   });
 
   it('extracts a timestamp from a header', () => {
@@ -356,24 +337,12 @@ describe('BTCUtils', () => {
   });
 
   describe('#extractInputTxIdLE', () => {
-    it('extracts the LE  oupoint index from an input', () => {
+    it('extracts the oupoint index from an input', () => {
       let res;
       let equalArrays;
       for (let i = 0; i < extractInputTxIdLE.length; i += 1) {
         res = BTCUtils.extractInputTxIdLE(extractInputTxIdLE[i].input);
         equalArrays = utils.typedArraysAreEqual(res, extractInputTxIdLE[i].output);
-        assert.isTrue(equalArrays);
-      }
-    });
-  });
-
-  describe('#extractInputTxId', () => {
-    it('extracts the oupoint index from an input', () => {
-      let res;
-      let equalArrays;
-      for (let i = 0; i < extractInputTxId.length; i += 1) {
-        res = BTCUtils.extractInputTxId(extractInputTxId[i].input);
-        equalArrays = utils.typedArraysAreEqual(res, extractInputTxId[i].output);
         assert.isTrue(equalArrays);
       }
     });

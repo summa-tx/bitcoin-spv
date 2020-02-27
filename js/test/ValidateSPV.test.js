@@ -14,10 +14,6 @@ utils.updateJSON(vectorObj);
 const {
   prove,
   calculateTxId,
-  parseInput,
-  parseOutput,
-  parseHeader,
-  parseHeaderError,
   validateHeaderChain,
   validateHeaderChainError,
   validateHeaderWork,
@@ -58,68 +54,6 @@ describe('ValidateSPV', () => {
         const res = ValidateSPV.calculateTxId(version, vin, vout, locktime);
         const arraysAreEqual = utils.typedArraysAreEqual(res, calculateTxId[i].output);
         assert.isTrue(arraysAreEqual);
-      }
-    });
-  });
-
-  describe('#parseInput', () => {
-    it('returns the tx input sequence and outpoint', () => {
-      for (let i = 0; i < parseInput.length; i += 1) {
-        const txIn = ValidateSPV.parseInput(parseInput[i].input);
-        const {
-          sequence, txId, index, type
-        } = parseInput[i].output;
-
-        assert.strictEqual(txIn.sequence, BigInt(sequence));
-        assert.isTrue(utils.typedArraysAreEqual(txIn.inputId, txId));
-        assert.strictEqual(txIn.inputIndex, BigInt(index));
-        assert.strictEqual(txIn.inputType, BigInt(type));
-      }
-    });
-  });
-
-  describe('#parseOutput', () => {
-    it('returns the tx output value, output type, and payload for an output', () => {
-      for (let i = 0; i < parseOutput.length; i += 1) {
-        const output = parseOutput[i].input;
-        const { value, type, payload } = parseOutput[i].output;
-
-        const TxOut = ValidateSPV.parseOutput(output);
-
-        assert.strictEqual(TxOut.value, BigInt(value));
-        assert.strictEqual(TxOut.outputType, BigInt(type));
-        assert.isTrue(utils.typedArraysAreEqual(TxOut.payload, payload));
-      }
-    });
-  });
-
-  describe('#parseHeader', () => {
-    it('returns the header digest, version, prevhash, merkleRoot, timestamp, target, and nonce',
-      () => {
-        for (let i = 0; i < parseHeader.length; i += 1) {
-          const validHeader = ValidateSPV.parseHeader(parseHeader[0].input);
-          const {
-            digest, version, prevHash, merkleRoot, timestamp, target, nonce
-          } = parseHeader[i].output;
-
-          assert.isTrue(utils.typedArraysAreEqual(validHeader.digest, digest));
-          assert.strictEqual(validHeader.version, BigInt(version));
-          assert.isTrue(utils.typedArraysAreEqual(validHeader.prevhashLE, prevHash));
-          assert.isTrue(utils.typedArraysAreEqual(validHeader.merkleRoot, merkleRoot));
-          assert.strictEqual(validHeader.timestamp, BigInt(timestamp));
-          assert.strictEqual(validHeader.target, BigInt(utils.bytesToUint(target)));
-          assert.strictEqual(validHeader.nonce, BigInt(nonce));
-        }
-      });
-
-    it('throws error if input header is not valid', () => {
-      for (let i = 0; i < parseHeaderError.length; i += 1) {
-        try {
-          ValidateSPV.parseHeader(parseHeaderError[i].input);
-          assert(false, 'expected an error');
-        } catch (e) {
-          assert.include(e.message, parseHeaderError[i].errorMessage);
-        }
       }
     });
   });

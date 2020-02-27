@@ -781,27 +781,6 @@ START_TEST(validate_vout) {
 }
 END_TEST
 
-START_TEST(extract_merkle_root_be) {
-  TEST_LOOP_START("extractMerkleRootBE")
-  uint8_t *input_buf;
-  const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
-
-  uint8_t *expected_buf;
-  const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
-  const_view_t expected = {expected_buf, expected_len};
-
-  uint8_t hash[32] = {0};
-  btcspv_extract_merkle_root_be(hash, &input);
-
-  ck_assert(view_eq_buf(&expected, hash, 32));
-
-  free(input_buf);
-  free(expected_buf);
-  TEST_LOOP_END
-}
-END_TEST
-
 START_TEST(extract_target) {
   TEST_LOOP_START("extractTarget")
   uint8_t *input_buf;
@@ -821,27 +800,6 @@ START_TEST(extract_target) {
   uint64_t extracted = btcspv_extract_difficulty(&input);
   uint64_t calculated = btcspv_calculate_difficulty(target);
   ck_assert_int_eq(calculated, extracted);
-
-  free(input_buf);
-  free(expected_buf);
-  TEST_LOOP_END
-}
-END_TEST
-
-START_TEST(extract_prev_block_hash_be) {
-  TEST_LOOP_START("extractPrevBlockBE")
-  uint8_t *input_buf;
-  const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
-
-  uint8_t *expected_buf;
-  const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
-  const_view_t expected = {expected_buf, expected_len};
-
-  uint8_t hash[32] = {0};
-  btcspv_extract_prev_block_hash_be(hash, &input);
-
-  ck_assert(view_eq_buf(&expected, hash, 32));
 
   free(input_buf);
   free(expected_buf);
@@ -1020,9 +978,7 @@ int main(int argc, char *argv[]) {
   tcase_add_test(btcspv_case, extract_hash_error);
   tcase_add_test(btcspv_case, validate_vin);
   tcase_add_test(btcspv_case, validate_vout);
-  tcase_add_test(btcspv_case, extract_merkle_root_be);
   tcase_add_test(btcspv_case, extract_target);
-  tcase_add_test(btcspv_case, extract_prev_block_hash_be);
   tcase_add_test(btcspv_case, extract_timestamp);
   tcase_add_test(btcspv_case, hash256_merkle_step);
   tcase_add_test(btcspv_case, verify_hash256_merkle);

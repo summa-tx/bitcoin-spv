@@ -158,14 +158,6 @@ contract BTCUtilsTest {
         return BTCUtils.extractInputTxIdLE(_input);
     }
 
-    /// @notice          Extracts the outpoint index from an input
-    /// @dev             32 byte tx id
-    /// @param _input    The input
-    /// @return          The tx id (big-endian bytes)
-    function extractInputTxId(bytes memory _input) public pure returns (bytes32) {
-        return BTCUtils.extractInputTxId(_input);
-    }
-
     /// @notice          Extracts the LE tx input index from the input in a tx
     /// @dev             4 byte tx index
     /// @param _input    The input
@@ -279,14 +271,6 @@ contract BTCUtilsTest {
         return BTCUtils.extractMerkleRootLE(_header);
     }
 
-    /// @notice          Extracts the transaction merkle root from a block header
-    /// @dev             Use verifyHash256Merkle to verify proofs with this root
-    /// @param _header   The header
-    /// @return          The merkle root (big-endian)
-    function extractMerkleRootBE(bytes memory _header) public pure returns (bytes memory) {
-        return BTCUtils.extractMerkleRootBE(_header);
-    }
-
     /// @notice          Extracts the target from a block header
     /// @dev             Target is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
     /// @param _header   The header
@@ -310,14 +294,6 @@ contract BTCUtilsTest {
     /// @return          The previous block's hash (little-endian)
     function extractPrevBlockLE(bytes memory _header) public pure returns (bytes memory) {
         return BTCUtils.extractPrevBlockLE(_header);
-    }
-
-    /// @notice          Extracts the previous block's hash from a block header
-    /// @dev             Block headers do NOT include block number :(
-    /// @param _header   The header
-    /// @return          The previous block's hash (big-endian)
-    function extractPrevBlockBE(bytes memory _header) public pure returns (bytes memory) {
-        return BTCUtils.extractPrevBlockBE(_header);
     }
 
     /// @notice          Extracts the timestamp from a block header

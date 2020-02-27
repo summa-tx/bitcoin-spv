@@ -346,7 +346,6 @@ func (suite *UtilsSuite) TestExtractOpReturnData() {
 		testCase := fixtureError[i]
 		expected := testCase.ErrorMessage.(string)
 		actual, err := ExtractOpReturnData(testCase.Input.([]byte))
-		log.Println(testCase.Input, cap(testCase.Input.([]byte)), actual, err)
 		suite.Nil(actual)
 		suite.EqualError(err, expected)
 	}
@@ -442,17 +441,6 @@ func (suite *UtilsSuite) TestExtractInputTxIDLE() {
 	}
 }
 
-func (suite *UtilsSuite) TestExtractInputTxID() {
-	fixture := suite.Fixtures["extractInputTxId"]
-
-	for i := range fixture {
-		testCase := fixture[i]
-		expected := testCase.Output.(Hash256Digest)
-		actual := ExtractInputTxID(testCase.Input.([]byte))
-		suite.Equal(expected, actual)
-	}
-}
-
 func (suite *UtilsSuite) TestExtractTxIndexLE() {
 	fixture := suite.Fixtures["extractTxIndexLE"]
 
@@ -521,17 +509,6 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 	suite.EqualError(err, expected)
 }
 
-func (suite *UtilsSuite) TestExtractMerkleRootBE() {
-	fixture := suite.Fixtures["extractMerkleRootBE"]
-
-	for i := range fixture {
-		testCase := fixture[i]
-		expected := testCase.Output.(Hash256Digest)
-		actual := ExtractMerkleRootBE(testCase.Input.(RawHeader))
-		suite.Equal(expected, actual)
-	}
-}
-
 func (suite *UtilsSuite) TestExtractTarget() {
 	fixture := suite.Fixtures["extractTarget"]
 
@@ -550,21 +527,6 @@ func (suite *UtilsSuite) TestExtractTarget() {
 		expected := BytesToBigUint(output)
 		actual := ExtractTarget(testCase.Input.(RawHeader))
 		suite.Equal(expected, actual)
-	}
-}
-
-func (suite *UtilsSuite) TestExtractPrevBlockHashBE() {
-	fixture := suite.Fixtures["retargetAlgorithm"]
-
-	for i := range fixture {
-		testCase := fixture[i]
-		input := testCase.Input.([]interface{})
-		for j := range input {
-			h := input[j].(map[string]interface{})
-			actual := ExtractPrevBlockHashBE(h["hex"].(RawHeader))
-			expected := h["prev_block"].(Hash256Digest)
-			suite.Equal(expected, actual)
-		}
 	}
 }
 

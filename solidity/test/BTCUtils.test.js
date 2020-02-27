@@ -36,9 +36,9 @@ const {
   determineOutputLength,
   determineOutputLengthError,
   extractOutputAtIndex,
-  extractMerkleRootBE,
+  extractMerkleRootLE,
   extractTarget,
-  extractPrevBlockBE,
+  extractPrevBlockLE,
   extractTimestamp,
   verifyHash256Merkle,
   determineVarIntDataLength,
@@ -294,9 +294,9 @@ contract('BTCUtils', () => {
   });
 
   it('extracts a root from a header', async () => {
-    for (let i = 0; i < extractMerkleRootBE.length; i += 1) {
-      const res = await instance.extractMerkleRootBE(extractMerkleRootBE[i].input);
-      assert.strictEqual(res, extractMerkleRootBE[i].output);
+    for (let i = 0; i < extractMerkleRootLE.length; i += 1) {
+      const res = await instance.extractMerkleRootLE(extractMerkleRootLE[i].input);
+      assert.strictEqual(res, extractMerkleRootLE[i].output);
     }
   });
 
@@ -308,9 +308,9 @@ contract('BTCUtils', () => {
   });
 
   it('extracts the prev block hash', async () => {
-    for (let i = 0; i < extractPrevBlockBE.length; i += 1) {
-      const res = await instance.extractPrevBlockBE(extractPrevBlockBE[i].input);
-      assert.strictEqual(res, extractPrevBlockBE[i].output);
+    for (let i = 0; i < extractPrevBlockLE.length; i += 1) {
+      const res = await instance.extractPrevBlockLE(extractPrevBlockLE[i].input);
+      assert.strictEqual(res, extractPrevBlockLE[i].output);
     }
   });
 

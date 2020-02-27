@@ -252,19 +252,6 @@ export function extractInputTxIdLE(input) {
 
 /**
  *
- * Extracts the outpoint index from an input
- * 32 byte tx id
- *
- * @param {Uint8Array}    input The input
- * @returns {Uint8Array}  The tx id (big-endian bytes)
- */
-export function extractInputTxId(input) {
-  const leId = extractInputTxIdLE(input);
-  return utils.reverseEndianness(leId);
-}
-
-/**
- *
  * Extracts the LE tx input index from the input in a tx
  * 4 byte tx index
  *
@@ -529,20 +516,6 @@ export function extractMerkleRootLE(header) {
 
 /**
  *
- * Extracts the transaction merkle root from a block header
- * Use verifyHash256Merkle to verify proofs with this root
- *
- * @param {Uint8Array}    header An 80-byte Bitcoin header
- * @returns {Uint8Array}  The serialized merkle root (big-endian)
- */
-export function extractMerkleRootBE(header) {
-  return utils.reverseEndianness(
-    extractMerkleRootLE(header)
-  );
-}
-
-/**
- *
  * Extracts the target from a block header
  *
  * Target is a 256 bit number encoded as a 3-byte mantissa
@@ -588,20 +561,6 @@ export function calculateDifficulty(target) {
  */
 export function extractPrevBlockLE(header) {
   return utils.safeSlice(header, 4, 36);
-}
-
-/**
- *
- *  Extracts the previous block's hash from a block header
- * Block headers do NOT include block number :(
-   *
- * @param {Uint8Array}    header The header
- * @returns {Uint8Array}  The previous block's hash (big-endian)
- */
-export function extractPrevBlockBE(header) {
-  return utils.reverseEndianness(
-    extractPrevBlockLE(header)
-  );
 }
 
 /**

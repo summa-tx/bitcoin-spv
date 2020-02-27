@@ -176,13 +176,6 @@ func ExtractInputTxIDLE(input []byte) Hash256Digest {
 	return res
 }
 
-// ExtractInputTxID returns the input tx id bytes
-func ExtractInputTxID(input []byte) Hash256Digest {
-	LE := ExtractInputTxIDLE(input)
-	txID := ReverseHash256Endianness(LE)
-	return txID
-}
-
 // ExtractTxIndexLE extracts the LE tx input index from the input in a tx
 // Returns the tx index as a little endian []byte
 func ExtractTxIndexLE(input []byte) []byte {
@@ -351,12 +344,6 @@ func ExtractMerkleRootLE(header RawHeader) Hash256Digest {
 	return res
 }
 
-// ExtractMerkleRootBE returns the transaction merkle root from a given block header
-// The returned merkle root is big-endian
-func ExtractMerkleRootBE(header RawHeader) Hash256Digest {
-	return ReverseHash256Endianness(ExtractMerkleRootLE(header))
-}
-
 // ExtractTarget returns the target from a given block hedaer
 func ExtractTarget(header RawHeader) sdk.Uint {
 	// nBits encoding. 3 byte mantissa, 1 byte exponent
@@ -389,12 +376,6 @@ func CalculateDifficulty(target sdk.Uint) sdk.Uint {
 func ExtractPrevBlockHashLE(header RawHeader) Hash256Digest {
 	res, _ := NewHash256Digest(header[4:36])
 	return res
-}
-
-// ExtractPrevBlockHashBE returns the previous block's hash from a block header
-// Returns the hash as a big endian []byte
-func ExtractPrevBlockHashBE(header RawHeader) Hash256Digest {
-	return ReverseHash256Endianness(ExtractPrevBlockHashLE(header))
 }
 
 // ExtractTimestampLE returns the timestamp from a block header
