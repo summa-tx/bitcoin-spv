@@ -49,11 +49,11 @@ func ParseVarInt(b []byte) (uint64, uint64, error) {
 	if dataLength == 0 {
 		return 0, uint64(b[0]), nil
 	}
-	if (uint64(len(b)) < 1 + dataLength) {
+	if uint64(len(b)) < 1+dataLength {
 		return 0, 0, errors.New("Read overrun during VarInt parsing")
 	}
 
-	number := BytesToUint(ReverseEndianness(b[1:1+dataLength]))
+	number := BytesToUint(ReverseEndianness(b[1 : 1+dataLength]))
 
 	return dataLength, uint64(number), nil
 }
@@ -113,10 +113,10 @@ func Hash256(in []byte) Hash256Digest {
 func ExtractInputAtIndex(vin []byte, index uint8) ([]byte, error) {
 	dataLength, nIns, err := ParseVarInt(vin)
 	if err != nil {
-		return nil, err  // TODO: COVERAGE
+		return nil, err
 	}
 	if uint64(index) > nIns {
-		return nil, errors.New("Read overrun")  // TODO: COVERAGE
+		return nil, errors.New("Read overrun")
 	}
 
 	var length uint
@@ -127,7 +127,7 @@ func ExtractInputAtIndex(vin []byte, index uint8) ([]byte, error) {
 
 		l, err := DetermineInputLength(remaining)
 		if err != nil {
-			return []byte{}, err  // TODO: COVERAGE
+			return []byte{}, err // TODO: COVERAGE
 		}
 
 		length = uint(l)
@@ -168,7 +168,7 @@ func DetermineInputLength(input []byte) (uint64, error) {
 func ExtractSequenceLELegacy(input []byte) ([]byte, error) {
 	dataLength, scriptSigLength, err := ExtractScriptSigLen(input)
 	if err != nil {
-		return []byte{}, err  // TODO: COVERAGE
+		return []byte{}, err
 	}
 
 	offset := 36 + 1 + dataLength + scriptSigLength
@@ -179,7 +179,7 @@ func ExtractSequenceLELegacy(input []byte) ([]byte, error) {
 func ExtractSequenceLegacy(input []byte) (uint32, error) {
 	seqBytes, err := ExtractSequenceLELegacy(input)
 	if err != nil {
-		return 0, err  // TODO: COVERAGE
+		return 0, err // TODO: COVERAGE
 	}
 	return binary.LittleEndian.Uint32(seqBytes), nil
 }
@@ -188,7 +188,7 @@ func ExtractSequenceLegacy(input []byte) (uint32, error) {
 func ExtractScriptSig(input []byte) ([]byte, error) {
 	dataLength, scriptSigLength, err := ExtractScriptSigLen(input)
 	if err != nil {
-		return []byte{}, err  // TODO: COVERAGE
+		return []byte{}, err // TODO: COVERAGE
 	}
 	length := 1 + dataLength + scriptSigLength
 	return input[36 : 36+length], nil
@@ -249,10 +249,10 @@ func DetermineOutputLength(output []byte) (uint64, error) {
 func ExtractOutputAtIndex(vout []byte, index uint) ([]byte, error) {
 	dataLength, nOuts, err := ParseVarInt(vout)
 	if err != nil {
-		return nil, err  // TODO: COVERAGE
+		return []byte{}, err
 	}
 	if uint64(index) > nOuts {
-		return nil, errors.New("Read overrun")  // TODO: COVERAGE
+		return []byte{}, errors.New("Read overrun")
 	}
 
 	var length uint
@@ -356,7 +356,7 @@ func ValidateVin(vin []byte) bool {
 
 	for i := uint64(0); i < nIns; i++ {
 		if offset >= vinLength {
-			return false  // TODO: COVERAGE
+			return false // TODO: COVERAGE
 		}
 
 		length, err := DetermineInputLength(vin[offset:])
@@ -383,7 +383,7 @@ func ValidateVout(vout []byte) bool {
 	for i := uint64(0); i < nOuts; i++ {
 		length, err := DetermineOutputLength(vout[offset:])
 		if err != nil {
-			return false  // TODO: COVERAGE
+			return false // TODO: COVERAGE
 		}
 		offset += length
 		if offset > voutLength {

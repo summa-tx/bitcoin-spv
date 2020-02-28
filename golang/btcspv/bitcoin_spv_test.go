@@ -259,9 +259,21 @@ func (suite *UtilsSuite) TestExtractSequenceLELegacy() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output.([]byte)
+
 		actual, err := ExtractSequenceLELegacy(testCase.Input.([]byte))
 		suite.Nil(err)
 		suite.Equal(expected, actual)
+	}
+
+	fixtureError := suite.Fixtures["extractSequenceLELegacyError"]
+
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		errMsg := testCase.ErrorMessage.(string)
+
+		actual, err := ExtractSequenceLELegacy(testCase.Input.([]byte))
+		suite.Equal([]byte{}, actual)
+		suite.EqualError(err, errMsg)
 	}
 }
 
@@ -359,10 +371,23 @@ func (suite *UtilsSuite) TestExtractInputAtIndex() {
 	for i := range fixture {
 		testCase := fixture[i]
 		input := testCase.Input.(map[string]interface{})
-		expected := testCase.Output.([]byte)
 		actual, err := ExtractInputAtIndex(input["vin"].([]byte), uint8(input["index"].(int)))
+
+		expected := testCase.Output.([]byte)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
+	}
+
+	fixtureError := suite.Fixtures["extractInputAtIndexError"]
+
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		input := testCase.Input.(map[string]interface{})
+		errMsg := testCase.ErrorMessage.(string)
+
+		actual, err := ExtractInputAtIndex(input["vin"].([]byte), uint8(input["index"].(int)))
+		suite.Nil(actual)
+		suite.EqualError(err, errMsg)
 	}
 }
 
@@ -508,11 +533,18 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 		suite.Equal(expected, actual)
 	}
 
-	// Error case. Use the 10 bytes to simulate a vout with a very long output
-	actual, err := ExtractOutputAtIndex([]byte{0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0xff}, 1)
-	expected := "Read overrun during VarInt parsing"
-	suite.Equal([]byte{}, actual)
-	suite.EqualError(err, expected)
+	fixtureError := suite.Fixtures["extractOutputAtIndexError"]
+
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		inputs := testCase.Input.(map[string]interface{})
+		vout := inputs["vout"].([]byte)
+		index := inputs["index"].(int)
+		expected := testCase.ErrorMessage.(string)
+		actual, err := ExtractOutputAtIndex(vout, uint(index))
+		suite.Equal([]byte{}, actual)
+		suite.EqualError(err, expected)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractTarget() {
