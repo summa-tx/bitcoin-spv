@@ -56,9 +56,9 @@ export function determineVarIntDataLength(flag) {
 /**
  *
  * Parse a VarInt into its data length and the number it represents.
- * Useeful for Parsing Vins and Vouts
+ * Useful for Parsing Vins and Vouts
  *
- * @param {Uint8Array}    preImage The pre-image
+ * @param {Uint8Array}    b The VarInt bytes
  * @returns {object}      The length of the payload, and the encoded integer
  */
 export function parseVarInt(b) {
@@ -69,7 +69,7 @@ export function parseVarInt(b) {
   }
 
   if (b.length < 1 + dataLength) {
-    throw new RangeError('Read overrun during VarInt parsing'); // TODO: COVERAGE
+    throw new RangeError('Read overrun during VarInt parsing');
   }
 
   const number = utils.bytesToUint(utils.reverseEndianness(utils.safeSlice(b, 1, 1 + dataLength)));
@@ -158,9 +158,9 @@ export function determineInputLength(input) {
  * @returns {Uint8Array}  The input as a u8a
  */
 export function extractInputAtIndex(vin, index) {
-  const { dataLength, nIns } = parseVarInt(vin);
+  const { dataLength, number: nIns } = parseVarInt(vin);
   if (BigInt(index) > nIns) {
-    throw RangeError('Read overrun');
+    throw RangeError('Read overrun'); // TODO: COVERAGE
   }
 
   let len = 0;
@@ -334,8 +334,9 @@ export function determineOutputLength(output) {
  * @returns {Uint8Array}  The specified output
  */
 export function extractOutputAtIndex(vout, index) {
-  const { dataLength, nOuts } = parseVarInt(vout);
-  if (BigInt(index) > nOuts) {
+  const { dataLength, number: nOuts } = parseVarInt(vout);
+
+  if (BigInt(index) >= nOuts) {
     throw RangeError('Read overrun');
   }
 
@@ -473,15 +474,15 @@ export function validateVin(vin) {
     const { dataLength, number: nIns } = parseVarInt(vin);
 
     // Not valid if it says there are too many or no inputs
-    if (nIns === 0) {
-      return false; // TODO: COVERAGE
+    if (nIns === BigInt(0)) {
+      return false;
     }
 
     let offset = BigInt(1) + dataLength;
 
     for (let i = 0; i < nIns; i += 1) {
       if (offset >= vLength) {
-        return false; // TODO: COVERAGE
+        return false;
       }
       // Grab the next input and determine its length.
       // Increase the offset by that much
@@ -510,8 +511,8 @@ export function validateVout(vout) {
     const { dataLength, number: nOuts } = parseVarInt(vout);
 
     // Not valid if it says there are too many or no inputs
-    if (nOuts === 0) {
-      return false; // TODO: COVERAGE
+    if (nOuts === BigInt(0)) {
+      return false;
     }
 
     let offset = BigInt(1) + dataLength;
@@ -528,7 +529,7 @@ export function validateVout(vout) {
     // Returns false if we're not exactly at the end
     return offset === vLength;
   } catch (e) {
-    return false; // TODO: COVERAGE
+    return false;
   }
 }
 

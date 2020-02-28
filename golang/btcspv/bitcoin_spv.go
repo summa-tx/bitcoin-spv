@@ -127,7 +127,7 @@ func ExtractInputAtIndex(vin []byte, index uint8) ([]byte, error) {
 
 		l, err := DetermineInputLength(remaining)
 		if err != nil {
-			return []byte{}, err // TODO: COVERAGE
+			return []byte{}, err
 		}
 
 		length = uint(l)

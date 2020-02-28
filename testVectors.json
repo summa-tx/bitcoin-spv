@@ -555,6 +555,10 @@
     {
       "input": "0x021746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
       "output": false
+    },
+    {
+      "input": "0x001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
+      "output": false
     }
   ],
   "validateVout": [
@@ -589,6 +593,10 @@
     },
     {
       "input": "0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000",
+      "output": false
+    },
+    {
+      "input": "0x004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000",
       "output": false
     }
   ],
