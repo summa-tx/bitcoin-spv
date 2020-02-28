@@ -251,6 +251,17 @@ func (suite *UtilsSuite) TestExtractSequenceLegacy() {
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
+
+	fixtureError := suite.Fixtures["extractSequenceLegacyError"]
+
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		errMsg := testCase.ErrorMessage.(string)
+
+		actual, err := ExtractSequenceLegacy(testCase.Input.([]byte))
+		suite.Equal(uint32(0), actual)
+		suite.EqualError(err, errMsg)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractSequenceLELegacy() {
@@ -386,7 +397,7 @@ func (suite *UtilsSuite) TestExtractInputAtIndex() {
 		errMsg := testCase.ErrorMessage.(string)
 
 		actual, err := ExtractInputAtIndex(input["vin"].([]byte), uint8(input["index"].(int)))
-		suite.Nil(actual)
+		suite.Equal([]byte{}, actual)
 		suite.EqualError(err, errMsg)
 	}
 }
@@ -423,6 +434,16 @@ func (suite *UtilsSuite) TestExtractScriptSig() {
 		actual, err := ExtractScriptSig(testCase.Input.([]byte))
 		suite.Nil(err)
 		suite.Equal(expected, actual)
+	}
+
+	fixtureError := suite.Fixtures["extractScriptSigError"]
+
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		errMsg := testCase.ErrorMessage.(string)
+		actual, err := ExtractScriptSig(testCase.Input.([]byte))
+		suite.Equal([]byte{}, actual)
+		suite.EqualError(err, errMsg)
 	}
 }
 

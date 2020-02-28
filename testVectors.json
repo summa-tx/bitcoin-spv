@@ -139,6 +139,12 @@
       "output": 4294967295
     }
   ],
+  "extractSequenceLegacyError": [
+    {
+      "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000",
+      "errorMessage": "Read overrun"
+    }
+  ],
   "determineInputLength": [
     {
       "input": "0x7bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffff",
@@ -224,6 +230,14 @@
         "index": 3
       },
       "errorMessage": "Read overrun during VarInt parsing"
+    },
+    {
+      "comment": "Read Overrun",
+      "input": {
+        "vin": "0x027bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444560000000000ffffffff",
+        "index": 2
+      },
+      "errorMessage": "Read overrun during VarInt parsing"
     }
   ],
   "isLegacyInput": [
@@ -252,6 +266,12 @@
     {
       "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff",
       "output": "0xfe01000000ee"
+    }
+  ],
+  "extractScriptSigError": [
+    {
+      "input": "0xff",
+      "errorMessage": "Read overrun"
     }
   ],
   "extractSequenceLEWitness": [
@@ -531,6 +551,10 @@
     {
       "input": "0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffffEEEE",
       "output": false
+    },
+    {
+      "input": "0x021746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
+      "output": false
     }
   ],
   "validateVout": [
@@ -558,8 +582,13 @@
     {
       "input": "0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b0789521111111111111111",
       "output": false
-    },{
+    },
+    {
       "input": "0x024897070000000000ff0020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
+      "output": false
+    },
+    {
+      "input": "0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000",
       "output": false
     }
   ],
