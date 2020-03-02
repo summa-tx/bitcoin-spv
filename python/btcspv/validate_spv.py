@@ -74,11 +74,6 @@ def extract_prev_block_le(header: bytes) -> bytes:
     return header[4:36]
 
 
-def extract_prev_block_be(header: bytes) -> bytes:
-    '''Extracts the previous block's hash from a header (big-endian)'''
-    return extract_prev_block_le(header)[::-1]
-
-
 def prove(
     txid: bytes, merkle_root: bytes, intermediate_nodes: bytes, index: int) \
         -> bool:
