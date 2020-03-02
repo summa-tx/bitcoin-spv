@@ -824,6 +824,24 @@ mod tests {
     }
 
     #[test]
+    fn it_errrors_properly_when_it_extracts_inputs_from_the_vin() {
+        test_utils::run_test(|fixtures| {
+            let test_cases = test_utils::get_test_cases("extractInputAtIndexError", &fixtures);
+            for case in test_cases {
+                let inputs = case.input.as_object().unwrap();
+                let vin = force_deserialize_hex(inputs.get("vin").unwrap().as_str().unwrap());
+                let index = inputs.get("index").unwrap().as_u64().unwrap() as usize;
+                let expected =
+                    test_utils::match_string_to_err(case.error_message.as_str().unwrap());
+                match extract_input_at_index(&vin[..], index) {
+                    Ok(_) => assert!(false, "expected an error"),
+                    Err(e) => assert_eq!(e, expected),
+                }
+            }
+        })
+    }
+
+    #[test]
     fn it_identifies_legacy_inputs() {
         test_utils::run_test(|fixtures| {
             let test_cases = test_utils::get_test_cases("isLegacyInput", &fixtures);
@@ -941,6 +959,24 @@ mod tests {
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as usize;
                 let expected = force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(extract_output_at_index(&vout, index).unwrap(), expected);
+            }
+        })
+    }
+
+    #[test]
+    fn it_errrors_properly_when_it_extracts_outputs_from_the_vout() {
+        test_utils::run_test(|fixtures| {
+            let test_cases = test_utils::get_test_cases("extractOutputAtIndexError", &fixtures);
+            for case in test_cases {
+                let outputs = case.input.as_object().unwrap();
+                let vout = force_deserialize_hex(outputs.get("vout").unwrap().as_str().unwrap());
+                let index = outputs.get("index").unwrap().as_u64().unwrap() as usize;
+                let expected =
+                    test_utils::match_string_to_err(case.error_message.as_str().unwrap());
+                match extract_output_at_index(&vout[..], index) {
+                    Ok(_) => assert!(false, "expected an error"),
+                    Err(e) => assert_eq!(e, expected),
+                }
             }
         })
     }
