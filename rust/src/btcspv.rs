@@ -284,7 +284,7 @@ pub fn extract_tx_index(tx_in: &[u8]) -> u32 {
 /// * Errors if VarInt represents a number larger than 253; large VarInts are not supported.
 pub fn determine_output_length(tx_out: &[u8]) -> Result<usize, SPVError> {
     if tx_out.len() < 9 {
-        return Err(SPVError::MalformattedOutput); // TODO: COVERAGE
+        return Err(SPVError::MalformattedOutput);
     }
     let (data_len, script_pubkey_len) = parse_var_int(&tx_out[8..])?;
 
@@ -442,7 +442,7 @@ pub fn extract_hash(tx_out: &[u8]) -> Result<Vec<u8>, SPVError> {
 pub fn validate_vin(vin: &[u8]) -> bool {
     let (data_len, n_ins) = match parse_var_int(vin) {
         Ok(v) => v,
-        Err(_) => return false, // TODO: COVERAGE
+        Err(_) => return false,
     };
 
     let vin_length = vin.len();
@@ -454,7 +454,7 @@ pub fn validate_vin(vin: &[u8]) -> bool {
 
     for _ in 0..n_ins {
         if offset >= vin_length {
-            return false; // TODO: COVERAGE
+            return false;
         }
         match determine_input_length(&vin[offset as usize..]) {
             Ok(v) => offset += v as usize,
@@ -474,7 +474,7 @@ pub fn validate_vin(vin: &[u8]) -> bool {
 pub fn validate_vout(vout: &[u8]) -> bool {
     let (data_len, n_outs) = match parse_var_int(vout) {
         Ok(v) => v,
-        Err(_) => return false, // TODO: COVERAGE
+        Err(_) => return false,
     };
 
     let vout_length = vout.len();
@@ -490,7 +490,7 @@ pub fn validate_vout(vout: &[u8]) -> bool {
         }
         match determine_output_length(&vout[offset as usize..]) {
             Ok(v) => offset += v as usize,
-            Err(_) => return false,  // TODO: COVERAGE
+            Err(_) => return false,
         };
     }
 
