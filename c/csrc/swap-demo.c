@@ -9,7 +9,7 @@
  *   don't know why
  *
  * Future work:
- *  should load args from another cell
+ *  should load args Script args
  *
  */
 
