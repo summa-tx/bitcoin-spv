@@ -238,16 +238,25 @@
       "comment": "Read Overrun",
       "input": {
         "vin": "0x027bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444560000000000ffffffff",
-        "index": 2
+        "index": 3
       },
-      "errorMessage": "Read overrun during VarInt parsing",
-      "solidityError": "Bad VarInt in scriptSig"
+      "errorMessage": "Vin read overrun",
+      "solidityError": "Vin read overrun"
     },
     {
       "comment": "Bad VarInt in scriptsig of input being extracted",
       "input": {
         "vin": "0x01000000000000000000000000000000000000000000000000000000000000000000000000FF",
         "index": 0
+      },
+      "errorMessage": "Bad VarInt in scriptSig",
+      "solidityError": "Bad VarInt in scriptSig"
+    },
+    {
+      "comment": "Bad VarInt in scriptsig of input being extracted",
+      "input": {
+        "vin": "0x02000000000000000000000000000000000000000000000000000000000000000000000000FF",
+        "index": 1
       },
       "errorMessage": "Bad VarInt in scriptSig",
       "solidityError": "Bad VarInt in scriptSig"

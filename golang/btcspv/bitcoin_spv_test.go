@@ -383,7 +383,7 @@ func (suite *UtilsSuite) TestExtractInputAtIndex() {
 	for i := range fixture {
 		testCase := fixture[i]
 		input := testCase.Input.(map[string]interface{})
-		actual, err := ExtractInputAtIndex(input["vin"].([]byte), uint8(input["index"].(int)))
+		actual, err := ExtractInputAtIndex(input["vin"].([]byte), uint(input["index"].(int)))
 
 		expected := testCase.Output.([]byte)
 		suite.Nil(err)
@@ -397,7 +397,7 @@ func (suite *UtilsSuite) TestExtractInputAtIndex() {
 		input := testCase.Input.(map[string]interface{})
 		errMsg := testCase.ErrorMessage.(string)
 
-		actual, err := ExtractInputAtIndex(input["vin"].([]byte), uint8(input["index"].(int)))
+		actual, err := ExtractInputAtIndex(input["vin"].([]byte), uint(input["index"].(int)))
 		suite.Equal([]byte{}, actual)
 		suite.EqualError(err, errMsg)
 	}

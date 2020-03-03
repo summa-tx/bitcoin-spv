@@ -42,7 +42,7 @@ func ParseVin(vin []byte) string {
 	var formattedInputs string
 	for i := 0; i < numInputs; i++ {
 		// Extract each vin at the specified index
-		vin, _ := btcspv.ExtractInputAtIndex(vin, uint8(i))
+		vin, _ := btcspv.ExtractInputAtIndex(vin, uint(i))
 
 		// Use ParseInput to get more information about the vin
 		sequence, inputID, inputIndex, inputType := parseInput(vin)

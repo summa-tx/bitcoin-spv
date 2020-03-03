@@ -110,7 +110,7 @@ func Hash256(in []byte) Hash256Digest {
 //
 
 // ExtractInputAtIndex parses the input vector and returns the vin at a specified index
-func ExtractInputAtIndex(vin []byte, index uint8) ([]byte, error) {
+func ExtractInputAtIndex(vin []byte, index uint) ([]byte, error) {
 	dataLength, nIns, err := ParseVarInt(vin)
 	if err != nil {
 		return []byte{}, err
@@ -123,12 +123,12 @@ func ExtractInputAtIndex(vin []byte, index uint8) ([]byte, error) {
 	var offset uint = 1 + uint(dataLength)
 	var remaining []byte
 
-	for i := uint8(0); i < index; i++ {
+	for i := uint(0); i < index; i++ {
 		remaining = vin[offset:]
 
 		l, err := DetermineInputLength(remaining)
 		if err != nil {
-			return []byte{}, err
+			return []byte{}, errors.New("Bad VarInt in scriptSig")
 		}
 
 		length = uint(l)

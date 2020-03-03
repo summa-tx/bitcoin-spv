@@ -462,6 +462,31 @@ START_TEST(extract_input_at_index) {
 }
 END_TEST
 
+START_TEST(extract_input_at_index_error) {
+  TEST_LOOP_START("extractInputAtIndexError")
+
+  size_t input_obj_pos = val_pos_by_key(case_pos, "input");
+  size_t vin_val_pos = val_pos_by_key(input_obj_pos, "vin");
+  size_t idx_pos = val_pos_by_key(input_obj_pos, "index");
+
+  uint8_t *vin_buf;
+  const uint32_t vin_buf_len =
+      token_as_hex_buf(&vin_buf, &test_vec_tokens[vin_val_pos]);
+  const_view_t vin_view = {vin_buf, vin_buf_len};
+
+  uint8_t input_index = token_as_long(&test_vec_tokens[idx_pos]);
+
+  const_view_t actual = btcspv_extract_input_at_index(&vin_view, input_index);
+
+  ck_assert(actual.loc == NULL);
+  ck_assert_int_eq(actual.len, 0);
+
+  free(vin_buf);
+
+  TEST_LOOP_END
+}
+END_TEST
+
 START_TEST(extract_outpoint) {
   TEST_LOOP_START("extractOutpoint")
 
@@ -596,6 +621,32 @@ START_TEST(extract_output_at_index) {
   TEST_LOOP_END
 }
 END_TEST
+
+
+START_TEST(extract_output_at_index_error) {
+  TEST_LOOP_START("extractOutputAtIndexError")
+
+  size_t input_obj_pos = val_pos_by_key(case_pos, "input");
+  size_t vout_val_pos = val_pos_by_key(input_obj_pos, "vout");
+  size_t idx_pos = val_pos_by_key(input_obj_pos, "index");
+
+  uint8_t *vout_buf;
+  const uint32_t vout_buf_len =
+      token_as_hex_buf(&vout_buf, &test_vec_tokens[vout_val_pos]);
+  const_view_t vout_view = {vout_buf, vout_buf_len};
+
+  uint8_t output_index = token_as_long(&test_vec_tokens[idx_pos]);
+  const_view_t actual = btcspv_extract_output_at_index(&vout_view, output_index);
+
+  ck_assert(actual.loc == NULL);
+  ck_assert_int_eq(actual.len, 0);
+
+  free(vout_buf);
+
+  TEST_LOOP_END
+}
+END_TEST
+
 
 START_TEST(extract_output_script_len) {
   TEST_LOOP_START("extractOutputScriptLen")
@@ -815,6 +866,28 @@ START_TEST(extract_timestamp) {
 }
 END_TEST
 
+START_TEST(extract_merkle_root_le) {
+  TEST_LOOP_START("extractMerkleRootLE")
+
+  uint8_t *input_buf;
+  const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
+  const_view_t input = {input_buf, input_len};
+
+  uint8_t *expected_buf;
+  const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
+  const_view_t expected = {expected_buf, expected_len};
+
+  const_view_t actual = btcspv_extract_merkle_root_le(&input);
+
+  ck_assert(view_eq(&actual, &expected));
+
+  free(input_buf);
+  free(expected_buf);
+
+  TEST_LOOP_END
+}
+END_TEST
+
 START_TEST(hash256_merkle_step) {
   TEST_LOOP_START("hash256MerkleStep")
 
@@ -952,12 +1025,14 @@ int main(int argc, char *argv[]) {
   tcase_add_test(btcspv_case, extract_sequence_legacy);
   tcase_add_test(btcspv_case, determine_input_length);
   tcase_add_test(btcspv_case, extract_input_at_index);
+  tcase_add_test(btcspv_case, extract_input_at_index_error);
   tcase_add_test(btcspv_case, extract_outpoint);
   tcase_add_test(btcspv_case, extract_input_tx_id_le);
   tcase_add_test(btcspv_case, extract_tx_index_le);
   tcase_add_test(btcspv_case, extract_tx_index);
   tcase_add_test(btcspv_case, determine_output_length);
   tcase_add_test(btcspv_case, extract_output_at_index);
+  tcase_add_test(btcspv_case, extract_output_at_index_error);
   tcase_add_test(btcspv_case, extract_output_script_len);
   tcase_add_test(btcspv_case, extract_value_le);
   tcase_add_test(btcspv_case, extract_value);
@@ -968,6 +1043,7 @@ int main(int argc, char *argv[]) {
   tcase_add_test(btcspv_case, validate_vin);
   tcase_add_test(btcspv_case, validate_vout);
   tcase_add_test(btcspv_case, extract_target);
+  tcase_add_test(btcspv_case, extract_merkle_root_le);
   tcase_add_test(btcspv_case, extract_timestamp);
   tcase_add_test(btcspv_case, hash256_merkle_step);
   tcase_add_test(btcspv_case, verify_hash256_merkle);
