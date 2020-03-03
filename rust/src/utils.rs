@@ -154,6 +154,12 @@ pub mod test_utils {
         match s {
             "Malformatted data. Read overrun" => SPVError::ReadOverrun,
             "Read overrun" => SPVError::ReadOverrun,
+            "Vout read overrun" => SPVError::ReadOverrun,
+            "Vin read overrun" => SPVError::ReadOverrun,
+            "Read overrun when parsing vout" => SPVError::ReadOverrun,
+            "Read overrun when parsing vin" => SPVError::ReadOverrun,
+            "Bad VarInt in scriptPubkey" => SPVError::BadVarInt,
+            "Bad VarInt in scriptSig" => SPVError::BadVarInt,
             "Read overrun during VarInt parsing" => SPVError::BadVarInt,
             "Malformatted data. Must be an op return" => SPVError::MalformattedOpReturnOutput,
             "Maliciously formatted p2sh output" => SPVError::MalformattedP2SHOutput,

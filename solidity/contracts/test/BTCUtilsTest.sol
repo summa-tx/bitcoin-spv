@@ -177,14 +177,6 @@ contract BTCUtilsTest {
     }
 
 
-    /// @notice          Extracts the tx input index from the input in a tx
-    /// @dev             4 byte tx index
-    /// @param _input    The input
-    /// @return          The tx index (big-endian uint)
-    function extractTxIndex(bytes memory _input) public pure returns (uint32) {
-        return BTCUtils.extractTxIndex(_input);
-    }
-
     /* ****** */
     /* Output */
     /* ****** */

@@ -162,7 +162,8 @@ library BTCUtils {
         uint256 _nIns;
 
         (_varIntDataLen, _nIns) = parseVarInt(_vin);
-        require(_index <= _nIns, "Read overrun");
+        require(_varIntDataLen != ERR_BAD_ARG, "Read overrun during VarInt parsing");
+        require(_index <= _nIns, "Vin read overrun");
 
         bytes memory _remaining;
 
@@ -172,13 +173,13 @@ library BTCUtils {
         for (uint256 _i = 0; _i < _index; _i ++) {
             _remaining = _vin.slice(_offset, _vin.length - _offset);
             _len = determineInputLength(_remaining);
-            require(_len != ERR_BAD_ARG, "Bad VarInt in scriptSig");  // TODO: COVERAGE
+            require(_len != ERR_BAD_ARG, "Bad VarInt in scriptSig");
             _offset = _offset + _len;
         }
 
         _remaining = _vin.slice(_offset, _vin.length - _offset);
         _len = determineInputLength(_remaining);
-        require(_len != ERR_BAD_ARG, "Bad VarInt in scriptSig");  // TODO: COVERAGE
+        require(_len != ERR_BAD_ARG, "Bad VarInt in scriptSig");
         return _vin.slice(_offset, _len);
     }
 
@@ -230,7 +231,7 @@ library BTCUtils {
         uint256 _varIntDataLen;
         uint256 _scriptSigLen;
         (_varIntDataLen, _scriptSigLen) = extractScriptSigLen(_input);
-        require(_varIntDataLen != ERR_BAD_ARG, "Bad VarInt in scriptSig");  // TODO: COVERAGE
+        require(_varIntDataLen != ERR_BAD_ARG, "Bad VarInt in scriptSig");
         return _input.slice(36 + 1 + _varIntDataLen + _scriptSigLen, 4);
     }
 
@@ -251,7 +252,7 @@ library BTCUtils {
         uint256 _varIntDataLen;
         uint256 _scriptSigLen;
         (_varIntDataLen, _scriptSigLen) = extractScriptSigLen(_input);
-        require(_varIntDataLen != ERR_BAD_ARG, "Bad VarInt in scriptSig");  // TODO: COVERAGE
+        require(_varIntDataLen != ERR_BAD_ARG, "Bad VarInt in scriptSig");
         return _input.slice(36, 1 + _varIntDataLen + _scriptSigLen);
     }
 
@@ -291,7 +292,7 @@ library BTCUtils {
     /// @param _input    The input
     /// @return          The tx id (little-endian bytes)
     function extractInputTxIdLE(bytes memory _input) internal pure returns (bytes32) {
-        return _input.slice(0, 32).toBytes32();  // TODO: COVERAGE
+        return _input.slice(0, 32).toBytes32();
     }
 
     /// @notice          Extracts the LE tx input index from the input in a tx
@@ -299,17 +300,7 @@ library BTCUtils {
     /// @param _input    The input
     /// @return          The tx index (little-endian bytes)
     function extractTxIndexLE(bytes memory _input) internal pure returns (bytes memory) {
-        return _input.slice(32, 4);  // TODO: COVERAGE
-    }
-
-    /// @notice          Extracts the tx input index from the input in a tx
-    /// @dev             4 byte tx index
-    /// @param _input    The input
-    /// @return          The tx index (big-endian uint)
-    function extractTxIndex(bytes memory _input) internal pure returns (uint32) {  // TODO: COVERAGE
-        bytes memory _leIndex = extractTxIndexLE(_input);
-        bytes memory _beIndex = reverseEndianness(_leIndex);
-        return uint32(bytesToUint(_beIndex));
+        return _input.slice(32, 4);
     }
 
     /* ****** */
@@ -322,7 +313,7 @@ library BTCUtils {
     /// @return          The length indicated by the prefix, error if invalid length
     function determineOutputLength(bytes memory _output) internal pure returns (uint256) {
         if (_output.length < 9) {
-          return ERR_BAD_ARG;  // TODO: COVERAGE
+          return ERR_BAD_ARG;
         }
         bytes memory _afterValue = _output.slice(8, _output.length - 8);
 
@@ -331,7 +322,7 @@ library BTCUtils {
         (_varIntDataLen, _scriptPubkeyLength) = parseVarInt(_afterValue);
 
         if (_varIntDataLen == ERR_BAD_ARG) {
-          return ERR_BAD_ARG;  // TODO: COVERAGEs
+          return ERR_BAD_ARG;
         }
 
         // 8 byte value, 1 byte for tag itself
@@ -348,7 +339,8 @@ library BTCUtils {
         uint256 _nOuts;
 
         (_varIntDataLen, _nOuts) = parseVarInt(_vout);
-        require(_index <= _nOuts, "Read overrun");
+        require(_varIntDataLen != ERR_BAD_ARG, "Read overrun during VarInt parsing");
+        require(_index <= _nOuts, "Vout read overrun");
 
         bytes memory _remaining;
 
@@ -358,13 +350,13 @@ library BTCUtils {
         for (uint256 _i = 0; _i < _index; _i ++) {
             _remaining = _vout.slice(_offset, _vout.length - _offset);
             _len = determineOutputLength(_remaining);
-            require(_len != ERR_BAD_ARG, "Bad VarInt in scriptPubkey");  // TODO: COVERAGE
+            require(_len != ERR_BAD_ARG, "Bad VarInt in scriptPubkey");
             _offset += _len;
         }
 
         _remaining = _vout.slice(_offset, _vout.length - _offset);
         _len = determineOutputLength(_remaining);
-        require(_len != ERR_BAD_ARG, "Bad VarInt in scriptPubkey");  // TODO: COVERAGE
+        require(_len != ERR_BAD_ARG, "Bad VarInt in scriptPubkey");
 
         return _vout.slice(_offset, _len);
     }
@@ -470,7 +462,7 @@ library BTCUtils {
         for (uint256 i = 0; i < _nIns; i++) {
             // If we're at the end, but still expect more
             if (_offset >= _vin.length) {
-              return false;  // TODO: COVERAGE
+              return false;
             }
 
             // Grab the next input and determine its length.
@@ -508,14 +500,14 @@ library BTCUtils {
         for (uint256 i = 0; i < _nOuts; i++) {
             // If we're at the end, but still expect more
             if (_offset >= _vout.length) {
-              return false;  // TODO: COVERAGE
+              return false;
             }
 
             // Grab the next output and determine its length.
             // Increase the offset by that much
             bytes memory _next = _vout.slice(_offset, _vout.length - _offset);
             uint256 _nextLen = determineOutputLength(_next);
-            if (_nextLen == ERR_BAD_ARG || _offset + _nextLen > _vout.length) {
+            if (_nextLen == ERR_BAD_ARG) {
               return false;
             }
 

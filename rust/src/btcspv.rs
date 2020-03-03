@@ -114,6 +114,11 @@ pub fn extract_input_at_index(vin: &[u8], index: usize) -> Result<Vec<u8>, SPVEr
             offset += length as usize;
         }
     }
+
+    if offset + length as usize > vin.len() {
+        return Err(SPVError::ReadOverrun);
+    }
+
     Ok(vin[offset..offset + length as usize].to_vec())
 }
 
@@ -314,7 +319,12 @@ pub fn extract_output_at_index(vout: &[u8], index: usize) -> Result<Vec<u8>, SPV
             offset += length as usize
         }
     }
-        Ok(vout[offset..offset + length].to_vec())
+
+    if offset + length as usize > vout.len() {
+        return Err(SPVError::ReadOverrun);
+    }
+
+    Ok(vout[offset..offset + length].to_vec())
 }
 
 /// Extracts the output script length.
@@ -964,7 +974,7 @@ mod tests {
     }
 
     #[test]
-    fn it_errrors_properly_when_it_extracts_outputs_from_the_vout() {
+    fn it_errors_properly_when_it_extracts_outputs_from_the_vout() {
         test_utils::run_test(|fixtures| {
             let test_cases = test_utils::get_test_cases("extractOutputAtIndexError", &fixtures);
             for case in test_cases {

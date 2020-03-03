@@ -116,14 +116,15 @@ func ExtractInputAtIndex(vin []byte, index uint8) ([]byte, error) {
 		return []byte{}, err
 	}
 	if uint64(index) > nIns {
-		return []byte{}, errors.New("Read overrun")
+		return []byte{}, errors.New("Vin read overrun")
 	}
 
 	var length uint
 	var offset uint = 1 + uint(dataLength)
+	var remaining []byte
 
-	for i := uint8(0); i <= index; i++ {
-		remaining := vin[offset:]
+	for i := uint8(0); i < index; i++ {
+		remaining = vin[offset:]
 
 		l, err := DetermineInputLength(remaining)
 		if err != nil {
@@ -135,6 +136,18 @@ func ExtractInputAtIndex(vin []byte, index uint8) ([]byte, error) {
 			offset += length
 		}
 	}
+
+	remaining = vin[offset:]
+	l, err := DetermineInputLength(remaining)
+	if err != nil {
+		return []byte{}, errors.New("Bad VarInt in scriptSig")
+	}
+	if offset+uint(l) > uint(len(vin)) {
+		return []byte{}, errors.New("Read overrun when parsing vin")
+	}
+
+	output := vin[offset : offset+uint(l)]
+	return output, nil
 
 	return vin[offset : offset+length], nil
 }
@@ -252,17 +265,18 @@ func ExtractOutputAtIndex(vout []byte, index uint) ([]byte, error) {
 		return []byte{}, err
 	}
 	if uint64(index) > nOuts {
-		return []byte{}, errors.New("Read overrun")
+		return []byte{}, errors.New("Vout read overrun")
 	}
 
 	var length uint
 	var offset uint = 1 + uint(dataLength)
+	var remaining []byte
 
-	for i := uint(0); i <= index; i++ {
-		remaining := vout[offset:]
+	for i := uint(0); i < index; i++ {
+		remaining = vout[offset:]
 		l, err := DetermineOutputLength(remaining)
 		if err != nil {
-			return []byte{}, err
+			return []byte{}, errors.New("Bad VarInt in scriptPubkey")
 		}
 
 		length = uint(l)
@@ -270,7 +284,17 @@ func ExtractOutputAtIndex(vout []byte, index uint) ([]byte, error) {
 			offset += length
 		}
 	}
-	output := vout[offset : offset+length]
+
+	remaining = vout[offset:]
+	l, err := DetermineOutputLength(remaining)
+	if err != nil {
+		return []byte{}, errors.New("Bad VarInt in scriptPubkey")
+	}
+	if offset+uint(l) > uint(len(vout)) {
+		return []byte{}, errors.New("Read overrun when parsing vout")
+	}
+
+	output := vout[offset : offset+uint(l)]
 	return output, nil
 }
 

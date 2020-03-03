@@ -160,7 +160,7 @@ export function determineInputLength(input) {
 export function extractInputAtIndex(vin, index) {
   const { dataLength, number: nIns } = parseVarInt(vin);
   if (BigInt(index) > nIns) {
-    throw RangeError('Read overrun'); // TODO: COVERAGE
+    throw RangeError('Vin read overrun'); // TODO: COVERAGE
   }
 
   let len = 0;
@@ -337,7 +337,7 @@ export function extractOutputAtIndex(vout, index) {
   const { dataLength, number: nOuts } = parseVarInt(vout);
 
   if (BigInt(index) >= nOuts) {
-    throw RangeError('Read overrun');
+    throw RangeError('Vout read overrun');
   }
 
   let len = 0;

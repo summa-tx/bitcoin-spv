@@ -1,6 +1,7 @@
 package btcspv
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -564,7 +565,7 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 		expected := testCase.ErrorMessage.(string)
 		actual, err := ExtractOutputAtIndex(vout, uint(index))
 		suite.Equal([]byte{}, actual)
-		suite.EqualError(err, expected)
+		suite.EqualError(err, expected, "%s %d", hex.EncodeToString(vout), index)
 	}
 }
 

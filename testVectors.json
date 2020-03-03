@@ -142,7 +142,8 @@
   "extractSequenceLegacyError": [
     {
       "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000",
-      "errorMessage": "Read overrun"
+      "errorMessage": "Read overrun",
+      "solidityError": "Bad VarInt in scriptSig"
     }
   ],
   "determineInputLength": [
@@ -221,15 +222,17 @@
         "vin": "0x027bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff",
         "index": 3
       },
-      "errorMessage": "Read overrun"
+      "errorMessage": "Vin read overrun",
+      "solidityError": "Vin read overrun"
     },
     {
-      "comment": "Read Overrun",
+      "comment": "Read Overrun at beginning of vin",
       "input": {
         "vin": "0xff",
         "index": 3
       },
-      "errorMessage": "Read overrun during VarInt parsing"
+      "errorMessage": "Read overrun during VarInt parsing",
+      "solidityError": "Read overrun during VarInt parsing"
     },
     {
       "comment": "Read Overrun",
@@ -237,7 +240,26 @@
         "vin": "0x027bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444560000000000ffffffff",
         "index": 2
       },
-      "errorMessage": "Read overrun during VarInt parsing"
+      "errorMessage": "Read overrun during VarInt parsing",
+      "solidityError": "Bad VarInt in scriptSig"
+    },
+    {
+      "comment": "Bad VarInt in scriptsig of input being extracted",
+      "input": {
+        "vin": "0x01000000000000000000000000000000000000000000000000000000000000000000000000FF",
+        "index": 0
+      },
+      "errorMessage": "Bad VarInt in scriptSig",
+      "solidityError": "Bad VarInt in scriptSig"
+    },
+    {
+      "comment": "Bad VarInt in scriptsig of input being extracted",
+      "input": {
+        "vin": "0x01000000000000000000000000000000000000000000000000000000000000000000000000FC",
+        "index": 0
+      },
+      "errorMessage": "Read overrun when parsing vin",
+      "solidityError": "Slice out of bounds"
     }
   ],
   "isLegacyInput": [
@@ -271,7 +293,8 @@
   "extractScriptSigError": [
     {
       "input": "0xff",
-      "errorMessage": "Read overrun"
+      "errorMessage": "Read overrun",
+      "solidityError": "Bad VarInt in scriptSig"
     }
   ],
   "extractSequenceLEWitness": [
@@ -411,21 +434,56 @@
         "vout": "0xff",
         "index": 1
       },
-      "errorMessage": "Read overrun during VarInt parsing"
+      "errorMessage": "Read overrun during VarInt parsing",
+      "solidityError": "Read overrun during VarInt parsing"
     },
     {
       "input": {
         "vout": "0x010101010101010101ff",
         "index": 1
       },
-      "errorMessage": "Read overrun during VarInt parsing"
+      "errorMessage": "Bad VarInt in scriptPubkey",
+      "solidityError": "Bad VarInt in scriptPubkey"
     },
     {
       "input": {
         "vout": "0x024db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f040420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922",
         "index": 3
       },
-      "errorMessage": "Read overrun"
+      "errorMessage": "Vout read overrun",
+      "solidityError": "Vout read overrun"
+    },
+    {
+      "input": {
+        "vout": "0x024db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f040420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922",
+        "index": 3
+      },
+      "errorMessage": "Vout read overrun",
+      "solidityError": "Vout read overrun"
+    },
+    {
+      "input": {
+        "vout": "0x014db6000000000000ff",
+        "index": 0
+      },
+      "errorMessage": "Bad VarInt in scriptPubkey",
+      "solidityError": "Bad VarInt in scriptPubkey"
+    },
+    {
+      "input": {
+        "vout": "0x024db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f040420f0000000000FF",
+        "index": 1
+      },
+      "errorMessage": "Bad VarInt in scriptPubkey",
+      "solidityError": "Bad VarInt in scriptPubkey"
+    },
+    {
+      "input": {
+        "vout": "0x024db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f040420f0000000000FB",
+        "index": 1
+      },
+      "errorMessage": "Read overrun when parsing vout",
+      "solidityError": "Slice out of bounds"
     }
   ],
   "extractOutputScriptLen": [
@@ -558,7 +616,13 @@
     },
     {
       "input": "0x001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
-      "output": false
+      "output": false,
+      "comment": "0 inputs"
+    },
+    {
+      "input": "0xFF",
+      "output": false,
+      "comment": "ReadOverrun"
     }
   ],
   "validateVout": [
@@ -598,6 +662,16 @@
     {
       "input": "0x004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000",
       "output": false
+    },
+    {
+      "input": "0xFF",
+      "output": false,
+      "comment": "ReadOverrun"
+    },
+    {
+      "input": "0x010102030405060708FF",
+      "output": false,
+      "comment": "ReadOverrun"
     }
   ],
   "extractMerkleRootLE": [
