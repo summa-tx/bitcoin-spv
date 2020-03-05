@@ -65,9 +65,17 @@ the sample script executable.
 
 ## Setup
 
-Dependencies: `docker`, `libcheck`, nervos docker toolchain
+After cloning you may need to run `$ git submodule update --init --recursive`
+to get the vendored ckb dependencies.
+
+Dependencies: `docker`, `libcheck`, Rust, nervos docker toolchain
+
+* [Installing Check](https://libcheck.github.io/check/web/install.html)
+* [Installing Rust Toolchains via Rustup](https://rustup.rs/)
+* [Installing Docker](https://docs.docker.com/install/)
 
 ```
+(DEB) $ sudo apt-get install build-essential
 $ docker pull nervos/ckb-riscv-gnu-toolchain:gnu-bionic-20191012
 
 (OSX) $ brew install check
