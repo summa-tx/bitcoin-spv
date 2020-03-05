@@ -5,7 +5,21 @@ blockchains. It supplies a set of pure functions that can be used to validate
 almost all Bitcoin transactions and headers, as well as higher-level
 functions that can evaluate header chains and transaction inclusion proofs.
 
+Check the documentation in `btcspv.h` and `evalspv.h`. :)
 
+### MIT Hackathon Project Ideas
+
+Some things that would be cool:
+1. Fix `swap-demo.c` and use it to make a (testnet) cross-chain swap.
+1. Write a function (in JS or Rust) that translates JSON proofs
+  to the format used in `swap-demo.c`.
+1. Extend the `cli` in `../bin` to make proofs formatted for `swap-demo.c`.
+1. Extend the `cli` in `../bin` to use bitcoind to generate proofs.
+1. Make a Nervos Type Script that [relays](https://github.com/summa-tx/relays)
+  Bitcoin headers.
+1. Modify `swap-demo.c` to pay for burned Bitcoin.
+
+Bitcoin headers.
 ### Important Notes
 
 `btcspv` is a low-level toolkit. It usually **does NOT check bounds**, and
