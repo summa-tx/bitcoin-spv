@@ -18,7 +18,7 @@ bool btcspv_truncated_uint256_equality(const uint8_t *trun,
 }
 
 // equality for 2 buffers
-bool buf_eq(const uint8_t *loc1, uint32_t len1, const uint8_t *loc2,
+bool btcspv_buf_eq(const uint8_t *loc1, uint32_t len1, const uint8_t *loc2,
             uint32_t len2) {
   if (len1 != len2) {
     return false;
@@ -27,17 +27,17 @@ bool buf_eq(const uint8_t *loc1, uint32_t len1, const uint8_t *loc2,
 }
 
 // equality for a view and a buffer
-bool view_eq_buf(const_view_t *view, const uint8_t *loc, uint32_t len) {
-  return buf_eq(view->loc, view->len, loc, len);
+bool btcspv_view_eq_buf(const_view_t *view, const uint8_t *loc, uint32_t len) {
+  return btcspv_buf_eq(view->loc, view->len, loc, len);
 }
 
 // convenience function for view equality
-bool view_eq(const_view_t *view1, const_view_t *view2) {
-  return buf_eq(view1->loc, view1->len, view2->loc, view2->len);
+bool btcspv_view_eq(const_view_t *view1, const_view_t *view2) {
+  return btcspv_buf_eq(view1->loc, view1->len, view2->loc, view2->len);
 }
 
 // reverse a buffer
-void buf_rev(uint8_t *to, const uint8_t *from, uint32_t len) {
+void btcspv_buf_rev(uint8_t *to, const uint8_t *from, uint32_t len) {
   for (int i = 0; i < len; i++) {
     to[len - 1 - i] = from[i];
   }
@@ -317,10 +317,10 @@ byte_view_t btcspv_extract_hash(const_view_t *tx_out) {
   }
 
   uint8_t P2PKH_PREFIX[3] = {0x19, 0x76, 0xa9};
-  if (view_eq_buf(&tag, P2PKH_PREFIX, 3)) {
+  if (btcspv_view_eq_buf(&tag, P2PKH_PREFIX, 3)) {
     const_view_t last_two = {tx_out->loc + tx_out->len - 2, 2};
     uint8_t P2PKH_POSTFIX[2] = {0x88, 0xac};
-    if (tx_out->loc[11] != 0x14 || !view_eq_buf(&last_two, P2PKH_POSTFIX, 2)) {
+    if (tx_out->loc[11] != 0x14 || !btcspv_view_eq_buf(&last_two, P2PKH_POSTFIX, 2)) {
       RET_NULL_VIEW;
     }
     const_view_t payload = {tx_out->loc + 12, 20};
@@ -328,7 +328,7 @@ byte_view_t btcspv_extract_hash(const_view_t *tx_out) {
   }
 
   uint8_t P2SH_PREFIX[3] = {0x17, 0xa9, 0x14};
-  if (view_eq_buf(&tag, P2SH_PREFIX, 3)) {
+  if (btcspv_view_eq_buf(&tag, P2SH_PREFIX, 3)) {
     if (tx_out->loc[tx_out->len - 1] != 0x87) {
       RET_NULL_VIEW;
     }
@@ -414,7 +414,7 @@ void btcspv_extract_target_le(uint256 target, const_view_t *header) {
 void btcspv_extract_target(uint256 target, const_view_t *header) {
   uint256 target_le = {0};
   btcspv_extract_target_le(target_le, header);
-  buf_rev(target, target_le, 32);
+  btcspv_buf_rev(target, target_le, 32);
 }
 
 uint64_t btcspv_calculate_difficulty(uint256 target) {
@@ -492,7 +492,7 @@ bool btcspv_verify_hash256_merkle(const_view_t *proof, uint32_t index) {
     current.loc = hash;
     idx >>= 1;
   }
-  return view_eq(&current, &root);
+  return btcspv_view_eq(&current, &root);
 }
 
 // new_target should be BE here

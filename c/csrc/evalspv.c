@@ -51,14 +51,14 @@ bool evalspv_validate_header_work(const uint256 digest, const uint256 target) {
   }
 
   uint256 digest_be = {0};
-  buf_rev(digest_be, digest, 32);
+  btcspv_buf_rev(digest_be, digest, 32);
   return (UINT256_LT(digest_be, target));
 }
 
 bool evalspv_validate_header_prev_hash(const_view_t *header,
                                        const uint256 prev_hash) {
   const_view_t actual = btcspv_extract_prev_block_hash_le(header);
-  return view_eq_buf(&actual, prev_hash, 32);
+  return btcspv_view_eq_buf(&actual, prev_hash, 32);
 }
 
 uint64_t evalspv_validate_header_chain(const_view_t *headers) {

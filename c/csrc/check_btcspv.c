@@ -34,17 +34,17 @@ START_TEST(equalities) {
   ck_assert(btcspv_truncated_uint256_equality(b, c));  // order matters!
   ck_assert(!btcspv_truncated_uint256_equality(c, b));
 
-  ck_assert(buf_eq(a, 32, a, 32));
-  ck_assert(!buf_eq(a, 32, b, 32));
-  ck_assert(!buf_eq(b, 32, a, 32));
-  ck_assert(!buf_eq(a, 32, c, 32));
-  ck_assert(!buf_eq(c, 32, a, 32));
-  ck_assert(!buf_eq(b, 32, c, 32));
-  ck_assert(!buf_eq(c, 32, b, 32));
+  ck_assert(btcspv_buf_eq(a, 32, a, 32));
+  ck_assert(!btcspv_buf_eq(a, 32, b, 32));
+  ck_assert(!btcspv_buf_eq(b, 32, a, 32));
+  ck_assert(!btcspv_buf_eq(a, 32, c, 32));
+  ck_assert(!btcspv_buf_eq(c, 32, a, 32));
+  ck_assert(!btcspv_buf_eq(b, 32, c, 32));
+  ck_assert(!btcspv_buf_eq(c, 32, b, 32));
 
   // check shortcut non-equal lengths
-  ck_assert(!buf_eq(b, 32, c, 10));
-  ck_assert(!buf_eq(c, 10, b, 32));
+  ck_assert(!btcspv_buf_eq(b, 32, c, 10));
+  ck_assert(!btcspv_buf_eq(c, 10, b, 32));
 }
 END_TEST
 
@@ -108,7 +108,7 @@ START_TEST(calculate_txid) {
   uint256 actual_buf = {0};
   evalspv_calculate_txid(actual_buf, &version, &vin, &vout, &locktime);
 
-  ck_assert(buf_eq(expected_buf, 32, actual_buf, 32));
+  ck_assert(btcspv_buf_eq(expected_buf, 32, actual_buf, 32));
 
   free(version_buf);
   free(vin_buf);
@@ -239,7 +239,7 @@ START_TEST(hash160) {
   uint8_t actual[20] = {0};
   btcspv_hash160(actual, &input);
 
-  ck_assert(buf_eq(actual, 20, expected.loc, expected.len));
+  ck_assert(btcspv_buf_eq(actual, 20, expected.loc, expected.len));
 
   free(expected_buf);
   free(input_buf);
@@ -262,7 +262,7 @@ START_TEST(hash256) {
   uint8_t actual[32] = {0};
   btcspv_hash256(actual, &input);
 
-  ck_assert(buf_eq(actual, 32, expected.loc, expected.len));
+  ck_assert(btcspv_buf_eq(actual, 32, expected.loc, expected.len));
 
   free(expected_buf);
   free(input_buf);
@@ -302,7 +302,7 @@ START_TEST(extract_sequence_le_witness) {
 
   const_view_t actual = btcspv_extract_sequence_le_witness(&input);
 
-  ck_assert(view_eq(&actual, &expected));
+  ck_assert(btcspv_view_eq(&actual, &expected));
 
   free(input_buf);
   free(expected_buf);
@@ -364,7 +364,7 @@ START_TEST(extract_script_sig) {
 
   const_view_t actual = btcspv_extract_script_sig(&input);
 
-  ck_assert(view_eq(&actual, &expected));
+  ck_assert(btcspv_view_eq(&actual, &expected));
 
   free(input_buf);
   free(expected_buf);
@@ -386,7 +386,7 @@ START_TEST(extract_sequence_le_legacy) {
 
   const_view_t actual = btcspv_extract_sequence_le_legacy(&input);
 
-  ck_assert(view_eq(&actual, &expected));
+  ck_assert(btcspv_view_eq(&actual, &expected));
 
   free(input_buf);
   free(expected_buf);
@@ -453,7 +453,7 @@ START_TEST(extract_input_at_index) {
 
   const_view_t actual = btcspv_extract_input_at_index(&vin_view, input_index);
 
-  ck_assert(view_eq(&actual, &expected));
+  ck_assert(btcspv_view_eq(&actual, &expected));
 
   free(vin_buf);
   free(expected_buf);
@@ -500,7 +500,7 @@ START_TEST(extract_outpoint) {
 
   const_view_t actual = btcspv_extract_outpoint(&input);
 
-  ck_assert(view_eq(&actual, &expected));
+  ck_assert(btcspv_view_eq(&actual, &expected));
 
   free(input_buf);
   free(expected_buf);
@@ -522,7 +522,7 @@ START_TEST(extract_input_tx_id_le) {
 
   const_view_t actual = btcspv_extract_input_tx_id_le(&input);
 
-  ck_assert(view_eq(&actual, &expected));
+  ck_assert(btcspv_view_eq(&actual, &expected));
 
   free(input_buf);
   free(expected_buf);
@@ -544,7 +544,7 @@ START_TEST(extract_tx_index_le) {
 
   const_view_t actual = btcspv_extract_tx_index_le(&input);
 
-  ck_assert(view_eq(&actual, &expected));
+  ck_assert(btcspv_view_eq(&actual, &expected));
 
   free(input_buf);
   free(expected_buf);
@@ -613,7 +613,7 @@ START_TEST(extract_output_at_index) {
 
   ck_assert(actual.loc != NULL);
   ck_assert_int_ne(actual.len, 0);
-  ck_assert(view_eq(&actual, &expected));
+  ck_assert(btcspv_view_eq(&actual, &expected));
 
   free(vout_buf);
   free(expected_buf);
@@ -680,7 +680,7 @@ START_TEST(extract_value_le) {
 
   const_view_t actual = btcspv_extract_value_le(&input);
 
-  ck_assert(view_eq(&actual, &expected));
+  ck_assert(btcspv_view_eq(&actual, &expected));
 
   free(input_buf);
   free(expected_buf);
@@ -722,7 +722,7 @@ START_TEST(extract_op_return_data) {
 
   ck_assert(actual.loc != NULL);
   ck_assert_int_ne(actual.len, 0);
-  ck_assert(view_eq(&actual, &expected));
+  ck_assert(btcspv_view_eq(&actual, &expected));
 
   free(input_buf);
   free(expected_buf);
@@ -760,7 +760,7 @@ START_TEST(extract_hash) {
 
   const_view_t actual = btcspv_extract_hash(&input);
 
-  ck_assert(view_eq(&actual, &expected));
+  ck_assert(btcspv_view_eq(&actual, &expected));
 
   free(input_buf);
   free(expected_buf);
@@ -833,7 +833,7 @@ START_TEST(extract_target) {
 
   uint256 target = {0};
   btcspv_extract_target(target, &input);
-  ck_assert(view_eq_buf(&expected, target, 32));
+  ck_assert(btcspv_view_eq_buf(&expected, target, 32));
 
   // also check that extractDifficulty is working
 
@@ -879,7 +879,7 @@ START_TEST(extract_merkle_root_le) {
 
   const_view_t actual = btcspv_extract_merkle_root_le(&input);
 
-  ck_assert(view_eq(&actual, &expected));
+  ck_assert(btcspv_view_eq(&actual, &expected));
 
   free(input_buf);
   free(expected_buf);
@@ -910,7 +910,7 @@ START_TEST(hash256_merkle_step) {
   uint8_t hash[32] = {0};
   btcspv_hash256_merkle_step(hash, &a, &b);
 
-  ck_assert(view_eq_buf(&expected, hash, 32));
+  ck_assert(btcspv_view_eq_buf(&expected, hash, 32));
 
   free(a_buf);
   free(b_buf);

@@ -75,21 +75,21 @@ bool btcspv_truncated_uint256_equality(const uint8_t *trun,
                                        const uint8_t *full);
 
 /// @brief equality of 2 memory regions using `memcmp`
-bool buf_eq(const uint8_t *loc1, uint32_t len1, const uint8_t *loc2,
+bool btcspv_buf_eq(const uint8_t *loc1, uint32_t len1, const uint8_t *loc2,
             uint32_t len2);
 
 /// @brief equality between byte_view_t and any other buffer type.
 /// @note  uses buf_eq under the hood
-bool view_eq_buf(const_view_t *view, const uint8_t *loc, uint32_t len);
+bool btcspv_view_eq_buf(const_view_t *view, const uint8_t *loc, uint32_t len);
 
 /// @brief equality for byte_view_t.
 /// @note  uses buf_eq under the hood
-bool view_eq(const_view_t *view1, const_view_t *view2);
+bool btcspv_view_eq(const_view_t *view1, const_view_t *view2);
 
 /// @brief    reverse from, write reversed buffer to `to`
 /// @warning  overwrites `to` with the reversed buffer
 /// @warning  caller must ensure `to` is allocated and can hold `len` bytes
-void buf_rev(uint8_t *to, const uint8_t *from, uint32_t len);
+void btcspv_buf_rev(uint8_t *to, const uint8_t *from, uint32_t len);
 
 // Hash Functions
 /// @brief    RMD160(preimage)
