@@ -25,9 +25,8 @@ pub type RawBytes = Vec<u8>;
 pub enum SPVError {
     /// Overran a checked read on a slice
     ReadOverrun,
-    /// VarInt represents a number larger than 253.
-    /// Large VarInts are not supported.
-    LargeVarInt,
+    /// Attempted to parse a VarInt without enough bytes
+    BadVarInt,
     /// Called `extract_op_return_data` on an output without an op_return.
     MalformattedOpReturnOutput,
     /// `extract_hash` identified a SH output prefix without a SH postfix.
@@ -74,38 +73,6 @@ pub enum SPVError {
     BadMerkleProof,
     /// Any other error
     UnknownError,
-}
-
-/// Enum for transaction input types
-#[derive(PartialEq, Eq, Clone, Copy, Debug, Serialize, Deserialize)]
-pub enum InputType {
-    /// Unknown input type, likely an error
-    InputNone,
-    /// Legacy input
-    Legacy,
-    /// Witness-over-scripthash Compatibility input
-    Compatibility,
-    /// Witness input
-    Witness,
-}
-
-/// Enum for transaction output types
-#[derive(PartialEq, Eq, Clone, Copy, Debug, Serialize, Deserialize)]
-pub enum OutputType {
-    /// Unknown output type, likely an error.
-    OutputNone,
-    /// Witness pubkeyhash output script.
-    WPKH,
-    /// Witness scripthash output script.
-    WSH,
-    /// OpReturn data output.
-    OpReturn,
-    /// Legacy pubkeyhash output script.
-    PKH,
-    /// Legacy scripthash output script.
-    SH,
-    /// Any other output script.
-    Nonstandard,
 }
 
 /// BitcoinHeader is a parsed Bitcoin header with height information appended.

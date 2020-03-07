@@ -16,6 +16,8 @@ library BTCUtils {
     uint256 public constant RETARGET_PERIOD = 2 * 7 * 24 * 60 * 60;  // 2 weeks in seconds
     uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
 
+    uint256 public constant ERR_BAD_ARG = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+
     /* ***** */
     /* UTILS */
     /* ***** */
@@ -36,6 +38,24 @@ library BTCUtils {
         }
 
         return 0;  // flag is data
+    }
+
+    /// @notice     Parse a VarInt into its data length and the number it represents
+    /// @dev        Useful for Parsing Vins and Vouts. Returns ERR_BAD_ARG if insufficient bytes.
+    ///             Caller SHOULD explicitly handle this case (or bubble it up)
+    /// @param _b   A byte-string starting with a VarInt
+    /// @return     number of bytes in the encoding (not counting the tag), the encoded int
+    function parseVarInt(bytes memory _b) internal pure returns (uint256, uint256) {
+      uint8 _dataLen = determineVarIntDataLength(_b);
+
+      if (_dataLen == 0) {
+        return (0, uint8(_b[0]));
+      }
+      if (_b.length < 1 + _dataLen) {
+          return (ERR_BAD_ARG, 0);
+      }
+      uint256 _number = bytesToUint(reverseEndianness(_b.slice(1, _dataLen)));
+      return (_dataLen, _number);
     }
 
     /// @notice          Changes the endianness of a byte array
@@ -137,20 +157,29 @@ library BTCUtils {
     /// @param _vin      The vin as a tightly-packed byte array
     /// @param _index    The 0-indexed location of the input to extract
     /// @return          The input as a byte array
-    function extractInputAtIndex(bytes memory _vin, uint8 _index) internal pure returns (bytes memory) {
-        uint256 _len;
+    function extractInputAtIndex(bytes memory _vin, uint256 _index) internal pure returns (bytes memory) {
+        uint256 _varIntDataLen;
+        uint256 _nIns;
+
+        (_varIntDataLen, _nIns) = parseVarInt(_vin);
+        require(_varIntDataLen != ERR_BAD_ARG, "Read overrun during VarInt parsing");
+        require(_index <= _nIns, "Vin read overrun");
+
         bytes memory _remaining;
 
-        uint256 _offset = 1;
+        uint256 _len = 0;
+        uint256 _offset = 1 + _varIntDataLen;
 
-        for (uint8 _i = 0; _i < _index; _i ++) {
+        for (uint256 _i = 0; _i < _index; _i ++) {
             _remaining = _vin.slice(_offset, _vin.length - _offset);
             _len = determineInputLength(_remaining);
+            require(_len != ERR_BAD_ARG, "Bad VarInt in scriptSig");
             _offset = _offset + _len;
         }
 
         _remaining = _vin.slice(_offset, _vin.length - _offset);
         _len = determineInputLength(_remaining);
+        require(_len != ERR_BAD_ARG, "Bad VarInt in scriptSig");
         return _vin.slice(_offset, _len);
     }
 
@@ -162,14 +191,35 @@ library BTCUtils {
         return _input.keccak256Slice(36, 1) != keccak256(hex"00");
     }
 
+    /// @notice          Determines the length of a scriptSig in an input
+    /// @dev             Will return 0 if passed a witness input.
+    /// @param _input    The LEGACY input
+    /// @return          The length of the script sig
+    function extractScriptSigLen(bytes memory _input) internal pure returns (uint256, uint256) {
+        if (_input.length < 37) {
+          return (ERR_BAD_ARG, 0);
+        }
+        bytes memory _afterOutpoint = _input.slice(36, _input.length - 36);
+
+        uint256 _varIntDataLen;
+        uint256 _scriptSigLen;
+        (_varIntDataLen, _scriptSigLen) = parseVarInt(_afterOutpoint);
+
+        return (_varIntDataLen, _scriptSigLen);
+    }
+
     /// @notice          Determines the length of an input from its scriptsig
     /// @dev             36 for outpoint, 1 for scriptsig length, 4 for sequence
     /// @param _input    The input
     /// @return          The length of the input in bytes
     function determineInputLength(bytes memory _input) internal pure returns (uint256) {
-        uint8 _varIntDataLen;
+        uint256 _varIntDataLen;
         uint256 _scriptSigLen;
         (_varIntDataLen, _scriptSigLen) = extractScriptSigLen(_input);
+        if (_varIntDataLen == ERR_BAD_ARG) {
+          return ERR_BAD_ARG;
+        }
+
         return 36 + 1 + _varIntDataLen + _scriptSigLen + 4;
     }
 
@@ -178,9 +228,10 @@ library BTCUtils {
     /// @param _input    The LEGACY input
     /// @return          The sequence bytes (LE uint)
     function extractSequenceLELegacy(bytes memory _input) internal pure returns (bytes memory) {
-        uint8 _varIntDataLen;
+        uint256 _varIntDataLen;
         uint256 _scriptSigLen;
         (_varIntDataLen, _scriptSigLen) = extractScriptSigLen(_input);
+        require(_varIntDataLen != ERR_BAD_ARG, "Bad VarInt in scriptSig");
         return _input.slice(36 + 1 + _varIntDataLen + _scriptSigLen, 4);
     }
 
@@ -198,26 +249,11 @@ library BTCUtils {
     /// @param _input    The LEGACY input
     /// @return          The length-prepended script sig
     function extractScriptSig(bytes memory _input) internal pure returns (bytes memory) {
-        uint8 _varIntDataLen;
+        uint256 _varIntDataLen;
         uint256 _scriptSigLen;
         (_varIntDataLen, _scriptSigLen) = extractScriptSigLen(_input);
+        require(_varIntDataLen != ERR_BAD_ARG, "Bad VarInt in scriptSig");
         return _input.slice(36, 1 + _varIntDataLen + _scriptSigLen);
-    }
-
-    /// @notice          Determines the length of a scriptSig in an input
-    /// @dev             Will return 0 if passed a witness input
-    /// @param _input    The LEGACY input
-    /// @return          The length of the script sig
-    function extractScriptSigLen(bytes memory _input) internal pure returns (uint8, uint256) {
-        bytes memory _varIntTag = _input.slice(36, 1);
-        uint8 _varIntDataLen = determineVarIntDataLength(_varIntTag);
-        uint256 _len;
-        if (_varIntDataLen == 0) {
-            _len = uint8(_varIntTag[0]);
-        } else {
-            _len = bytesToUint(reverseEndianness(_input.slice(36 + 1, _varIntDataLen)));
-        }
-        return (_varIntDataLen, _len);
     }
 
 
@@ -267,16 +303,6 @@ library BTCUtils {
         return _input.slice(32, 4);
     }
 
-    /// @notice          Extracts the tx input index from the input in a tx
-    /// @dev             4 byte tx index
-    /// @param _input    The input
-    /// @return          The tx index (big-endian uint)
-    function extractTxIndex(bytes memory _input) internal pure returns (uint32) {
-        bytes memory _leIndex = extractTxIndexLE(_input);
-        bytes memory _beIndex = reverseEndianness(_leIndex);
-        return uint32(bytesToUint(_beIndex));
-    }
-
     /* ****** */
     /* Output */
     /* ****** */
@@ -286,10 +312,21 @@ library BTCUtils {
     /// @param _output   The output
     /// @return          The length indicated by the prefix, error if invalid length
     function determineOutputLength(bytes memory _output) internal pure returns (uint256) {
-        uint8 _len = uint8(_output.slice(8, 1)[0]);
-        require(_len < 0xfd, "Multi-byte VarInts not supported");
+        if (_output.length < 9) {
+          return ERR_BAD_ARG;
+        }
+        bytes memory _afterValue = _output.slice(8, _output.length - 8);
 
-        return uint256(_len) + 8 + 1; // 8 byte value, 1 byte for _len itself
+        uint256 _varIntDataLen;
+        uint256 _scriptPubkeyLength;
+        (_varIntDataLen, _scriptPubkeyLength) = parseVarInt(_afterValue);
+
+        if (_varIntDataLen == ERR_BAD_ARG) {
+          return ERR_BAD_ARG;
+        }
+
+        // 8 byte value, 1 byte for tag itself
+        return 8 + 1 + _varIntDataLen + _scriptPubkeyLength;
     }
 
     /// @notice          Extracts the output at a given index in the TxIns vector
@@ -297,20 +334,30 @@ library BTCUtils {
     /// @param _vout     The _vout to extract from
     /// @param _index    The 0-indexed location of the output to extract
     /// @return          The specified output
-    function extractOutputAtIndex(bytes memory _vout, uint8 _index) internal pure returns (bytes memory) {
-        uint256 _len;
+    function extractOutputAtIndex(bytes memory _vout, uint256 _index) internal pure returns (bytes memory) {
+        uint256 _varIntDataLen;
+        uint256 _nOuts;
+
+        (_varIntDataLen, _nOuts) = parseVarInt(_vout);
+        require(_varIntDataLen != ERR_BAD_ARG, "Read overrun during VarInt parsing");
+        require(_index <= _nOuts, "Vout read overrun");
+
         bytes memory _remaining;
 
-        uint256 _offset = 1;
+        uint256 _len = 0;
+        uint256 _offset = 1 + _varIntDataLen;
 
-        for (uint8 _i = 0; _i < _index; _i ++) {
+        for (uint256 _i = 0; _i < _index; _i ++) {
             _remaining = _vout.slice(_offset, _vout.length - _offset);
             _len = determineOutputLength(_remaining);
-            _offset = _offset + _len;
+            require(_len != ERR_BAD_ARG, "Bad VarInt in scriptPubkey");
+            _offset += _len;
         }
 
         _remaining = _vout.slice(_offset, _vout.length - _offset);
         _len = determineOutputLength(_remaining);
+        require(_len != ERR_BAD_ARG, "Bad VarInt in scriptPubkey");
+
         return _vout.slice(_offset, _len);
     }
 
@@ -400,23 +447,33 @@ library BTCUtils {
     /// @param _vin  Raw bytes length-prefixed input vector
     /// @return      True if it represents a validly formatted vin
     function validateVin(bytes memory _vin) internal pure returns (bool) {
-        uint256 _offset = 1;
-        uint8 _nIns = uint8(_vin.slice(0, 1)[0]);
+        uint256 _varIntDataLen;
+        uint256 _nIns;
+
+        (_varIntDataLen, _nIns) = parseVarInt(_vin);
 
         // Not valid if it says there are too many or no inputs
-        if (_nIns >= 0xfd || _nIns == 0) {
+        if (_nIns == 0 || _varIntDataLen == ERR_BAD_ARG) {
             return false;
         }
 
-        for (uint8 i = 0; i < _nIns; i++) {
-            // Grab the next input and determine its length.
-            // Increase the offset by that much
-            _offset += determineInputLength(_vin.slice(_offset, _vin.length - _offset));
+        uint256 _offset = 1 + _varIntDataLen;
 
-            // Returns false we jump past the end
-            if (_offset > _vin.length) {
-                return false;
+        for (uint256 i = 0; i < _nIns; i++) {
+            // If we're at the end, but still expect more
+            if (_offset >= _vin.length) {
+              return false;
             }
+
+            // Grab the next input and determine its length.
+            bytes memory _next = _vin.slice(_offset, _vin.length - _offset);
+            uint256 _nextLen = determineInputLength(_next);
+            if (_nextLen == ERR_BAD_ARG) {
+              return false;
+            }
+
+            // Increase the offset by that much
+            _offset += _nextLen;
         }
 
         // Returns false if we're not exactly at the end
@@ -428,23 +485,33 @@ library BTCUtils {
     /// @param _vout Raw bytes length-prefixed output vector
     /// @return      True if it represents a validly formatted bout
     function validateVout(bytes memory _vout) internal pure returns (bool) {
-        uint256 _offset = 1;
-        uint8 _nOuts = uint8(_vout.slice(0, 1)[0]);
+        uint256 _varIntDataLen;
+        uint256 _nOuts;
+
+        (_varIntDataLen, _nOuts) = parseVarInt(_vout);
 
         // Not valid if it says there are too many or no inputs
-        if (_nOuts >= 0xfd || _nOuts == 0) {
+        if (_nOuts == 0 || _varIntDataLen == ERR_BAD_ARG) {
             return false;
         }
 
-        for (uint8 i = 0; i < _nOuts; i++) {
-            // Grab the next input and determine its length.
-            // Increase the offset by that much
-            _offset += determineOutputLength(_vout.slice(_offset, _vout.length - _offset));
+        uint256 _offset = 1 + _varIntDataLen;
 
-            // Returns false we jump past the end
-            if (_offset > _vout.length) {
-                return false;
+        for (uint256 i = 0; i < _nOuts; i++) {
+            // If we're at the end, but still expect more
+            if (_offset >= _vout.length) {
+              return false;
             }
+
+            // Grab the next output and determine its length.
+            // Increase the offset by that much
+            bytes memory _next = _vout.slice(_offset, _vout.length - _offset);
+            uint256 _nextLen = determineOutputLength(_next);
+            if (_nextLen == ERR_BAD_ARG) {
+              return false;
+            }
+
+            _offset += _nextLen;
         }
 
         // Returns false if we're not exactly at the end

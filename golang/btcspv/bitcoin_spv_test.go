@@ -1,6 +1,7 @@
 package btcspv
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -224,7 +225,7 @@ func (suite *UtilsSuite) TestExtractSequenceWitness() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := uint(testCase.Output.(int))
+		expected := uint32(testCase.Output.(int))
 		actual := ExtractSequenceWitness(testCase.Input.([]byte))
 		suite.Equal(expected, actual)
 	}
@@ -246,9 +247,21 @@ func (suite *UtilsSuite) TestExtractSequenceLegacy() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := uint(testCase.Output.(int))
-		actual := ExtractSequenceLegacy(testCase.Input.([]byte))
+		expected := uint32(testCase.Output.(int))
+		actual, err := ExtractSequenceLegacy(testCase.Input.([]byte))
+		suite.Nil(err)
 		suite.Equal(expected, actual)
+	}
+
+	fixtureError := suite.Fixtures["extractSequenceLegacyError"]
+
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		errMsg := testCase.ErrorMessage.(string)
+
+		actual, err := ExtractSequenceLegacy(testCase.Input.([]byte))
+		suite.Equal(uint32(0), actual)
+		suite.EqualError(err, errMsg)
 	}
 }
 
@@ -258,8 +271,21 @@ func (suite *UtilsSuite) TestExtractSequenceLELegacy() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output.([]byte)
-		actual := ExtractSequenceLELegacy(testCase.Input.([]byte))
+
+		actual, err := ExtractSequenceLELegacy(testCase.Input.([]byte))
+		suite.Nil(err)
 		suite.Equal(expected, actual)
+	}
+
+	fixtureError := suite.Fixtures["extractSequenceLELegacyError"]
+
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		errMsg := testCase.ErrorMessage.(string)
+
+		actual, err := ExtractSequenceLELegacy(testCase.Input.([]byte))
+		suite.Equal([]byte{}, actual)
+		suite.EqualError(err, errMsg)
 	}
 }
 
@@ -357,9 +383,23 @@ func (suite *UtilsSuite) TestExtractInputAtIndex() {
 	for i := range fixture {
 		testCase := fixture[i]
 		input := testCase.Input.(map[string]interface{})
+		actual, err := ExtractInputAtIndex(input["vin"].([]byte), uint(input["index"].(int)))
+
 		expected := testCase.Output.([]byte)
-		actual := ExtractInputAtIndex(input["vin"].([]byte), uint8(input["index"].(int)))
+		suite.Nil(err)
 		suite.Equal(expected, actual)
+	}
+
+	fixtureError := suite.Fixtures["extractInputAtIndexError"]
+
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		input := testCase.Input.(map[string]interface{})
+		errMsg := testCase.ErrorMessage.(string)
+
+		actual, err := ExtractInputAtIndex(input["vin"].([]byte), uint(input["index"].(int)))
+		suite.Equal([]byte{}, actual)
+		suite.EqualError(err, errMsg)
 	}
 }
 
@@ -379,8 +419,9 @@ func (suite *UtilsSuite) TestDetermineInputLength() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := uint(testCase.Output.(int))
-		actual := DetermineInputLength(testCase.Input.([]byte))
+		expected := uint64(testCase.Output.(int))
+		actual, err := DetermineInputLength(testCase.Input.([]byte))
+		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
 }
@@ -391,8 +432,19 @@ func (suite *UtilsSuite) TestExtractScriptSig() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output.([]byte)
-		actual := ExtractScriptSig(testCase.Input.([]byte))
+		actual, err := ExtractScriptSig(testCase.Input.([]byte))
+		suite.Nil(err)
 		suite.Equal(expected, actual)
+	}
+
+	fixtureError := suite.Fixtures["extractScriptSigError"]
+
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		errMsg := testCase.ErrorMessage.(string)
+		actual, err := ExtractScriptSig(testCase.Input.([]byte))
+		suite.Equal([]byte{}, actual)
+		suite.EqualError(err, errMsg)
 	}
 }
 
@@ -402,7 +454,8 @@ func (suite *UtilsSuite) TestExtractScriptSigLen() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output.([]interface{})
-		actualDataLen, actualScriptSigLen := ExtractScriptSigLen(testCase.Input.([]byte))
+		actualDataLen, actualScriptSigLen, err := ExtractScriptSigLen(testCase.Input.([]byte))
+		suite.Nil(err)
 		suite.Equal(uint(expected[0].(int)), uint(actualDataLen))
 		suite.Equal(uint(expected[1].(int)), uint(actualScriptSigLen))
 	}
@@ -468,7 +521,7 @@ func (suite *UtilsSuite) TestDetermineOutputLength() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := uint(testCase.Output.(int))
+		expected := uint64(testCase.Output.(int))
 		actual, err := DetermineOutputLength(testCase.Input.([]byte))
 		suite.Nil(err)
 		suite.Equal(expected, actual)
@@ -480,7 +533,7 @@ func (suite *UtilsSuite) TestDetermineOutputLength() {
 		testCase := fixtureError[i]
 		expected := testCase.ErrorMessage.(string)
 		actual, err := DetermineOutputLength(testCase.Input.([]byte))
-		suite.Equal(actual, uint(0))
+		suite.Equal(actual, uint64(0))
 		suite.EqualError(err, expected)
 	}
 }
@@ -494,7 +547,7 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 		inputs := testCase.Input.(map[string]interface{})
 		vout := inputs["vout"].([]byte)
 		index := inputs["index"].(int)
-		actual, err := ExtractOutputAtIndex(vout, uint8(index))
+		actual, err := ExtractOutputAtIndex(vout, uint(index))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -502,11 +555,18 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 		suite.Equal(expected, actual)
 	}
 
-	// Error case. Use the 10 bytes to simulate a vout with a very long output
-	actual, err := ExtractOutputAtIndex([]byte{0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0xff}, 1)
-	expected := "Multi-byte VarInts not supported"
-	suite.Equal([]byte{}, actual)
-	suite.EqualError(err, expected)
+	fixtureError := suite.Fixtures["extractOutputAtIndexError"]
+
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		inputs := testCase.Input.(map[string]interface{})
+		vout := inputs["vout"].([]byte)
+		index := inputs["index"].(int)
+		expected := testCase.ErrorMessage.(string)
+		actual, err := ExtractOutputAtIndex(vout, uint(index))
+		suite.Equal([]byte{}, actual)
+		suite.EqualError(err, expected, "%s %d", hex.EncodeToString(vout), index)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractTarget() {

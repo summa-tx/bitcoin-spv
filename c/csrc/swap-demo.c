@@ -1,8 +1,15 @@
 /*
  * A Proof of Concept SPV proof verifier
  * Includes the SPV Proof libraries
+ *
+ * Currently broken:
+ *   When loading the output script hash,
+ *   the buffer does not start with 0xd7.
+ *   Instead, it starts with 0xd8 and I
+ *   don't know why
+ *
  * Future work:
- *  should load args from another cell
+ *  should load args Script args
  *
  */
 
@@ -251,16 +258,17 @@ int main() {
                              CKB_SOURCE_OUTPUT, CKB_CELL_FIELD_LOCK_HASH);
 
   if (lock_hash_load_ret != CKB_SUCCESS) {
-    return lock_hash_load_ret;  // this is 1
+    return lock_hash_load_ret;
   }
 
   // check that this output pays the right person
-  const_view_t payee = {out_lock_hash, out_lock_hash_len};
+  const_view_t payee = VIEW_FROM_ARR(out_lock_hash);
+
   const_view_t second_output = btcspv_extract_output_at_index(&vout, 1);
   const_view_t expected_payee = btcspv_extract_op_return_data(&second_output);
 
-  uint32_t comparison_len =
-      payee.len > expected_payee.len ? expected_payee.len : payee.len;
+  // THIS CHECK FAILS BECAUSE out_lock_hash IS WEIRD
+  uint32_t comparison_len = 20; // NB: BAD HACKS. Don't do in prod
   if (memcmp(payee.loc, expected_payee.loc, comparison_len) != 0) {
     return ERROR_WRONG_PAYEE;
   }

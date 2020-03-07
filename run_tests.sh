@@ -1,5 +1,5 @@
 # works_for_me.sh
-cd golang && go clean -testcache && go test ./... && \
+cd golang && go clean -testcache && go test ./... -cover && \
 cd ../js && npm run test:coverage && \
 cd ../solidity && npm run test && \
 cd ../python && pipenv run test && \

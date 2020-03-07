@@ -19,6 +19,16 @@ contract BTCUtilsTest {
         return BTCUtils.determineVarIntDataLength(_flag);
     }
 
+    /// @notice     Parse a VarInt into its data length and the number it represents
+    /// @dev        Useful for Parsing Vins and Vouts. Returns ERR_BAD_ARG if insufficient bytes.
+    ///             Caller SHOULD explicitly handle this case (or bubble it up)
+    /// @param _b   A byte-string starting with a VarInt
+    /// @return     number of bytes in the encoding (not counting the tag), the encoded int
+    function parseVarInt(bytes memory _b) public pure returns (uint256, uint256) {
+        return BTCUtils.parseVarInt(_b);
+    }
+
+
     /// @notice          Changes the endianness of a byte array
     /// @dev             Returns a new, backwards, bytes
     /// @param _b        The bytes to reverse
@@ -68,7 +78,7 @@ contract BTCUtilsTest {
     /// @param _vin      The vin as a tightly-packed byte array
     /// @param _index    The 0-indexed location of the input to extract
     /// @return          The input as a byte array
-    function extractInputAtIndex(bytes memory _vin, uint8 _index) public pure returns (bytes memory) {
+    function extractInputAtIndex(bytes memory _vin, uint256 _index) public pure returns (bytes memory) {
         return BTCUtils.extractInputAtIndex(_vin, _index);
     }
 
@@ -115,7 +125,7 @@ contract BTCUtilsTest {
     /// @dev             Will return 0 if passed a witness input
     /// @param _input    The LEGACY input
     /// @return          The length of the script sig
-    function extractScriptSigLen(bytes memory _input) public pure returns (uint8, uint256) {
+    function extractScriptSigLen(bytes memory _input) public pure returns (uint256, uint256) {
         return BTCUtils.extractScriptSigLen(_input);
     }
 
@@ -167,14 +177,6 @@ contract BTCUtilsTest {
     }
 
 
-    /// @notice          Extracts the tx input index from the input in a tx
-    /// @dev             4 byte tx index
-    /// @param _input    The input
-    /// @return          The tx index (big-endian uint)
-    function extractTxIndex(bytes memory _input) public pure returns (uint32) {
-        return BTCUtils.extractTxIndex(_input);
-    }
-
     /* ****** */
     /* Output */
     /* ****** */
@@ -192,7 +194,7 @@ contract BTCUtilsTest {
     /// @param _vout     The _vout to extract from
     /// @param _index    The 0-indexed location of the output to extract
     /// @return          The specified output
-    function extractOutputAtIndex(bytes memory _vout, uint8 _index) public pure returns (bytes memory) {
+    function extractOutputAtIndex(bytes memory _vout, uint256 _index) public pure returns (bytes memory) {
         return BTCUtils.extractOutputAtIndex(_vout, _index);
     }
 

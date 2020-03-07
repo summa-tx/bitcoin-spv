@@ -79,7 +79,7 @@ func ParseVout(vout []byte) string {
 	var formattedOutputs string
 	for i := 0; i < numOutputs; i++ {
 		// Extract each vout at the specified index
-		vout, err := btcspv.ExtractOutputAtIndex(vout, uint8(i))
+		vout, err := btcspv.ExtractOutputAtIndex(vout, uint(i))
 		if err != nil {
 			return fmt.Sprintf("%s\n", err)
 		}
@@ -129,7 +129,6 @@ func parseOutput(output []byte) (uint, OutputType, []byte) {
 
 	return value, outputType, payload
 }
-
 
 // GetOutputType returns the name of the output type associated with the number
 func GetOutputType(outputType OutputType) string {

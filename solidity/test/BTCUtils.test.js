@@ -15,33 +15,41 @@ const {
   hash256,
   hash256MerkleStep,
   extractOutpoint,
+  extractInputTxIdLE,
+  extractTxIndexLE,
   extractSequenceLEWitness,
   extractSequenceWitness,
   extractSequenceLELegacy,
   extractSequenceLegacy,
+  extractSequenceLegacyError,
   extractOutputScriptLen,
   extractHash,
   extractHashError,
   extractOpReturnData,
   extractOpReturnDataError,
   extractInputAtIndex,
+  extractInputAtIndexError,
   isLegacyInput,
   extractValueLE,
   extractValue,
   determineInputLength,
   extractScriptSig,
+  extractScriptSigError,
   extractScriptSigLen,
   validateVin,
   validateVout,
   determineOutputLength,
   determineOutputLengthError,
   extractOutputAtIndex,
+  extractOutputAtIndexError,
   extractMerkleRootLE,
   extractTarget,
   extractPrevBlockLE,
   extractTimestamp,
   verifyHash256Merkle,
   determineVarIntDataLength,
+  parseVarInt,
+  parseVarIntError,
   retargetAlgorithm
 } = vectors;
 
@@ -141,10 +149,37 @@ contract('BTCUtils', () => {
     }
   });
 
+  it('errors on bad varints in extractSequenceLegacy', async () => {
+    for (let i = 0; i < extractSequenceLegacyError.length; i += 1) {
+      try {
+        await instance.extractSequenceLegacy(
+          extractSequenceLegacyError[i].input
+        );
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, extractSequenceLegacyError[i].solidityError);
+      }
+    }
+  });
+
   it('extracts an outpoint as bytes', async () => {
-    for (let i = 0; i < extractSequenceLegacy.length; i += 1) {
+    for (let i = 0; i < extractOutpoint.length; i += 1) {
       const res = await instance.extractOutpoint(extractOutpoint[i].input);
       assert.strictEqual(res, extractOutpoint[i].output);
+    }
+  });
+
+  it('extracts an outpoint txid', async () => {
+    for (let i = 0; i < extractInputTxIdLE.length; i += 1) {
+      const res = await instance.extractInputTxIdLE(extractInputTxIdLE[i].input);
+      assert.strictEqual(res, extractInputTxIdLE[i].output);
+    }
+  });
+
+  it('extracts an outpoint tx index LE', async () => {
+    for (let i = 0; i < extractTxIndexLE.length; i += 1) {
+      const res = await instance.extractTxIndexLE(extractTxIndexLE[i].input);
+      assert.strictEqual(res, extractTxIndexLE[i].output);
     }
   });
 
@@ -218,6 +253,20 @@ contract('BTCUtils', () => {
     }
   });
 
+  it('extract input errors on bad vin', async () => {
+    for (let i = 0; i < extractInputAtIndexError.length; i += 1) {
+      try {
+        await instance.extractInputAtIndex(
+          extractInputAtIndexError[i].input.vin,
+          extractInputAtIndexError[i].input.index
+        );
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, extractInputAtIndexError[i].solidityError, `${extractInputAtIndexError[i].input.vin} ${extractInputAtIndexError[i].input.index}`);
+      }
+    }
+  });
+
   it('sorts legacy from witness inputs', async () => {
     for (let i = 0; i < isLegacyInput.length; i += 1) {
       const res = await instance.isLegacyInput(isLegacyInput[i].input);
@@ -229,6 +278,19 @@ contract('BTCUtils', () => {
     for (let i = 0; i < extractScriptSig.length; i += 1) {
       const res = await instance.extractScriptSig(extractScriptSig[i].input);
       assert.strictEqual(res, extractScriptSig[i].output);
+    }
+  });
+
+  it('errors on bad varints in extractScriptSig', async () => {
+    for (let i = 0; i < extractScriptSigError.length; i += 1) {
+      try {
+        await instance.extractScriptSig(
+          extractScriptSigError[i].input
+        );
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, extractScriptSigError[i].solidityError);
+      }
     }
   });
 
@@ -272,15 +334,6 @@ contract('BTCUtils', () => {
         `Output Length Test Failed: expected ${expected.toString()}, got ${res.toString()}`
       );
     }
-
-    for (let i = 0; i < determineOutputLengthError.length; i += 1) {
-      try {
-        await instance.determineOutputLength(determineOutputLengthError[i].input);
-        assert(false, 'Expected an error');
-      } catch (e) {
-        assert.include(e.message, determineOutputLengthError[i].errorMessage);
-      }
-    }
   });
 
   it('extracts outputs at specified indices', async () => {
@@ -290,6 +343,19 @@ contract('BTCUtils', () => {
         extractOutputAtIndex[i].input.index
       );
       assert.strictEqual(res, extractOutputAtIndex[i].output);
+    }
+  });
+
+  it('errors while extracting outputs at specified indices', async () => {
+    for (let i = 0; i < extractOutputAtIndexError.length; i += 1) {
+      try {
+        await instance.extractOutputAtIndex(
+          extractOutputAtIndexError[i].input.vout,
+          extractOutputAtIndexError[i].input.index
+        );
+      } catch (e) {
+        assert.include(e.message, extractOutputAtIndexError[i].solidityError, `${extractOutputAtIndexError[i].input.vout} ${extractOutputAtIndexError[i].input.index}`);
+      }
     }
   });
 
@@ -335,6 +401,22 @@ contract('BTCUtils', () => {
     for (let i = 0; i < determineVarIntDataLength.length; i += 1) {
       const res = await instance.determineVarIntDataLength(`0x${(determineVarIntDataLength[i].input).toString(16)}`);
       assert(res.eq(new BN(determineVarIntDataLength[i].output, 10)));
+    }
+  });
+
+  it('parses VarInts', async () => {
+    for (let i = 0; i < parseVarInt.length; i += 1) {
+      const res = await instance.parseVarInt(parseVarInt[i].input);
+      assert(res[0].eq(new BN(parseVarInt[i].output[0], 10)));
+      assert(res[1].eq(new BN(parseVarInt[i].output[1], 10)));
+    }
+  });
+
+  it('returns error for invalid VarInts', async () => {
+    for (let i = 0; i < parseVarIntError.length; i += 1) {
+      const res = await instance.parseVarInt(parseVarIntError[i].input);
+      assert(res[0].eq(new BN("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16)), "did not get error code");
+      assert(res[1].eq(new BN(0, 10)), `got non-0 value: ${res[1].toString()}`);
     }
   });
 

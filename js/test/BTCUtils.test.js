@@ -22,6 +22,7 @@ const {
   extractOpReturnData,
   extractOpReturnDataError,
   extractInputAtIndex,
+  extractInputAtIndexError,
   isLegacyInput,
   extractValueLE,
   extractValue,
@@ -36,10 +37,12 @@ const {
   determineOutputLength,
   determineOutputLengthError,
   extractOutputAtIndex,
+  extractOutputAtIndexError,
   extractTarget,
   extractTimestamp,
   verifyHash256Merkle,
   determineVarIntDataLength,
+  parseVarInt,
   retargetAlgorithm,
   calculateDifficultyError
 } = vectorObj;
@@ -174,6 +177,17 @@ describe('BTCUtils', () => {
       const arraysAreEqual = utils.typedArraysAreEqual(res, extractInputAtIndex[i].output);
       assert.isTrue(arraysAreEqual);
     }
+
+    try {
+      const res = BTCUtils.extractInputAtIndex(
+        extractInputAtIndexError[0].input.vin,
+        extractInputAtIndexError[0].input.index
+      );
+      assert(false, 'expected an error');
+    } catch (e) {
+      const errorMessage = extractInputAtIndexError[0].errorMessage;
+      assert.include(e.message, errorMessage);
+    }
   });
 
   it('sorts legacy from witness inputs', () => {
@@ -201,7 +215,7 @@ describe('BTCUtils', () => {
   it('extracts the length of the VarInt and scriptSig from inputs', () => {
     for (let i = 0; i < extractScriptSigLen.length; i += 1) {
       const res = BTCUtils.extractScriptSigLen(extractScriptSigLen[i].input);
-      assert.strictEqual(res.dataLen, BigInt(extractScriptSigLen[i].output[0]));
+      assert.strictEqual(res.dataLength, BigInt(extractScriptSigLen[i].output[0]));
       assert.strictEqual(res.scriptSigLen, BigInt(extractScriptSigLen[i].output[1]));
     }
   });
@@ -245,6 +259,16 @@ describe('BTCUtils', () => {
       const arraysAreEqual = utils.typedArraysAreEqual(res, extractOutputAtIndex[i].output);
       assert.isTrue(arraysAreEqual);
     }
+
+    try {
+      BTCUtils.extractOutputAtIndex(
+        extractOutputAtIndexError[2].input.vout,
+        extractOutputAtIndexError[2].input.index
+      );
+      assert(false, 'Expected an error');
+    } catch (e) {
+      assert.include(e.message, extractOutputAtIndexError[2].errorMessage);
+    }
   });
 
   it('extracts the target from a header', () => {
@@ -273,6 +297,22 @@ describe('BTCUtils', () => {
     for (let i = 0; i < determineVarIntDataLength.length; i += 1) {
       const res = BTCUtils.determineVarIntDataLength(determineVarIntDataLength[i].input);
       assert.strictEqual(res, determineVarIntDataLength[i].output);
+    }
+  });
+
+  it('parses VarInts', () => {
+    for (let i = 0; i < parseVarInt.length; i += 1) {
+      const res = BTCUtils.parseVarInt(parseVarInt[i].input);
+      assert.strictEqual(res.dataLength, BigInt(parseVarInt[i].output[0]));
+      assert.strictEqual(res.number, BigInt(parseVarInt[i].output[1]));
+    }
+
+    // checks overrun
+    try {
+      BTCUtils.parseVarInt([0xff]);
+      assert(false, 'expected an error');
+    } catch (e) {
+      assert.include(e.message, "Read overrun during VarInt parsing");
     }
   });
 

@@ -8,7 +8,6 @@ import (
 	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
 )
 
-
 // InputType an enum of types of bitcoin inputs
 type InputType int
 
@@ -19,7 +18,6 @@ const (
 	Compatibility InputType = 2
 	Witness       InputType = 3
 )
-
 
 func prettifyInput(numInput int, outpoint btcspv.Hash256Digest, index uint, inputType InputType, sequence uint) string {
 	outpointStr := hex.EncodeToString(outpoint[:])
@@ -44,7 +42,7 @@ func ParseVin(vin []byte) string {
 	var formattedInputs string
 	for i := 0; i < numInputs; i++ {
 		// Extract each vin at the specified index
-		vin := btcspv.ExtractInputAtIndex(vin, uint8(i))
+		vin, _ := btcspv.ExtractInputAtIndex(vin, uint(i))
 
 		// Use ParseInput to get more information about the vin
 		sequence, inputID, inputIndex, inputType := parseInput(vin)
@@ -60,7 +58,6 @@ func ParseVin(vin []byte) string {
 	return formattedInputs
 }
 
-
 // ExtractInputTxID returns the input tx id bytes
 func ExtractInputTxID(input []byte) btcspv.Hash256Digest {
 	LE := btcspv.ExtractInputTxIDLE(input)
@@ -72,12 +69,12 @@ func ExtractInputTxID(input []byte) btcspv.Hash256Digest {
 func parseInput(input []byte) (uint, btcspv.Hash256Digest, uint, InputType) {
 	// NB: If the scriptsig is exactly 00, we are Witness.
 	// Otherwise we are Compatibility or Legacy
-	var sequence uint
+	var sequence uint32
 	var witnessTag []byte
 	var inputType InputType
 
 	if input[36] != 0 {
-		sequence = btcspv.ExtractSequenceLegacy(input)
+		sequence, _ = btcspv.ExtractSequenceLegacy(input)
 		witnessTag = input[36:39]
 
 		if bytes.Equal(witnessTag, []byte{34, 0, 32}) || bytes.Equal(witnessTag, []byte{22, 0, 20}) {
@@ -93,7 +90,7 @@ func parseInput(input []byte) (uint, btcspv.Hash256Digest, uint, InputType) {
 	inputID := ExtractInputTxID(input)
 	inputIndex := btcspv.ExtractTxIndex(input)
 
-	return sequence, inputID, inputIndex, inputType
+	return uint(sequence), inputID, inputIndex, inputType
 }
 
 // GetInputType returns the name of the input type associated with the number
