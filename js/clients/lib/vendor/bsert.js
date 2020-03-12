@@ -34,7 +34,6 @@
  * https://github.com/chjj/bsert
  */
 
-'use strict';
 
 /**
  * AssertionError
@@ -42,21 +41,17 @@
 
 class AssertionError extends Error {
   constructor(options) {
-    if (typeof options === 'string')
-      options = { message: options };
+    if (typeof options === 'string') { options = { message: options }; }
 
-    if (options === null || typeof options !== 'object')
-      options = {};
+    if (options === null || typeof options !== 'object') { options = {}; }
 
     let message = null;
     let operator = 'fail';
     let generatedMessage = Boolean(options.generatedMessage);
 
-    if (options.message != null)
-      message = toString(options.message);
+    if (options.message != null) { message = toString(options.message); }
 
-    if (typeof options.operator === 'string')
-      operator = options.operator;
+    if (typeof options.operator === 'string') { operator = options.operator; }
 
     if (message == null) {
       if (operator === 'fail') {
@@ -75,10 +70,7 @@ class AssertionError extends Error {
 
     let start = this.constructor;
 
-    if (typeof options.stackStartFunction === 'function')
-      start = options.stackStartFunction;
-    else if (typeof options.stackStartFn === 'function')
-      start = options.stackStartFn;
+    if (typeof options.stackStartFunction === 'function') { start = options.stackStartFunction; } else if (typeof options.stackStartFn === 'function') { start = options.stackStartFn; }
 
     this.type = 'AssertionError';
     this.name = 'AssertionError [ERR_ASSERTION]';
@@ -88,8 +80,7 @@ class AssertionError extends Error {
     this.expected = options.expected;
     this.operator = operator;
 
-    if (Error.captureStackTrace)
-      Error.captureStackTrace(this, start);
+    if (Error.captureStackTrace) { Error.captureStackTrace(this, start); }
   }
 }
 
@@ -124,8 +115,7 @@ function assert(value, message) {
 
 function equal(actual, expected, message) {
   if (!Object.is(actual, expected)) {
-    if (isError(message))
-      throw message;
+    if (isError(message)) { throw message; }
 
     throw new AssertionError({
       message,
@@ -139,8 +129,7 @@ function equal(actual, expected, message) {
 
 function notEqual(actual, expected, message) {
   if (Object.is(actual, expected)) {
-    if (isError(message))
-      throw message;
+    if (isError(message)) { throw message; }
 
     throw new AssertionError({
       message,
@@ -155,8 +144,7 @@ function notEqual(actual, expected, message) {
 function fail(message) {
   let generatedMessage = false;
 
-  if (isError(message))
-    throw message;
+  if (isError(message)) { throw message; }
 
   if (message == null) {
     message = 'Assertion failed.';
@@ -209,8 +197,7 @@ function throws(func, expected, message) {
     });
   }
 
-  if (!testError(err, expected, message, throws))
-    throw err;
+  if (!testError(err, expected, message, throws)) { throw err; }
 }
 
 function doesNotThrow(func, expected, message) {
@@ -231,8 +218,7 @@ function doesNotThrow(func, expected, message) {
     err = e;
   }
 
-  if (!thrown)
-    return;
+  if (!thrown) { return; }
 
   if (testError(err, expected, message, doesNotThrow)) {
     let generatedMessage = false;
@@ -264,14 +250,10 @@ async function rejects(func, expected, message) {
   let thrown = false;
   let err = null;
 
-  if (typeof func !== 'function')
-    enforce(isPromise(func), 'func', 'promise');
+  if (typeof func !== 'function') { enforce(isPromise(func), 'func', 'promise'); }
 
   try {
-    if (isPromise(func))
-      await func;
-    else
-      await func();
+    if (isPromise(func)) { await func; } else { await func(); }
   } catch (e) {
     thrown = true;
     err = e;
@@ -295,8 +277,7 @@ async function rejects(func, expected, message) {
     });
   }
 
-  if (!testError(err, expected, message, rejects))
-    throw err;
+  if (!testError(err, expected, message, rejects)) { throw err; }
 }
 
 async function doesNotReject(func, expected, message) {
@@ -308,21 +289,16 @@ async function doesNotReject(func, expected, message) {
   let thrown = false;
   let err = null;
 
-  if (typeof func !== 'function')
-    enforce(isPromise(func), 'func', 'promise');
+  if (typeof func !== 'function') { enforce(isPromise(func), 'func', 'promise'); }
 
   try {
-    if (isPromise(func))
-      await func;
-    else
-      await func();
+    if (isPromise(func)) { await func; } else { await func(); }
   } catch (e) {
     thrown = true;
     err = e;
   }
 
-  if (!thrown)
-    return;
+  if (!thrown) { return; }
 
   if (testError(err, expected, message, doesNotReject)) {
     let generatedMessage = false;
@@ -350,10 +326,7 @@ function ifError(err) {
     let message = 'ifError got unwanted exception: ';
 
     if (typeof err === 'object' && typeof err.message === 'string') {
-      if (err.message.length === 0 && err.constructor)
-        message += err.constructor.name;
-      else
-        message += err.message;
+      if (err.message.length === 0 && err.constructor) { message += err.constructor.name; } else { message += err.message; }
     } else {
       message += stringify(err);
     }
@@ -371,8 +344,7 @@ function ifError(err) {
 
 function deepEqual(actual, expected, message) {
   if (!isDeepEqual(actual, expected, false)) {
-    if (isError(message))
-      throw message;
+    if (isError(message)) { throw message; }
 
     throw new AssertionError({
       message,
@@ -386,8 +358,7 @@ function deepEqual(actual, expected, message) {
 
 function notDeepEqual(actual, expected, message) {
   if (isDeepEqual(actual, expected, true)) {
-    if (isError(message))
-      throw message;
+    if (isError(message)) { throw message; }
 
     throw new AssertionError({
       message,
@@ -405,8 +376,7 @@ function bufferEqual(actual, expected, enc, message) {
     enc = null;
   }
 
-  if (enc == null)
-    enc = 'hex';
+  if (enc == null) { enc = 'hex'; }
 
   expected = bufferize(actual, expected, enc);
 
@@ -414,8 +384,7 @@ function bufferEqual(actual, expected, enc, message) {
   enforce(isBuffer(expected), 'expected', 'buffer');
 
   if (actual !== expected && !actual.equals(expected)) {
-    if (isError(message))
-      throw message;
+    if (isError(message)) { throw message; }
 
     throw new AssertionError({
       message,
@@ -433,8 +402,7 @@ function notBufferEqual(actual, expected, enc, message) {
     enc = null;
   }
 
-  if (enc == null)
-    enc = 'hex';
+  if (enc == null) { enc = 'hex'; }
 
   expected = bufferize(actual, expected, enc);
 
@@ -442,8 +410,7 @@ function notBufferEqual(actual, expected, enc, message) {
   enforce(isBuffer(expected), 'expected', 'buffer');
 
   if (actual === expected || actual.equals(expected)) {
-    if (isError(message))
-      throw message;
+    if (isError(message)) { throw message; }
 
     throw new AssertionError({
       message,
@@ -461,17 +428,11 @@ function enforce(value, name, type) {
 
     if (name == null) {
       msg = 'Invalid type for parameter.';
-    } else {
-      if (type == null)
-        msg = `Invalid type for "${name}".`;
-      else
-        msg = `"${name}" must be a(n) ${type}.`;
-    }
+    } else if (type == null) { msg = `Invalid type for "${name}".`; } else { msg = `"${name}" must be a(n) ${type}.`; }
 
     const err = new TypeError(msg);
 
-    if (Error.captureStackTrace)
-      Error.captureStackTrace(err, enforce);
+    if (Error.captureStackTrace) { Error.captureStackTrace(err, enforce); }
 
     throw err;
   }
@@ -485,8 +446,7 @@ function range(value, name) {
 
     const err = new RangeError(msg);
 
-    if (Error.captureStackTrace)
-      Error.captureStackTrace(err, range);
+    if (Error.captureStackTrace) { Error.captureStackTrace(err, range); }
 
     throw err;
   }
@@ -501,16 +461,14 @@ function stringify(value) {
     case 'undefined':
       return 'undefined';
     case 'object':
-      if (value === null)
-        return 'null';
+      if (value === null) { return 'null'; }
       return `[${objectName(value)}]`;
     case 'boolean':
       return `${value}`;
     case 'number':
       return `${value}`;
     case 'string':
-      if (value.length > 80)
-        value = `${value.substring(0, 77)}...`;
+      if (value.length > 80) { value = `${value.substring(0, 77)}...`; }
       return JSON.stringify(value);
     case 'symbol':
       return tryString(value);
@@ -524,11 +482,9 @@ function stringify(value) {
 }
 
 function toString(value) {
-  if (typeof value === 'string')
-    return value;
+  if (typeof value === 'string') { return value; }
 
-  if (isError(value))
-    return tryString(value);
+  if (isError(value)) { return tryString(value); }
 
   return stringify(value);
 }
@@ -546,18 +502,14 @@ function tryString(value) {
  */
 
 function testError(err, expected, message, func) {
-  if (expected == null)
-    return true;
+  if (expected == null) { return true; }
 
-  if (isRegExp(expected))
-    return expected.test(err);
+  if (isRegExp(expected)) { return expected.test(err); }
 
   if (typeof expected !== 'function') {
-    if (func === doesNotThrow || func === doesNotReject)
-      throw new TypeError('"expected" must not be an object.');
+    if (func === doesNotThrow || func === doesNotReject) { throw new TypeError('"expected" must not be an object.'); }
 
-    if (typeof expected !== 'object')
-      throw new TypeError('"expected" must be an object.');
+    if (typeof expected !== 'object') { throw new TypeError('"expected" must be an object.'); }
 
     let generatedMessage = false;
 
@@ -580,11 +532,9 @@ function testError(err, expected, message, func) {
 
     const keys = Object.keys(expected);
 
-    if (isError(expected))
-      keys.push('name', 'message');
+    if (isError(expected)) { keys.push('name', 'message'); }
 
-    if (keys.length === 0)
-      throw new TypeError('"expected" may not be an empty object.');
+    if (keys.length === 0) { throw new TypeError('"expected" may not be an empty object.'); }
 
     for (const key of keys) {
       const expect = expected[key];
@@ -596,12 +546,11 @@ function testError(err, expected, message, func) {
         continue;
       }
 
-      if ((key in err) && isDeepEqual(value, expect, false))
-        continue;
+      if ((key in err) && isDeepEqual(value, expect, false)) { continue; }
 
       throw new AssertionError({
         actual: err,
-        expected: expected,
+        expected,
         message,
         operator: func.name,
         generatedMessage,
@@ -612,11 +561,9 @@ function testError(err, expected, message, func) {
     return true;
   }
 
-  if (expected.prototype !== undefined && (err instanceof expected))
-    return true;
+  if (expected.prototype !== undefined && (err instanceof expected)) { return true; }
 
-  if (Error.isPrototypeOf(expected))
-    return false;
+  if (Error.isPrototypeOf(expected)) { return false; }
 
   return expected.call({}, err) === true;
 }
@@ -635,24 +582,18 @@ function isDeepEqual(x, y, fail) {
 
 function compare(a, b, cache) {
   // Primitives.
-  if (Object.is(a, b))
-    return true;
+  if (Object.is(a, b)) { return true; }
 
-  if (!isObject(a) || !isObject(b))
-    return false;
+  if (!isObject(a) || !isObject(b)) { return false; }
 
   // Semi-primitives.
-  if (objectString(a) !== objectString(b))
-    return false;
+  if (objectString(a) !== objectString(b)) { return false; }
 
-  if (Object.getPrototypeOf(a) !== Object.getPrototypeOf(b))
-    return false;
+  if (Object.getPrototypeOf(a) !== Object.getPrototypeOf(b)) { return false; }
 
-  if (isBuffer(a) && isBuffer(b))
-    return a.equals(b);
+  if (isBuffer(a) && isBuffer(b)) { return a.equals(b); }
 
-  if (isDate(a))
-    return Object.is(a.getTime(), b.getTime());
+  if (isDate(a)) { return Object.is(a.getTime(), b.getTime()); }
 
   if (isRegExp(a)) {
     return a.source === b.source
@@ -663,8 +604,7 @@ function compare(a, b, cache) {
   }
 
   if (isError(a)) {
-    if (a.message !== b.message)
-      return false;
+    if (a.message !== b.message) { return false; }
   }
 
   if (isArrayBuffer(a)) {
@@ -673,26 +613,22 @@ function compare(a, b, cache) {
   }
 
   if (isView(a) && !isBuffer(a)) {
-    if (isBuffer(b))
-      return false;
+    if (isBuffer(b)) { return false; }
 
     const x = new Uint8Array(a.buffer);
     const y = new Uint8Array(b.buffer);
 
-    if (x.length !== y.length)
-      return false;
+    if (x.length !== y.length) { return false; }
 
     for (let i = 0; i < x.length; i++) {
-      if (x[i] !== y[i])
-        return false;
+      if (x[i] !== y[i]) { return false; }
     }
 
     return true;
   }
 
   if (isSet(a)) {
-    if (a.size !== b.size)
-      return false;
+    if (a.size !== b.size) { return false; }
 
     const keys = new Set([...a, ...b]);
 
@@ -711,8 +647,7 @@ function compare(a, b, cache) {
 
     if (aa != null) {
       const bb = cache.b.get(b);
-      if (bb != null)
-        return aa === bb;
+      if (bb != null) { return aa === bb; }
     }
 
     cache.p += 1;
@@ -731,29 +666,24 @@ function compare(a, b, cache) {
 
 function recurse(a, b, cache) {
   if (isMap(a)) {
-    if (a.size !== b.size)
-      return false;
+    if (a.size !== b.size) { return false; }
 
     const keys = new Set([...a.keys(), ...b.keys()]);
 
-    if (keys.size !== a.size)
-      return false;
+    if (keys.size !== a.size) { return false; }
 
     for (const key of keys) {
-      if (!compare(a.get(key), b.get(key), cache))
-        return false;
+      if (!compare(a.get(key), b.get(key), cache)) { return false; }
     }
 
     return true;
   }
 
   if (isArray(a)) {
-    if (a.length !== b.length)
-      return false;
+    if (a.length !== b.length) { return false; }
 
     for (let i = 0; i < a.length; i++) {
-      if (!compare(a[i], b[i], cache))
-        return false;
+      if (!compare(a[i], b[i], cache)) { return false; }
     }
 
     return true;
@@ -762,17 +692,14 @@ function recurse(a, b, cache) {
   const ak = ownKeys(a);
   const bk = ownKeys(b);
 
-  if (ak.length !== bk.length)
-    return false;
+  if (ak.length !== bk.length) { return false; }
 
   const keys = new Set([...ak, ...bk]);
 
-  if (keys.size !== ak.length)
-    return false;
+  if (keys.size !== ak.length) { return false; }
 
   for (const key of keys) {
-    if (!compare(a[key], b[key], cache))
-      return false;
+    if (!compare(a[key], b[key], cache)) { return false; }
   }
 
   return true;
@@ -781,19 +708,16 @@ function recurse(a, b, cache) {
 function ownKeys(obj) {
   const keys = Object.keys(obj);
 
-  if (!Object.getOwnPropertySymbols)
-    return keys;
+  if (!Object.getOwnPropertySymbols) { return keys; }
 
-  if (!Object.getOwnPropertyDescriptor)
-    return keys;
+  if (!Object.getOwnPropertyDescriptor) { return keys; }
 
   const symbols = Object.getOwnPropertySymbols(obj);
 
   for (const symbol of symbols) {
     const desc = Object.getOwnPropertyDescriptor(obj, symbol);
 
-    if (desc && desc.enumerable)
-      keys.push(symbol);
+    if (desc && desc.enumerable) { keys.push(symbol); }
   }
 
   return keys;
@@ -804,11 +728,9 @@ function ownKeys(obj) {
  */
 
 function objectString(obj) {
-  if (obj === undefined)
-    return '[object Undefined]';
+  if (obj === undefined) { return '[object Undefined]'; }
 
-  if (obj === null)
-    return '[object Null]';
+  if (obj === null) { return '[object Null]'; }
 
   try {
     return Object.prototype.toString.call(obj);
@@ -824,22 +746,20 @@ function objectType(obj) {
 function objectName(obj) {
   const type = objectType(obj);
 
-  if (obj == null)
-    return type;
+  if (obj == null) { return type; }
 
-  if (type !== 'Object' && type !== 'Error')
-    return type;
+  if (type !== 'Object' && type !== 'Error') { return type; }
 
-  let ctor, name;
+  let ctor; let
+    name;
 
   try {
     ctor = obj.constructor;
   } catch (e) {
-    ;
+
   }
 
-  if (ctor == null)
-    return type;
+  if (ctor == null) { return type; }
 
   try {
     name = ctor.name;
@@ -847,8 +767,7 @@ function objectName(obj) {
     return type;
   }
 
-  if (typeof name !== 'string' || name.length === 0)
-    return type;
+  if (typeof name !== 'string' || name.length === 0) { return type; }
 
   return name;
 }
@@ -859,11 +778,10 @@ function funcName(func) {
   try {
     name = func.name;
   } catch (e) {
-    ;
+
   }
 
-  if (typeof name !== 'string' || name.length === 0)
-    return 'Function';
+  if (typeof name !== 'string' || name.length === 0) { return 'Function'; }
 
   return `Function: ${name}`;
 }
@@ -915,8 +833,7 @@ function isView(obj) {
 }
 
 function isEncoding(enc) {
-  if (typeof enc !== 'string')
-    return false;
+  if (typeof enc !== 'string') { return false; }
 
   switch (enc) {
     case 'ascii':
@@ -935,24 +852,19 @@ function isEncoding(enc) {
 
 function bufferize(actual, expected, enc) {
   if (typeof expected === 'string') {
-    if (!isBuffer(actual))
-      return null;
+    if (!isBuffer(actual)) { return null; }
 
-    const {constructor} = actual;
+    const { constructor } = actual;
 
-    if (!constructor || typeof constructor.from !== 'function')
-      return null;
+    if (!constructor || typeof constructor.from !== 'function') { return null; }
 
-    if (!isEncoding(enc))
-      return null;
+    if (!isEncoding(enc)) { return null; }
 
-    if (enc === 'hex' && (expected.length & 1))
-      return null;
+    if (enc === 'hex' && (expected.length & 1)) { return null; }
 
     const raw = constructor.from(expected, enc);
 
-    if (enc === 'hex' && raw.length !== (expected.length >>> 1))
-      return null;
+    if (enc === 'hex' && raw.length !== (expected.length >>> 1)) { return null; }
 
     return raw;
   }

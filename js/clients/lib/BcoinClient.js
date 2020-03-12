@@ -1,16 +1,22 @@
-/*!
- * BcoinClient.js - bcoin based proof fetcher
- * Copyright (c) 2019, Mark Tyneway (Apache-2.0 License).
- * https://github.com/summa-tx/agoric-bitcoin-spv
- */
+/**
+*
+* @file Part of the [bitcoin-spv]{@link https://github.com/summa-tx/bitcoin-spv} project
+*
+* @title BcoinClient
+* @summary bcoin based proof fetcher
+* @author Mark Tyneway <mark.tyneway@gmail.com>
+* @copyright (c) [Summa]{@link https://summa.one} 2019
+* @module clients
+*
+*/
 
-'use strict';
 
-const {NodeClient} = require('./vendor/bclient');
+const { NodeClient } = require('./vendor/bclient');
 const assert = require('./vendor/bsert');
 const hash256 = require('./vendor/hash256');
 const merkle = require('./vendor/merkle');
-const {utils, BTCUtils} = require('../js/dist');
+const BN = require('./vendor/bn');
+const { utils, BTCUtils } = require('../../dist');
 
 /**
  * BcoinClient extends the bcoin NodeClient
@@ -19,12 +25,11 @@ const {utils, BTCUtils} = require('../js/dist');
  */
 class BcoinClient extends NodeClient {
   /**
-   * bcoinclient constructor.
+   * bcoinclient constructor
+   * NB: none since constructor doesn't do anything
+   * (see: eslint-no-useless-constructor)
    * @param {object} options
    */
-  constructor(options) {
-    super(options);
-  }
 
   /**
    * Retrieve a block header.
@@ -38,35 +43,49 @@ class BcoinClient extends NodeClient {
   }
 
   /**
-   * @params {String} txid - big endian
-   * @params {Number} count
+  * Get the block height of a transaction by txid.
+  * Note: requires bcoin tx-indexer enabled.
+  * @param {String} txid
+  * @returns {Number}
+  */
+  async getHeightByTX(txid) {
+    const tx = await super.getTX(txid);
+    if (!tx) {
+      return null;
+    }
+
+    return tx.height;
+  }
+
+  /**
+   * @param {String} txid - big endian
+   * @returns {Object}
    */
 
-  async getProof(txid, enc) {
+  async getProof(txid) {
     assert(typeof txid === 'string');
 
     const tx = await super.getTX(txid);
 
-    if (!tx)
-      throw new Error('Cannot find transaction');
+    if (!tx) { throw new Error('Cannot find transaction'); }
 
-    if (tx.height < 0)
-      throw new Error('Transaction not confirmed');
+    if (tx.height < 0) { throw new Error('Transaction not confirmed'); }
 
     const json = await this.getBlockHeader(tx.height);
 
-    if (!json)
-      throw new Error('Cannot find header');
+    if (!json) { throw new Error('Cannot find header'); }
 
-    const header = await this.getHeader(tx.height, enc);
+    const header = await this.getHeader(tx.height);
 
     const txinfo = parseTxHex(tx.hex);
 
-    let [nodes, index] = await this.getMerkleProof(txid, tx.height);
+    const [nodes, index] = await this.getMerkleProof(txid, tx.height);
 
     let path = '';
-    for (let node of nodes)
+
+    for (const node of nodes) {
       path += node;
+    }
 
     return {
       version: txinfo.version,
@@ -75,21 +94,22 @@ class BcoinClient extends NodeClient {
       locktime: txinfo.locktime,
       tx_id: txid,
       tx_id_le: reverse(txid),
-      index: index,
+      index,
       confirming_header: header,
       intermediate_nodes: path
-    }
+    };
   }
 
   /**
    * Fetch a header by height or hash.
+   * @param {Hash|Number} block block height or hash
+   * @returns {Object} header proof object
    */
 
-  async getHeader(height) {
-    const json = await this.getBlockHeader(height);
+  async getHeader(block) {
+    const json = await this.getBlockHeader(block);
 
-    if (!json)
-      return null;
+    if (!json) { return null; }
 
     const hex = await this.execute('getblockheader', [json.hash, false]);
 
@@ -97,12 +117,12 @@ class BcoinClient extends NodeClient {
       raw: hex,
       hash: json.hash,
       hash_le: reverse(json.hash),
-      height: height,
+      height: typeof block === 'number' ? block : json.height,
       prevhash: json.prevBlock,
       prevhash_le: reverse(json.prevBlock),
       merkle_root: json.merkleRoot,
       merkle_root_le: reverse(json.merkleRoot)
-    }
+    };
   }
 
   /**
@@ -119,8 +139,7 @@ class BcoinClient extends NodeClient {
     let index = -1;
     const txs = [];
     for (const [i, tx] of Object.entries(block.tx)) {
-      if (tx === txid)
-        index = i >>> 0; // cast to uint from string
+      if (tx === txid) { index = i >>> 0; } // cast to uint from string
       txs.push(Buffer.from(tx, 'hex').reverse());
     }
 
@@ -132,8 +151,7 @@ class BcoinClient extends NodeClient {
     const branch = merkle.createBranch(hash256, index, txs.slice());
 
     const proof = [];
-    for (const hash of branch)
-      proof.push(hash.toString('hex'));
+    for (const hash of branch) { proof.push(hash.toString('hex')); }
 
     return [proof, index];
   }
@@ -142,7 +160,8 @@ class BcoinClient extends NodeClient {
    * Fetch a header chain by count.
    * @param {Number} height - starting block height
    * @param {Number} count - number of headers
-   * @param {String} enc - json or hex
+   * @param {String} enc - 'json', 'hex', or 'btcpsv'
+   * @returns {Object}
    */
 
   async getHeaderChainByCount(height, count, enc) {
@@ -151,7 +170,6 @@ class BcoinClient extends NodeClient {
 
     const headers = [];
 
-
     for (let i = 0; i < count; i++) {
       const next = height + i;
       if (enc === 'btcspv') {
@@ -159,8 +177,7 @@ class BcoinClient extends NodeClient {
       } else {
         const json = await this.getBlockHeader(next);
 
-        if (!json)
-          throw new Error('Cannot find header');
+        if (!json) { throw new Error('Cannot find header'); }
 
         if (enc === 'json') {
           headers.push(json);
@@ -171,10 +188,48 @@ class BcoinClient extends NodeClient {
       }
     }
 
-    if (enc === 'hex')
-      return {headers: headers.join('')};
+    if (enc === 'hex') {
+      return { headers: headers.join('') };
+    }
 
-    return {headers};
+    return { headers };
+  }
+
+  /**
+   * Get a valid chain of headers starting at a height
+   * that have greater than or equal to an amount of work.
+   * @param {Number} height
+   * @param {String} nwork - hex number
+   * @returns {[]String} - a list of hex headers
+   */
+  async getHeaderChain(height, nwork) {
+    const headers = [];
+    let accumulated = new BN(0);
+
+    const target = new BN(nwork, 16, 'be');
+
+    if (target.eq(new BN(0))) {
+      throw new Error('nwork is too small.');
+    }
+
+    while (accumulated.lte(target)) {
+      const json = await super.getBlock(height);
+      const block = Block.fromJSON(json);
+      const header = block.toHeaders();
+
+      const valid = consensus.verifyPOW(block.hash(), block.bits);
+      assert(valid, 'Invalid Proof of Work.');
+
+      headers.push(header.toRaw().toString('hex'));
+
+      const entry = ChainEntry.fromBlock(block);
+      const proof = entry.getProof();
+
+      accumulated = accumulated.add(proof);
+      height += 1;
+    }
+
+    return headers;
   }
 }
 
@@ -200,10 +255,7 @@ function parseTxHex(hex) {
   let version = raw.subarray(offset, offset + 4);
   version = toString(version);
 
-  if (hasWitnessBytes(raw))
-    offset += 6;
-  else
-    offset += 4;
+  if (hasWitnessBytes(raw)) { offset += 6; } else { offset += 4; }
 
   let inputs = '';
   const vinCount = BTCUtils.determineVarIntDataLength(raw[offset]) || raw[offset];
@@ -265,19 +317,18 @@ function parseTxHex(hex) {
   locktime = toString(locktime);
 
   return {
-    version: version,
+    version,
     vin: inputs,
     vout: outputs,
-    locktime: locktime
-  }
+    locktime
+  };
 }
 
 function toString(buf) {
   let str = '';
   for (const uint of buf) {
     let hex = uint.toString(16);
-    if (hex.length === 1)
-      hex = '0' + hex;
+    if (hex.length === 1) { hex = `0${hex}`; }
     str += hex;
   }
   return str;

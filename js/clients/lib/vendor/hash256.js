@@ -7,7 +7,6 @@
  *   https://github.com/bitcoin/bitcoin/blob/master/src/hash.h
  */
 
-'use strict';
 
 const assert = require('./bsert');
 const SHA256 = require('./sha256');
@@ -55,12 +54,11 @@ class Hash256 {
   }
 
   static multi(x, y, z) {
-    const ctx = Hash256.ctx;
+    const { ctx } = Hash256;
     ctx.init();
     ctx.update(x);
     ctx.update(y);
-    if (z)
-      ctx.update(z);
+    if (z) { ctx.update(z); }
     return ctx.final();
   }
 }

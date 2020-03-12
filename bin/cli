@@ -1,14 +1,20 @@
 #!/usr/bin/env node
 
-/*!
- * bin/cli - bitcoin spv proofs
- * Copyright (c) 2019, Mark Tyneway (Apache-2.0 License).
- * https://github.com/summa-tx/agoric-bitcoin-spv
- */
+/**
+*
+* @file Part of the [bitcoin-spv]{@link https://github.com/summa-tx/bitcoin-spv} project
+*
+* @title cli
+* @summary bitcoin spv proofs on the cli. Uses BcoinClient.
+* @author Mark Tyneway <mark.tyneway@gmail.com>
+* @copyright (c) [Summa]{@link https://summa.one}. 2019
+* @module bin
+*
+*/
 
 'use strict';
 
-const BcoinClient = require('../clients/BcoinClient');
+const BcoinClient = require('../js/clients/lib/BcoinClient');
 const Config = require('./vendor/bcfg');
 const pkg = {author: 'Mark Tyneway <mark.tyneway@gmail.com>', version: '0.0.1'};
 

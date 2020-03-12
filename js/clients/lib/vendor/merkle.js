@@ -10,7 +10,6 @@
  *   https://github.com/bitcoin/bitcoin
  */
 
-'use strict';
 
 const assert = require('./bsert');
 
@@ -101,8 +100,7 @@ function createTree(alg, leaves) {
 
   const nodes = new Array(leaves.length);
 
-  for (let i = 0; i < leaves.length; i++)
-    nodes[i] = leaves[i];
+  for (let i = 0; i < leaves.length; i++) { nodes[i] = leaves[i]; }
 
   let size = nodes.length;
   let malleated = false;
@@ -208,13 +206,9 @@ function deriveRoot(alg, hash, branch, index) {
   let root = hash;
 
   for (const hash of branch) {
-    if ((index & 1) && hash.equals(root))
-      return alg.zero;
+    if ((index & 1) && hash.equals(root)) { return alg.zero; }
 
-    if (index & 1)
-      root = alg.root(hash, root);
-    else
-      root = alg.root(root, hash);
+    if (index & 1) { root = alg.root(hash, root); } else { root = alg.root(root, hash); }
 
     index >>>= 1;
   }
