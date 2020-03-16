@@ -1174,4 +1174,17 @@ mod tests {
             }
         })
     }
+    
+    #[test]
+    fn it_extracts_difficulty_from_headers() {
+        test_utils::run_test(|fixtures| {
+            let test_cases = test_utils::get_test_cases("retargetAlgorithm", &fixtures);
+            for case in test_cases {
+                let headers = test_utils::get_headers(&case.input);
+                for header in headers {
+                    assert_eq!(btcspv::extract_difficulty(header.raw), header.difficulty);
+                }
+            }
+        })
+    }
 }
