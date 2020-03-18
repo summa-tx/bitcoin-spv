@@ -115,12 +115,12 @@ func ExtractInputAtIndex(vin []byte, index uint) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	if uint64(index) > nIns {
+	if uint64(index) >= nIns {
 		return []byte{}, errors.New("Vin read overrun")
 	}
 
 	var length uint
-	var offset uint = 1 + uint(dataLength)
+	var offset = 1 + uint(dataLength)
 	var remaining []byte
 
 	for i := uint(0); i < index; i++ {
@@ -264,7 +264,7 @@ func ExtractOutputAtIndex(vout []byte, index uint) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	if uint64(index) > nOuts {
+	if uint64(index) >= nOuts {
 		return []byte{}, errors.New("Vout read overrun")
 	}
 

@@ -163,7 +163,7 @@ library BTCUtils {
 
         (_varIntDataLen, _nIns) = parseVarInt(_vin);
         require(_varIntDataLen != ERR_BAD_ARG, "Read overrun during VarInt parsing");
-        require(_index <= _nIns, "Vin read overrun");
+        require(_index < _nIns, "Vin read overrun");
 
         bytes memory _remaining;
 
@@ -340,7 +340,7 @@ library BTCUtils {
 
         (_varIntDataLen, _nOuts) = parseVarInt(_vout);
         require(_varIntDataLen != ERR_BAD_ARG, "Read overrun during VarInt parsing");
-        require(_index <= _nOuts, "Vout read overrun");
+        require(_index < _nOuts, "Vout read overrun");
 
         bytes memory _remaining;
 
@@ -357,7 +357,6 @@ library BTCUtils {
         _remaining = _vout.slice(_offset, _vout.length - _offset);
         _len = determineOutputLength(_remaining);
         require(_len != ERR_BAD_ARG, "Bad VarInt in scriptPubkey");
-
         return _vout.slice(_offset, _len);
     }
 

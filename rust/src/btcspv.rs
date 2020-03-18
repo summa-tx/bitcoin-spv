@@ -101,7 +101,7 @@ pub fn hash256(preimage: &[u8]) -> Hash256Digest {
 /// * `index` - The 0-indexed location of the input to extract
 pub fn extract_input_at_index(vin: &[u8], index: usize) -> Result<Vec<u8>, SPVError> {
     let (data_len, n_ins) = parse_var_int(vin)?;
-    if index > n_ins {
+    if index >= n_ins {
         return Err(SPVError::ReadOverrun);
     }
 
@@ -306,7 +306,7 @@ pub fn determine_output_length(tx_out: &[u8]) -> Result<usize, SPVError> {
 /// * Errors if VarInt represents a number larger than 253.  Large VarInts are not supported.
 pub fn extract_output_at_index(vout: &[u8], index: usize) -> Result<Vec<u8>, SPVError> {
     let (data_len, n_outs) = parse_var_int(vout)?;
-    if index > n_outs {
+    if index >= n_outs {
         return Err(SPVError::ReadOverrun);
     }
 
@@ -1174,7 +1174,7 @@ mod tests {
             }
         })
     }
-    
+
     #[test]
     fn it_extracts_difficulty_from_headers() {
         test_utils::run_test(|fixtures| {

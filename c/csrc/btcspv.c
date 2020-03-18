@@ -178,7 +178,7 @@ byte_view_t btcspv_extract_input_at_index(const_view_t *vin, uint64_t index) {
   if (var_int.number == 0 || var_int.var_int_len == BTCSPV_ERR_BAD_ARG) {
     RET_NULL_VIEW;
   }
-  if (index > var_int.number) {
+  if (index >= var_int.number) {
     RET_NULL_VIEW;  // wanted to read more inputs than there are
   }
 
@@ -250,7 +250,7 @@ byte_view_t btcspv_extract_output_at_index(const_view_t *vout, uint64_t index) {
   if (var_int.number == 0 || var_int.var_int_len == BTCSPV_ERR_BAD_ARG) {
     RET_NULL_VIEW;
   }
-  if (index > var_int.number) {
+  if (index >= var_int.number) {
     RET_NULL_VIEW;
   }
 

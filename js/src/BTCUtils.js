@@ -159,7 +159,7 @@ export function determineInputLength(input) {
  */
 export function extractInputAtIndex(vin, index) {
   const { dataLength, number: nIns } = parseVarInt(vin);
-  if (BigInt(index) > nIns) {
+  if (BigInt(index) >= nIns) {
     throw RangeError('Vin read overrun');
   }
 
