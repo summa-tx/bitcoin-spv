@@ -46,4 +46,9 @@ risc:
 	@make -f risc.Makefile clean --no-print-directory
 	@make -f risc.Makefile all-via-docker --no-print-directory
 
+setup:
+	@git submodule update --init
+	@make -f risc.Makefile install-tools
+	@make -f risc.Makefile build/blockchain.h
+
 .PHONY: all risc

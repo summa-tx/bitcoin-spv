@@ -78,9 +78,8 @@ $ docker pull nervos/ckb-riscv-gnu-toolchain:gnu-bionic-20191012
 (OSX) $ brew install check
 (DEB) $ sudo apt install check
 
-$ git submodule update --init
+$ make setup  
 ```
-
 
 ### Build and run tests
 
