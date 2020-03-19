@@ -1182,7 +1182,7 @@ mod tests {
             for case in test_cases {
                 let headers = test_utils::get_headers(&case.input);
                 for header in headers {
-                    assert_eq!(btcspv::extract_difficulty(header.raw), header.difficulty);
+                    assert_eq!(extract_difficulty(header.raw), header.difficulty);
                 }
             }
         })

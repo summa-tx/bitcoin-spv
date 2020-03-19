@@ -195,4 +195,19 @@ pub mod test_utils {
 
         assert!(result.is_ok())
     }
+
+    #[test]
+    fn it_strips_0x_prefixes() {
+        let cases = [
+            ("00", "00"),
+            ("0x00", "00"),
+            ("aa", "aa"),
+            ("0xaa", "aa"),
+            ("Quotidian", "Quotidian"),
+            ("0xQuotidian", "Quotidian"),
+        ];
+        for case in cases.iter() {
+            assert_eq!(strip_0x_prefix(case.0), case.1);
+        }
+    }
 }

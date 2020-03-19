@@ -449,10 +449,18 @@
     {
       "input": {
         "vout": "0x010101010101010101ff",
-        "index": 1
+        "index": 0
       },
       "errorMessage": "Bad VarInt in scriptPubkey",
       "solidityError": "Bad VarInt in scriptPubkey"
+    },
+    {
+      "input": {
+        "vout": "0x010101010101010101ff",
+        "index": 1
+      },
+      "errorMessage": "Vout read overrun",
+      "solidityError": "Vout read overrun"
     },
     {
       "input": {

@@ -269,7 +269,7 @@ func ExtractOutputAtIndex(vout []byte, index uint) ([]byte, error) {
 	}
 
 	var length uint
-	var offset uint = 1 + uint(dataLength)
+	var offset = 1 + uint(dataLength)
 	var remaining []byte
 
 	for i := uint(0); i < index; i++ {
