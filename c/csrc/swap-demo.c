@@ -244,7 +244,7 @@ int main() {
 
   const_view_t actual_outpoint = {vin.loc + 1, 36};
   const_view_t expected_oupoint = {args + 16, 36};
-  if (!view_eq(&actual_outpoint, &expected_oupoint)) {
+  if (!btcspv_view_eq(&actual_outpoint, &expected_oupoint)) {
     return ERROR_WRONG_LISTING;
   }
 

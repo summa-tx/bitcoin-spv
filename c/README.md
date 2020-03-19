@@ -62,10 +62,7 @@ the sample script executable.
 
 ## Setup
 
-After cloning you may need to run `$ git submodule update --init --recursive`
-to get the vendored ckb dependencies.
-
-Dependencies: `docker`, `libcheck`, Rust, nervos docker toolchain
+Dependencies: `docker`, `libcheck`, Rust
 
 * [Installing Check](https://libcheck.github.io/check/web/install.html)
 * [Installing Rust Toolchains via Rustup](https://rustup.rs/)
