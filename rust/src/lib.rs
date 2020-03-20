@@ -1,4 +1,5 @@
 #![warn(missing_docs)]
+#![no_std]
 
 //! This crate is part of the `bitcoin-spv` project.
 //!
@@ -23,11 +24,16 @@ pub mod btcspv;
 /// SPV proofs, transactions, and headers.
 pub mod validatespv;
 
-/// `types` exposes useful structs for headers and SPV proofs, and provides
+/// `types` exposes simple types for on-chain evaluation of SPV proofs
+pub mod types;
+
+/// `std_types` exposes useful structs for headers and SPV proofs, and provides
 /// (de)serialization for these structs. It implements a standard JSON format
 /// that is compatible with all other `bitcoin-spv` implementations.
-pub mod types;
+#[cfg(feature = "std")]
+pub mod std_types;
 
 /// `utils` contains utility functions for working with bytestrings, including
 /// hex encoding and decoding.
+#[cfg(feature = "std")]
 pub mod utils;

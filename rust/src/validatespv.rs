@@ -23,12 +23,7 @@ pub fn prove(
     if txid == merkle_root && index == 0 && intermediate_nodes.is_empty() {
         return true;
     }
-    let mut proof: Vec<u8> = vec![];
-    proof.extend(&txid);
-    proof.extend(intermediate_nodes);
-    proof.extend(&merkle_root);
-
-    btcspv::verify_hash256_merkle(&proof, index)
+    btcspv::verify_hash256_merkle(txid, merkle_root, intermediate_nodes, index)
 }
 
 /// Hashes transaction to get txid.
@@ -40,12 +35,7 @@ pub fn prove(
 /// * `vout` - Raw bytes length-prefixed output vector
 /// * `locktime` - 4-byte tx locktime
 pub fn calculate_txid(version: &[u8], vin: &[u8], vout: &[u8], locktime: &[u8]) -> Hash256Digest {
-    let mut tx: Vec<u8> = vec![];
-    tx.extend(version);
-    tx.extend(vin);
-    tx.extend(vout);
-    tx.extend(locktime);
-    btcspv::hash256(&tx)
+    btcspv::hash256(&[version, vin, vout, locktime])
 }
 
 /// Checks validity of header work.
@@ -103,7 +93,7 @@ pub fn validate_header_chain(headers: &[u8]) -> Result<BigUint, SPVError> {
         }
 
         let target = btcspv::extract_target(header);
-        digest.copy_from_slice(&btcspv::hash256(&header));
+        digest.copy_from_slice(&btcspv::hash256(&[&header]));
         if !validate_header_work(digest, &target) {
             return Err(SPVError::InsufficientWork);
         }

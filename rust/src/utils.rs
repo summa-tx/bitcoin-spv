@@ -1,4 +1,12 @@
 extern crate hex;
+extern crate std;
+
+use std::{
+    format,
+    string::String,
+    vec,      // The macro
+    vec::Vec, // The struct
+};
 
 /// Changes the endianness of a byte array.
 /// Returns a new, backwards, byte array.
