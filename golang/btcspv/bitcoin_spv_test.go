@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"math/big"
 	"os"
 	"testing"
 
@@ -50,8 +51,8 @@ type TestCases struct {
 	ExtractTimestamp             []ExtractTimestampTC           `json:"extractTimestamp"`
 	Hash256MerkleStep            []Hash256MerkleStepTC          `json:"hash256MerkleStep"`
 	VerifyHash256Merkle          []VerifyHash256MerkleTC        `json:"verifyHash256Merkle"`
-	// RetargetAlgorithm            []RetargetAlgorithmTC          `json:"retargetAlgorithm"`
-	CalculateDifficulty []CalculateDifficultyTC `json:"calculateDifficulty"`
+	RetargetAlgorithm            []RetargetAlgorithmTC          `json:"retargetAlgorithm"`
+	CalculateDifficulty          []CalculateDifficultyTC        `json:"calculateDifficulty"`
 }
 
 /// hacky function to sort bytes by types. can generate false positives
@@ -599,62 +600,62 @@ func (suite *UtilsSuite) TestVerifyHash256Merkle() {
 	}
 }
 
-// func (suite *UtilsSuite) TestRetargetAlgorithm() {
-// 	// FIXME:
-// 	fixtures := suite.Fixtures["retargetAlgorithm"]
+func (suite *UtilsSuite) TestRetargetAlgorithm() {
+	// FIXME:
+	fixtures := suite.Fixtures.RetargetAlgorithm
 
-// 	for i := range fixtures {
-// 		testCase := fixtures[i].Input.([]interface{})
-// 		testCaseFirst := testCase[0].(map[string]interface{})
-// 		testCaseSecond := testCase[1].(map[string]interface{})
-// 		testCaseExpected := testCase[2].(map[string]interface{})
+	for i := range fixtures {
+		testCase := fixtures[i].Input
+		testCaseFirst := testCase[0]
+		testCaseSecond := testCase[1]
+		testCaseExpected := testCase[2]
 
-// 		firstTimestamp := uint(testCaseFirst["timestamp"].(int))
-// 		secondTimestamp := uint(testCaseSecond["timestamp"].(int))
-// 		previousTarget := ExtractTarget(testCaseSecond["hex"].(RawHeader))
-// 		expectedNewTarget := ExtractTarget(testCaseExpected["hex"].(RawHeader))
+		firstTimestamp := testCaseFirst.Timestamp
+		secondTimestamp := testCaseSecond.Timestamp
+		previousTarget := ExtractTarget(testCaseSecond.Hex)
+		expectedNewTarget := ExtractTarget(testCaseExpected.Hex)
 
-// 		actual := RetargetAlgorithm((previousTarget), firstTimestamp, secondTimestamp)
+		actual := RetargetAlgorithm((previousTarget), firstTimestamp, secondTimestamp)
 
-// 		// dirty hacks. sdk.Uint doesn't give us easy access to the underlying
-// 		a, _ := actual.MarshalAmino()
-// 		e, _ := expectedNewTarget.MarshalAmino()
-// 		actualBI := new(big.Int)
-// 		actualBI.SetString(a, 0)
-// 		expectedBI := new(big.Int)
-// 		expectedBI.SetString(e, 0)
+		// dirty hacks. sdk.Uint doesn't give us easy access to the underlying
+		a, _ := actual.MarshalAmino()
+		e, _ := expectedNewTarget.MarshalAmino()
+		actualBI := new(big.Int)
+		actualBI.SetString(a, 0)
+		expectedBI := new(big.Int)
+		expectedBI.SetString(e, 0)
 
-// 		res := new(big.Int)
-// 		res.And(actualBI, expectedBI)
+		res := new(big.Int)
+		res.And(actualBI, expectedBI)
 
-// 		suite.Equal(expectedBI, res)
+		suite.Equal(expectedBI, res)
 
-// 		// long
-// 		fakeSecond := firstTimestamp + 5*2016*10*60
-// 		longRes := RetargetAlgorithm(previousTarget, firstTimestamp, fakeSecond)
-// 		suite.Equal(previousTarget.MulUint64(4), longRes)
+		// long
+		fakeSecond := firstTimestamp + 5*2016*10*60
+		longRes := RetargetAlgorithm(previousTarget, firstTimestamp, fakeSecond)
+		suite.Equal(previousTarget.MulUint64(4), longRes)
 
-// 		// short
-// 		fakeSecond = firstTimestamp + 2016*10*14
-// 		shortRes := RetargetAlgorithm(previousTarget, firstTimestamp, fakeSecond)
-// 		suite.Equal(previousTarget.QuoUint64(4), shortRes)
-// 	}
-// }
+		// short
+		fakeSecond = firstTimestamp + 2016*10*14
+		shortRes := RetargetAlgorithm(previousTarget, firstTimestamp, fakeSecond)
+		suite.Equal(previousTarget.QuoUint64(4), shortRes)
+	}
+}
 
-// func (suite *UtilsSuite) TestExtractDifficulty() {
-// 	fixture := suite.Fixtures["retargetAlgorithm"]
+func (suite *UtilsSuite) TestExtractDifficulty() {
+	fixture := suite.Fixtures.RetargetAlgorithm
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		input := testCase.Input.([]interface{})
-// 		for j := range input {
-// 			h := input[j].(map[string]interface{})
-// 			actual := ExtractDifficulty(h["hex"].(RawHeader))
-// 			expected := sdk.NewUint(uint64(h["difficulty"].(int)))
-// 			suite.Equal(expected, actual)
-// 		}
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
+		input := testCase.Input
+		for j := range input {
+			h := input[j]
+			actual := ExtractDifficulty(h.Hex)
+			expected := sdk.NewUint(h.Difficulty)
+			suite.Equal(expected, actual)
+		}
+	}
+}
 
 func (suite *UtilsSuite) TestCalculateDifficulty() {
 	fixture := suite.Fixtures.CalculateDifficulty

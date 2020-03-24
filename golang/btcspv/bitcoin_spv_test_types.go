@@ -205,10 +205,23 @@ type VerifyHash256MerkleTC struct {
 	Output bool                     `json:"output"`
 }
 
-// type RetargetAlgorithmTC struct {
-// 	Input  []BitcoinHeader `json:"input"`
-// 	Output sdk.Uint        `json:"output"`
-// }
+type Retarget struct {
+	Hash       Hash256Digest `json:"hash"`
+	Version    uint          `json:"version"`
+	PrevBlock  Hash256Digest `json:"prev_block"`
+	MerkleRoot Hash256Digest `json:"merkle_root"`
+	Timestamp  uint          `json:"timestamp"`
+	Nbits      HexBytes      `json:"nbits"`
+	Nonce      HexBytes      `json:"nonce"`
+	Difficulty uint64        `json:"difficulty"`
+	Hex        RawHeader     `json:"hex"`
+	Height     uint32        `json:"height"`
+}
+
+type RetargetAlgorithmTC struct {
+	Input  []Retarget `json:"input"`
+	Output uint64     `json:"output"`
+}
 
 type CalculateDifficultyTC struct {
 	Input  sdk.Uint `json:"input"`
