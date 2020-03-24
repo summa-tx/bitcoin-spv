@@ -59,19 +59,10 @@ type TestCases struct {
 	ValidateHeaderPrevHash       []ValidateHeaderPrevHashTC     `json:"validateHeaderPrevHash"`
 	ValidateHeaderChain          []ValidateHeaderChainTC        `json:"validateHeaderChain"`
 	ValidateHeaderChainError     []ValidateHeaderChainError     `json:"validateHeaderChainError"`
-}
-
-/// hacky function to sort bytes by types. can generate false positives
-func decodeTestBuffer(buf []byte) interface{} {
-	var ret interface{}
-	if len(buf) == 32 {
-		ret, _ = NewHash256Digest(buf)
-	} else if len(buf) == 80 {
-		ret, _ = NewRawHeader(buf)
-	} else {
-		ret = buf
-	}
-	return ret
+	EncodeP2SH                   []EncodeP2SHTC                 `json:"encodeP2SH"`
+	EncodeP2PKH                  []EncodeP2PKHTC                `json:"encodeP2PKH"`
+	EncodeP2WSH                  []EncodeP2WSHTC                `json:"encodeP2WSH"`
+	EncodeP2WPKH                 []EncodeP2WPKHTC               `json:"encodeP2WPKH"`
 }
 
 type UtilsSuite struct {
