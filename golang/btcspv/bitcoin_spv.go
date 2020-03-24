@@ -148,8 +148,6 @@ func ExtractInputAtIndex(vin []byte, index uint) ([]byte, error) {
 
 	output := vin[offset : offset+uint(l)]
 	return output, nil
-
-	return vin[offset : offset+length], nil
 }
 
 // IsLegacyInput determines whether an input is legacy
