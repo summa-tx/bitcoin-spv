@@ -12,39 +12,46 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type ExtractSequenceWitnessTC struct {
-	Input  HexBytes `json:"input"`
-	Output uint32   `json:"output"`
-}
-
-// TODO: Why is this output in bytes instead of uint?
-type ExtractSequenceLEWitnessTC struct {
-	Input  HexBytes `json:"input"`
-	Output HexBytes `json:"output"`
-}
-
-type ExtractSequenceLegacyTC struct {
-	Input  HexBytes `json:"input"`
-	Output uint32   `json:"output"`
-}
-
-// TODO: Why is this output in bytes instead of uint?
-type ExtractSequenceLELegacyTC struct {
-	Input  HexBytes `json:"input"`
-	Output HexBytes `json:"output"`
-}
-
-type TestCase struct {
-	Input        interface{} `json:"input"`
-	Output       interface{} `json:"output"`
-	ErrorMessage interface{} `json:"errorMessage"`
-}
-
 type TestCases struct {
-	ExtractSequenceWitness   []ExtractSequenceWitnessTC   `json:"extractSequenceWitness"`
-	ExtractSequenceLEWitness []ExtractSequenceLEWitnessTC `json:"extractSequenceLEWitness"`
-	ExtractSequenceLegacy    []ExtractSequenceLegacyTC    `json:"extractSequenceLegacy"`
-	ExtractSequenceLELegacy  []ExtractSequenceLELegacyTC  `json:"extractSequenceLELegacy"`
+	ExtractSequenceWitness       []ExtractSequenceWitnessTC     `json:"extractSequenceWitness"`
+	ExtractSequenceLEWitness     []ExtractSequenceLEWitnessTC   `json:"extractSequenceLEWitness"`
+	ExtractSequenceLegacy        []ExtractSequenceLegacyTC      `json:"extractSequenceLegacy"`
+	ExtractSequenceLegacyError   []ExtractSequenceLegacyError   `json:"extractSequenceLegacyError"`
+	ExtractSequenceLELegacy      []ExtractSequenceLELegacyTC    `json:"extractSequenceLELegacy"`
+	ExtractSequenceLELegacyError []ExtractSequenceLELegacyError `json:"extractSequenceLELegacyError"`
+	Hash160                      []Hash160TC                    `json:"hash160"`
+	Hash256                      []Hash256TC                    `json:"hash256"`
+	BytesToBigUint               []BytesToBigUintTC             `json:"bytesToBigUint"`
+	ExtractOutpoint              []ExtractOutpointTC            `json:"extractOutpoint"`
+	ExtractOutputScriptLen       []ExtractOutputScriptLenTC     `json:"extractOutputScriptLen"`
+	ExtractHash                  []ExtractHashTC                `json:"extractHash"`
+	ExtractHashError             []ExtractHashError             `json:"extractHashError"`
+	ExtractValue                 []ExtractValueTC               `json:"extractValue"`
+	ExtractValueLE               []ExtractValueLETC             `json:"extractValueLE"`
+	ExtractOpReturnData          []ExtractOpReturnDataTC        `json:"extractOpReturnData"`
+	ExtractOpReturnDataError     []ExtractOpReturnDataError     `json:"extractOpReturnDataError"`
+	ExtractInputAtIndex          []ExtractInputAtIndexTC        `json:"extractInputAtIndex"`
+	ExtractInputAtIndexError     []ExtractInputAtIndexError     `json:"extractInputAtIndexError"`
+	IsLegacyInput                []IsLegacyInputTC              `json:"isLegacyInput"`
+	DetermineInputLength         []DetermineInputLengthTC       `json:"determineInputLength"`
+	ExtractScriptSig             []ExtractScriptSigTC           `json:"extractScriptSig"`
+	ExtractScriptSigError        []ExtractScriptSigError        `json:"extractScriptSigError"`
+	ExtractScriptSigLen          []ExtractScriptSigLenTC        `json:"extractScriptSigLen"`
+	ValidateVin                  []ValidateVinTC                `json:"validateVin"`
+	ValidateVout                 []ValidateVoutTC               `json:"validateVout"`
+	ExtractInputTxIDLE           []ExtractInputTxIDLETC         `json:"extractInputTxIdLE"`
+	ExtractTxIndexLE             []ExtractTxIndexLETC           `json:"extractTxIndexLE"`
+	ExtractTxIndex               []ExtractTxIndexTC             `json:"extractTxIndex"`
+	DetermineOutputLength        []DetermineOutputLengthTC      `json:"determineOutputLength"`
+	DetermineOutputLengthError   []DetermineOutputLengthError   `json:"determineOutputLengthError"`
+	ExtractOutputAtIndex         []ExtractOutputAtIndexTC       `json:"extractOutputAtIndex"`
+	ExtractOutputAtIndexError    []ExtractOutputAtIndexError    `json:"extractOutputAtIndexError"`
+	ExtractTarget                []ExtractTargetTC              `json:"extractTarget"`
+	ExtractTimestamp             []ExtractTimestampTC           `json:"extractTimestamp"`
+	Hash256MerkleStep            []Hash256MerkleStepTC          `json:"hash256MerkleStep"`
+	VerifyHash256Merkle          []VerifyHash256MerkleTC        `json:"verifyHash256Merkle"`
+	// RetargetAlgorithm            []RetargetAlgorithmTC          `json:"retargetAlgorithm"`
+	CalculateDifficulty []CalculateDifficultyTC `json:"calculateDifficulty"`
 }
 
 /// hacky function to sort bytes by types. can generate false positives
@@ -58,56 +65,6 @@ func decodeTestBuffer(buf []byte) interface{} {
 		ret = buf
 	}
 	return ret
-}
-
-func (t *TestCase) UnmarshalJSON(b []byte) error {
-	var data map[string]interface{}
-	err := json.Unmarshal(b, &data)
-	if err != nil {
-		return err
-	}
-
-	t.Input = data["input"]
-	t.Output = data["output"]
-
-	switch data["input"].(type) {
-	case string:
-		if len(data["input"].(string)) >= 2 && data["input"].(string)[0:2] == "0x" {
-			buf := DecodeIfHex(data["input"].(string))
-			t.Input = decodeTestBuffer(buf)
-		} else {
-			t.Input = data["input"].(string)
-		}
-	case float64:
-		t.Input = int(data["input"].(float64))
-	default:
-		preprocessTestCase(t.Input)
-	}
-
-	switch data["output"].(type) {
-	case string:
-		if len(data["output"].(string)) >= 2 && data["output"].(string)[0:2] == "0x" {
-			buf := DecodeIfHex(data["output"].(string))
-			t.Output = decodeTestBuffer(buf)
-		} else {
-			t.Output = data["output"].(string)
-		}
-	case float64:
-		t.Output = int(data["output"].(float64))
-	default:
-		preprocessTestCase(t.Output)
-	}
-
-	switch data["errorMessage"].(type) {
-	case string:
-		t.ErrorMessage = data["errorMessage"].(string)
-	case float64:
-		t.ErrorMessage = int(data["errorMessage"].(float64))
-	default:
-		preprocessTestCase(t.ErrorMessage)
-	}
-
-	return nil
 }
 
 // We want to crawl the test cases and attempt to hexDecode any strings
@@ -205,38 +162,38 @@ func (suite *UtilsSuite) TestLastBytes() {
 	suite.Equal(last, []byte{4})
 }
 
-// func (suite *UtilsSuite) TestHash160() {
-// 	fixtures := suite.Fixtures["hash160"]
+func (suite *UtilsSuite) TestHash160() {
+	fixtures := suite.Fixtures.Hash160
 
-// 	for i := range fixtures {
-// 		testCase := fixtures[i]
-// 		expected := testCase.Output.([]byte)
-// 		actual := Hash160(testCase.Input.([]byte))
-// 		suite.Equal(expected, actual[:])
-// 	}
-// }
+	for i := range fixtures {
+		testCase := fixtures[i]
+		expected, _ := NewHash160Digest(testCase.Output)
+		actual := Hash160(testCase.Input[:])
+		suite.Equal(expected, actual)
+	}
+}
 
-// func (suite *UtilsSuite) TestHash256() {
-// 	fixtures := suite.Fixtures["hash256"]
+func (suite *UtilsSuite) TestHash256() {
+	fixtures := suite.Fixtures.Hash256
 
-// 	for i := range fixtures {
-// 		testCase := fixtures[i]
-// 		expected := testCase.Output.(Hash256Digest)
-// 		actual := Hash256(testCase.Input.([]byte))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+	for i := range fixtures {
+		testCase := fixtures[i]
+		expected, _ := NewHash256Digest(testCase.Output)
+		actual := Hash256(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
 
-// func (suite *UtilsSuite) TestBytesToUint() {
-// 	fixtures := suite.Fixtures["BytesToUint"]
+func (suite *UtilsSuite) TestBytesToUint() {
+	fixtures := suite.Fixtures.BytesToBigUint
 
-// 	for i := range fixtures {
-// 		testCase := fixtures[i]
-// 		expected := uint(testCase.Output.(int))
-// 		actual := BytesToUint(testCase.Input.([]byte))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+	for i := range fixtures {
+		testCase := fixtures[i]
+		expected := testCase.Output
+		actual := BytesToUint(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
 
 func (suite *UtilsSuite) TestBytesToBigUint() {
 	hexString := "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
@@ -254,7 +211,7 @@ func (suite *UtilsSuite) TestExtractSequenceWitness() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual := ExtractSequenceWitness(testCase.Input[:])
+		actual := ExtractSequenceWitness(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -265,8 +222,8 @@ func (suite *UtilsSuite) TestExtractSequenceLEWitness() {
 	for i := range fixture {
 		testCase := fixture[i]
 		// TODO: why didn't slicing here work?
-		expected := []byte(testCase.Output[:])
-		actual := ExtractSequenceLEWitness(testCase.Input[:])
+		expected := []byte(testCase.Output)
+		actual := ExtractSequenceLEWitness(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -277,21 +234,20 @@ func (suite *UtilsSuite) TestExtractSequenceLegacy() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual, err := ExtractSequenceLegacy(testCase.Input[:])
+		actual, err := ExtractSequenceLegacy(testCase.Input)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
 
-	// fixtureError := suite.Fixtures["extractSequenceLegacyError"]
+	fixtureError := suite.Fixtures.ExtractSequenceLegacyError
 
-	// for i := range fixtureError {
-	// 	testCase := fixtureError[i]
-	// 	errMsg := testCase.ErrorMessage.(string)
+	for i := range fixtureError {
+		testCase := fixtureError[i]
 
-	// 	actual, err := ExtractSequenceLegacy(testCase.Input.([]byte))
-	// 	suite.Equal(uint32(0), actual)
-	// 	suite.EqualError(err, errMsg)
-	// }
+		actual, err := ExtractSequenceLegacy(testCase.Input)
+		suite.Equal(uint32(0), actual)
+		suite.EqualError(err, testCase.ErrorMessage)
+	}
 }
 
 func (suite *UtilsSuite) TestExtractSequenceLELegacy() {
@@ -299,380 +255,349 @@ func (suite *UtilsSuite) TestExtractSequenceLELegacy() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		// TODO: Fix
-		// expected := BytesToUint(testCase.Output[:])
-		expected := []uint8([]byte{0xff, 0xff, 0xff, 0xff})
-		actual, err := ExtractSequenceLELegacy(testCase.Input[:])
+		// TODO: Why didn't just slicing work?
+		expected := []byte(testCase.Output)
+		actual, err := ExtractSequenceLELegacy(testCase.Input)
 
 		suite.Nil(err)
 		suite.Equal(expected, actual)
-
-		// expected := testCase.Output.([]byte)
-
-		// actual, err := ExtractSequenceLELegacy(testCase.Input.([]byte))
 	}
 
-	// fixtureError := suite.Fixtures["extractSequenceLELegacyError"]
+	fixtureError := suite.Fixtures.ExtractSequenceLELegacyError
 
-	// for i := range fixtureError {
-	// 	testCase := fixtureError[i]
-	// 	errMsg := testCase.ErrorMessage.(string)
+	for i := range fixtureError {
+		testCase := fixtureError[i]
 
-	// 	actual, err := ExtractSequenceLELegacy(testCase.Input.([]byte))
-	// 	suite.Equal([]byte{}, actual)
-	// 	suite.EqualError(err, errMsg)
-	// }
+		actual, err := ExtractSequenceLELegacy(testCase.Input)
+		suite.Equal([]byte{}, actual)
+		suite.EqualError(err, testCase.ErrorMessage)
+	}
 }
 
-// func (suite *UtilsSuite) TestExtractOutpoint() {
-// 	fixture := suite.Fixtures["extractOutpoint"]
+func (suite *UtilsSuite) TestExtractOutpoint() {
+	fixture := suite.Fixtures.ExtractOutpoint
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.([]byte)
-// 		actual := ExtractOutpoint(testCase.Input.([]byte))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := []byte(testCase.Output)
+		actual := ExtractOutpoint(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
 
-// func (suite *UtilsSuite) TestExtractOuputScriptLen() {
-// 	fixture := suite.Fixtures["extractOutputScriptLen"]
+func (suite *UtilsSuite) TestExtractOuputScriptLen() {
+	fixture := suite.Fixtures.ExtractOutputScriptLen
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := uint(testCase.Output.(int))
-// 		actual := ExtractOutputScriptLen(testCase.Input.([]byte))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output
+		actual := ExtractOutputScriptLen(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
 
-// func (suite *UtilsSuite) TestExtractHash() {
-// 	fixture := suite.Fixtures["extractHash"]
+func (suite *UtilsSuite) TestExtractHash() {
+	fixture := suite.Fixtures.ExtractHash
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := normalizeToByteSlice(testCase.Output)
-// 		actual, err := ExtractHash(normalizeToByteSlice(testCase.Input))
-// 		suite.Nil(err)
-// 		suite.Equal(expected[:], actual)
-// 	}
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := []byte(testCase.Output)
+		actual, err := ExtractHash(testCase.Input)
+		suite.Nil(err)
+		suite.Equal(expected, actual)
+	}
 
-// 	fixtureError := suite.Fixtures["extractHashError"]
+	fixtureError := suite.Fixtures.ExtractHashError
 
-// 	for i := range fixtureError {
-// 		testCase := fixtureError[i]
-// 		expected := testCase.ErrorMessage.(string)
-// 		actual, err := ExtractHash(normalizeToByteSlice(testCase.Input))
-// 		suite.Nil(actual)
-// 		suite.EqualError(err, expected)
-// 	}
-// }
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		actual, err := ExtractHash(testCase.Input)
+		suite.Nil(actual)
+		suite.EqualError(err, testCase.ErrorMessage)
+	}
+}
 
-// func (suite *UtilsSuite) TestExtractValue() {
-// 	fixture := suite.Fixtures["extractValue"]
+func (suite *UtilsSuite) TestExtractValue() {
+	fixture := suite.Fixtures.ExtractValue
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := uint(testCase.Output.(int))
-// 		actual := ExtractValue(testCase.Input.([]byte))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output
+		actual := ExtractValue(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
 
-// func (suite *UtilsSuite) TestExtractValueLE() {
-// 	fixture := suite.Fixtures["extractValueLE"]
+func (suite *UtilsSuite) TestExtractValueLE() {
+	fixture := suite.Fixtures.ExtractValueLE
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.([]byte)
-// 		actual := ExtractValueLE(testCase.Input.([]byte))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := []byte(testCase.Output)
+		actual := ExtractValueLE(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
 
-// func (suite *UtilsSuite) TestExtractOpReturnData() {
-// 	fixture := suite.Fixtures["extractOpReturnData"]
+func (suite *UtilsSuite) TestExtractOpReturnData() {
+	fixture := suite.Fixtures.ExtractOpReturnData
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.([]byte)
-// 		actual, err := ExtractOpReturnData(testCase.Input.([]byte))
-// 		suite.Nil(err)
-// 		suite.Equal(expected, actual)
-// 	}
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := []byte(testCase.Output)
+		actual, err := ExtractOpReturnData(testCase.Input)
+		suite.Nil(err)
+		suite.Equal(expected, actual)
+	}
 
-// 	fixtureError := suite.Fixtures["extractOpReturnDataError"]
+	fixtureError := suite.Fixtures.ExtractOpReturnDataError
 
-// 	for i := range fixtureError {
-// 		testCase := fixtureError[i]
-// 		expected := testCase.ErrorMessage.(string)
-// 		actual, err := ExtractOpReturnData(testCase.Input.([]byte))
-// 		suite.Nil(actual)
-// 		suite.EqualError(err, expected)
-// 	}
-// }
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		actual, err := ExtractOpReturnData(testCase.Input)
+		suite.Nil(actual)
+		suite.EqualError(err, testCase.ErrorMessage)
+	}
+}
 
-// func (suite *UtilsSuite) TestExtractInputAtIndex() {
-// 	fixture := suite.Fixtures["extractInputAtIndex"]
+func (suite *UtilsSuite) TestExtractInputAtIndex() {
+	fixture := suite.Fixtures.ExtractInputAtIndex
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		input := testCase.Input.(map[string]interface{})
-// 		actual, err := ExtractInputAtIndex(input["vin"].([]byte), uint(input["index"].(int)))
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := []byte(testCase.Output)
+		actual, err := ExtractInputAtIndex(testCase.Input.Vin, testCase.Input.Index)
 
-// 		expected := testCase.Output.([]byte)
-// 		suite.Nil(err)
-// 		suite.Equal(expected, actual)
-// 	}
+		suite.Nil(err)
+		suite.Equal(expected, actual)
+	}
 
-// 	fixtureError := suite.Fixtures["extractInputAtIndexError"]
+	fixtureError := suite.Fixtures.ExtractInputAtIndexError
 
-// 	for i := range fixtureError {
-// 		testCase := fixtureError[i]
-// 		input := testCase.Input.(map[string]interface{})
-// 		errMsg := testCase.ErrorMessage.(string)
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		actual, err := ExtractInputAtIndex(testCase.Input.Vin, testCase.Input.Index)
 
-// 		actual, err := ExtractInputAtIndex(input["vin"].([]byte), uint(input["index"].(int)))
-// 		suite.Equal([]byte{}, actual)
-// 		suite.EqualError(err, errMsg)
-// 	}
-// }
+		suite.Equal([]byte{}, actual)
+		suite.EqualError(err, testCase.ErrorMessage)
+	}
+}
 
-// func (suite *UtilsSuite) TestIsLegacyInput() {
-// 	fixture := suite.Fixtures["isLegacyInput"]
+func (suite *UtilsSuite) TestIsLegacyInput() {
+	fixture := suite.Fixtures.IsLegacyInput
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.(bool)
-// 		actual := IsLegacyInput(testCase.Input.([]byte))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output
+		actual := IsLegacyInput(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
 
-// func (suite *UtilsSuite) TestDetermineInputLength() {
-// 	fixture := suite.Fixtures["determineInputLength"]
+func (suite *UtilsSuite) TestDetermineInputLength() {
+	fixture := suite.Fixtures.DetermineInputLength
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := uint64(testCase.Output.(int))
-// 		actual, err := DetermineInputLength(testCase.Input.([]byte))
-// 		suite.Nil(err)
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output
+		actual, err := DetermineInputLength(testCase.Input)
+		suite.Nil(err)
+		suite.Equal(expected, actual)
+	}
+}
 
-// func (suite *UtilsSuite) TestExtractScriptSig() {
-// 	fixture := suite.Fixtures["extractScriptSig"]
+func (suite *UtilsSuite) TestExtractScriptSig() {
+	fixture := suite.Fixtures.ExtractScriptSig
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.([]byte)
-// 		actual, err := ExtractScriptSig(testCase.Input.([]byte))
-// 		suite.Nil(err)
-// 		suite.Equal(expected, actual)
-// 	}
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := []byte(testCase.Output)
+		actual, err := ExtractScriptSig(testCase.Input)
+		suite.Nil(err)
+		suite.Equal(expected, actual)
+	}
 
-// 	fixtureError := suite.Fixtures["extractScriptSigError"]
+	fixtureError := suite.Fixtures.ExtractScriptSigError
 
-// 	for i := range fixtureError {
-// 		testCase := fixtureError[i]
-// 		errMsg := testCase.ErrorMessage.(string)
-// 		actual, err := ExtractScriptSig(testCase.Input.([]byte))
-// 		suite.Equal([]byte{}, actual)
-// 		suite.EqualError(err, errMsg)
-// 	}
-// }
+	for i := range fixtureError {
+		testCase := fixtureError[i]
 
-// func (suite *UtilsSuite) TestExtractScriptSigLen() {
-// 	fixture := suite.Fixtures["extractScriptSigLen"]
+		actual, err := ExtractScriptSig(testCase.Input)
+		suite.Equal([]byte{}, actual)
+		suite.EqualError(err, testCase.ErrorMessage)
+	}
+}
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.([]interface{})
-// 		actualDataLen, actualScriptSigLen, err := ExtractScriptSigLen(testCase.Input.([]byte))
-// 		suite.Nil(err)
-// 		suite.Equal(uint(expected[0].(int)), uint(actualDataLen))
-// 		suite.Equal(uint(expected[1].(int)), uint(actualScriptSigLen))
-// 	}
-// }
+func (suite *UtilsSuite) TestExtractScriptSigLen() {
+	fixture := suite.Fixtures.ExtractScriptSigLen
 
-// func (suite *UtilsSuite) TestValidateVin() {
-// 	fixture := suite.Fixtures["validateVin"]
+	for i := range fixture {
+		testCase := fixture[i]
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.(bool)
-// 		actual := ValidateVin(testCase.Input.([]byte))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+		expected := testCase.Output
+		actualDataLen, actualScriptSigLen, err := ExtractScriptSigLen(testCase.Input)
 
-// func (suite *UtilsSuite) TestValidateVout() {
-// 	fixture := suite.Fixtures["validateVout"]
+		suite.Nil(err)
+		suite.Equal(expected[0], actualDataLen)
+		suite.Equal(expected[1], actualScriptSigLen)
+	}
+}
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.(bool)
-// 		actual := ValidateVout(testCase.Input.([]byte))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+func (suite *UtilsSuite) TestValidateVin() {
+	fixture := suite.Fixtures.ValidateVin
 
-// func (suite *UtilsSuite) TestExtractInputTxIDLE() {
-// 	fixture := suite.Fixtures["extractInputTxIdLE"]
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output
+		actual := ValidateVin(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.(Hash256Digest)
-// 		actual := ExtractInputTxIDLE(testCase.Input.([]byte))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+func (suite *UtilsSuite) TestValidateVout() {
+	fixture := suite.Fixtures.ValidateVout
 
-// func (suite *UtilsSuite) TestExtractTxIndexLE() {
-// 	fixture := suite.Fixtures["extractTxIndexLE"]
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output
+		actual := ValidateVout(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.([]byte)
-// 		actual := ExtractTxIndexLE(testCase.Input.([]byte))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+func (suite *UtilsSuite) TestExtractInputTxIDLE() {
+	fixture := suite.Fixtures.ExtractInputTxIDLE
 
-// func (suite *UtilsSuite) TestExtractTxIndex() {
-// 	fixture := suite.Fixtures["extractTxIndex"]
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output
+		actual := ExtractInputTxIDLE(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := uint(testCase.Output.(int))
-// 		actual := ExtractTxIndex(testCase.Input.([]byte))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+func (suite *UtilsSuite) TestExtractTxIndexLE() {
+	fixture := suite.Fixtures.ExtractTxIndexLE
 
-// func (suite *UtilsSuite) TestDetermineOutputLength() {
-// 	fixture := suite.Fixtures["determineOutputLength"]
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := []byte(testCase.Output)
+		actual := ExtractTxIndexLE(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := uint64(testCase.Output.(int))
-// 		actual, err := DetermineOutputLength(testCase.Input.([]byte))
-// 		suite.Nil(err)
-// 		suite.Equal(expected, actual)
-// 	}
+func (suite *UtilsSuite) TestExtractTxIndex() {
+	fixture := suite.Fixtures.ExtractTxIndex
 
-// 	fixtureError := suite.Fixtures["determineOutputLengthError"]
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output
+		actual := ExtractTxIndex(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
 
-// 	for i := range fixtureError {
-// 		testCase := fixtureError[i]
-// 		expected := testCase.ErrorMessage.(string)
-// 		actual, err := DetermineOutputLength(testCase.Input.([]byte))
-// 		suite.Equal(actual, uint64(0))
-// 		suite.EqualError(err, expected)
-// 	}
-// }
+func (suite *UtilsSuite) TestDetermineOutputLength() {
+	fixture := suite.Fixtures.DetermineOutputLength
 
-// func (suite *UtilsSuite) TestExtractOutputAtIndex() {
-// 	fixture := suite.Fixtures["extractOutputAtIndex"]
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output
+		actual, err := DetermineOutputLength(testCase.Input)
+		suite.Nil(err)
+		suite.Equal(expected, actual)
+	}
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.([]byte)
-// 		inputs := testCase.Input.(map[string]interface{})
-// 		vout := inputs["vout"].([]byte)
-// 		index := inputs["index"].(int)
-// 		actual, err := ExtractOutputAtIndex(vout, uint(index))
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		suite.Nil(err)
-// 		suite.Equal(expected, actual)
-// 	}
+	fixtureError := suite.Fixtures.DetermineOutputLengthError
 
-// 	fixtureError := suite.Fixtures["extractOutputAtIndexError"]
+	for i := range fixtureError {
+		testCase := fixtureError[i]
 
-// 	for i := range fixtureError {
-// 		testCase := fixtureError[i]
-// 		inputs := testCase.Input.(map[string]interface{})
-// 		vout := inputs["vout"].([]byte)
-// 		index := inputs["index"].(int)
-// 		expected := testCase.ErrorMessage.(string)
-// 		actual, err := ExtractOutputAtIndex(vout, uint(index))
-// 		suite.Equal([]byte{}, actual)
-// 		suite.EqualError(err, expected, "%s %d", hex.EncodeToString(vout), index)
-// 	}
-// }
+		actual, err := DetermineOutputLength(testCase.Input)
+		suite.Equal(actual, uint64(0))
+		suite.EqualError(err, testCase.ErrorMessage)
+	}
+}
 
-// func (suite *UtilsSuite) TestExtractTarget() {
-// 	fixture := suite.Fixtures["extractTarget"]
+func (suite *UtilsSuite) TestExtractOutputAtIndex() {
+	fixture := suite.Fixtures.ExtractOutputAtIndex
 
-// 	for i := range fixture {
-// 		var output []byte
-// 		testCase := fixture[i]
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := []byte(testCase.Output)
 
-// 		switch testCase.Output.(type) {
-// 		case Hash256Digest:
-// 			digest := testCase.Output.(Hash256Digest)
-// 			output = digest[:]
-// 		case []byte:
-// 			output = testCase.Output.([]byte)
-// 		}
+		actual, err := ExtractOutputAtIndex(testCase.Input.Vout, testCase.Input.Index)
+		suite.Nil(err)
+		suite.Equal(expected, actual)
+	}
 
-// 		expected := BytesToBigUint(output)
-// 		actual := ExtractTarget(testCase.Input.(RawHeader))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+	fixtureError := suite.Fixtures.ExtractOutputAtIndexError
 
-// func (suite *UtilsSuite) TestExtractTimestamp() {
-// 	fixture := suite.Fixtures["extractTimestamp"]
+	for i := range fixtureError {
+		testCase := fixtureError[i]
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := uint(testCase.Output.(int))
-// 		actual := ExtractTimestamp(testCase.Input.(RawHeader))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+		actual, err := ExtractOutputAtIndex(testCase.Input.Vout, testCase.Input.Index)
+		suite.Equal([]byte{}, actual)
+		suite.EqualError(err, testCase.ErrorMessage)
+	}
+}
 
-// func (suite *UtilsSuite) TestHash256MerkleStep() {
-// 	fixtures := suite.Fixtures["hash256MerkleStep"]
+func (suite *UtilsSuite) TestExtractTarget() {
+	fixture := suite.Fixtures.ExtractTarget
 
-// 	for i := range fixtures {
-// 		testCase := fixtures[i]
-// 		ins := testCase.Input.([]interface{})
-// 		actual := hash256MerkleStep(ins[0].([]byte), ins[1].([]byte))
-// 		expected := testCase.Output.(Hash256Digest)
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
 
-// func (suite *UtilsSuite) TestDetermineVarIntDataLength() {
-// 	res1 := DetermineVarIntDataLength(0x01)
-// 	suite.Equal(uint8(0), res1)
-// 	res2 := DetermineVarIntDataLength(0xfd)
-// 	suite.Equal(uint8(2), res2)
-// 	res3 := DetermineVarIntDataLength(0xfe)
-// 	suite.Equal(uint8(4), res3)
-// 	res4 := DetermineVarIntDataLength(0xff)
-// 	suite.Equal(uint8(8), res4)
-// 	// res
-// }
+		expected := BytesToBigUint(testCase.Output)
+		actual := ExtractTarget(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
 
-// func (suite *UtilsSuite) TestVerifyHash256Merkle() {
-// 	fixtures := suite.Fixtures["verifyHash256Merkle"]
+func (suite *UtilsSuite) TestExtractTimestamp() {
+	fixture := suite.Fixtures.ExtractTimestamp
 
-// 	for i := range fixtures {
-// 		testCase := fixtures[i]
-// 		ins := testCase.Input.(map[string]interface{})
-// 		proof := normalizeToByteSlice(ins["proof"])
-// 		index := uint(ins["index"].(int))
-// 		expected := testCase.Output.(bool)
-// 		actual := VerifyHash256Merkle(proof, index)
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output
+		actual := ExtractTimestamp(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
+
+func (suite *UtilsSuite) TestHash256MerkleStep() {
+	fixtures := suite.Fixtures.Hash256MerkleStep
+
+	for i := range fixtures {
+		testCase := fixtures[i]
+		expected := testCase.Output
+		actual := hash256MerkleStep(testCase.Input[0], testCase.Input[1])
+		suite.Equal(expected, actual)
+	}
+}
+
+func (suite *UtilsSuite) TestDetermineVarIntDataLength() {
+	res1 := DetermineVarIntDataLength(0x01)
+	suite.Equal(uint8(0), res1)
+	res2 := DetermineVarIntDataLength(0xfd)
+	suite.Equal(uint8(2), res2)
+	res3 := DetermineVarIntDataLength(0xfe)
+	suite.Equal(uint8(4), res3)
+	res4 := DetermineVarIntDataLength(0xff)
+	suite.Equal(uint8(8), res4)
+}
+
+func (suite *UtilsSuite) TestVerifyHash256Merkle() {
+	fixtures := suite.Fixtures.VerifyHash256Merkle
+
+	for i := range fixtures {
+		testCase := fixtures[i]
+		expected := testCase.Output
+		actual := VerifyHash256Merkle(testCase.Input.Proof, testCase.Input.Index)
+		suite.Equal(expected, actual)
+	}
+}
 
 // func (suite *UtilsSuite) TestRetargetAlgorithm() {
 // 	// FIXME:
@@ -731,13 +656,13 @@ func (suite *UtilsSuite) TestExtractSequenceLELegacy() {
 // 	}
 // }
 
-// func (suite *UtilsSuite) TestCalculateDifficulty() {
-// 	fixture := suite.Fixtures["calculateDifficulty"]
+func (suite *UtilsSuite) TestCalculateDifficulty() {
+	fixture := suite.Fixtures.CalculateDifficulty
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.(sdk.Int)
-// 		actual := CalculateDifficulty(testCase.Input.(sdk.Uint))
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := testCase.Output
+		actual := CalculateDifficulty(testCase.Input)
+		suite.Equal(expected, actual)
+	}
+}
