@@ -53,6 +53,12 @@ type TestCases struct {
 	VerifyHash256Merkle          []VerifyHash256MerkleTC        `json:"verifyHash256Merkle"`
 	RetargetAlgorithm            []RetargetAlgorithmTC          `json:"retargetAlgorithm"`
 	CalculateDifficulty          []CalculateDifficultyTC        `json:"calculateDifficulty"`
+	Prove                        []ProveTC                      `json:"prove"`
+	CalculateTxId                []CalculateTxIDTC              `json:"calculateTxId"`
+	ValidateHeaderWork           []ValidateHeaderWorkTC         `json:"validateHeaderWork"`
+	ValidateHeaderPrevHash       []ValidateHeaderPrevHashTC     `json:"validateHeaderPrevHash"`
+	ValidateHeaderChain          []ValidateHeaderChainTC        `json:"validateHeaderChain"`
+	ValidateHeaderChainError     []ValidateHeaderChainError     `json:"validateHeaderChainError"`
 }
 
 /// hacky function to sort bytes by types. can generate false positives
@@ -66,50 +72,6 @@ func decodeTestBuffer(buf []byte) interface{} {
 		ret = buf
 	}
 	return ret
-}
-
-// We want to crawl the test cases and attempt to hexDecode any strings
-func preprocessTestCase(f interface{}) {
-	switch f.(type) {
-	case []interface{}:
-		preprocessList(f.([]interface{}))
-	case map[string]interface{}:
-		preprocessObject(f.(map[string]interface{}))
-	}
-}
-
-func preprocessList(l []interface{}) {
-	for i := 0; i < len(l); i++ {
-		switch l[i].(type) {
-		case []interface{}:
-			preprocessList(l[i].([]interface{}))
-		case string:
-			buf := DecodeIfHex(l[i].(string))
-			l[i] = decodeTestBuffer(buf)
-		case float64:
-			l[i] = int(l[i].(float64))
-		case map[string]interface{}:
-			preprocessObject(l[i].(map[string]interface{}))
-		}
-	}
-}
-
-func preprocessObject(m map[string]interface{}) {
-	for k, v := range m {
-		switch v.(type) {
-		case []interface{}:
-			l := v.([]interface{})
-			preprocessList(l)
-		case string:
-			buf := DecodeIfHex(v.(string))
-			m[k] = decodeTestBuffer(buf)
-		case float64:
-			m[k] = int(v.(float64))
-		case map[string]interface{}:
-			// call recursively to preprocess json objects
-			preprocessObject(v.(map[string]interface{}))
-		}
-	}
 }
 
 type UtilsSuite struct {
@@ -179,7 +141,7 @@ func (suite *UtilsSuite) TestHash256() {
 
 	for i := range fixtures {
 		testCase := fixtures[i]
-		expected, _ := NewHash256Digest(testCase.Output)
+		expected := testCase.Output
 		actual := Hash256(testCase.Input)
 		suite.Equal(expected, actual)
 	}
@@ -222,7 +184,6 @@ func (suite *UtilsSuite) TestExtractSequenceLEWitness() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		// TODO: why didn't slicing here work?
 		expected := []byte(testCase.Output)
 		actual := ExtractSequenceLEWitness(testCase.Input)
 		suite.Equal(expected, actual)
@@ -256,7 +217,6 @@ func (suite *UtilsSuite) TestExtractSequenceLELegacy() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		// TODO: Why didn't just slicing work?
 		expected := []byte(testCase.Output)
 		actual, err := ExtractSequenceLELegacy(testCase.Input)
 
@@ -268,8 +228,8 @@ func (suite *UtilsSuite) TestExtractSequenceLELegacy() {
 
 	for i := range fixtureError {
 		testCase := fixtureError[i]
-
 		actual, err := ExtractSequenceLELegacy(testCase.Input)
+
 		suite.Equal([]byte{}, actual)
 		suite.EqualError(err, testCase.ErrorMessage)
 	}
@@ -368,7 +328,6 @@ func (suite *UtilsSuite) TestExtractInputAtIndex() {
 		testCase := fixture[i]
 		expected := []byte(testCase.Output)
 		actual, err := ExtractInputAtIndex(testCase.Input.Vin, testCase.Input.Index)
-
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
@@ -378,7 +337,6 @@ func (suite *UtilsSuite) TestExtractInputAtIndex() {
 	for i := range fixtureError {
 		testCase := fixtureError[i]
 		actual, err := ExtractInputAtIndex(testCase.Input.Vin, testCase.Input.Index)
-
 		suite.Equal([]byte{}, actual)
 		suite.EqualError(err, testCase.ErrorMessage)
 	}
@@ -422,7 +380,6 @@ func (suite *UtilsSuite) TestExtractScriptSig() {
 
 	for i := range fixtureError {
 		testCase := fixtureError[i]
-
 		actual, err := ExtractScriptSig(testCase.Input)
 		suite.Equal([]byte{}, actual)
 		suite.EqualError(err, testCase.ErrorMessage)
@@ -514,7 +471,6 @@ func (suite *UtilsSuite) TestDetermineOutputLength() {
 
 	for i := range fixtureError {
 		testCase := fixtureError[i]
-
 		actual, err := DetermineOutputLength(testCase.Input)
 		suite.Equal(actual, uint64(0))
 		suite.EqualError(err, testCase.ErrorMessage)
@@ -527,7 +483,6 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := []byte(testCase.Output)
-
 		actual, err := ExtractOutputAtIndex(testCase.Input.Vout, testCase.Input.Index)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
@@ -537,7 +492,6 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 
 	for i := range fixtureError {
 		testCase := fixtureError[i]
-
 		actual, err := ExtractOutputAtIndex(testCase.Input.Vout, testCase.Input.Index)
 		suite.Equal([]byte{}, actual)
 		suite.EqualError(err, testCase.ErrorMessage)
@@ -549,7 +503,6 @@ func (suite *UtilsSuite) TestExtractTarget() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-
 		expected := BytesToBigUint(testCase.Output)
 		actual := ExtractTarget(testCase.Input)
 		suite.Equal(expected, actual)

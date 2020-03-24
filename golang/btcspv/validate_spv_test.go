@@ -1,5 +1,7 @@
 package btcspv
 
+import sdk "github.com/cosmos/cosmos-sdk/types"
+
 func normalizeToByteSlice(b interface{}) []byte {
 	switch b.(type) {
 	case []byte:
@@ -15,97 +17,87 @@ func normalizeToByteSlice(b interface{}) []byte {
 	}
 }
 
-// func (suite *UtilsSuite) TestProve() {
-// 	fixture := suite.Fixtures["prove"]
+func (suite *UtilsSuite) TestProve() {
+	fixture := suite.Fixtures.Prove
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.(bool)
-// 		inputs := testCase.Input.(map[string]interface{})
-// 		txIDLE := inputs["txIdLE"].(Hash256Digest)
-// 		merkleRootLE := inputs["merkleRootLE"].(Hash256Digest)
-// 		proof := inputs["proof"].([]byte)
-// 		index := uint(inputs["index"].(int))
-// 		actual := Prove(txIDLE, merkleRootLE, proof, index)
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
 
-// func (suite *UtilsSuite) TestCalculateTxId() {
-// 	fixture := suite.Fixtures["calculateTxId"]
+		txIDLE := testCase.Input.TxIdLE
+		merkleRootLE := testCase.Input.MerkleRootLE
+		proof := testCase.Input.Proof
+		index := testCase.Input.Index
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.(Hash256Digest)
-// 		inputs := testCase.Input.(map[string]interface{})
-// 		version := inputs["version"].([]byte)
-// 		vin := inputs["vin"].([]byte)
-// 		vout := inputs["vout"].([]byte)
-// 		locktime := inputs["locktime"].([]byte)
-// 		actual := CalculateTxID(version, vin, vout, locktime)
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+		expected := testCase.Output
+		actual := Prove(txIDLE, merkleRootLE, proof, index)
+		suite.Equal(expected, actual)
+	}
+}
 
-// func (suite *UtilsSuite) TestValidateHeaderWork() {
-// 	var target sdk.Uint
-// 	fixture := suite.Fixtures["validateHeaderWork"]
+func (suite *UtilsSuite) TestCalculateTxId() {
+	fixture := suite.Fixtures.CalculateTxId
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.(bool)
-// 		inputs := testCase.Input.(map[string]interface{})
-// 		digest := inputs["digest"].(Hash256Digest)
+	for i := range fixture {
+		testCase := fixture[i]
 
-// 		switch inputs["target"].(type) {
-// 		case int:
-// 			targetInt := inputs["target"].(int)
-// 			target = sdk.NewUint(uint64(targetInt))
-// 		case Hash256Digest:
-// 			buf := inputs["target"].(Hash256Digest)
-// 			target = BytesToBigUint(buf[:])
-// 		case []byte:
-// 			buf := inputs["target"].([]byte)
-// 			target = BytesToBigUint(buf[:])
-// 		}
+		version := testCase.Input.Version
+		vin := testCase.Input.Vin
+		vout := testCase.Input.Vout
+		locktime := testCase.Input.Locktime
 
-// 		actual := ValidateHeaderWork(digest, target)
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+		expected := testCase.Output
+		actual := CalculateTxID(version, vin, vout, locktime)
+		suite.Equal(expected, actual)
+	}
+}
 
-// func (suite *UtilsSuite) TestValidateHeaderPrevHash() {
-// 	fixture := suite.Fixtures["validateHeaderPrevHash"]
+func (suite *UtilsSuite) TestValidateHeaderWork() {
+	fixture := suite.Fixtures.ValidateHeaderWork
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.Output.(bool)
-// 		inputs := testCase.Input.(map[string]interface{})
-// 		header := inputs["header"].(RawHeader)
-// 		prevHash := inputs["prevHash"].(Hash256Digest)
-// 		actual := ValidateHeaderPrevHash(header, prevHash)
-// 		suite.Equal(expected, actual)
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
 
-// func (suite *UtilsSuite) TestValidateHeaderChain() {
-// 	fixture := suite.Fixtures["validateHeaderChain"]
+		digest := testCase.Input.Digest
+		target := testCase.Input.Target
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := sdk.NewUint(uint64(testCase.Output.(int)))
-// 		actual, err := ValidateHeaderChain(testCase.Input.([]byte))
-// 		suite.Nil(err)
-// 		suite.Equal(expected, actual)
-// 	}
+		expected := testCase.Output
+		actual := ValidateHeaderWork(digest, target)
+		suite.Equal(expected, actual)
+	}
+}
 
-// 	fixture = suite.Fixtures["validateHeaderChainError"]
+func (suite *UtilsSuite) TestValidateHeaderPrevHash() {
+	fixture := suite.Fixtures.ValidateHeaderPrevHash
 
-// 	for i := range fixture {
-// 		testCase := fixture[i]
-// 		expected := testCase.ErrorMessage.(string)
-// 		actual, err := ValidateHeaderChain(testCase.Input.([]byte))
-// 		suite.EqualError(err, expected)
-// 		suite.Equal(actual, sdk.NewUint(0))
-// 	}
-// }
+	for i := range fixture {
+		testCase := fixture[i]
+
+		header := testCase.Input.Header
+		prevHash := testCase.Input.PrevHash
+
+		expected := testCase.Output
+		actual := ValidateHeaderPrevHash(header, prevHash)
+		suite.Equal(expected, actual)
+	}
+}
+
+func (suite *UtilsSuite) TestValidateHeaderChain() {
+	fixture := suite.Fixtures.ValidateHeaderChain
+
+	for i := range fixture {
+		testCase := fixture[i]
+		expected := sdk.NewUint(testCase.Output)
+		actual, err := ValidateHeaderChain(testCase.Input)
+		suite.Nil(err)
+		suite.Equal(expected, actual)
+	}
+
+	fixtureError := suite.Fixtures.ValidateHeaderChainError
+
+	for i := range fixtureError {
+		testCase := fixtureError[i]
+		actual, err := ValidateHeaderChain(testCase.Input)
+		suite.Equal(actual, sdk.NewUint(0))
+		suite.EqualError(err, testCase.ErrorMessage)
+	}
+}

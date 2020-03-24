@@ -7,7 +7,6 @@ type ExtractSequenceWitnessTC struct {
 	Output uint32   `json:"output"`
 }
 
-// TODO: Why is this output in bytes instead of uint?
 type ExtractSequenceLEWitnessTC struct {
 	Input  HexBytes `json:"input"`
 	Output HexBytes `json:"output"`
@@ -23,7 +22,6 @@ type ExtractSequenceLegacyError struct {
 	ErrorMessage string   `json:"errorMessage"`
 }
 
-// TODO: Why is this output in bytes instead of uint?
 type ExtractSequenceLELegacyTC struct {
 	Input  HexBytes `json:"input"`
 	Output HexBytes `json:"output"`
@@ -40,8 +38,8 @@ type Hash160TC struct {
 }
 
 type Hash256TC struct {
-	Input  HexBytes `json:"input"`
-	Output HexBytes `json:"output"`
+	Input  HexBytes      `json:"input"`
+	Output Hash256Digest `json:"output"`
 }
 
 type BytesToBigUintTC struct {
