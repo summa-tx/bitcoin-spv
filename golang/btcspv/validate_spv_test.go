@@ -2,21 +2,6 @@ package btcspv
 
 import sdk "github.com/cosmos/cosmos-sdk/types"
 
-func normalizeToByteSlice(b interface{}) []byte {
-	switch b.(type) {
-	case []byte:
-		return b.([]byte)
-	case Hash256Digest:
-		h := b.(Hash256Digest)
-		return h[:]
-	case RawHeader:
-		h := b.(RawHeader)
-		return h[:]
-	default:
-		panic("Bad normalization")
-	}
-}
-
 func (suite *UtilsSuite) TestProve() {
 	fixture := suite.Fixtures.Prove
 
