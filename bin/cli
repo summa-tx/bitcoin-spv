@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+/* eslint-disable no-console */
 /**
 *
 * @file Part of the [bitcoin-spv]{@link https://github.com/summa-tx/bitcoin-spv} project
@@ -12,11 +12,14 @@
 *
 */
 
-'use strict';
 
-const BcoinClient = require('../js/clients/lib/BcoinClient');
+const { BcoinClient } = require('@summa-tx/bitcoin-spv-js-clients');
 const Config = require('./vendor/bcfg');
-const pkg = {author: 'Mark Tyneway <mark.tyneway@gmail.com>', version: '0.0.1'};
+
+const pkg = {
+  author: 'Mark Tyneway <mark.tyneway@gmail.com>',
+  version: '0.0.1'
+};
 
 // bcoin HTTP server ports
 // by network.
@@ -90,13 +93,11 @@ class CLI {
   }
 
   async destroy() {
-    if (this.client && this.client.opened)
-      await this.client.close();
+    if (this.client && this.client.opened) await this.client.close();
   }
 
   log(json) {
-    if (typeof json === 'string')
-      return console.log.apply(console, arguments);
+    if (typeof json === 'string') return console.log.apply(console, arguments);
     return console.log(JSON.stringify(json, null, 2));
   }
 
@@ -108,8 +109,7 @@ class CLI {
   async getProof() {
     const txid = this.config.str(0);
 
-    if (!txid)
-      throw new Error('Must pass txid');
+    if (!txid) throw new Error('Must pass txid');
 
     const proof = await this.client.getProof(txid, 'hex');
 
@@ -117,16 +117,15 @@ class CLI {
   }
 
   async getHeaders() {
-    let enc = this.config.str('encoding', 'btcspv')
+    const enc = this.config.str('encoding', 'btcspv');
     let height = this.config.uint('height');
     const count = this.config.uint(0, 0);
 
     if (!height) {
       const info = await this.client.getInfo();
-      if (!info)
-        throw new Error('Must pass --height');
+      if (!info) throw new Error('Must pass --height');
 
-      height = parseInt(info.chain.height);
+      height = parseInt(info.chain.height, 10);
     }
 
     const headers = await this.client.getHeaderChainByCount(height, count, enc);
@@ -135,12 +134,11 @@ class CLI {
   }
 
   help(err) {
-    let str = ''
-    if (err)
-      str += `Unrecognized command: ${this.cmd}\n`;
+    let str = '';
+    if (err) str += `Unrecognized command: ${this.cmd}\n`;
 
-    return str
-    + 'Bitcoin SPV Proof Builder\n'
+    return `${str
+    }Bitcoin SPV Proof Builder\n`
     + `Version: ${pkg.version} Author: ${pkg.author}\n`
     + 'Commands:\n'
     + '  $ proof [txid]: Get SPV Proof\n'
@@ -153,7 +151,7 @@ class CLI {
     + '  --ssl/-s {true|false}\n'
     + '  --http-host/-h <http host>\n'
     + '  --http-port/-p <http port>'
-    + '  --height/-e <block height>\n'
+    + '  --height/-e <block height>\n';
   }
 }
 
