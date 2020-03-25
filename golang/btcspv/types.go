@@ -78,7 +78,7 @@ func HeaderFromRaw(raw RawHeader, height uint32) BitcoinHeader {
 	digestBE := ReverseHash256Endianness(digestLE)
 	prevhashLE := ExtractPrevBlockHashLE(raw)
 	prevhashBE := ReverseHash256Endianness(prevhashLE)
-  merkleRootLE := ExtractMerkleRootLE(raw)
+	merkleRootLE := ExtractMerkleRootLE(raw)
 	merkleRootBE := ReverseHash256Endianness(merkleRootLE)
 
 	return BitcoinHeader{
