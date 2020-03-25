@@ -123,7 +123,7 @@ func (suite *UtilsSuite) TestHash160() {
 	for i := range fixtures {
 		testCase := fixtures[i]
 		expected, _ := btcspv.NewHash160Digest(testCase.Output)
-		actual := btcspv.Hash160(testCase.Input[:])
+		actual := btcspv.Hash160(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
