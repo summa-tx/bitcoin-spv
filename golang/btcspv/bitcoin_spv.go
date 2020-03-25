@@ -479,6 +479,7 @@ func ExtractDifficulty(header RawHeader) sdk.Uint {
 	return CalculateDifficulty(ExtractTarget(header))
 }
 
+// Hash256MerkleStep concatenates and hashes two inputs for merkle proving
 func Hash256MerkleStep(a []byte, b []byte) Hash256Digest {
 	c := []byte{}
 	c = append(c, a...)

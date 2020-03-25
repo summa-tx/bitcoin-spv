@@ -10,9 +10,12 @@ import (
 	"github.com/btcsuite/btcutil/bech32"
 )
 
+// ZeroBytesError is the error returned when attempting to encode
+// an empty bytestring
 const ZeroBytesError = "Attempting to encode empty bytestring. " +
 	"Hint: your payload may not be properly initialized"
 
+// Strip0xPrefix removes the 0x prefix from a hex string
 func Strip0xPrefix(s string) string {
 	if len(s) < 2 {
 		return s
