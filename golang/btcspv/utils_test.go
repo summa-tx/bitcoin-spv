@@ -27,7 +27,35 @@ func (suite *UtilsSuite) TestDecodeIfHex() {
 	suite.Equal([]byte("foo"), DecodeIfHex("foo"))
 	suite.Equal([]byte("d"), DecodeIfHex("d"))
 	suite.Equal([]byte(""), DecodeIfHex(""))
+}
 
+func (suite *UtilsSuite) TestSafeSlice() {
+	// badSliceErr := "Tried to slice past end of array"
+	var expected []byte
+	var actual []byte
+	var err error
+
+	expected = []byte{0, 1}
+	actual, err = SafeSlice([]byte{0, 1, 2, 3}, 0, 2)
+	suite.Nil(err)
+	suite.Equal(expected, actual)
+
+	expected = []byte{0, 1, 2, 3}
+	actual, err = SafeSlice([]byte{0, 1, 2, 3}, 0, 4)
+	suite.Nil(err)
+	suite.Equal(expected, actual)
+
+	actual, err = SafeSlice([]byte{0, 1, 2, 3}, 0, 5)
+	suite.Equal([]byte{}, actual)
+	suite.EqualError(err, "Tried to slice past end of array")
+
+	actual, err = SafeSlice([]byte{0, 1, 2, 3}, 4, 4)
+	suite.Equal([]byte{}, actual)
+	suite.EqualError(err, "Slice must not have 0 length")
+
+	actual, err = SafeSlice([]byte{0, 1, 2, 3}, -1, 4)
+	suite.Equal([]byte{}, actual)
+	suite.EqualError(err, "Slice must not use negative indexes")
 }
 
 func (suite *UtilsSuite) TestEncodeP2SH() {

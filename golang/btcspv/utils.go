@@ -32,6 +32,18 @@ func DecodeIfHex(s string) []byte {
 	return res
 }
 
+// SafeSlice performs a safe slice on a byte array
+func SafeSlice(buf []byte, first, last int) ([]byte, error) {
+	if last > len(buf) {
+		return []byte{}, errors.New("Tried to slice past end of array")
+	} else if first >= last || first > len(buf) {
+		return []byte{}, errors.New("Slice must not have 0 length")
+	} else if first < 0 || last < 0 {
+		return []byte{}, errors.New("Slice must not use negative indexes")
+	}
+	return buf[first:last], nil
+}
+
 // EncodeP2SH turns a scripthash into an address
 func EncodeP2SH(sh []byte) (string, error) {
 	if len(sh) != 20 {
