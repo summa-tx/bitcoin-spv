@@ -1,6 +1,27 @@
-package btcspv
+package tests
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
+)
+
+// Hash256Digest 32-byte double-sha2 digest
+type Hash256Digest = btcspv.Hash256Digest
+
+// Hash160Digest is a 20-byte ripemd160+sha2 hash
+type Hash160Digest = btcspv.Hash160Digest
+
+// RawHeader is an 80-byte raw header
+type RawHeader = btcspv.RawHeader
+
+// HexBytes is a type alias to make JSON hex ser/deser easier
+type HexBytes = btcspv.HexBytes
+
+// BitcoinHeader is a parsed Bitcoin header
+type BitcoinHeader = btcspv.BitcoinHeader
+
+// SPVProof is the base struct for an SPV proof
+type SPVProof = btcspv.SPVProof
 
 type ExtractSequenceWitnessTC struct {
 	Input  HexBytes `json:"input"`

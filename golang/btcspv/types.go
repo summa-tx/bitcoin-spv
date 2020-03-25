@@ -97,7 +97,7 @@ func HeaderFromRaw(raw RawHeader, height uint32) BitcoinHeader {
 func HeaderFromHex(s string, height uint32) (BitcoinHeader, error) {
 	var raw RawHeader
 
-	buf, err := hex.DecodeString(strip0xPrefix(s))
+	buf, err := hex.DecodeString(Strip0xPrefix(s))
 	if err != nil {
 		return BitcoinHeader{}, err
 	}
@@ -113,7 +113,7 @@ func HeaderFromHex(s string, height uint32) (BitcoinHeader, error) {
 // UnmarshalJSON unmarshalls 32 byte digests
 func (h *HexBytes) UnmarshalJSON(b []byte) error {
 	// Have to trim quotation marks off byte array
-	buf, err := hex.DecodeString(strip0xPrefix(string(b[1 : len(b)-1])))
+	buf, err := hex.DecodeString(Strip0xPrefix(string(b[1 : len(b)-1])))
 	if err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func (h HexBytes) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON unmarshalls 32 byte digests
 func (h *Hash256Digest) UnmarshalJSON(b []byte) error {
 	// Have to trim quotation marks off byte array
-	buf, err := hex.DecodeString(strip0xPrefix(string(b[1 : len(b)-1])))
+	buf, err := hex.DecodeString(Strip0xPrefix(string(b[1 : len(b)-1])))
 	if err != nil {
 		return err
 	}
@@ -153,7 +153,7 @@ func (h Hash256Digest) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON unmarshalls 32 byte digests
 func (h *RawHeader) UnmarshalJSON(b []byte) error {
 	// Have to trim quotation marks off byte array
-	buf, err := hex.DecodeString(strip0xPrefix(string(b[1 : len(b)-1])))
+	buf, err := hex.DecodeString(Strip0xPrefix(string(b[1 : len(b)-1])))
 	if err != nil {
 		return err
 	}
