@@ -31,56 +31,50 @@ func (suite *UtilsSuite) TestDecodeIfHex() {
 }
 
 func (suite *UtilsSuite) TestEncodeP2SH() {
-	fixture := suite.Fixtures["encodeP2SH"]
+	fixture := suite.Fixtures.EncodeP2SH
 
 	for i := range fixture {
 		testCase := fixture[i]
-
-		input := testCase.Input.([]byte)
 		expected := testCase.Output
-		actual, err := EncodeP2SH(input)
+		actual, err := EncodeP2SH(testCase.Input)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
 }
 
 func (suite *UtilsSuite) TestEncodeP2PKH() {
-	fixture := suite.Fixtures["encodeP2PKH"]
+	fixture := suite.Fixtures.EncodeP2PKH
 
 	for i := range fixture {
 		testCase := fixture[i]
-
-		input := testCase.Input.([]byte)
 		expected := testCase.Output
-		actual, err := EncodeP2PKH(input)
+		actual, err := EncodeP2PKH(testCase.Input)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
 }
 
 func (suite *UtilsSuite) TestEncodeP2WSH() {
-	fixture := suite.Fixtures["encodeP2WSH"]
+	fixture := suite.Fixtures.EncodeP2WSH
 
 	for i := range fixture {
 		testCase := fixture[i]
 
-		input := testCase.Input.(Hash256Digest)
+		// input := testCase.Input.(Hash256Digest)
 		expected := testCase.Output
-		actual, err := EncodeP2WSH(input)
+		actual, err := EncodeP2WSH(testCase.Input)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
 }
 
 func (suite *UtilsSuite) TestEncodeP2WPKH() {
-	fixture := suite.Fixtures["encodeP2WPKH"]
+	fixture := suite.Fixtures.EncodeP2WPKH
 
 	for i := range fixture {
 		testCase := fixture[i]
-
-		input := testCase.Input.([]byte)
 		expected := testCase.Output
-		actual, err := EncodeP2WPKH(input)
+		actual, err := EncodeP2WPKH(testCase.Input)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
