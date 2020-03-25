@@ -122,7 +122,7 @@ func (suite *UtilsSuite) TestHash160() {
 	for i := range fixtures {
 		testCase := fixtures[i]
 		expected, _ := NewHash160Digest(testCase.Output)
-		actual := Hash160(testCase.Input[:])
+		actual := Hash160(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
