@@ -1,6 +1,9 @@
-package btcspv
+package btcspv_test
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
+)
 
 func (suite *UtilsSuite) TestProve() {
 	fixture := suite.Fixtures.Prove
@@ -14,13 +17,13 @@ func (suite *UtilsSuite) TestProve() {
 		index := testCase.Input.Index
 
 		expected := testCase.Output
-		actual := Prove(txIDLE, merkleRootLE, proof, index)
+		actual := btcspv.Prove(txIDLE, merkleRootLE, proof, index)
 		suite.Equal(expected, actual)
 	}
 }
 
-func (suite *UtilsSuite) TestCalculateTxId() {
-	fixture := suite.Fixtures.CalculateTxId
+func (suite *UtilsSuite) TestCalculateTxID() {
+	fixture := suite.Fixtures.CalculateTxID
 
 	for i := range fixture {
 		testCase := fixture[i]
@@ -31,7 +34,7 @@ func (suite *UtilsSuite) TestCalculateTxId() {
 		locktime := testCase.Input.Locktime
 
 		expected := testCase.Output
-		actual := CalculateTxID(version, vin, vout, locktime)
+		actual := btcspv.CalculateTxID(version, vin, vout, locktime)
 		suite.Equal(expected, actual)
 	}
 }
@@ -46,7 +49,7 @@ func (suite *UtilsSuite) TestValidateHeaderWork() {
 		target := testCase.Input.Target
 
 		expected := testCase.Output
-		actual := ValidateHeaderWork(digest, target)
+		actual := btcspv.ValidateHeaderWork(digest, target)
 		suite.Equal(expected, actual)
 	}
 }
@@ -61,7 +64,7 @@ func (suite *UtilsSuite) TestValidateHeaderPrevHash() {
 		prevHash := testCase.Input.PrevHash
 
 		expected := testCase.Output
-		actual := ValidateHeaderPrevHash(header, prevHash)
+		actual := btcspv.ValidateHeaderPrevHash(header, prevHash)
 		suite.Equal(expected, actual)
 	}
 }
@@ -72,7 +75,7 @@ func (suite *UtilsSuite) TestValidateHeaderChain() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := sdk.NewUint(testCase.Output)
-		actual, err := ValidateHeaderChain(testCase.Input)
+		actual, err := btcspv.ValidateHeaderChain(testCase.Input)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
@@ -81,7 +84,7 @@ func (suite *UtilsSuite) TestValidateHeaderChain() {
 
 	for i := range fixtureError {
 		testCase := fixtureError[i]
-		actual, err := ValidateHeaderChain(testCase.Input)
+		actual, err := btcspv.ValidateHeaderChain(testCase.Input)
 		suite.Equal(actual, sdk.NewUint(0))
 		suite.EqualError(err, testCase.ErrorMessage)
 	}

@@ -1,4 +1,4 @@
-package btcspv
+package btcspv_test
 
 import (
 	"encoding/json"
@@ -9,65 +9,91 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	btcspv "github.com/summa-tx/bitcoin-spv/golang/btcspv"
+	tutils "github.com/summa-tx/bitcoin-spv/golang/btcspv/test_utils"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// Hash256Digest 32-byte double-sha2 digest
+type Hash256Digest = btcspv.Hash256Digest
+
+// Hash160Digest is a 20-byte ripemd160+sha2 hash
+type Hash160Digest = btcspv.Hash160Digest
+
+// RawHeader is an 80-byte raw header
+type RawHeader = btcspv.RawHeader
+
+// HexBytes is a type alias to make JSON hex ser/deser easier
+type HexBytes = btcspv.HexBytes
+
+// BitcoinHeader is a parsed Bitcoin header
+type BitcoinHeader = btcspv.BitcoinHeader
+
+// SPVProof is the base struct for an SPV proof
+type SPVProof = btcspv.SPVProof
+
 type TestCases struct {
-	ExtractSequenceWitness       []ExtractSequenceWitnessTC     `json:"extractSequenceWitness"`
-	ExtractSequenceLEWitness     []ExtractSequenceLEWitnessTC   `json:"extractSequenceLEWitness"`
-	ExtractSequenceLegacy        []ExtractSequenceLegacyTC      `json:"extractSequenceLegacy"`
-	ExtractSequenceLegacyError   []ExtractSequenceLegacyError   `json:"extractSequenceLegacyError"`
-	ExtractSequenceLELegacy      []ExtractSequenceLELegacyTC    `json:"extractSequenceLELegacy"`
-	ExtractSequenceLELegacyError []ExtractSequenceLELegacyError `json:"extractSequenceLELegacyError"`
-	Hash160                      []Hash160TC                    `json:"hash160"`
-	Hash256                      []Hash256TC                    `json:"hash256"`
-	BytesToBigUint               []BytesToBigUintTC             `json:"bytesToBigUint"`
-	ExtractOutpoint              []ExtractOutpointTC            `json:"extractOutpoint"`
-	ExtractOutputScriptLen       []ExtractOutputScriptLenTC     `json:"extractOutputScriptLen"`
-	ExtractHash                  []ExtractHashTC                `json:"extractHash"`
-	ExtractHashError             []ExtractHashError             `json:"extractHashError"`
-	ExtractValue                 []ExtractValueTC               `json:"extractValue"`
-	ExtractValueLE               []ExtractValueLETC             `json:"extractValueLE"`
-	ExtractOpReturnData          []ExtractOpReturnDataTC        `json:"extractOpReturnData"`
-	ExtractOpReturnDataError     []ExtractOpReturnDataError     `json:"extractOpReturnDataError"`
-	ExtractInputAtIndex          []ExtractInputAtIndexTC        `json:"extractInputAtIndex"`
-	ExtractInputAtIndexError     []ExtractInputAtIndexError     `json:"extractInputAtIndexError"`
-	IsLegacyInput                []IsLegacyInputTC              `json:"isLegacyInput"`
-	DetermineInputLength         []DetermineInputLengthTC       `json:"determineInputLength"`
-	ExtractScriptSig             []ExtractScriptSigTC           `json:"extractScriptSig"`
-	ExtractScriptSigError        []ExtractScriptSigError        `json:"extractScriptSigError"`
-	ExtractScriptSigLen          []ExtractScriptSigLenTC        `json:"extractScriptSigLen"`
-	ValidateVin                  []ValidateVinTC                `json:"validateVin"`
-	ValidateVout                 []ValidateVoutTC               `json:"validateVout"`
-	ExtractInputTxIDLE           []ExtractInputTxIDLETC         `json:"extractInputTxIdLE"`
-	ExtractTxIndexLE             []ExtractTxIndexLETC           `json:"extractTxIndexLE"`
-	ExtractTxIndex               []ExtractTxIndexTC             `json:"extractTxIndex"`
-	DetermineOutputLength        []DetermineOutputLengthTC      `json:"determineOutputLength"`
-	DetermineOutputLengthError   []DetermineOutputLengthError   `json:"determineOutputLengthError"`
-	ExtractOutputAtIndex         []ExtractOutputAtIndexTC       `json:"extractOutputAtIndex"`
-	ExtractOutputAtIndexError    []ExtractOutputAtIndexError    `json:"extractOutputAtIndexError"`
-	ExtractTarget                []ExtractTargetTC              `json:"extractTarget"`
-	ExtractTimestamp             []ExtractTimestampTC           `json:"extractTimestamp"`
-	Hash256MerkleStep            []Hash256MerkleStepTC          `json:"hash256MerkleStep"`
-	VerifyHash256Merkle          []VerifyHash256MerkleTC        `json:"verifyHash256Merkle"`
-	RetargetAlgorithm            []RetargetAlgorithmTC          `json:"retargetAlgorithm"`
-	CalculateDifficulty          []CalculateDifficultyTC        `json:"calculateDifficulty"`
-	Prove                        []ProveTC                      `json:"prove"`
-	CalculateTxId                []CalculateTxIDTC              `json:"calculateTxId"`
-	ValidateHeaderWork           []ValidateHeaderWorkTC         `json:"validateHeaderWork"`
-	ValidateHeaderPrevHash       []ValidateHeaderPrevHashTC     `json:"validateHeaderPrevHash"`
-	ValidateHeaderChain          []ValidateHeaderChainTC        `json:"validateHeaderChain"`
-	ValidateHeaderChainError     []ValidateHeaderChainError     `json:"validateHeaderChainError"`
-	EncodeP2SH                   []EncodeP2SHTC                 `json:"encodeP2SH"`
-	EncodeP2PKH                  []EncodeP2PKHTC                `json:"encodeP2PKH"`
-	EncodeP2WSH                  []EncodeP2WSHTC                `json:"encodeP2WSH"`
-	EncodeP2WPKH                 []EncodeP2WPKHTC               `json:"encodeP2WPKH"`
+	ExtractSequenceWitness       []tutils.ExtractSequenceWitnessTC     `json:"extractSequenceWitness"`
+	ExtractSequenceLEWitness     []tutils.ExtractSequenceLEWitnessTC   `json:"extractSequenceLEWitness"`
+	ExtractSequenceLegacy        []tutils.ExtractSequenceLegacyTC      `json:"extractSequenceLegacy"`
+	ExtractSequenceLegacyError   []tutils.ExtractSequenceLegacyError   `json:"extractSequenceLegacyError"`
+	ExtractSequenceLELegacy      []tutils.ExtractSequenceLELegacyTC    `json:"extractSequenceLELegacy"`
+	ExtractSequenceLELegacyError []tutils.ExtractSequenceLELegacyError `json:"extractSequenceLELegacyError"`
+	Hash160                      []tutils.Hash160TC                    `json:"hash160"`
+	Hash256                      []tutils.Hash256TC                    `json:"hash256"`
+	BytesToBigUint               []tutils.BytesToBigUintTC             `json:"bytesToBigUint"`
+	ExtractOutpoint              []tutils.ExtractOutpointTC            `json:"extractOutpoint"`
+	ExtractOutputScriptLen       []tutils.ExtractOutputScriptLenTC     `json:"extractOutputScriptLen"`
+	ExtractHash                  []tutils.ExtractHashTC                `json:"extractHash"`
+	ExtractHashError             []tutils.ExtractHashError             `json:"extractHashError"`
+	ExtractValue                 []tutils.ExtractValueTC               `json:"extractValue"`
+	ExtractValueLE               []tutils.ExtractValueLETC             `json:"extractValueLE"`
+	ExtractOpReturnData          []tutils.ExtractOpReturnDataTC        `json:"extractOpReturnData"`
+	ExtractOpReturnDataError     []tutils.ExtractOpReturnDataError     `json:"extractOpReturnDataError"`
+	ExtractInputAtIndex          []tutils.ExtractInputAtIndexTC        `json:"extractInputAtIndex"`
+	ExtractInputAtIndexError     []tutils.ExtractInputAtIndexError     `json:"extractInputAtIndexError"`
+	IsLegacyInput                []tutils.IsLegacyInputTC              `json:"isLegacyInput"`
+	DetermineInputLength         []tutils.DetermineInputLengthTC       `json:"determineInputLength"`
+	ExtractScriptSig             []tutils.ExtractScriptSigTC           `json:"extractScriptSig"`
+	ExtractScriptSigError        []tutils.ExtractScriptSigError        `json:"extractScriptSigError"`
+	ExtractScriptSigLen          []tutils.ExtractScriptSigLenTC        `json:"extractScriptSigLen"`
+	ValidateVin                  []tutils.ValidateVinTC                `json:"validateVin"`
+	ValidateVout                 []tutils.ValidateVoutTC               `json:"validateVout"`
+	ExtractInputTxIDLE           []tutils.ExtractInputTxIDLETC         `json:"extractInputTxIdLE"`
+	ExtractTxIndexLE             []tutils.ExtractTxIndexLETC           `json:"extractTxIndexLE"`
+	ExtractTxIndex               []tutils.ExtractTxIndexTC             `json:"extractTxIndex"`
+	DetermineOutputLength        []tutils.DetermineOutputLengthTC      `json:"determineOutputLength"`
+	DetermineOutputLengthError   []tutils.DetermineOutputLengthError   `json:"determineOutputLengthError"`
+	ExtractOutputAtIndex         []tutils.ExtractOutputAtIndexTC       `json:"extractOutputAtIndex"`
+	ExtractOutputAtIndexError    []tutils.ExtractOutputAtIndexError    `json:"extractOutputAtIndexError"`
+	ExtractTarget                []tutils.ExtractTargetTC              `json:"extractTarget"`
+	ExtractTimestamp             []tutils.ExtractTimestampTC           `json:"extractTimestamp"`
+	Hash256MerkleStep            []tutils.Hash256MerkleStepTC          `json:"hash256MerkleStep"`
+	VerifyHash256Merkle          []tutils.VerifyHash256MerkleTC        `json:"verifyHash256Merkle"`
+	RetargetAlgorithm            []tutils.RetargetAlgorithmTC          `json:"retargetAlgorithm"`
+	CalculateDifficulty          []tutils.CalculateDifficultyTC        `json:"calculateDifficulty"`
+	Prove                        []tutils.ProveTC                      `json:"prove"`
+	CalculateTxID                []tutils.CalculateTxIDTC              `json:"calculateTxId"`
+	ValidateHeaderWork           []tutils.ValidateHeaderWorkTC         `json:"validateHeaderWork"`
+	ValidateHeaderPrevHash       []tutils.ValidateHeaderPrevHashTC     `json:"validateHeaderPrevHash"`
+	ValidateHeaderChain          []tutils.ValidateHeaderChainTC        `json:"validateHeaderChain"`
+	ValidateHeaderChainError     []tutils.ValidateHeaderChainError     `json:"validateHeaderChainError"`
+	EncodeP2SH                   []tutils.EncodeP2SHTC                 `json:"encodeP2SH"`
+	EncodeP2PKH                  []tutils.EncodeP2PKHTC                `json:"encodeP2PKH"`
+	EncodeP2WSH                  []tutils.EncodeP2WSHTC                `json:"encodeP2WSH"`
+	EncodeP2WPKH                 []tutils.EncodeP2WPKHTC               `json:"encodeP2WPKH"`
 }
 
 type UtilsSuite struct {
 	suite.Suite
 	Fixtures TestCases
+}
+
+func logIfErr(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // Runs the whole test suite
@@ -89,15 +115,9 @@ func TestBTCUtils(t *testing.T) {
 	suite.Run(t, utilsSuite)
 }
 
-func logIfErr(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func (suite *UtilsSuite) TestReverseEndianness() {
 	testbytes := []byte{1, 2, 3}
-	reversed := ReverseEndianness(testbytes)
+	reversed := btcspv.ReverseEndianness(testbytes)
 	suite.Equal(reversed, []byte{3, 2, 1})
 	suite.Equal(len(reversed), len(testbytes))
 }
@@ -105,14 +125,14 @@ func (suite *UtilsSuite) TestReverseEndianness() {
 func (suite *UtilsSuite) TestReverseHash256Endianness() {
 	input := Hash256Digest{1, 2, 3}
 	output := Hash256Digest{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 1}
-	reversed := ReverseHash256Endianness(input)
+	reversed := btcspv.ReverseHash256Endianness(input)
 	suite.Equal(reversed, output)
 	suite.Equal(len(reversed), len(input))
 }
 
 func (suite *UtilsSuite) TestLastBytes() {
 	testbytes := []byte{1, 2, 3, 4}
-	last := LastBytes(testbytes, 1)
+	last := btcspv.LastBytes(testbytes, 1)
 	suite.Equal(last, []byte{4})
 }
 
@@ -121,8 +141,8 @@ func (suite *UtilsSuite) TestHash160() {
 
 	for i := range fixtures {
 		testCase := fixtures[i]
-		expected, _ := NewHash160Digest(testCase.Output)
-		actual := Hash160(testCase.Input)
+		expected := testCase.Output
+		actual := btcspv.Hash160(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -133,7 +153,7 @@ func (suite *UtilsSuite) TestHash256() {
 	for i := range fixtures {
 		testCase := fixtures[i]
 		expected := testCase.Output
-		actual := Hash256(testCase.Input)
+		actual := btcspv.Hash256(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -144,17 +164,17 @@ func (suite *UtilsSuite) TestBytesToUint() {
 	for i := range fixtures {
 		testCase := fixtures[i]
 		expected := testCase.Output
-		actual := BytesToUint(testCase.Input)
+		actual := btcspv.BytesToUint(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
 
 func (suite *UtilsSuite) TestBytesToBigUint() {
 	hexString := "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-	decoded := DecodeIfHex(hexString)
+	decoded := btcspv.DecodeIfHex(hexString)
 
 	expected := sdk.NewUintFromString(hexString)
-	actual := BytesToBigUint(decoded)
+	actual := btcspv.BytesToBigUint(decoded)
 
 	suite.Equal(expected, actual)
 }
@@ -165,7 +185,7 @@ func (suite *UtilsSuite) TestExtractSequenceWitness() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual := ExtractSequenceWitness(testCase.Input)
+		actual := btcspv.ExtractSequenceWitness(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -176,7 +196,7 @@ func (suite *UtilsSuite) TestExtractSequenceLEWitness() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := []byte(testCase.Output)
-		actual := ExtractSequenceLEWitness(testCase.Input)
+		actual := btcspv.ExtractSequenceLEWitness(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -187,7 +207,7 @@ func (suite *UtilsSuite) TestExtractSequenceLegacy() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual, err := ExtractSequenceLegacy(testCase.Input)
+		actual, err := btcspv.ExtractSequenceLegacy(testCase.Input)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
@@ -197,7 +217,7 @@ func (suite *UtilsSuite) TestExtractSequenceLegacy() {
 	for i := range fixtureError {
 		testCase := fixtureError[i]
 
-		actual, err := ExtractSequenceLegacy(testCase.Input)
+		actual, err := btcspv.ExtractSequenceLegacy(testCase.Input)
 		suite.Equal(uint32(0), actual)
 		suite.EqualError(err, testCase.ErrorMessage)
 	}
@@ -209,7 +229,7 @@ func (suite *UtilsSuite) TestExtractSequenceLELegacy() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := []byte(testCase.Output)
-		actual, err := ExtractSequenceLELegacy(testCase.Input)
+		actual, err := btcspv.ExtractSequenceLELegacy(testCase.Input)
 
 		suite.Nil(err)
 		suite.Equal(expected, actual)
@@ -219,7 +239,7 @@ func (suite *UtilsSuite) TestExtractSequenceLELegacy() {
 
 	for i := range fixtureError {
 		testCase := fixtureError[i]
-		actual, err := ExtractSequenceLELegacy(testCase.Input)
+		actual, err := btcspv.ExtractSequenceLELegacy(testCase.Input)
 
 		suite.Equal([]byte{}, actual)
 		suite.EqualError(err, testCase.ErrorMessage)
@@ -232,7 +252,7 @@ func (suite *UtilsSuite) TestExtractOutpoint() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := []byte(testCase.Output)
-		actual := ExtractOutpoint(testCase.Input)
+		actual := btcspv.ExtractOutpoint(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -243,7 +263,7 @@ func (suite *UtilsSuite) TestExtractOuputScriptLen() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual := ExtractOutputScriptLen(testCase.Input)
+		actual := btcspv.ExtractOutputScriptLen(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -254,7 +274,7 @@ func (suite *UtilsSuite) TestExtractHash() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := []byte(testCase.Output)
-		actual, err := ExtractHash(testCase.Input)
+		actual, err := btcspv.ExtractHash(testCase.Input)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
@@ -263,7 +283,7 @@ func (suite *UtilsSuite) TestExtractHash() {
 
 	for i := range fixtureError {
 		testCase := fixtureError[i]
-		actual, err := ExtractHash(testCase.Input)
+		actual, err := btcspv.ExtractHash(testCase.Input)
 		suite.Nil(actual)
 		suite.EqualError(err, testCase.ErrorMessage)
 	}
@@ -275,7 +295,7 @@ func (suite *UtilsSuite) TestExtractValue() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual := ExtractValue(testCase.Input)
+		actual := btcspv.ExtractValue(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -286,7 +306,7 @@ func (suite *UtilsSuite) TestExtractValueLE() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := []byte(testCase.Output)
-		actual := ExtractValueLE(testCase.Input)
+		actual := btcspv.ExtractValueLE(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -297,7 +317,7 @@ func (suite *UtilsSuite) TestExtractOpReturnData() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := []byte(testCase.Output)
-		actual, err := ExtractOpReturnData(testCase.Input)
+		actual, err := btcspv.ExtractOpReturnData(testCase.Input)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
@@ -306,7 +326,7 @@ func (suite *UtilsSuite) TestExtractOpReturnData() {
 
 	for i := range fixtureError {
 		testCase := fixtureError[i]
-		actual, err := ExtractOpReturnData(testCase.Input)
+		actual, err := btcspv.ExtractOpReturnData(testCase.Input)
 		suite.Nil(actual)
 		suite.EqualError(err, testCase.ErrorMessage)
 	}
@@ -318,7 +338,7 @@ func (suite *UtilsSuite) TestExtractInputAtIndex() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := []byte(testCase.Output)
-		actual, err := ExtractInputAtIndex(testCase.Input.Vin, testCase.Input.Index)
+		actual, err := btcspv.ExtractInputAtIndex(testCase.Input.Vin, testCase.Input.Index)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
@@ -327,7 +347,7 @@ func (suite *UtilsSuite) TestExtractInputAtIndex() {
 
 	for i := range fixtureError {
 		testCase := fixtureError[i]
-		actual, err := ExtractInputAtIndex(testCase.Input.Vin, testCase.Input.Index)
+		actual, err := btcspv.ExtractInputAtIndex(testCase.Input.Vin, testCase.Input.Index)
 		suite.Equal([]byte{}, actual)
 		suite.EqualError(err, testCase.ErrorMessage)
 	}
@@ -339,7 +359,7 @@ func (suite *UtilsSuite) TestIsLegacyInput() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual := IsLegacyInput(testCase.Input)
+		actual := btcspv.IsLegacyInput(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -350,7 +370,7 @@ func (suite *UtilsSuite) TestDetermineInputLength() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual, err := DetermineInputLength(testCase.Input)
+		actual, err := btcspv.DetermineInputLength(testCase.Input)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
@@ -362,7 +382,7 @@ func (suite *UtilsSuite) TestExtractScriptSig() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := []byte(testCase.Output)
-		actual, err := ExtractScriptSig(testCase.Input)
+		actual, err := btcspv.ExtractScriptSig(testCase.Input)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
@@ -371,7 +391,7 @@ func (suite *UtilsSuite) TestExtractScriptSig() {
 
 	for i := range fixtureError {
 		testCase := fixtureError[i]
-		actual, err := ExtractScriptSig(testCase.Input)
+		actual, err := btcspv.ExtractScriptSig(testCase.Input)
 		suite.Equal([]byte{}, actual)
 		suite.EqualError(err, testCase.ErrorMessage)
 	}
@@ -384,7 +404,7 @@ func (suite *UtilsSuite) TestExtractScriptSigLen() {
 		testCase := fixture[i]
 
 		expected := testCase.Output
-		actualDataLen, actualScriptSigLen, err := ExtractScriptSigLen(testCase.Input)
+		actualDataLen, actualScriptSigLen, err := btcspv.ExtractScriptSigLen(testCase.Input)
 
 		suite.Nil(err)
 		suite.Equal(expected[0], actualDataLen)
@@ -398,7 +418,7 @@ func (suite *UtilsSuite) TestValidateVin() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual := ValidateVin(testCase.Input)
+		actual := btcspv.ValidateVin(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -409,7 +429,7 @@ func (suite *UtilsSuite) TestValidateVout() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual := ValidateVout(testCase.Input)
+		actual := btcspv.ValidateVout(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -420,7 +440,7 @@ func (suite *UtilsSuite) TestExtractInputTxIDLE() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual := ExtractInputTxIDLE(testCase.Input)
+		actual := btcspv.ExtractInputTxIDLE(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -431,7 +451,7 @@ func (suite *UtilsSuite) TestExtractTxIndexLE() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := []byte(testCase.Output)
-		actual := ExtractTxIndexLE(testCase.Input)
+		actual := btcspv.ExtractTxIndexLE(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -442,7 +462,7 @@ func (suite *UtilsSuite) TestExtractTxIndex() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual := ExtractTxIndex(testCase.Input)
+		actual := btcspv.ExtractTxIndex(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -453,7 +473,7 @@ func (suite *UtilsSuite) TestDetermineOutputLength() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual, err := DetermineOutputLength(testCase.Input)
+		actual, err := btcspv.DetermineOutputLength(testCase.Input)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
@@ -462,7 +482,7 @@ func (suite *UtilsSuite) TestDetermineOutputLength() {
 
 	for i := range fixtureError {
 		testCase := fixtureError[i]
-		actual, err := DetermineOutputLength(testCase.Input)
+		actual, err := btcspv.DetermineOutputLength(testCase.Input)
 		suite.Equal(actual, uint64(0))
 		suite.EqualError(err, testCase.ErrorMessage)
 	}
@@ -474,7 +494,7 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := []byte(testCase.Output)
-		actual, err := ExtractOutputAtIndex(testCase.Input.Vout, testCase.Input.Index)
+		actual, err := btcspv.ExtractOutputAtIndex(testCase.Input.Vout, testCase.Input.Index)
 		suite.Nil(err)
 		suite.Equal(expected, actual)
 	}
@@ -483,7 +503,7 @@ func (suite *UtilsSuite) TestExtractOutputAtIndex() {
 
 	for i := range fixtureError {
 		testCase := fixtureError[i]
-		actual, err := ExtractOutputAtIndex(testCase.Input.Vout, testCase.Input.Index)
+		actual, err := btcspv.ExtractOutputAtIndex(testCase.Input.Vout, testCase.Input.Index)
 		suite.Equal([]byte{}, actual)
 		suite.EqualError(err, testCase.ErrorMessage)
 	}
@@ -494,8 +514,8 @@ func (suite *UtilsSuite) TestExtractTarget() {
 
 	for i := range fixture {
 		testCase := fixture[i]
-		expected := BytesToBigUint(testCase.Output)
-		actual := ExtractTarget(testCase.Input)
+		expected := btcspv.BytesToBigUint(testCase.Output)
+		actual := btcspv.ExtractTarget(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -506,7 +526,7 @@ func (suite *UtilsSuite) TestExtractTimestamp() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual := ExtractTimestamp(testCase.Input)
+		actual := btcspv.ExtractTimestamp(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
@@ -517,19 +537,19 @@ func (suite *UtilsSuite) TestHash256MerkleStep() {
 	for i := range fixtures {
 		testCase := fixtures[i]
 		expected := testCase.Output
-		actual := hash256MerkleStep(testCase.Input[0], testCase.Input[1])
+		actual := btcspv.Hash256MerkleStep(testCase.Input[0], testCase.Input[1])
 		suite.Equal(expected, actual)
 	}
 }
 
 func (suite *UtilsSuite) TestDetermineVarIntDataLength() {
-	res1 := DetermineVarIntDataLength(0x01)
+	res1 := btcspv.DetermineVarIntDataLength(0x01)
 	suite.Equal(uint8(0), res1)
-	res2 := DetermineVarIntDataLength(0xfd)
+	res2 := btcspv.DetermineVarIntDataLength(0xfd)
 	suite.Equal(uint8(2), res2)
-	res3 := DetermineVarIntDataLength(0xfe)
+	res3 := btcspv.DetermineVarIntDataLength(0xfe)
 	suite.Equal(uint8(4), res3)
-	res4 := DetermineVarIntDataLength(0xff)
+	res4 := btcspv.DetermineVarIntDataLength(0xff)
 	suite.Equal(uint8(8), res4)
 }
 
@@ -539,7 +559,7 @@ func (suite *UtilsSuite) TestVerifyHash256Merkle() {
 	for i := range fixtures {
 		testCase := fixtures[i]
 		expected := testCase.Output
-		actual := VerifyHash256Merkle(testCase.Input.Proof, testCase.Input.Index)
+		actual := btcspv.VerifyHash256Merkle(testCase.Input.Proof, testCase.Input.Index)
 		suite.Equal(expected, actual)
 	}
 }
@@ -556,10 +576,10 @@ func (suite *UtilsSuite) TestRetargetAlgorithm() {
 
 		firstTimestamp := testCaseFirst.Timestamp
 		secondTimestamp := testCaseSecond.Timestamp
-		previousTarget := ExtractTarget(testCaseSecond.Hex)
-		expectedNewTarget := ExtractTarget(testCaseExpected.Hex)
+		previousTarget := btcspv.ExtractTarget(testCaseSecond.Hex)
+		expectedNewTarget := btcspv.ExtractTarget(testCaseExpected.Hex)
 
-		actual := RetargetAlgorithm((previousTarget), firstTimestamp, secondTimestamp)
+		actual := btcspv.RetargetAlgorithm((previousTarget), firstTimestamp, secondTimestamp)
 
 		// dirty hacks. sdk.Uint doesn't give us easy access to the underlying
 		a, _ := actual.MarshalAmino()
@@ -576,12 +596,12 @@ func (suite *UtilsSuite) TestRetargetAlgorithm() {
 
 		// long
 		fakeSecond := firstTimestamp + 5*2016*10*60
-		longRes := RetargetAlgorithm(previousTarget, firstTimestamp, fakeSecond)
+		longRes := btcspv.RetargetAlgorithm(previousTarget, firstTimestamp, fakeSecond)
 		suite.Equal(previousTarget.MulUint64(4), longRes)
 
 		// short
 		fakeSecond = firstTimestamp + 2016*10*14
-		shortRes := RetargetAlgorithm(previousTarget, firstTimestamp, fakeSecond)
+		shortRes := btcspv.RetargetAlgorithm(previousTarget, firstTimestamp, fakeSecond)
 		suite.Equal(previousTarget.QuoUint64(4), shortRes)
 	}
 }
@@ -594,7 +614,7 @@ func (suite *UtilsSuite) TestExtractDifficulty() {
 		input := testCase.Input
 		for j := range input {
 			h := input[j]
-			actual := ExtractDifficulty(h.Hex)
+			actual := btcspv.ExtractDifficulty(h.Hex)
 			expected := sdk.NewUint(h.Difficulty)
 			suite.Equal(expected, actual)
 		}
@@ -607,7 +627,7 @@ func (suite *UtilsSuite) TestCalculateDifficulty() {
 	for i := range fixture {
 		testCase := fixture[i]
 		expected := testCase.Output
-		actual := CalculateDifficulty(testCase.Input)
+		actual := btcspv.CalculateDifficulty(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }

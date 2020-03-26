@@ -479,7 +479,8 @@ func ExtractDifficulty(header RawHeader) sdk.Uint {
 	return CalculateDifficulty(ExtractTarget(header))
 }
 
-func hash256MerkleStep(a []byte, b []byte) Hash256Digest {
+// Hash256MerkleStep concatenates and hashes two inputs for merkle proving
+func Hash256MerkleStep(a []byte, b []byte) Hash256Digest {
 	c := []byte{}
 	c = append(c, a...)
 	c = append(c, b...)
@@ -515,9 +516,9 @@ func VerifyHash256Merkle(proof []byte, index uint) bool {
 	for i := 1; i < numSteps; i++ {
 		next := proof[i*32 : i*32+32]
 		if idx%2 == 1 {
-			current = hash256MerkleStep(next, current[:])
+			current = Hash256MerkleStep(next, current[:])
 		} else {
-			current = hash256MerkleStep(current[:], next)
+			current = Hash256MerkleStep(current[:], next)
 		}
 		idx >>= 1
 	}

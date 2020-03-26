@@ -1,4 +1,4 @@
-package btcspv
+package testutils
 
 import sdk "github.com/cosmos/cosmos-sdk/types"
 
