@@ -166,6 +166,28 @@ func (h *RawHeader) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// UnmarshalJSON unmarshalls 32 byte digests
+func (h *Hash160Digest) UnmarshalJSON(b []byte) error {
+	// Have to trim quotation marks off byte array
+	buf, err := hex.DecodeString(Strip0xPrefix(string(b[1 : len(b)-1])))
+	if err != nil {
+		return err
+	}
+	if len(buf) != 20 {
+		return fmt.Errorf("Expected 20 bytes, got %d bytes", len(buf))
+	}
+
+	copy(h[:], buf)
+
+	return nil
+}
+
+// MarshalJSON marashalls 32 byte digests as 0x-prepended hex
+func (h Hash160Digest) MarshalJSON() ([]byte, error) {
+	encoded := "\"0x" + hex.EncodeToString(h[:]) + "\""
+	return []byte(encoded), nil
+}
+
 // MarshalJSON marashalls 32 byte digests as 0x-prepended hex
 func (h RawHeader) MarshalJSON() ([]byte, error) {
 	encoded := "\"0x" + hex.EncodeToString(h[:]) + "\""

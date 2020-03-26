@@ -15,6 +15,24 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// Hash256Digest 32-byte double-sha2 digest
+type Hash256Digest = btcspv.Hash256Digest
+
+// Hash160Digest is a 20-byte ripemd160+sha2 hash
+type Hash160Digest = btcspv.Hash160Digest
+
+// RawHeader is an 80-byte raw header
+type RawHeader = btcspv.RawHeader
+
+// HexBytes is a type alias to make JSON hex ser/deser easier
+type HexBytes = btcspv.HexBytes
+
+// BitcoinHeader is a parsed Bitcoin header
+type BitcoinHeader = btcspv.BitcoinHeader
+
+// SPVProof is the base struct for an SPV proof
+type SPVProof = btcspv.SPVProof
+
 type TestCases struct {
 	ExtractSequenceWitness       []tutils.ExtractSequenceWitnessTC     `json:"extractSequenceWitness"`
 	ExtractSequenceLEWitness     []tutils.ExtractSequenceLEWitnessTC   `json:"extractSequenceLEWitness"`
@@ -105,8 +123,8 @@ func (suite *UtilsSuite) TestReverseEndianness() {
 }
 
 func (suite *UtilsSuite) TestReverseHash256Endianness() {
-	input := btcspv.Hash256Digest{1, 2, 3}
-	output := btcspv.Hash256Digest{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 1}
+	input := Hash256Digest{1, 2, 3}
+	output := Hash256Digest{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 1}
 	reversed := btcspv.ReverseHash256Endianness(input)
 	suite.Equal(reversed, output)
 	suite.Equal(len(reversed), len(input))
@@ -123,7 +141,7 @@ func (suite *UtilsSuite) TestHash160() {
 
 	for i := range fixtures {
 		testCase := fixtures[i]
-		expected, _ := btcspv.NewHash160Digest(testCase.Output)
+		expected := testCase.Output
 		actual := btcspv.Hash160(testCase.Input)
 		suite.Equal(expected, actual)
 	}

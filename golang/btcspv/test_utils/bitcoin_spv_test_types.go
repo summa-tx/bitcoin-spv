@@ -54,8 +54,8 @@ type ExtractSequenceLELegacyError struct {
 }
 
 type Hash160TC struct {
-	Input  HexBytes `json:"input"`
-	Output HexBytes `json:"output"`
+	Input  HexBytes      `json:"input"`
+	Output Hash160Digest `json:"output"`
 }
 
 type Hash256TC struct {
