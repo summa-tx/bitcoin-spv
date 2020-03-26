@@ -1,4 +1,4 @@
-package tests
+package testutils
 
 type EncodeP2SHTC struct {
 	Input  HexBytes `json:"input"`
