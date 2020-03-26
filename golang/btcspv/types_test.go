@@ -4,11 +4,18 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 )
+
+func logIfErr(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 type SerializedCases struct {
 	ValidProof      []string              `json:"valid"`
@@ -40,30 +47,30 @@ type TypesSuite struct {
 }
 
 func TestTypes(t *testing.T) {
-	jsonFile, _ := os.Open("../../testProofs.json")
+	jsonFile, err := os.Open("../../testProofs.json")
 	defer jsonFile.Close()
-	// logIfErr(err)
+	logIfErr(err)
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-	// logIfErr(err)
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	logIfErr(err)
 
 	fixtures := new(SerializedCases)
-	json.Unmarshal([]byte(byteValue), &fixtures)
-	// logIfErr(err)
+	err = json.Unmarshal([]byte(byteValue), &fixtures)
+	logIfErr(err)
 
 	var validProofs []SPVProof
 	for i := range fixtures.ValidProof {
 		spvProof := new(SPVProof)
-		json.Unmarshal([]byte(fixtures.ValidProof[i]), &spvProof)
-		// logIfErr(err)
+		err = json.Unmarshal([]byte(fixtures.ValidProof[i]), &spvProof)
+		logIfErr(err)
 		validProofs = append(validProofs, *spvProof)
 	}
 
 	var validHeaders []BitcoinHeader
 	for i := range fixtures.ValidHeader {
 		bitcoinHeader := new(BitcoinHeader)
-		json.Unmarshal([]byte(fixtures.ValidHeader[i]), &bitcoinHeader)
-		// logIfErr(err)
+		err := json.Unmarshal([]byte(fixtures.ValidHeader[i]), &bitcoinHeader)
+		logIfErr(err)
 		validHeaders = append(validHeaders, *bitcoinHeader)
 	}
 

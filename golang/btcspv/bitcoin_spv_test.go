@@ -72,6 +72,12 @@ type UtilsSuite struct {
 	Fixtures TestCases
 }
 
+func logIfErr(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 // Runs the whole test suite
 func TestBTCUtils(t *testing.T) {
 	jsonFile, err := os.Open("../../testVectors.json")
@@ -89,12 +95,6 @@ func TestBTCUtils(t *testing.T) {
 	utilsSuite.Fixtures = fixtures
 
 	suite.Run(t, utilsSuite)
-}
-
-func logIfErr(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func (suite *UtilsSuite) TestReverseEndianness() {
