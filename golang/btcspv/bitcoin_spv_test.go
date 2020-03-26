@@ -74,7 +74,7 @@ type TestCases struct {
 	RetargetAlgorithm            []tutils.RetargetAlgorithmTC          `json:"retargetAlgorithm"`
 	CalculateDifficulty          []tutils.CalculateDifficultyTC        `json:"calculateDifficulty"`
 	Prove                        []tutils.ProveTC                      `json:"prove"`
-	CalculateTxId                []tutils.CalculateTxIDTC              `json:"calculateTxId"`
+	CalculateTxID                []tutils.CalculateTxIDTC              `json:"calculateTxId"`
 	ValidateHeaderWork           []tutils.ValidateHeaderWorkTC         `json:"validateHeaderWork"`
 	ValidateHeaderPrevHash       []tutils.ValidateHeaderPrevHashTC     `json:"validateHeaderPrevHash"`
 	ValidateHeaderChain          []tutils.ValidateHeaderChainTC        `json:"validateHeaderChain"`

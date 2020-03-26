@@ -22,8 +22,8 @@ func (suite *UtilsSuite) TestProve() {
 	}
 }
 
-func (suite *UtilsSuite) TestCalculateTxId() {
-	fixture := suite.Fixtures.CalculateTxId
+func (suite *UtilsSuite) TestCalculateTxID() {
+	fixture := suite.Fixtures.CalculateTxID
 
 	for i := range fixture {
 		testCase := fixture[i]
