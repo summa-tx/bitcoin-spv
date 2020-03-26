@@ -137,19 +137,19 @@ func (suite *TypesSuite) TestUnmarshalBadLenHash256() {
 }
 
 // TODO: Write these tests
-// func (suite *TypesSuite) TestUnmarshalBadHexHash160() {
-// 	badHexHash160 := suite.Fixtures.BadHexHash160
-// 	s := new(SPVProof)
-// 	err := json.Unmarshal([]byte(badHexHash160), &s)
-// 	suite.EqualError(err, "encoding/hex: invalid byte: U+0052 'R'")
-// }
+func (suite *TypesSuite) TestUnmarshalBadHexHash160() {
+	badHexHash160 := suite.Fixtures.BadHexHash160
+	h := new(Hash160Digest)
+	err := json.Unmarshal([]byte(badHexHash160), &h)
+	suite.EqualError(err, "encoding/hex: invalid byte: U+0072 'r'")
+}
 
-// func (suite *TypesSuite) TestUnmarshalBadLenHash160() {
-// 	badLenHash160 := suite.Fixtures.BadLenHash160
-// 	s := new(SPVProof)
-// 	err := json.Unmarshal([]byte(badLenHash160), &s)
-// 	suite.EqualError(err, "Expected 20 bytes, got 19 bytes")
-// }
+func (suite *TypesSuite) TestUnmarshalBadLenHash160() {
+	badLenHash160 := suite.Fixtures.BadLenHash160
+	h := new(Hash160Digest)
+	err := json.Unmarshal([]byte(badLenHash160), &h)
+	suite.EqualError(err, "Expected 20 bytes, got 19 bytes")
+}
 
 func (suite *TypesSuite) TestUnmarshalBadHexRawHeader() {
 	badHexRawHeader := suite.Fixtures.BadHexRawHeader
@@ -222,6 +222,17 @@ func (suite *TypesSuite) TestNewHash160Digest() {
 	badLengthInput := input[0:18]
 	_, err = btcspv.NewHash160Digest(badLengthInput)
 	suite.EqualError(err, "Expected 20 bytes in a Hash160Digest, got 18")
+}
+
+func (suite *TypesSuite) TestMarshalHash160Digest() {
+	hash := Hash160Digest{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+
+	j, err := json.Marshal(hash)
+	suite.Nil(err)
+
+	actual := new(Hash160Digest)
+	json.Unmarshal(j, &actual)
+	suite.Equal(hash[:], actual[:])
 }
 
 func (suite *TypesSuite) TestNewHash256Digest() {
