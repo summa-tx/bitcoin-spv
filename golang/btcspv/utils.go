@@ -10,10 +10,13 @@ import (
 	"github.com/btcsuite/btcutil/bech32"
 )
 
-const zeroBytesError = "Attempting to encode empty bytestring. " +
+// ZeroBytesError is the error returned when attempting to encode
+// an empty bytestring
+const ZeroBytesError = "Attempting to encode empty bytestring. " +
 	"Hint: your payload may not be properly initialized"
 
-func strip0xPrefix(s string) string {
+// Strip0xPrefix removes the 0x prefix from a hex string
+func Strip0xPrefix(s string) string {
 	if len(s) < 2 {
 		return s
 	}
@@ -25,7 +28,7 @@ func strip0xPrefix(s string) string {
 
 // DecodeIfHex decodes a hex string into a byte array
 func DecodeIfHex(s string) []byte {
-	res, err := hex.DecodeString(strip0xPrefix(s))
+	res, err := hex.DecodeString(Strip0xPrefix(s))
 	if err != nil {
 		return []byte(s)
 	}
@@ -33,10 +36,11 @@ func DecodeIfHex(s string) []byte {
 }
 
 // SafeSlice performs a safe slice on a byte array
-func SafeSlice(buf []byte, first, last int) ([]byte, error) {
-	if last > len(buf) {
+func SafeSlice(buf []byte, first, last int64) ([]byte, error) {
+	byteLen := int64(len(buf))
+	if last > byteLen {
 		return []byte{}, errors.New("Tried to slice past end of array")
-	} else if first >= last || first > len(buf) {
+	} else if first >= last || first > byteLen {
 		return []byte{}, errors.New("Slice must not have 0 length")
 	} else if first < 0 || last < 0 {
 		return []byte{}, errors.New("Slice must not use negative indexes")
@@ -50,7 +54,7 @@ func EncodeP2SH(sh []byte) (string, error) {
 		return "", fmt.Errorf("SH must be 20 bytes, got %d bytes", len(sh))
 	}
 	if bytes.Equal(sh, make([]byte, len(sh))) {
-		return "", errors.New(zeroBytesError)
+		return "", errors.New(ZeroBytesError)
 	}
 	return base58.CheckEncode(sh, 5), nil
 }
@@ -61,7 +65,7 @@ func EncodeP2PKH(pkh []byte) (string, error) {
 		return "", fmt.Errorf("PKH must be 20 bytes, got %d bytes", len(pkh))
 	}
 	if bytes.Equal(pkh, make([]byte, len(pkh))) {
-		return "", errors.New(zeroBytesError)
+		return "", errors.New(ZeroBytesError)
 
 	}
 	return base58.CheckEncode(pkh, 0), nil
@@ -69,7 +73,7 @@ func EncodeP2PKH(pkh []byte) (string, error) {
 
 func encodeSegWit(payload []byte, version int) (string, error) {
 	if bytes.Equal(payload, make([]byte, len(payload))) {
-		return "", errors.New(zeroBytesError)
+		return "", errors.New(ZeroBytesError)
 	}
 	adj, _ := bech32.ConvertBits(payload, 8, 5, true)
 	combined := []byte{0x00}
