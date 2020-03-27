@@ -53,7 +53,7 @@ func ParseVarInt(b []byte) (uint64, uint64, error) {
 		return 0, 0, errors.New("Read overrun during VarInt parsing")
 	}
 
-	number := BytesToUint(ReverseEndianness(b[1 : 1+dataLength]))
+	number := BytesToUint(ReverseEndianness(b[1 : 1+dataLength : 1+dataLength]))
 
 	return dataLength, uint64(number), nil
 }
@@ -146,7 +146,8 @@ func ExtractInputAtIndex(vin []byte, index uint) ([]byte, error) {
 		return []byte{}, errors.New("Read overrun when parsing vin")
 	}
 
-	output := vin[offset : offset+uint(l)]
+	end := offset + uint(l)
+	output := vin[offset:end:end]
 	return output, nil
 }
 
@@ -183,7 +184,8 @@ func ExtractSequenceLELegacy(input []byte) ([]byte, error) {
 	}
 
 	offset := 36 + 1 + dataLength + scriptSigLength
-	return input[offset : offset+4], nil
+	end := offset + 4
+	return input[offset:end:end], nil
 }
 
 // ExtractSequenceLegacy returns the integer sequence in from a tx input
@@ -202,12 +204,13 @@ func ExtractScriptSig(input []byte) ([]byte, error) {
 		return []byte{}, err
 	}
 	length := 1 + dataLength + scriptSigLength
-	return input[36 : 36+length], nil
+	end := 36 + length
+	return input[36:end:end], nil
 }
 
 // ExtractSequenceLEWitness extracts the LE sequence bytes from a witness input
 func ExtractSequenceLEWitness(input []byte) []byte {
-	return input[37:41]
+	return input[37:41:41]
 }
 
 // ExtractSequenceWitness extracts the sequence integer from a witness input
@@ -218,19 +221,19 @@ func ExtractSequenceWitness(input []byte) uint32 {
 // ExtractOutpoint returns the outpoint from the in input in a tx
 // The outpoint is a 32 bit tx id with 4 byte index
 func ExtractOutpoint(input []byte) []byte {
-	return input[0:36]
+	return input[0:36:36]
 }
 
 // ExtractInputTxIDLE returns the LE tx input index from the input in a tx
 func ExtractInputTxIDLE(input []byte) Hash256Digest {
-	res, _ := NewHash256Digest(input[0:32])
+	res, _ := NewHash256Digest(input[0:32:32])
 	return res
 }
 
 // ExtractTxIndexLE extracts the LE tx input index from the input in a tx
 // Returns the tx index as a little endian []byte
 func ExtractTxIndexLE(input []byte) []byte {
-	return input[32:36]
+	return input[32:36:36]
 }
 
 // ExtractTxIndex extracts the tx input index from the input in a tx
@@ -292,7 +295,8 @@ func ExtractOutputAtIndex(vout []byte, index uint) ([]byte, error) {
 		return []byte{}, errors.New("Read overrun when parsing vout")
 	}
 
-	output := vout[offset : offset+uint(l)]
+	end := offset + uint(l)
+	output := vout[offset:end:end]
 	return output, nil
 }
 
@@ -304,7 +308,7 @@ func ExtractOutputScriptLen(output []byte) uint {
 // ExtractValueLE extracts the value in from the output in a tx
 // Returns a little endian []byte of the output value
 func ExtractValueLE(output []byte) []byte {
-	return output[:8]
+	return output[:8:8]
 }
 
 // ExtractValue extracts the value from the output in a tx
@@ -324,13 +328,14 @@ func ExtractOpReturnData(output []byte) ([]byte, error) {
 		return nil, errors.New("Malformatted data. Read overrun")
 	}
 
-	return output[11 : 11+dataLength], nil
+	end := 11 + dataLength
+	return output[11:end:end], nil
 }
 
 // ExtractHash extracts the hash from the output script
 // Returns the hash committed to by the pk_script
 func ExtractHash(output []byte) ([]byte, error) {
-	tag := output[8:11]
+	tag := output[8:11:11]
 
 	/* Witness Case */
 	if output[9] == 0 {
@@ -338,7 +343,9 @@ func ExtractHash(output []byte) ([]byte, error) {
 		if uint(output[10]) != length {
 			return nil, errors.New("Maliciously formatted witness output")
 		}
-		return output[11 : 11+length], nil
+
+		end := 11 + length
+		return output[11:end:end], nil
 	}
 
 	/* P2PKH */
@@ -347,7 +354,7 @@ func ExtractHash(output []byte) ([]byte, error) {
 		if output[11] != 0x14 || !bytes.Equal(lastTwo, []byte{0x88, 0xac}) {
 			return nil, errors.New("Maliciously formatted p2pkh output")
 		}
-		return output[12:32], nil
+		return output[12:32:32], nil
 	}
 
 	/* P2SH */
@@ -355,7 +362,7 @@ func ExtractHash(output []byte) ([]byte, error) {
 		if output[len(output)-1] != 0x87 {
 			return nil, errors.New("Maliciously formatted p2sh output")
 		}
-		return output[11:31], nil
+		return output[11:31:31], nil
 	}
 
 	return nil, errors.New("Nonstandard, OP_RETURN, or malformatted output")
@@ -423,7 +430,7 @@ func ValidateVout(vout []byte) bool {
 // ExtractMerkleRootLE returns the transaction merkle root from a given block header
 // The returned merkle root is little-endian
 func ExtractMerkleRootLE(header RawHeader) Hash256Digest {
-	res, _ := NewHash256Digest(header[36:68])
+	res, _ := NewHash256Digest(header[36:68:68])
 	return res
 }
 
@@ -457,7 +464,7 @@ func CalculateDifficulty(target sdk.Uint) sdk.Uint {
 // ExtractPrevBlockHashLE returns the previous block's hash from a block header
 // Returns the hash as a little endian []byte
 func ExtractPrevBlockHashLE(header RawHeader) Hash256Digest {
-	res, _ := NewHash256Digest(header[4:36])
+	res, _ := NewHash256Digest(header[4:36:36])
 	return res
 }
 
@@ -465,7 +472,7 @@ func ExtractPrevBlockHashLE(header RawHeader) Hash256Digest {
 // It returns the timestamp as a little endian []byte
 // Time is not 100% reliable
 func ExtractTimestampLE(header RawHeader) []byte {
-	return header[68:72]
+	return header[68:72:72]
 }
 
 // ExtractTimestamp returns the timestamp from a block header as a uint
@@ -508,7 +515,7 @@ func VerifyHash256Merkle(proof []byte, index uint) bool {
 
 	root := proof[proofLength-32:]
 
-	cur := proof[:32]
+	cur := proof[:32:32]
 	copy(current[:], cur)
 
 	numSteps := (proofLength / 32) - 1
