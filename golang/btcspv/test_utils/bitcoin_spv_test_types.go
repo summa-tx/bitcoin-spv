@@ -40,7 +40,7 @@ type ExtractSequenceLegacyTC struct {
 
 type ExtractSequenceLegacyError struct {
 	Input        HexBytes `json:"input"`
-	ErrorMessage string   `json:"errorMessage"`
+	ErrorMessage string   `json:"golangError"`
 }
 
 type ExtractSequenceLELegacyTC struct {
@@ -50,7 +50,7 @@ type ExtractSequenceLELegacyTC struct {
 
 type ExtractSequenceLELegacyError struct {
 	Input        HexBytes `json:"input"`
-	ErrorMessage string   `json:"errorMessage"`
+	ErrorMessage string   `json:"golangError"`
 }
 
 type Hash160TC struct {
@@ -85,7 +85,7 @@ type ExtractHashTC struct {
 
 type ExtractHashError struct {
 	Input        HexBytes `json:"input"`
-	ErrorMessage string   `json:"errorMessage"`
+	ErrorMessage string   `json:"golangError"`
 }
 
 type ExtractValueTC struct {
@@ -105,7 +105,7 @@ type ExtractOpReturnDataTC struct {
 
 type ExtractOpReturnDataError struct {
 	Input        HexBytes `json:"input"`
-	ErrorMessage string   `json:"errorMessage"`
+	ErrorMessage string   `json:"golangError"`
 }
 
 type ExtractInputAtIndexInput struct {
@@ -120,7 +120,7 @@ type ExtractInputAtIndexTC struct {
 
 type ExtractInputAtIndexError struct {
 	Input        ExtractInputAtIndexInput `json:"input"`
-	ErrorMessage string                   `json:"errorMessage"`
+	ErrorMessage string                   `json:"golangError"`
 }
 
 type IsLegacyInputTC struct {
@@ -140,7 +140,7 @@ type ExtractScriptSigTC struct {
 
 type ExtractScriptSigError struct {
 	Input        HexBytes `json:"input"`
-	ErrorMessage string   `json:"errorMessage"`
+	ErrorMessage string   `json:"golangError"`
 }
 
 type ExtractScriptSigLenTC struct {
@@ -182,7 +182,7 @@ type DetermineOutputLengthTC struct {
 
 type DetermineOutputLengthError struct {
 	Input        HexBytes `json:"input"`
-	ErrorMessage string   `json:"errorMessage"`
+	ErrorMessage string   `json:"golangError"`
 }
 
 type ExtractOutputAtIndexInput struct {
@@ -196,7 +196,7 @@ type ExtractOutputAtIndexTC struct {
 
 type ExtractOutputAtIndexError struct {
 	Input        ExtractOutputAtIndexInput `json:"input"`
-	ErrorMessage string                    `json:"errorMessage"`
+	ErrorMessage string                    `json:"golangError"`
 }
 
 type ExtractTargetTC struct {

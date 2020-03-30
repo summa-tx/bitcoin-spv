@@ -46,5 +46,5 @@ type ValidateHeaderChainTC struct {
 
 type ValidateHeaderChainError struct {
 	Input        HexBytes `json:"input"`
-	ErrorMessage string   `json:"errorMessage"`
+	ErrorMessage string   `json:"golangError"`
 }
