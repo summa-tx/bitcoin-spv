@@ -437,7 +437,7 @@ func ExtractMerkleRootLE(header RawHeader) Hash256Digest {
 // ExtractTarget returns the target from a given block hedaer
 func ExtractTarget(header RawHeader) sdk.Uint {
 	// nBits encoding. 3 byte mantissa, 1 byte exponent
-	m := header[72:75]
+	m := header[72:75:75]
 	e := sdk.NewInt(int64(header[75]))
 
 	// hacks
@@ -521,7 +521,9 @@ func VerifyHash256Merkle(proof []byte, index uint) bool {
 	numSteps := (proofLength / 32) - 1
 
 	for i := 1; i < numSteps; i++ {
-		next := proof[i*32 : i*32+32]
+		start := i * 32
+		end := i*32 + 32
+		next := proof[start:end:end]
 		if idx%2 == 1 {
 			current = Hash256MerkleStep(next, current[:])
 		} else {
