@@ -108,19 +108,19 @@ func parseOutput(output []byte) (uint, OutputType, []byte) {
 		outputType = OpReturn
 		payload, _ = btcspv.ExtractOpReturnData(output)
 	} else {
-		prefixHash := output[8:10]
+		prefixHash := output[8:10:10]
 		if bytes.Equal(prefixHash, []byte{0x22, 0x00}) {
 			outputType = WSH
-			payload = output[11:43]
+			payload = output[11:43:43]
 		} else if bytes.Equal(prefixHash, []byte{0x16, 0x00}) {
 			outputType = WPKH
-			payload = output[11:31]
+			payload = output[11:31:31]
 		} else if bytes.Equal(prefixHash, []byte{0x19, 0x76}) {
 			outputType = PKH
-			payload = output[12:32]
+			payload = output[12:32:32]
 		} else if bytes.Equal(prefixHash, []byte{0x17, 0xa9}) {
 			outputType = SH
-			payload = output[11:31]
+			payload = output[11:31:31]
 		} else {
 			outputType = Nonstandard
 			payload = []byte{}

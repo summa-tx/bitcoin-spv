@@ -61,7 +61,6 @@ func (suite *UtilsSuite) TestEncodeP2WSH() {
 	for i := range fixture {
 		testCase := fixture[i]
 
-		// input := testCase.Input.(Hash256Digest)
 		expected := testCase.Output
 		actual, err := btcspv.EncodeP2WSH(testCase.Input)
 		suite.Nil(err)

@@ -219,7 +219,7 @@ func (suite *TypesSuite) TestNewHash160Digest() {
 	suite.Nil(err)
 	suite.Equal(digest, output)
 
-	badLengthInput := input[0:18]
+	badLengthInput := input[0:18:18]
 	_, err = btcspv.NewHash160Digest(badLengthInput)
 	suite.EqualError(err, "Expected 20 bytes in a Hash160Digest, got 18")
 }
@@ -250,7 +250,7 @@ func (suite *TypesSuite) TestNewHash256Digest() {
 	suite.Nil(err)
 	suite.Equal(digest, output)
 
-	badLengthInput := input[0:30]
+	badLengthInput := input[0:30:30]
 	_, err = btcspv.NewHash256Digest(badLengthInput)
 	suite.EqualError(err, "Expected 32 bytes in a Hash256Digest, got 30")
 }
@@ -263,7 +263,7 @@ func (suite *TypesSuite) TestNewRawHeader() {
 	suite.Nil(err)
 	suite.Equal(header, output)
 
-	badLengthInput := input[0:70]
+	badLengthInput := input[0:70:70]
 	_, err = btcspv.NewRawHeader(badLengthInput)
 	suite.EqualError(err, "Expected 80 bytes in a RawHeader got 70")
 }
