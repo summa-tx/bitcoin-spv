@@ -73,9 +73,11 @@ pub fn hash160(preimage: &[u8]) -> Hash160Digest {
 /// # Arguments
 ///
 /// * `preimage` - The pre-image
-pub fn hash256(preimage: &[u8]) -> Hash256Digest {
+pub fn hash256(preimages: &[&[u8]]) -> Hash256Digest {
     let mut sha = Sha256::new();
-    sha.input(preimage);
+    for preimage in preimages.iter() {
+        sha.input(preimage);
+    }
     let digest = sha.result();
 
     let mut second_sha = Sha256::new();
@@ -99,7 +101,7 @@ pub fn hash256(preimage: &[u8]) -> Hash256Digest {
 ///
 /// * `vin` - The vin as a tightly-packed u8 array
 /// * `index` - The 0-indexed location of the input to extract
-pub fn extract_input_at_index(vin: &[u8], index: usize) -> Result<Vec<u8>, SPVError> {
+pub fn extract_input_at_index(vin: &[u8], index: usize) -> Result<&[u8], SPVError> {
     let (data_len, n_ins) = parse_var_int(vin)?;
     if index >= n_ins {
         return Err(SPVError::ReadOverrun);
@@ -119,7 +121,7 @@ pub fn extract_input_at_index(vin: &[u8], index: usize) -> Result<Vec<u8>, SPVEr
         return Err(SPVError::ReadOverrun);
     }
 
-    Ok(vin[offset..offset + length as usize].to_vec())
+    Ok(&vin[offset..offset + length as usize])
 }
 
 /// Determines whether an input is legacy.
@@ -167,10 +169,10 @@ pub fn determine_input_length(tx_in: &[u8]) -> Result<usize, SPVError> {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_sequence_le_legacy(tx_in: &[u8]) -> Result<Vec<u8>, SPVError> {
+pub fn extract_sequence_le_legacy(tx_in: &[u8]) -> Result<&[u8], SPVError> {
     let (data_len, script_sig_len) = extract_script_sig_len(tx_in)?;
     let offset: usize = 36 + 1 + data_len as usize + script_sig_len as usize;
-    Ok(tx_in[offset..offset + 4].to_vec())
+    Ok(&tx_in[offset..offset + 4])
 }
 
 /// Extracts the sequence from the input.
@@ -192,10 +194,10 @@ pub fn extract_sequence_legacy(tx_in: &[u8]) -> Result<u32, SPVError> {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_script_sig(tx_in: &[u8]) -> Result<Vec<u8>, SPVError> {
+pub fn extract_script_sig(tx_in: &[u8]) -> Result<&[u8], SPVError> {
     let (data_len, script_sig_len) = extract_script_sig_len(tx_in)?;
     let length = 1 + data_len + script_sig_len;
-    Ok(tx_in[36..36 + length as usize].to_vec())
+    Ok(&tx_in[36..36 + length as usize])
 }
 
 //
@@ -208,8 +210,8 @@ pub fn extract_script_sig(tx_in: &[u8]) -> Result<Vec<u8>, SPVError> {
 /// # Arguments
 ///
 /// * `tx_in` - The WITNESS input
-pub fn extract_sequence_le_witness(tx_in: &[u8]) -> Vec<u8> {
-    tx_in[37..41].to_vec()
+pub fn extract_sequence_le_witness(tx_in: &[u8]) -> &[u8] {
+    &tx_in[37..41]
 }
 
 /// Extracts the sequence from the input in a tx.
@@ -231,7 +233,7 @@ pub fn extract_sequence_witness(tx_in: &[u8]) -> u32 {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_outpoint<'a>(tx_in: &'a [u8]) -> &'a [u8] {
+pub fn extract_outpoint(tx_in: &[u8]) -> &[u8] {
     &tx_in[0..36]
 }
 
@@ -241,8 +243,8 @@ pub fn extract_outpoint<'a>(tx_in: &'a [u8]) -> &'a [u8] {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_input_tx_id_le(tx_in: &[u8]) -> Vec<u8> {
-    tx_in[0..32].to_vec()
+pub fn extract_input_tx_id_le(tx_in: &[u8]) -> &[u8] {
+    &tx_in[0..32]
 }
 
 /// Extracts the LE tx input index from the input in a tx,
@@ -251,8 +253,8 @@ pub fn extract_input_tx_id_le(tx_in: &[u8]) -> Vec<u8> {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_tx_index_le(tx_in: &[u8]) -> Vec<u8> {
-    tx_in[32..36].to_vec()
+pub fn extract_tx_index_le(tx_in: &[u8]) -> &[u8] {
+    &tx_in[32..36]
 }
 
 /// Extracts the LE tx input index from the input in a tx,
@@ -304,7 +306,7 @@ pub fn determine_output_length(tx_out: &[u8]) -> Result<usize, SPVError> {
 /// # Errors
 ///
 /// * Errors if VarInt represents a number larger than 253.  Large VarInts are not supported.
-pub fn extract_output_at_index(vout: &[u8], index: usize) -> Result<Vec<u8>, SPVError> {
+pub fn extract_output_at_index(vout: &[u8], index: usize) -> Result<&[u8], SPVError> {
     let (data_len, n_outs) = parse_var_int(vout)?;
     if index >= n_outs {
         return Err(SPVError::ReadOverrun);
@@ -324,7 +326,7 @@ pub fn extract_output_at_index(vout: &[u8], index: usize) -> Result<Vec<u8>, SPV
         return Err(SPVError::ReadOverrun);
     }
 
-    Ok(vout[offset..offset + length].to_vec())
+    Ok(&vout[offset..offset + length])
 }
 
 /// Extracts the output script length.
@@ -369,14 +371,14 @@ pub fn extract_value(tx_out: &[u8]) -> u64 {
 /// # Errors
 ///
 /// * Errors if the op return output is malformatted
-pub fn extract_op_return_data(tx_out: &[u8]) -> Result<Vec<u8>, SPVError> {
+pub fn extract_op_return_data(tx_out: &[u8]) -> Result<&[u8], SPVError> {
     match tx_out[9] {
         0x6a => {
             let data_len = tx_out[10] as u64;
             if (data_len + 8 + 3) as usize > tx_out.len() {
                 return Err(SPVError::ReadOverrun);
             }
-            Ok(tx_out[11..11 + data_len as usize].to_vec())
+            Ok(&tx_out[11..11 + data_len as usize])
         }
         _ => Err(SPVError::MalformattedOpReturnOutput),
     }
@@ -392,7 +394,7 @@ pub fn extract_op_return_data(tx_out: &[u8]) -> Result<Vec<u8>, SPVError> {
 /// # Errors
 ///
 /// * Errors if the WITNESS, P2PKH or P2SH outputs are malformatted
-pub fn extract_hash(tx_out: &[u8]) -> Result<Vec<u8>, SPVError> {
+pub fn extract_hash(tx_out: &[u8]) -> Result<&[u8], SPVError> {
     let tag = &tx_out[8..11];
 
     /* Witness */
@@ -403,7 +405,7 @@ pub fn extract_hash(tx_out: &[u8]) -> Result<Vec<u8>, SPVError> {
         }
         length -= 2;
         if tx_out[10] == length as u8 {
-            return Ok(tx_out[11..11 + length as usize].to_vec());
+            return Ok(&tx_out[11..11 + length as usize]);
         } else {
             return Err(SPVError::MalformattedWitnessOutput);
         }
@@ -415,7 +417,7 @@ pub fn extract_hash(tx_out: &[u8]) -> Result<Vec<u8>, SPVError> {
         if tx_out[11] != 0x14 || last_two != [0x88, 0xac] {
             return Err(SPVError::MalformattedP2PKHOutput);
         }
-        return Ok(tx_out[12..32].to_vec());
+        return Ok(&tx_out[12..32]);
     }
 
     /* P2SH */
@@ -423,7 +425,7 @@ pub fn extract_hash(tx_out: &[u8]) -> Result<Vec<u8>, SPVError> {
         if tx_out.last().cloned() != Some(0x87) {
             return Err(SPVError::MalformattedP2SHOutput);
         }
-        return Ok(tx_out[11..31].to_vec());
+        return Ok(&tx_out[11..31]);
     }
 
     Err(SPVError::MalformattedOutput)
@@ -593,10 +595,7 @@ pub fn extract_difficulty(header: RawHeader) -> BigUint {
 /// * `a` - The first hash
 /// * `b` - The second hash
 pub fn hash256_merkle_step(a: &[u8], b: &[u8]) -> Hash256Digest {
-    let mut res: Vec<u8> = vec![];
-    res.extend(a);
-    res.extend(b);
-    hash256(&res)
+    hash256(&[a, b])
 }
 
 /// Verifies a Bitcoin-style merkle tree.
@@ -607,9 +606,9 @@ pub fn hash256_merkle_step(a: &[u8], b: &[u8]) -> Hash256Digest {
 ///
 /// * `proof` - The proof. Tightly packed LE sha256 hashes.  The last hash is the root
 /// * `index` - The index of the leaf
-pub fn verify_hash256_merkle(proof: &[u8], index: u64) -> bool {
+pub fn verify_hash256_merkle(txid: Hash256Digest, merkle_root: Hash256Digest, intermediate_nodes: &[u8], index: u64) -> bool {
     let mut idx = index;
-    let proof_len = proof.len();
+    let proof_len = intermediate_nodes.len();
 
     if proof_len % 32 != 0 {
         return false;
@@ -619,21 +618,20 @@ pub fn verify_hash256_merkle(proof: &[u8], index: u64) -> bool {
         return true;
     }
 
-    if proof_len == 64 {
-        return false;
+    if proof_len == 0 {
+        if txid == merkle_root {
+            return true;
+        }
+        return false;  // no intermediate nodes
     }
 
-    let num_steps = proof_len / 32 - 1;
+    let num_steps = proof_len / 32;
 
-    let mut root = Hash256Digest::default();
-    let mut current = Hash256Digest::default();
+    let mut current = txid;
     let mut next = Hash256Digest::default();
 
-    root.copy_from_slice(&proof[proof_len - 32..]);
-    current.copy_from_slice(&proof[..32]);
-
-    for i in 1..num_steps {
-        next.copy_from_slice(&proof[i * 32..i * 32 + 32]);
+    for i in 0..num_steps {
+        next.copy_from_slice(&intermediate_nodes[i * 32..i * 32 + 32]);
 
         if idx % 2 == 1 {
             current = hash256_merkle_step(&next, &current);
@@ -643,7 +641,7 @@ pub fn verify_hash256_merkle(proof: &[u8], index: u64) -> bool {
         idx >>= 1;
     }
 
-    current == root
+    current == merkle_root
 }
 
 /// Performs the bitcoin difficulty retarget.
@@ -678,7 +676,9 @@ pub fn retarget_algorithm(
 #[cfg_attr(tarpaulin, skip)]
 mod tests {
     use bigint::BigUint;
+    extern crate std;
 
+    use std::{println, vec};
     use super::*;
     use crate::utils::test_utils;
     use crate::utils::*;
@@ -746,7 +746,7 @@ mod tests {
                 let mut expected: [u8; 32] = Default::default();
                 let output = force_deserialize_hex(case.output.as_str().unwrap());
                 expected.copy_from_slice(&output);
-                assert_eq!(hash256(&input), expected);
+                assert_eq!(hash256(&[&input]), expected);
             }
         })
     }
@@ -789,7 +789,7 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractSequenceLELegacy", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = force_deserialize_hex(case.output.as_str().unwrap());
+                let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(extract_sequence_le_legacy(&input).unwrap(), expected);
             }
         })
@@ -827,7 +827,7 @@ mod tests {
                 let inputs = case.input.as_object().unwrap();
                 let vin = force_deserialize_hex(inputs.get("vin").unwrap().as_str().unwrap());
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as usize;
-                let expected = force_deserialize_hex(case.output.as_str().unwrap());
+                let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(extract_input_at_index(&vin[..], index).unwrap(), expected);
             }
         })
@@ -869,7 +869,7 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractScriptSig", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = force_deserialize_hex(case.output.as_str().unwrap());
+                let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(extract_script_sig(&input).unwrap(), expected);
             }
         })
@@ -881,7 +881,7 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractSequenceLEWitness", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = force_deserialize_hex(case.output.as_str().unwrap());
+                let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(extract_sequence_le_witness(&input), expected);
             }
         })
@@ -905,7 +905,7 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractOutpoint", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = force_deserialize_hex(case.output.as_str().unwrap());
+                let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(extract_outpoint(&input), &expected[..]);
             }
         })
@@ -917,7 +917,7 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractInputTxIdLE", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = force_deserialize_hex(case.output.as_str().unwrap());
+                let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(extract_input_tx_id_le(&input), expected);
             }
         })
@@ -929,7 +929,7 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractTxIndexLE", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = force_deserialize_hex(case.output.as_str().unwrap());
+                let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(extract_tx_index_le(&input), expected);
             }
         })
@@ -967,7 +967,7 @@ mod tests {
                 let inputs = case.input.as_object().unwrap();
                 let vout = force_deserialize_hex(inputs.get("vout").unwrap().as_str().unwrap());
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as usize;
-                let expected = force_deserialize_hex(case.output.as_str().unwrap());
+                let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(extract_output_at_index(&vout, index).unwrap(), expected);
             }
         })
@@ -1035,7 +1035,7 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractOpReturnData", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = force_deserialize_hex(case.output.as_str().unwrap());
+                let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(extract_op_return_data(&input).unwrap(), expected);
             }
         })
@@ -1063,7 +1063,7 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractHash", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = force_deserialize_hex(case.output.as_str().unwrap());
+                let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(extract_hash(&input).unwrap(), expected);
             }
         })
@@ -1142,10 +1142,31 @@ mod tests {
             let test_cases = test_utils::get_test_cases("verifyHash256Merkle", &fixtures);
             for case in test_cases {
                 let inputs = case.input.as_object().unwrap();
-                let proof = force_deserialize_hex(inputs.get("proof").unwrap().as_str().unwrap());
+                let extended_proof = force_deserialize_hex(inputs.get("proof").unwrap().as_str().unwrap());
+                let proof_len = extended_proof.len();
+                if proof_len < 32 {
+                    continue;
+                }
+
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as u64;
                 let expected = case.output.as_bool().unwrap();
-                assert_eq!(verify_hash256_merkle(&proof, index), expected);
+
+                // extract root and txid
+                let mut root = Hash256Digest::default();
+                let mut txid = Hash256Digest::default();
+                println!("{:?}", extended_proof);
+                root.copy_from_slice(&extended_proof[proof_len - 32..]);
+                txid.copy_from_slice(&extended_proof[..32]);
+
+                let proof = if proof_len > 64 {
+                    extended_proof[32..proof_len - 32].to_vec()
+                } else {
+                    vec![]
+                };
+
+                // println!("{:?} {:?} {:?} {:?}", root, txid, proof, proof.len());
+
+                assert_eq!(verify_hash256_merkle(txid, root, &proof, index), expected);
             }
         })
     }
