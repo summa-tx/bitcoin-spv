@@ -60,7 +60,8 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 
 	for i := 0; i < len(headers)/80; i++ {
 		start := i * 80
-		header, _ := NewRawHeader(headers[start : start+80])
+		end := start + 80
+		header, _ := NewRawHeader(headers[start:end:end])
 
 		// After the first header, check that headers are in a chain
 		if i != 0 {
