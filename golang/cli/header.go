@@ -69,13 +69,11 @@ func ValidateHeaderChain(headers []byte) string {
 	return fmt.Sprintf("\nTotal Difficulty: %d\n", totalDifficulty)
 }
 
-
 // ExtractMerkleRootBE returns the transaction merkle root from a given block header
 // The returned merkle root is big-endian
 func ExtractMerkleRootBE(header btcspv.RawHeader) btcspv.Hash256Digest {
 	return btcspv.ReverseHash256Endianness(btcspv.ExtractMerkleRootLE(header))
 }
-
 
 // ExtractPrevBlockHashBE returns the previous block's hash from a block header
 // Returns the hash as a big endian []byte
@@ -88,12 +86,12 @@ func parseHeader(header btcspv.RawHeader) (btcspv.Hash256Digest, uint, btcspv.Ha
 	digestLE := btcspv.Hash256(header[:])
 
 	digest := btcspv.ReverseHash256Endianness(digestLE)
-	version := btcspv.BytesToUint(btcspv.ReverseEndianness(header[0:4]))
+	version := btcspv.BytesToUint(btcspv.ReverseEndianness(header[0:4:4]))
 	prevHash := btcspv.ExtractPrevBlockHashLE(header)
 	merkleRoot := btcspv.ExtractMerkleRootLE(header)
 	timestamp := btcspv.ExtractTimestamp(header)
 	target := btcspv.ExtractTarget(header)
-	nonce := btcspv.BytesToUint(btcspv.ReverseEndianness(header[76:80]))
+	nonce := btcspv.BytesToUint(btcspv.ReverseEndianness(header[76:80:80]))
 
 	return digest, version, prevHash, merkleRoot, timestamp, target, nonce, nil
 }

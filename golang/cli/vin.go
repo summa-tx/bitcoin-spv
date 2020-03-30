@@ -75,7 +75,7 @@ func parseInput(input []byte) (uint, btcspv.Hash256Digest, uint, InputType) {
 
 	if input[36] != 0 {
 		sequence, _ = btcspv.ExtractSequenceLegacy(input)
-		witnessTag = input[36:39]
+		witnessTag = input[36:39:39]
 
 		if bytes.Equal(witnessTag, []byte{34, 0, 32}) || bytes.Equal(witnessTag, []byte{22, 0, 20}) {
 			inputType = Compatibility
