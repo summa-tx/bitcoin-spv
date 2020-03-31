@@ -72,7 +72,7 @@ describe('ValidateSPV', () => {
           ValidateSPV.validateHeaderChain(validateHeaderChainError[i].input);
           assert(false, 'expected an error');
         } catch (e) {
-          assert.include(e.message, validateHeaderChainError[i].errorMessage);
+          assert.include(e.message, validateHeaderChainError[i].jsError);
         }
       }
     });
