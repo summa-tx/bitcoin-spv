@@ -237,7 +237,8 @@
       },
       "jsError": "Read overrun during VarInt parsing",
       "golangError": "Read overrun during VarInt parsing",
-      "solidityError": "Read overrun during VarInt parsing"
+      "solidityError": "Read overrun during VarInt parsing",
+      "rustError": "Read overrun during VarInt parsing"
     },
     {
       "comment": "Read Overrun",
@@ -247,7 +248,8 @@
       },
       "jsError": "Vin read overrun",
       "golangError": "Vin read overrun",
-      "solidityError": "Vin read overrun"
+      "solidityError": "Vin read overrun",
+      "rustError": "Vin read overrun"
     },
     {
       "comment": "Bad VarInt in scriptsig of input being extracted",
@@ -257,7 +259,8 @@
       },
       "jsError": "Bad VarInt in scriptSig",
       "golangError": "Bad VarInt in scriptSig",
-      "solidityError": "Bad VarInt in scriptSig"
+      "solidityError": "Bad VarInt in scriptSig",
+      "rustError": "Bad VarInt in scriptSig"
     },
     {
       "comment": "Bad VarInt in scriptsig of input being extracted",
@@ -267,7 +270,8 @@
       },
       "jsError": "Bad VarInt in scriptSig",
       "golangError": "Bad VarInt in scriptSig",
-      "solidityError": "Bad VarInt in scriptSig"
+      "solidityError": "Bad VarInt in scriptSig",
+      "rustError": "Bad VarInt in scriptSig"
     },
     {
       "comment": "Bad VarInt in scriptsig of input being extracted",
@@ -277,7 +281,8 @@
       },
       "jsError": "Read overrun when parsing vin",
       "golangError": "Read overrun when parsing vin",
-      "solidityError": "Slice out of bounds"
+      "solidityError": "Slice out of bounds",
+      "rustError": "Read overrun when parsing vin"
     }
   ],
   "isLegacyInput": [
@@ -466,7 +471,8 @@
       },
       "jsError": "Bad VarInt in scriptPubkey",
       "golangError": "Bad VarInt in scriptPubkey",
-      "solidityError": "Bad VarInt in scriptPubkey"
+      "solidityError": "Bad VarInt in scriptPubkey",
+      "rustError": "Bad VarInt in scriptPubkey"
     },
     {
       "input": {
@@ -475,7 +481,8 @@
       },
       "jsError": "Vout read overrun",
       "golangError": "Vout read overrun",
-      "solidityError": "Vout read overrun"
+      "solidityError": "Vout read overrun",
+      "rustError": "Vout read overrun"
     },
     {
       "comment": "Bad VarInt inside loop",
@@ -485,7 +492,8 @@
       },
       "jsError": "Bad VarInt in scriptPubkey",
       "golangError": "Bad VarInt in scriptPubkey",
-      "solidityError": "Bad VarInt in scriptPubkey"
+      "solidityError": "Bad VarInt in scriptPubkey",
+      "rustError": "Bad VarInt in scriptPubkey"
     },
     {
       "input": {
@@ -494,7 +502,8 @@
       },
       "jsError": "Vout read overrun",
       "golangError": "Vout read overrun",
-      "solidityError": "Vout read overrun"
+      "solidityError": "Vout read overrun",
+      "rustError": "Vout read overrun"
     },
     {
       "input": {
@@ -503,7 +512,8 @@
       },
       "jsError": "Vout read overrun",
       "golangError": "Vout read overrun",
-      "solidityError": "Vout read overrun"
+      "solidityError": "Vout read overrun",
+      "rustError": "Vout read overrun"
     },
     {
       "input": {
@@ -512,7 +522,8 @@
       },
       "jsError": "Bad VarInt in scriptPubkey",
       "golangError": "Bad VarInt in scriptPubkey",
-      "solidityError": "Bad VarInt in scriptPubkey"
+      "solidityError": "Bad VarInt in scriptPubkey",
+      "rustError": "Bad VarInt in scriptPubkey"
     },
     {
       "input": {
@@ -521,7 +532,8 @@
       },
       "jsError": "Bad VarInt in scriptPubkey",
       "golangError": "Bad VarInt in scriptPubkey",
-      "solidityError": "Bad VarInt in scriptPubkey"
+      "solidityError": "Bad VarInt in scriptPubkey",
+      "rustError": "Bad VarInt in scriptPubkey"
     },
     {
       "input": {
@@ -530,7 +542,8 @@
       },
       "jsError": "Read overrun when parsing vout",
       "golangError": "Read overrun when parsing vout",
-      "solidityError": "Slice out of bounds"
+      "solidityError": "Slice out of bounds",
+      "rustError": "Read overrun when parsing vout"
     }
   ],
   "extractOutputScriptLen": [
@@ -583,6 +596,7 @@
       "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952",
       "jsError": "Tried to slice past end of array",
       "golangError": "Malformatted data. Read overrun",
+      "rustError": "Malformatted data. Read overrun",
       "solidityError": "Slice out of bounds",
       "comment": "One byte too short"
     }
@@ -616,27 +630,32 @@
     {
       "input": "0x0000000000000000220017",
       "jsError": "Maliciously formatted witness output",
-      "golangError": "Maliciously formatted witness output"
+      "golangError": "Maliciously formatted witness output",
+      "rustError": "Maliciously formatted witness output"
     },
     {
       "input": "0x00000000000000001976a912",
       "jsError": "Maliciously formatted p2pkh output",
-      "golangError": "Maliciously formatted p2pkh output"
+      "golangError": "Maliciously formatted p2pkh output",
+      "rustError": "Maliciously formatted p2pkh output"
     },
     {
       "input": "0x00000000000000001976a914FFFF",
       "jsError": "Maliciously formatted p2pkh output",
-      "golangError": "Maliciously formatted p2pkh output"
+      "golangError": "Maliciously formatted p2pkh output",
+      "rustError": "Maliciously formatted p2pkh output"
     },
     {
       "input": "0x000000000000000017a914FF",
       "jsError": "Maliciously formatted p2sh output",
-      "golangError": "Maliciously formatted p2sh output"
+      "golangError": "Maliciously formatted p2sh output",
+      "rustError": "Maliciously formatted p2sh output"
     },
     {
       "input": "0x00000000000000000100FF111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",
       "jsError": "Maliciously formatted witness output",
       "golangError": "Maliciously formatted witness output",
+      "rustError": "Maliciously formatted witness output",
       "comment": "Underflow of length regression test"
     }
   ],
@@ -943,6 +962,7 @@
       "jsError": "Header bytes not a valid chain",
       "golangError": "Header bytes not a valid chain",
       "solidityError": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe",
+      "rustError": "Header bytes not a valid chain",
       "cError": "0xfffffffffffffffe"
     },
     {
@@ -950,6 +970,7 @@
       "jsError": "Header does not meet its own difficulty target",
       "golangError": "Header does not meet its own difficulty target",
       "solidityError": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd",
+      "rustError": "Header does not meet its own difficulty target",
       "cError": "0xfffffffffffffffd"
     }
   ],
