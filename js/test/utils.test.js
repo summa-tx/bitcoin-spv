@@ -38,7 +38,7 @@ describe('utils', () => {
           utils.lastBytes(lastBytesError[i].input.bytes, lastBytesError[i].input.num);
           assert(false, 'expected an errror');
         } catch (e) {
-          assert.include(e.message, lastBytesError[i].errorMessage);
+          assert.include(e.message, lastBytesError[i].jsError);
         }
       }
     });
@@ -193,7 +193,7 @@ describe('utils', () => {
           utils.typedArraysAreEqual(arr1, arr2);
           assert(false, 'expected an error');
         } catch (e) {
-          assert.include(e.message, typedArraysAreEqualError[i].errorMessage);
+          assert.include(e.message, typedArraysAreEqualError[i].jsError);
         }
       }
     });
@@ -235,7 +235,7 @@ describe('utils', () => {
           utils.safeSlice(array, start, end);
           assert(false, 'expected an error');
         } catch (e) {
-          assert.include(e.message, safeSliceError[i].errorMessage);
+          assert.include(e.message, safeSliceError[i].jsError);
         }
       }
     });
