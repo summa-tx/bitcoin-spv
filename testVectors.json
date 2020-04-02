@@ -226,7 +226,8 @@
       },
       "jsError": "Vin read overrun",
       "golangError": "Vin read overrun",
-      "solidityError": "Vin read overrun"
+      "solidityError": "Vin read overrun",
+      "rustError": "Vin read overrun"
     },
     {
       "comment": "Read Overrun at beginning of vin",
@@ -455,7 +456,8 @@
       },
       "jsError": "Read overrun during VarInt parsing",
       "golangError": "Read overrun during VarInt parsing",
-      "solidityError": "Read overrun during VarInt parsing"
+      "solidityError": "Read overrun during VarInt parsing",
+      "rustError": "Read overrun during VarInt parsing"
     },
     {
       "input": {
@@ -574,6 +576,7 @@
       "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
       "jsError": "Malformatted data. Must be an op return",
       "golangError": "Not an op return",
+      "rustError": "Malformatted data. Must be an op return",
       "comment": "Not an op return output"
     },
     {
@@ -607,6 +610,7 @@
       "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
       "jsError": "Nonstandard, OP_RETURN, or malformatted output",
       "golangError": "Nonstandard, OP_RETURN, or malformatted output",
+      "rustError": "Nonstandard, OP_RETURN, or malformatted output",
       "comment": "OP_RETURN"
     },
     {
@@ -931,6 +935,7 @@
       "jsError": "Header bytes not multiple of 80",
       "golangError": "Header bytes not multiple of 80",
       "solidityError": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "rustError": "Header bytes not multiple of 80",
       "cError": "0xffffffffffffffff"
     },
     {

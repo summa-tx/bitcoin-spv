@@ -135,7 +135,7 @@ pub mod test_utils {
             None => &serde_json::Value::Null,
         };
 
-        let e = val.get("errorMessage");
+        let e = val.get("rustError");
         let error_message: &serde_json::Value;
         error_message = match e {
             Some(v) => v,
