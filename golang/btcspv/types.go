@@ -17,16 +17,13 @@ type RawHeader [80]byte
 // HexBytes is a type alias to make JSON hex ser/deser easier
 type HexBytes []byte
 
-// BitcoinHeader is a parsed Bitcoin header
+// BitcoinHeader is a parsed Bitcoin header, values are LE
 type BitcoinHeader struct {
-	Raw          RawHeader     `json:"raw"`
-	Hash         Hash256Digest `json:"hash"`
-	HashLE       Hash256Digest `json:"hash_le"`
-	Height       uint32        `json:"height"`
-	PrevHash     Hash256Digest `json:"prevhash"`
-	PrevHashLE   Hash256Digest `json:"prevhash_le"`
-	MerkleRoot   Hash256Digest `json:"merkle_root"`
-	MerkleRootLE Hash256Digest `json:"merkle_root_le"`
+	Raw        RawHeader     `json:"raw"`
+	Hash       Hash256Digest `json:"hash"`
+	Height     uint32        `json:"height"`
+	PrevHash   Hash256Digest `json:"prevhash"`
+	MerkleRoot Hash256Digest `json:"merkle_root"`
 }
 
 // SPVProof is the base struct for an SPV proof
@@ -36,7 +33,6 @@ type SPVProof struct {
 	Vout              HexBytes      `json:"vout"`
 	Locktime          HexBytes      `json:"locktime"`
 	TxID              Hash256Digest `json:"tx_id"`
-	TxIDLE            Hash256Digest `json:"tx_id_le"`
 	Index             uint32        `json:"index"`
 	ConfirmingHeader  BitcoinHeader `json:"confirming_header"`
 	IntermediateNodes HexBytes      `json:"intermediate_nodes"`
@@ -74,22 +70,16 @@ func NewRawHeader(b []byte) (RawHeader, error) {
 
 // HeaderFromRaw builds a BitcoinHeader from a raw bytestring and height
 func HeaderFromRaw(raw RawHeader, height uint32) BitcoinHeader {
-	digestLE := Hash256(raw[:])
-	digestBE := ReverseHash256Endianness(digestLE)
-	prevhashLE := ExtractPrevBlockHashLE(raw)
-	prevhashBE := ReverseHash256Endianness(prevhashLE)
-	merkleRootLE := ExtractMerkleRootLE(raw)
-	merkleRootBE := ReverseHash256Endianness(merkleRootLE)
+	digest := Hash256(raw[:])
+	prevhash := ExtractPrevBlockHashLE(raw)
+	merkleRoot := ExtractMerkleRootLE(raw)
 
 	return BitcoinHeader{
 		raw,
-		digestBE,
-		digestLE,
+		digest,
 		height,
-		prevhashBE,
-		prevhashLE,
-		merkleRootBE,
-		merkleRootLE,
+		prevhash,
+		merkleRoot,
 	}
 }
 

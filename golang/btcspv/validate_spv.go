@@ -88,38 +88,20 @@ func ValidateHeaderChain(headers []byte) (sdk.Uint, error) {
 func (b BitcoinHeader) Validate() (bool, error) {
 	// Check that HashLE is the correct hash of the raw header
 	headerHash := Hash256(b.Raw[:])
-	if !bytes.Equal(headerHash[:], b.HashLE[:]) {
-		return false, errors.New("HashLE is not the correct hash of the header")
-	}
-
-	// Check that HashLE is the reverse of Hash
-	reversedHash := ReverseEndianness(b.Hash[:])
-	if !bytes.Equal(reversedHash, b.HashLE[:]) {
-		return false, errors.New("HashLE is not the LE version of Hash")
+	if !bytes.Equal(headerHash[:], b.Hash[:]) {
+		return false, errors.New("Hash is not the correct hash of the header")
 	}
 
 	// Check that the MerkleRootLE is the correct MerkleRoot for the header
 	extractedMerkleRootLE := ExtractMerkleRootLE(b.Raw)
-	if !bytes.Equal(extractedMerkleRootLE[:], b.MerkleRootLE[:]) {
-		return false, errors.New("MerkleRootLE is not the correct merkle root of the header")
-	}
-
-	// Check that MerkleRootLE is the reverse of MerkleRoot
-	reversedMerkleRoot := ReverseEndianness(b.MerkleRoot[:])
-	if !bytes.Equal(reversedMerkleRoot, b.MerkleRootLE[:]) {
-		return false, errors.New("MerkleRootLE is not the LE version of MerkleRoot")
+	if !bytes.Equal(extractedMerkleRootLE[:], b.MerkleRoot[:]) {
+		return false, errors.New("MerkleRoot is not the correct merkle root of the header")
 	}
 
 	// Check that PrevHash is the correct PrevHash for the header
 	extractedPrevHashLE := ExtractPrevBlockHashLE(b.Raw)
-	if bytes.Compare(extractedPrevHashLE[:], b.PrevHashLE[:]) != 0 {
-		return false, errors.New("PrevhashLE is not the correct parent hash of the header")
-	}
-
-	// Check that PrevHashLE is the reverse of Prevhash
-	reversedPrevHash := ReverseEndianness(b.PrevHash[:])
-	if !bytes.Equal(reversedPrevHash, b.PrevHashLE[:]) {
-		return false, errors.New("PrevhashLE is not the LE version of Prevhash")
+	if bytes.Compare(extractedPrevHashLE[:], b.PrevHash[:]) != 0 {
+		return false, errors.New("Prevhash is not the correct parent hash of the header")
 	}
 
 	return true, nil
@@ -141,7 +123,7 @@ func (s SPVProof) Validate() (bool, error) {
 
 	// Calculate the Tx ID and compare it to the one in SPVProof
 	txid := CalculateTxID(s.Version, s.Vin, s.Vout, s.Locktime)
-	if !bytes.Equal(txid[:], s.TxIDLE[:]) {
+	if !bytes.Equal(txid[:], s.TxID[:]) {
 		return false, errors.New("Version, Vin, Vout and Locktime did not yield correct TxID")
 	}
 
@@ -152,7 +134,7 @@ func (s SPVProof) Validate() (bool, error) {
 	}
 
 	// Check that the proof is valid
-	validProof := Prove(s.TxIDLE, s.ConfirmingHeader.MerkleRootLE, intermediateNodes, index)
+	validProof := Prove(s.TxID, s.ConfirmingHeader.MerkleRoot, intermediateNodes, index)
 	if !validProof {
 		return false, errors.New("Merkle Proof is not valid")
 	}

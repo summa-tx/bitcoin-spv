@@ -99,10 +99,10 @@ func (suite *TypesSuite) TestMarshalSPVProof() {
 	// Extra assertions here will catch random broken stuff
 	suite.Equal(
 		"74d6d6dc1fc9b0f393abde12e76adeeb3d674b38b7fbea4d9fc28b3bb0f67651",
-		hex.EncodeToString(spvProof.TxID[:]))
+		hex.EncodeToString(btcspv.ReverseEndianness(spvProof.TxID[:])))
 	suite.Equal(
 		"5176f6b03b8bc29f4deafbb7384b673debde6ae712deab93f3b0c91fdcd6d674",
-		hex.EncodeToString(spvProof.TxIDLE[:]))
+		hex.EncodeToString(spvProof.TxID[:]))
 	suite.Equal(uint32(26), spvProof.Index)
 	// TODO: assert header equalities
 	suite.Equal(384, len(spvProof.IntermediateNodes))
@@ -197,7 +197,7 @@ func (suite *TypesSuite) TestValidateSPVProof() {
 	invalidHeader.ConfirmingHeader.MerkleRoot = Hash256Digest{0xdd, 0xe2, 0x5e, 0x5d, 0x1c, 0xb2, 0x9a, 0xc6, 0xc0, 0x8b, 0xe7, 0x37, 0x83, 0x73, 0xc6, 0x46, 0xad, 0x18, 0xfc, 0x90, 0xb1, 0x44, 0x35, 0xa9, 0x2a, 0xc8, 0xab, 0x42, 0x28, 0xc9, 0x1a, 0xb6}
 	invalidProof, validationErr := invalidHeader.Validate()
 	suite.Equal(invalidProof, false)
-	suite.EqualError(validationErr, "MerkleRootLE is not the LE version of MerkleRoot")
+	suite.EqualError(validationErr, "MerkleRoot is not the correct merkle root of the header")
 
 	invalidProofs := suite.Fixtures.InvalidProofs
 
