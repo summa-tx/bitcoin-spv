@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-I deps
-CFLAGS+=-Wall -Werror -Wno-nonnull -Wno-nonnull-compare -Wno-unused-function
+CFLAGS+=-Wall -Werror
 CFLAGS+=-fprofile-arcs -ftest-coverage
 LIBS=$(shell pkg-config --cflags --libs check)
 
