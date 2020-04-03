@@ -32,6 +32,15 @@ export const U32_MAX = new Uint8Array([0xff, 0xff, 0xff, 0xff]);
  */
 
 /**
+ * @typedef {Object} RPC
+ * @property {SerTx}       serTx The tx all as hex
+ * @property {number}      index
+ * @property {number}      sighashFlag The sighash flag
+ * @property {string}      prevoutScript The prevout script in hex
+ * @property {string}      prevoutValue The prevout value in hex
+ */
+
+/**
  * 
  * Validates a flag
  * 
@@ -263,20 +272,11 @@ export function deserSighashArgs(serTx, serPrevoutScript, serPrevoutValue) {
 
 /**
  *
- * Runs `deserSighashArgs` and then`sighash`
+ * Serializes the digest in a sighash object
  *
- * @param {SerTx}         serTx The tx all as hex
- * @param {number}        index
- * @param {number}        sighashFlag The sighash flag
- * @param {string}        prevoutScript The prevout script in hex
- * @param {string}        prevoutValue The prevout value in hex
- * @returns {Sighash}     Data regarding the sighash
+ * @param {Sighash}       sighashObj Data regarding the sighash
+ * @returns {object}      The same sighash object with a serialized digest
  */
-export function deserAndSighash(serTx, index, sighashFlag, prevoutScript, prevoutValue) {
-  const deser = deserSighashArgs(serTx, prevoutScript, prevoutValue);
-  return sighash(deser.tx, index, sighashFlag, deser.prevoutScript, deser.prevoutValue);
-}
-
 export function serSighashObj(sighashObj) {
   return {
     digest: utils.serializeHex(sighashObj.digest),
@@ -288,7 +288,13 @@ export function serSighashObj(sighashObj) {
   };
 }
 
-// runs `deserSighashArgs` and then `sighash`
+/**
+ *
+ * Runs `deserSighashArgs` and then`sighash`
+ *
+ * @param {RPC}           rpcObj The RPC object
+ * @returns {Sighash}     Data regarding the sighash
+ */
 export function rpcSighash(rpcObj) {
   const {
     tx, index, sighashFlag, prevoutScript, prevoutValue
