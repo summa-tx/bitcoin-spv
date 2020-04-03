@@ -131,7 +131,7 @@ describe('BTCUtils', () => {
         BTCUtils.extractHash(extractHashError[i].input);
         assert(false, 'expected an error');
       } catch (e) {
-        assert.include(e.message, extractHashError[i].errorMessage);
+        assert.include(e.message, extractHashError[i].jsError);
       }
     }
   });
@@ -162,7 +162,7 @@ describe('BTCUtils', () => {
         assert(false, 'expected an error');
       } catch (e) {
         const errorMessage = extractOpReturnDataError[i].jsError
-          ? extractOpReturnDataError[i].jsError : extractOpReturnDataError[i].errorMessage;
+          ? extractOpReturnDataError[i].jsError : extractOpReturnDataError[i].jsError;
         assert.include(e.message, errorMessage);
       }
     }
@@ -185,8 +185,8 @@ describe('BTCUtils', () => {
       );
       assert(false, 'expected an error');
     } catch (e) {
-      const { errorMessage } = extractInputAtIndexError[0];
-      assert.include(e.message, errorMessage);
+      const { jsError } = extractInputAtIndexError[0];
+      assert.include(e.message, jsError);
     }
   });
 
@@ -245,7 +245,7 @@ describe('BTCUtils', () => {
         BTCUtils.determineOutputLength(determineOutputLengthError[i].input);
         assert(false, 'Expected an error');
       } catch (e) {
-        assert.include(e.message, determineOutputLengthError[i].errorMessage);
+        assert.include(e.message, determineOutputLengthError[i].jsError);
       }
     }
   });
@@ -267,7 +267,7 @@ describe('BTCUtils', () => {
       );
       assert(false, 'Expected an error');
     } catch (e) {
-      assert.include(e.message, extractOutputAtIndexError[2].errorMessage);
+      assert.include(e.message, extractOutputAtIndexError[2].jsError);
     }
   });
 
@@ -370,7 +370,7 @@ describe('BTCUtils', () => {
           BTCUtils.calculateDifficulty(calculateDifficultyError[i].input);
           assert(false, 'expected an error');
         } catch (e) {
-          assert.include(e.message, calculateDifficultyError[i].errorMessage);
+          assert.include(e.message, calculateDifficultyError[i].jsError);
         }
       }
     });

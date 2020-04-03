@@ -320,7 +320,7 @@ func ExtractValue(output []byte) uint {
 // Value is an 8byte little endian number
 func ExtractOpReturnData(output []byte) ([]byte, error) {
 	if output[9] != 0x6a {
-		return nil, errors.New("Malformatted data. Must be an op return")
+		return nil, errors.New("Not an op return")
 	}
 
 	dataLength := int(output[10])
