@@ -17,6 +17,7 @@ use crate::validatespv;
 pub type RawBytes = Vec<u8>;
 
 /// BitcoinHeader is a parsed Bitcoin header with height information appended.
+/// Values are LE
 #[derive(Clone, Deserialize, Serialize)]
 pub struct BitcoinHeader {
     /// The double-sha2 digest encoded BE.
