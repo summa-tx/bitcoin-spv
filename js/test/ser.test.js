@@ -15,7 +15,7 @@ const {
   errBadHexRawHeader,
   errBadLenRawHeader,
   errBadLenHash
- } = vectorObj;
+} = vectorObj;
 
 const { assert } = chai;
 
@@ -46,18 +46,17 @@ describe('ser', () => {
   });
 
   it('can round-trip serialize Bitcoin header', () => {
-    const emptyDigest = new Uint8Array(32);
     validHeader.forEach((e) => {
       const header = ser.deserializeHeader(e);
-      
+
       // length assertions
-      assert.equal(header.raw.length, 80)
-      assert.isFalse(utils.typedArraysAreEqual(header.hash, emptyDigest))
+      assert.equal(header.raw.length, 80);
+      assert.isFalse(utils.typedArraysAreEqual(header.hash, new Uint8Array()));
 
       const len32 = [header.hash, header.prevhash, header.merkle_root];
-      len32.forEach((e) => {
-        assert.equal(e.length, 32)
-        assert.isFalse(utils.typedArraysAreEqual(e, emptyDigest))
+      len32.forEach((f) => {
+        assert.equal(f.length, 32);
+        assert.isFalse(utils.typedArraysAreEqual(f, new Uint8Array()));
       });
 
       // re-serialize and re-deserialize
@@ -65,7 +64,7 @@ describe('ser', () => {
       const secondHeader = ser.deserializeHeader(jsonHeaderString);
 
       // round-trip equality assertions
-      for (let key in header) {
+      Object.keys(header).forEach((key) => {
         if (header[key] instanceof Uint8Array) {
           assert.isTrue(utils.typedArraysAreEqual(
             header[key],
@@ -75,9 +74,9 @@ describe('ser', () => {
           assert.equal(
             header[key],
             secondHeader[key]
-          )
+          );
         }
-      }
+      });
     });
   });
 
@@ -104,7 +103,6 @@ describe('ser', () => {
       ser.deserializeSPVProof(errBadLenHash256);
       assert(false, 'expected an error');
     } catch (e) {
-      console.log(e)
       assert.include(e.message, 'Expected 32 bytes, got 31 bytes');
     }
   });
