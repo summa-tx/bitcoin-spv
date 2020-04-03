@@ -162,7 +162,10 @@ export function serSighashObj(sighashObj) {
 }
 
 // runs `deserSighashArgs` and then `sighash`
-export function rpcSighash(tx, index, sighashFlag, prevoutScript, prevoutValue) {
+export function rpcSighash(rpcObj) {
+  const {
+    tx, index, sighashFlag, prevoutScript, prevoutValue
+  } = rpcObj;
   const deser = deserSighashArgs(tx, prevoutScript, prevoutValue);
   const sig = sighash(deser.tx, index, sighashFlag, deser.prevoutScript, deser.prevoutValue);
   return serSighashObj(sig);
