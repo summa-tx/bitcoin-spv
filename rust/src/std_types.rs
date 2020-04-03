@@ -25,23 +25,14 @@ pub struct BitcoinHeader {
     /// The 80-byte raw header.
     #[serde(with = "internal_ser::raw_ser")]
     pub raw: RawHeader,
-    /// The double-sha2 digest encoded LE.
-    #[serde(with = "internal_ser::digest_ser")]
-    pub hash_le: Hash256Digest,
     /// The height of the header
     pub height: u32,
     /// The double-sha2 digest of the parent encoded BE.
     #[serde(with = "internal_ser::digest_ser")]
     pub prevhash: Hash256Digest,
-    /// The double-sha2 digest of the parent encoded LE.
-    #[serde(with = "internal_ser::digest_ser")]
-    pub prevhash_le: Hash256Digest,
     /// The double-sha2 merkle tree root of the block transactions encoded BE.
     #[serde(with = "internal_ser::digest_ser")]
     pub merkle_root: Hash256Digest,
-    /// The double-sha2 merkle tree root of the block transactions encoded LE.
-    #[serde(with = "internal_ser::digest_ser")]
-    pub merkle_root_le: Hash256Digest,
 }
 
 impl BitcoinHeader {
@@ -56,23 +47,14 @@ impl BitcoinHeader {
     /// * Errors if any of the Bitcoin header elements are invalid.
     pub fn validate(&self) -> Result<(), SPVError> {
         let raw_as_slice = &self.raw[..];
-        if self.hash_le[..] != btcspv::hash256(&[raw_as_slice]) {
+        if self.hash[..] != btcspv::hash256(&[raw_as_slice]) {
             return Err(SPVError::WrongDigest);
         }
-        if self.hash_le[..] != utils::reverse_endianness(&self.hash.to_vec())[..] {
-            return Err(SPVError::NonMatchingDigests);
-        }
-        if self.merkle_root_le[..] != btcspv::extract_merkle_root_le(self.raw) {
+        if self.merkle_root[..] != btcspv::extract_merkle_root_le(self.raw) {
             return Err(SPVError::WrongMerkleRoot);
         }
-        if self.merkle_root_le[..] != utils::reverse_endianness(&self.merkle_root.to_vec())[..] {
-            return Err(SPVError::NonMatchingMerkleRoots);
-        }
-        if self.prevhash_le[..] != btcspv::extract_prev_block_hash_le(self.raw) {
+        if self.prevhash[..] != btcspv::extract_prev_block_hash_le(self.raw) {
             return Err(SPVError::WrongPrevHash);
-        }
-        if self.prevhash_le[..] != utils::reverse_endianness(&self.prevhash.to_vec())[..] {
-            return Err(SPVError::NonMatchingPrevhashes);
         }
         Ok(())
     }
@@ -88,12 +70,9 @@ impl PartialEq for BitcoinHeader {
     fn eq(&self, other: &Self) -> bool {
         (self.raw[..] == other.raw[..]
             && self.hash == other.hash
-            && self.hash_le == other.hash_le
             && self.height == other.height
             && self.prevhash == other.prevhash
-            && self.prevhash_le == other.prevhash_le
-            && self.merkle_root == other.merkle_root
-            && self.merkle_root_le == other.merkle_root_le)
+            && self.merkle_root == other.merkle_root)
     }
 }
 
@@ -151,9 +130,6 @@ pub struct SPVProof {
     /// The tx id
     #[serde(with = "internal_ser::digest_ser")]
     pub tx_id: Hash256Digest,
-    /// The tx id in LE
-    #[serde(with = "internal_ser::digest_ser")]
-    pub tx_id_le: Hash256Digest,
     /// The transaction index
     pub index: u32,
     /// The confirming Bitcoin header
@@ -184,7 +160,7 @@ impl SPVProof {
 
         let tx_id =
             validatespv::calculate_txid(&self.version, &self.vin, &self.vout, &self.locktime);
-        if tx_id[..] != self.tx_id_le[..] {
+        if tx_id[..] != self.tx_id[..] {
             return Err(SPVError::WrongTxID);
         }
 
@@ -192,7 +168,7 @@ impl SPVProof {
 
         if !validatespv::prove(
             tx_id,
-            self.confirming_header.merkle_root_le,
+            self.confirming_header.merkle_root,
             &self.intermediate_nodes,
             self.index as u64,
         ) {

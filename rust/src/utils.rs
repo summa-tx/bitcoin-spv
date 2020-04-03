@@ -177,14 +177,9 @@ pub mod test_utils {
             "Header bytes not multiple of 80" => SPVError::WrongLengthHeader,
             "Header does not meet its own difficulty target" => SPVError::InsufficientWork,
             "Header bytes not a valid chain" => SPVError::InvalidChain,
-            "HashLE is not the correct hash of the header" => SPVError::WrongDigest,
-            "HashLE is not the LE version of Hash" => SPVError::NonMatchingDigests,
-            "MerkleRootLE is not the LE version of MerkleRoot" => SPVError::NonMatchingMerkleRoots,
-            "MerkleRootLE is not the correct merkle root of the header" => {
-                SPVError::WrongMerkleRoot
-            }
-            "PrevhashLE is not the correct parent hash of the header" => SPVError::WrongPrevHash,
-            "PrevhashLE is not the LE version of Prevhash" => SPVError::NonMatchingPrevhashes,
+            "Hash is not the correct hash of the header" => SPVError::WrongDigest,
+            "MerkleRoot is not the correct merkle root of the header" => SPVError::WrongMerkleRoot,
+            "Prevhash is not the correct parent hash of the header" => SPVError::WrongPrevHash,
             "Vin is not valid" => SPVError::InvalidVin,
             "Vout is not valid" => SPVError::InvalidVout,
             "Version, Vin, Vout and Locktime did not yield correct TxID" => SPVError::WrongTxID,
