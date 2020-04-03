@@ -6,12 +6,51 @@ import * as BTCUtils from './BTCUtils';
 const NULL_HASH = new Uint8Array(32);
 const U32_MAX = new Uint8Array([0xff, 0xff, 0xff, 0xff]);
 
+/**
+ * @typedef {Object} Sighash
+ * @property {Uint8Array}   digest The sighash digest
+ * @property {number}       sighashFlag The sighash flag
+ * @property {boolean}      possibleAbsoluteLock If nSequence locks might be active
+ * @property {boolean}      possibleRelativeLock If nLocktime might be active
+ * @property {boolean}      updateableOutputs
+ * @property {boolean}      updateableInputs
+ */
+
+/**
+ * @typedef {Object} Tx
+ * @property {Uint8Array}   version 4-byte version
+ * @property {Uint8Array}   vin The vin
+ * @property {Uint8Array}   vout The vout
+ * @property {Uint8Array}   locktime 4-byte locktime
+ */
+
+/**
+ * @typedef {Object} SerTx
+ * @property {string}     version 4-byte version
+ * @property {string}     vin The vin
+ * @property {string}     vout The vout
+ * @property {string}     locktime 4-byte locktime
+ */
+
+/**
+ * 
+ * Validates a flag
+ * 
+ * @param {number}      flag The first byte of a VarInt
+ * @returns {boolean}   True if the flag is valid
+ */
 export function validateFlag(flag) {
   if (flag !== 0x01 && flag !== 0x03 && flag !== 0x81 && flag !== 0x83) return false;
   return true;
 }
 
-// returns an array of uint8arrays.
+/**
+ *
+ * Parses a vin into an array of inputs
+ *
+ * @param {Uint8Array}    vin The vin
+ * @returns {array}       An array of inputs (type Uint8Array)
+ */
 export function parseVin(vin) {
   const { nIns } = BTCUtils.parseVarInt(vin);
   const inputs = [];
@@ -22,6 +61,13 @@ export function parseVin(vin) {
 }
 
 // returns an array of uint8arrays.
+/**
+ *
+ * Parses a vout into an array of outputs
+ *
+ * @param {Uint8Array}    vout The vout
+ * @returns {array}       An array of outputs (type Uint8Array)
+ */
 export function parseVout(vout) {
   const { nOuts } = BTCUtils.parseVarInt(vout);
   const outputs = [];
@@ -31,7 +77,17 @@ export function parseVout(vout) {
   return outputs;
 }
 
-// inputs is an array of Uint8Arrays
+/**
+ *
+ * Hashes prevouts according to BIP143 semantics.
+ * 
+ * For BIP143 (Witness and Compatibility sighash) documentation, see here:
+ * - https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
+ *
+ * @param {array}         inputs An array of inputs (type Uint8Array)
+ * @param {number}        flag The first byte of a VarInt
+ * @returns {Uint8Array}  The hash of the Prevouts
+ */
 export function hashPrevouts(inputs, flag) {
   if ((flag & 0x80) === 0x80) {
     return NULL_HASH;
@@ -43,7 +99,17 @@ export function hashPrevouts(inputs, flag) {
   return utils.hash256(preimage);
 }
 
-// inputs is an array of Uint8Arrays
+/**
+ *
+ * Hashes sequence according to BIP143 semantics.
+ * 
+ * For BIP143 (Witness and Compatibility sighash) documentation, see here:
+ * - https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
+ *
+ * @param {array}         inputs An array of inputs (type Uint8Array)
+ * @param {number}        flag The first byte of a VarInt
+ * @returns {Uint8Array}  The hash of the Sequence
+ */
 export function hashSequence(inputs, flag) {
   if ((flag & 0x80) === 0x80 || (flag & 0x03) === 0x03) {
     return NULL_HASH;
@@ -54,7 +120,16 @@ export function hashSequence(inputs, flag) {
   return utils.hash256(preimage);
 }
 
-// outputs is an array of Uint8Arrays
+/**
+ *
+ * Hashes outputs according to BIP143 semantics.
+ * 
+ * For BIP143 (Witness and Compatibility sighash) documentation, see here:
+ * - https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
+ *
+ * @param {array}         outputs An array of outputs (type Uint8Array)
+ * @returns {Uint8Array}  The hash of the Outputs
+ */
 export function hashOutputs(outputs) {
   if (outputs.length === 0) {
     return NULL_HASH;
@@ -62,7 +137,15 @@ export function hashOutputs(outputs) {
   return utils.hash256(utils.concatUint8Arrays(...outputs));
 }
 
-// Check if nSequence locks might be active
+/**
+ *
+ * Checks if nSequence locks might be active
+ *
+ * @param {array}         inputs An array of inputs (type Uint8Array)
+ * @param {Uint8Array}    locktime 4-byte tx locktime
+ * @param {number}        flag The first byte of a VarInt
+ * @returns {boolean}     True if there is a lock
+ */
 export function possibleAbsoluteLock(inputs, locktime, flag) {
   if ((flag && 0x80) === 0x80) return true;
 
@@ -76,7 +159,14 @@ export function possibleAbsoluteLock(inputs, locktime, flag) {
   return true;
 }
 
-// Check if nLocktime might be active
+/**
+ *
+ * Checks if nLocktime might be active
+ *
+ * @param {array}         inputs An array of inputs (type Uint8Array)
+ * @param {Uint8Array}    version 4-byte version
+ * @returns {boolean}     True if there is a lock
+ */
 export function possibleRelativeLock(inputs, version) {
   if (version[0] === 1) return false;
 
@@ -88,7 +178,20 @@ export function possibleRelativeLock(inputs, version) {
   return false;
 }
 
-// args are all deserialized
+// TODO: make typedef for tx
+/**
+ *
+ * Calculates sighash
+ * 
+ * @dev All args are deserialized
+ *
+ * @param {tx}            tx The tx
+ * @param {number}        index The index
+ * @param {number}        sighashFlag The first byte of a VarInt
+ * @param {}              prevoutScript
+ * @param {}              prevoutValue
+ * @returns {Sighash}     Data regarding the sighash
+ */
 export function sighash(tx, index, sighashFlag, prevoutScript, prevoutValue) {
   if (!BTCUtils.validateVin(tx.vin)) {
     throw Error('Malformatted vin');
@@ -130,8 +233,16 @@ export function sighash(tx, index, sighashFlag, prevoutScript, prevoutValue) {
   };
 }
 
-// deserializes the args from hex
-// serTx is { version, vin, vout, locktime } all as hex
+/**
+ *
+ * Deserializes the args for `sighash` from hex
+ *
+ * @param {SerTx}         serTx The tx all as hex
+ * @param {}              serPrevoutScript
+ * @param {}              serPrevoutValue
+ * @returns {object}      The tx object (deserialized version, vin, vout and locktime),
+ *                        prevoutScript and prevoutValue
+ */
 export function deserSighashArgs(serTx, serPrevoutScript, serPrevoutValue) {
   const tx = {};
   const txKeys = ['version', 'vin', 'vout', 'locktime'];
@@ -144,8 +255,18 @@ export function deserSighashArgs(serTx, serPrevoutScript, serPrevoutValue) {
   return { tx, prevoutScript, prevoutValue };
 }
 
-// runs `deserSighashArgs` and then `sighash`
-export function deserAndSighash(tx, index, sighashFlag, prevoutScript, prevoutValue) {
-  const deser = deserSighashArgs(tx, prevoutScript, prevoutValue);
+/**
+ *
+ * Runs `deserSighashArgs` and then`sighash`
+ *
+ * @param {SerTx}         serTx The tx all as hex
+ * @param {}              index
+ * @param {number}        sighashFlag The first byte of a VarInt
+ * @param {}              prevoutScript
+ * @param {}              prevoutValue
+ * @returns {Sighash}     Data regarding the sighash
+ */
+export function deserAndSighash(serTx, index, sighashFlag, prevoutScript, prevoutValue) {
+  const deser = deserSighashArgs(serTx, prevoutScript, prevoutValue);
   return sighash(deser.tx, index, sighashFlag, deser.prevoutScript, deser.prevoutValue);
 }
