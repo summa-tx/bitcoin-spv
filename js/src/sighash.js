@@ -1,10 +1,9 @@
 /* global BigInt */
-
 import * as utils from './utils';
 import * as BTCUtils from './BTCUtils';
 
-const NULL_HASH = new Uint8Array(32);
-const U32_MAX = new Uint8Array([0xff, 0xff, 0xff, 0xff]);
+export const NULL_HASH = new Uint8Array(32);
+export const U32_MAX = new Uint8Array([0xff, 0xff, 0xff, 0xff]);
 
 /**
  * @typedef {Object} Sighash
@@ -52,10 +51,10 @@ export function validateFlag(flag) {
  * @returns {array}       An array of inputs (type Uint8Array)
  */
 export function parseVin(vin) {
-  const { nIns } = BTCUtils.parseVarInt(vin);
+  const { number: nIns } = BTCUtils.parseVarInt(vin);
   const inputs = [];
   for (let i = 0; i < nIns; i += 1) {
-    inputs.push(BTCUtils.extractInputAtIndex(i));
+    inputs.push(BTCUtils.extractInputAtIndex(vin, i));
   }
   return inputs;
 }
@@ -69,10 +68,10 @@ export function parseVin(vin) {
  * @returns {array}       An array of outputs (type Uint8Array)
  */
 export function parseVout(vout) {
-  const { nOuts } = BTCUtils.parseVarInt(vout);
+  const { number: nOuts } = BTCUtils.parseVarInt(vout);
   const outputs = [];
   for (let i = 0; i < nOuts; i += 1) {
-    outputs.push(BTCUtils.extractOutputAtIndex(i));
+    outputs.push(BTCUtils.extractOutputAtIndex(vout, i));
   }
   return outputs;
 }
@@ -94,9 +93,9 @@ export function hashPrevouts(inputs, flag) {
   }
 
   const preimage = utils.concatUint8Arrays(
-    inputs.map(BTCUtils.extractOutpoint)
+    ...inputs.map(BTCUtils.extractOutpoint)
   );
-  return utils.hash256(preimage);
+  return BTCUtils.hash256(preimage);
 }
 
 /**
@@ -115,9 +114,9 @@ export function hashSequence(inputs, flag) {
     return NULL_HASH;
   }
   const preimage = utils.concatUint8Arrays(
-    inputs.map(BTCUtils.extractSequenceLELegacy)
+    ...inputs.map(BTCUtils.extractSequenceLELegacy)
   );
-  return utils.hash256(preimage);
+  return BTCUtils.hash256(preimage);
 }
 
 /**
@@ -134,7 +133,7 @@ export function hashOutputs(outputs) {
   if (outputs.length === 0) {
     return NULL_HASH;
   }
-  return utils.hash256(utils.concatUint8Arrays(...outputs));
+  return BTCUtils.hash256(utils.concatUint8Arrays(...outputs));
 }
 
 /**
@@ -147,16 +146,18 @@ export function hashOutputs(outputs) {
  * @returns {boolean}     True if there is a lock
  */
 export function possibleAbsoluteLock(inputs, locktime, flag) {
-  if ((flag && 0x80) === 0x80) return true;
+  if ((flag & 0x80) === 0x80) return true;
 
   const sequences = inputs.map(BTCUtils.extractSequenceLegacy);
-  if (sequences.filter(s => !utils.typedArraysAreEqual(s, U32_MAX)).length === 0) return false;
 
-  const lock = utils.bytesToUint(locktime);
+  // if all sequences are UINT_MAX, no locktime is possible
+  if (sequences.filter(s => s !== BigInt(0xffffffff)).length === 0) return false;
+
+  const lock = utils.bytesToUint(utils.reverseEndianness(locktime));
   if (lock > BigInt(1550000000) || (lock > BigInt(600000) && lock < BigInt(500000000))) {
-    return false;
+    return true;
   }
-  return true;
+  return false;
 }
 
 /**
@@ -172,9 +173,9 @@ export function possibleRelativeLock(inputs, version) {
 
   const sequences = inputs.map(BTCUtils.extractSequenceLegacy);
   for (let i = 0; i < sequences.length; i += 1) {
-    if (!(sequences[i][3] & 0x80) === 0x80) return true;
+    const disableFlag = (sequences[i] & BigInt(0x80)) === BigInt(0x80);
+    if (!disableFlag) return true;
   }
-
   return false;
 }
 
@@ -193,6 +194,8 @@ export function possibleRelativeLock(inputs, version) {
  * @returns {Sighash}     Data regarding the sighash
  */
 export function sighash(tx, index, sighashFlag, prevoutScript, prevoutValue) {
+  if (!validateFlag(sighashFlag)) throw Error(`Invalid sighash flag: ${sighashFlag}`);
+
   if (!BTCUtils.validateVin(tx.vin)) {
     throw Error('Malformatted vin');
   }
@@ -203,28 +206,31 @@ export function sighash(tx, index, sighashFlag, prevoutScript, prevoutValue) {
   let inputs = parseVin(tx.vin);
   let outputs = parseVout(tx.vout);
 
+  const currentInput = inputs[index];
+  const currentOutput = outputs[index];
+
   if ((sighashFlag & 0x80) === 0x80) {
-    inputs = [inputs[index]]; // If ACP, just 1 input
+    inputs = [currentInput]; // If ACP, just 1 input
   }
   if ((sighashFlag & 0x03) === 0x03) {
-    outputs = [outputs[index]]; // If SINGLE, just 1 output
+    outputs = [currentOutput]; // If SINGLE, just 1 output
   }
 
   const preimage = utils.concatUint8Arrays(
     tx.version,
     hashPrevouts(inputs, sighashFlag),
     hashSequence(inputs, sighashFlag),
-    BTCUtils.extractOutpoint(inputs[index]),
+    BTCUtils.extractOutpoint(currentInput),
     prevoutScript,
     prevoutValue,
-    BTCUtils.extractSequenceLegacy(inputs[index]),
+    BTCUtils.extractSequenceLELegacy(currentInput),
     hashOutputs(outputs),
     tx.locktime,
     new Uint8Array([sighashFlag, 0, 0, 0]), // sighashFlag as LE u32
   );
 
   return {
-    digest: utils.hash256(preimage),
+    digest: BTCUtils.hash256(preimage),
     sighashFlag,
     possibleAbsoluteLock: possibleAbsoluteLock(inputs, tx.locktime, sighashFlag),
     possibleRelativeLock: possibleRelativeLock(inputs, tx.version),
@@ -269,4 +275,25 @@ export function deserSighashArgs(serTx, serPrevoutScript, serPrevoutValue) {
 export function deserAndSighash(serTx, index, sighashFlag, prevoutScript, prevoutValue) {
   const deser = deserSighashArgs(serTx, prevoutScript, prevoutValue);
   return sighash(deser.tx, index, sighashFlag, deser.prevoutScript, deser.prevoutValue);
+}
+
+export function serSighashObj(sighashObj) {
+  return {
+    digest: utils.serializeHex(sighashObj.digest),
+    sighashFlag: sighashObj.sighashFlag,
+    possibleAbsoluteLock: sighashObj.possibleAbsoluteLock,
+    possibleRelativeLock: sighashObj.possibleRelativeLock,
+    updateableOutputs: sighashObj.updateableOutputs,
+    updateableInputs: sighashObj.updateableInputs
+  };
+}
+
+// runs `deserSighashArgs` and then `sighash`
+export function rpcSighash(rpcObj) {
+  const {
+    tx, index, sighashFlag, prevoutScript, prevoutValue
+  } = rpcObj;
+  const deser = deserSighashArgs(tx, prevoutScript, prevoutValue);
+  const sig = sighash(deser.tx, index, sighashFlag, deser.prevoutScript, deser.prevoutValue);
+  return serSighashObj(sig);
 }
