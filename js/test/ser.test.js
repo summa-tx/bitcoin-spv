@@ -51,12 +51,12 @@ describe('ser', () => {
 
       // length assertions
       assert.equal(header.raw.length, 80);
-      assert.isFalse(utils.typedArraysAreEqual(header.hash, new Uint8Array()));
+      assert.isFalse(utils.typedArraysAreEqual(header.hash, new Uint8Array(80)));
 
       const len32 = [header.hash, header.prevhash, header.merkle_root];
       len32.forEach((f) => {
         assert.equal(f.length, 32);
-        assert.isFalse(utils.typedArraysAreEqual(f, new Uint8Array()));
+        assert.isFalse(utils.typedArraysAreEqual(f, new Uint8Array(32)));
       });
 
       // re-serialize and re-deserialize

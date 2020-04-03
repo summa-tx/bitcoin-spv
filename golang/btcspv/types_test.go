@@ -98,9 +98,6 @@ func (suite *TypesSuite) TestMarshalSPVProof() {
 
 	// Extra assertions here will catch random broken stuff
 	suite.Equal(
-		"74d6d6dc1fc9b0f393abde12e76adeeb3d674b38b7fbea4d9fc28b3bb0f67651",
-		hex.EncodeToString(btcspv.ReverseEndianness(spvProof.TxID[:])))
-	suite.Equal(
 		"5176f6b03b8bc29f4deafbb7384b673debde6ae712deab93f3b0c91fdcd6d674",
 		hex.EncodeToString(spvProof.TxID[:]))
 	suite.Equal(uint32(26), spvProof.Index)
