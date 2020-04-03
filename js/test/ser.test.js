@@ -6,7 +6,16 @@ import * as utils from '../src/utils';
 import * as vectors from '../../testProofs.json';
 
 const vectorObj = JSON.parse(JSON.stringify(vectors));
-const { valid, validHeader } = vectorObj;
+const {
+  valid,
+  validHeader,
+  errBadHexBytes,
+  errBadHexHash256,
+  errBadLenHash256,
+  errBadHexRawHeader,
+  errBadLenRawHeader,
+  errBadLenHash
+ } = vectorObj;
 
 const { assert } = chai;
 
@@ -17,8 +26,6 @@ describe('ser', () => {
       const proof = ser.deserializeSPVProof(e);
 
       // TODO: make more assertions and clean up this section
-      assert.equal(proof.tx_id_le.length, 32);
-      assert.isFalse(utils.typedArraysAreEqual(proof.tx_id_le, emptyDigest));
       assert.equal(proof.tx_id.length, 32);
       assert.isFalse(utils.typedArraysAreEqual(proof.tx_id, emptyDigest));
 
@@ -35,10 +42,6 @@ describe('ser', () => {
         proof.tx_id,
         secondProof.tx_id
       ));
-      assert.isTrue(utils.typedArraysAreEqual(
-        proof.tx_id_le,
-        secondProof.tx_id_le
-      ));
     });
   });
 
@@ -46,36 +49,41 @@ describe('ser', () => {
     const emptyDigest = new Uint8Array(32);
     validHeader.forEach((e) => {
       const header = ser.deserializeHeader(e);
+      
+      // length assertions
+      assert.equal(header.raw.length, 80)
+      assert.isFalse(utils.typedArraysAreEqual(header.hash, emptyDigest))
 
-      // TODO: make more assertions and clean up this section
-      assert.equal(header.hash.length, 32);
-      assert.isFalse(utils.typedArraysAreEqual(header.hash, emptyDigest));
-      assert.equal(header.hash_le.length, 32);
-      assert.isFalse(utils.typedArraysAreEqual(header.hash_le, emptyDigest));
+      const len32 = [header.hash, header.prevhash, header.merkle_root];
+      len32.forEach((e) => {
+        assert.equal(e.length, 32)
+        assert.isFalse(utils.typedArraysAreEqual(e, emptyDigest))
+      });
 
       // re-serialize and re-deserialize
       const jsonHeaderString = ser.serializeHeader(header);
       const secondHeader = ser.deserializeHeader(jsonHeaderString);
 
-      // TODO: make more assertions and clean up this section
-      assert.isTrue(utils.typedArraysAreEqual(
-        header.hash,
-        secondHeader.hash
-      ));
-      assert.isTrue(utils.typedArraysAreEqual(
-        header.hash_le,
-        secondHeader.hash_le
-      ));
-      assert.isTrue(utils.typedArraysAreEqual(
-        header.raw,
-        secondHeader.raw
-      ));
+      // round-trip equality assertions
+      for (let key in header) {
+        if (header[key] instanceof Uint8Array) {
+          assert.isTrue(utils.typedArraysAreEqual(
+            header[key],
+            secondHeader[key]
+          ));
+        } else {
+          assert.equal(
+            header[key],
+            secondHeader[key]
+          )
+        }
+      }
     });
   });
 
   it('errBadHexBytes', () => {
     try {
-      ser.deserializeSPVProof(vectorObj.errBadHexBytes);
+      ser.deserializeSPVProof(errBadHexBytes);
       assert(false, 'expected an error');
     } catch (e) {
       assert.include(e.message, 'Error deserializing hex, got non-hex byte:');
@@ -84,7 +92,7 @@ describe('ser', () => {
 
   it('errBadHexHash256', () => {
     try {
-      ser.deserializeSPVProof(vectorObj.errBadHexHash256);
+      ser.deserializeSPVProof(errBadHexHash256);
       assert(false, 'expected an error');
     } catch (e) {
       assert.include(e.message, 'Error deserializing hex, got non-hex byte:');
@@ -93,16 +101,17 @@ describe('ser', () => {
 
   it('errBadLenHash256', () => {
     try {
-      ser.deserializeSPVProof(vectorObj.errBadLenHash256);
+      ser.deserializeSPVProof(errBadLenHash256);
       assert(false, 'expected an error');
     } catch (e) {
+      console.log(e)
       assert.include(e.message, 'Expected 32 bytes, got 31 bytes');
     }
   });
 
   it('errBadHexRawHeader', () => {
     try {
-      ser.deserializeSPVProof(vectorObj.errBadHexRawHeader);
+      ser.deserializeSPVProof(errBadHexRawHeader);
       assert(false, 'expected an error');
     } catch (e) {
       assert.include(e.message, 'Error deserializing hex, got non-hex byte:');
@@ -111,7 +120,7 @@ describe('ser', () => {
 
   it('errBadLenRawHeader', () => {
     try {
-      ser.deserializeSPVProof(vectorObj.errBadLenRawHeader);
+      ser.deserializeSPVProof(errBadLenRawHeader);
       assert(false, 'expected an error');
     } catch (e) {
       assert.include(e.message, 'Expected 80 bytes, got 79 bytes');
@@ -120,7 +129,7 @@ describe('ser', () => {
 
   it('errBadLenHash', () => {
     try {
-      ser.deserializeSPVProof(vectorObj.errBadLenHash);
+      ser.deserializeSPVProof(errBadLenHash);
       assert(false, 'expected an error');
     } catch (e) {
       assert.include(e.message, 'Expected 32 bytes, got 31 bytes');

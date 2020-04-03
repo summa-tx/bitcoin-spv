@@ -12,15 +12,12 @@ export function objectToHeader(o) {
   /* eslint-disable camelcase */
   const raw = utils.deserializeHex(o.raw);
   const hash = utils.deserializeHex(o.hash);
-  const hash_le = utils.deserializeHex(o.hash_le);
   const prevhash = utils.deserializeHex(o.prevhash);
-  const prevhash_le = utils.deserializeHex(o.prevhash_le);
   const merkle_root = utils.deserializeHex(o.merkle_root);
-  const merkle_root_le = utils.deserializeHex(o.merkle_root_le);
   if (raw.length !== 80) {
     throw new TypeError(`Expected 80 bytes, got ${raw.length} bytes`);
   }
-  [hash, hash_le, prevhash, prevhash_le, merkle_root, merkle_root_le].forEach((e) => {
+  [hash, prevhash, merkle_root].forEach((e) => {
     if (e.length !== 32) {
       throw new TypeError(`Expected 32 bytes, got ${e.length} bytes`);
     }
@@ -30,12 +27,9 @@ export function objectToHeader(o) {
   return {
     raw,
     hash,
-    hash_le,
     height: o.height,
     prevhash,
-    prevhash_le,
     merkle_root,
-    merkle_root_le
   };
 }
 
@@ -62,12 +56,9 @@ export function objectFromHeader(h) {
   return {
     raw: utils.serializeHex(h.raw),
     hash: utils.serializeHex(h.hash),
-    hash_le: utils.serializeHex(h.hash_le),
     height: h.height,
     prevhash: utils.serializeHex(h.prevhash),
-    prevhash_le: utils.serializeHex(h.prevhash_le),
     merkle_root: utils.serializeHex(h.merkle_root),
-    merkle_root_le: utils.serializeHex(h.merkle_root_le)
   };
 }
 
@@ -97,14 +88,11 @@ export function objectToSPVProof(o) {
   const vout = utils.deserializeHex(o.vout);
   const locktime = utils.deserializeHex(o.locktime);
   const tx_id = utils.deserializeHex(o.tx_id);
-  const tx_id_le = utils.deserializeHex(o.tx_id_le);
   const intermediate_nodes = utils.deserializeHex(o.intermediate_nodes);
 
-  [tx_id, tx_id_le].forEach((e) => {
-    if (e.length !== 32) {
-      throw new TypeError(`Expected 32 bytes, got ${e.length} bytes`);
-    }
-  });
+  if (tx_id.length !== 32) {
+    throw new TypeError(`Expected 32 bytes, got ${tx_id.length} bytes`);
+  }
 
   return {
     version,
@@ -112,7 +100,6 @@ export function objectToSPVProof(o) {
     vout,
     locktime,
     tx_id,
-    tx_id_le,
     index: o.index,
     intermediate_nodes,
     confirming_header: objectToHeader(o.confirming_header)
@@ -145,7 +132,6 @@ export function objectFromSPVProof(s) {
     vout: utils.serializeHex(s.vout),
     locktime: utils.serializeHex(s.locktime),
     tx_id: utils.serializeHex(s.tx_id),
-    tx_id_le: utils.serializeHex(s.tx_id_le),
     index: s.index,
     intermediate_nodes: utils.serializeHex(s.intermediate_nodes),
     confirming_header: objectFromHeader(s.confirming_header)
