@@ -179,13 +179,13 @@ describe('BTCUtils', () => {
     }
 
     try {
-      const res = BTCUtils.extractInputAtIndex(
+      BTCUtils.extractInputAtIndex(
         extractInputAtIndexError[0].input.vin,
         extractInputAtIndexError[0].input.index
       );
       assert(false, 'expected an error');
     } catch (e) {
-      const errorMessage = extractInputAtIndexError[0].errorMessage;
+      const { errorMessage } = extractInputAtIndexError[0];
       assert.include(e.message, errorMessage);
     }
   });
@@ -312,7 +312,7 @@ describe('BTCUtils', () => {
       BTCUtils.parseVarInt([0xff]);
       assert(false, 'expected an error');
     } catch (e) {
-      assert.include(e.message, "Read overrun during VarInt parsing");
+      assert.include(e.message, 'Read overrun during VarInt parsing');
     }
   });
 
