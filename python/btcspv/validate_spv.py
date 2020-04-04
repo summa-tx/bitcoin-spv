@@ -99,33 +99,19 @@ def validate_header(header: RelayHeader) -> bool:
     '''
     # Check that HashLE is the correct hash of the raw header
     header_hash = rutils.hash256(header['raw'])
-    if header_hash != header['hash_le']:
-        return False
-
-    # Check that HashLE is the reverse of Hash
-    reversed_hash = header['hash'][::-1]
-    if reversed_hash != header['hash_le']:
+    if header_hash != header['hash']:
         return False
 
     # Check that the MerkleRootLE is the correct MerkleRoot for the header
-    extracted_merkle_root_le = extract_merkle_root_le(header['raw'])
-    if extracted_merkle_root_le != header['merkle_root_le']:
-        return False
-
-    # Check that MerkleRootLE is the reverse of MerkleRoot
-    reversed_merkle_root = header['merkle_root'][::-1]
-    if reversed_merkle_root != header['merkle_root_le']:
+    extracted_merkle_root = extract_merkle_root_le(header['raw'])
+    if extracted_merkle_root != header['merkle_root']:
         return False
 
     # Check that PrevHash is the correct PrevHash for the header
-    extracted_prevhash_le = extract_prev_block_le(header['raw'])
-    if extracted_prevhash_le != header['prevhash_le']:
+    extracted_prevhash = extract_prev_block_le(header['raw'])
+    if extracted_prevhash != header['prevhash']:
         return False
 
-    # Check that PrevHashLE is the reverse of PrevHash
-    reversed_prevhash = header['prevhash'][::-1]
-    if reversed_prevhash != header['prevhash_le']:
-        return False
     return True
 
 
@@ -149,15 +135,15 @@ def validate_spvproof(proof: SPVProof) -> bool:
         proof['vout'] +
         proof['locktime']
     )
-    if tx_id != proof['tx_id_le']:
+    if tx_id != proof['tx_id']:
         return False
 
     if not validate_header(proof['confirming_header']):
         return False
 
     valid_proof = prove(
-        proof['tx_id_le'],
-        proof['confirming_header']['merkle_root_le'],
+        proof['tx_id'],
+        proof['confirming_header']['merkle_root'],
         proof['intermediate_nodes'],
         proof['index']
     )

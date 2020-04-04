@@ -121,7 +121,7 @@ class TestValidateSPV(unittest.TestCase):
 
         invalid_header_proof = self.valid_proofs[0].copy()
         invalid_header_proof['confirming_header'][
-            'merkle_root_le'
+            'merkle_root'
         ] = bytes.fromhex(
             'c61ac92842abc82aa93644b190fc18ad46c6738337e78bc0c69ab21c5d5ee2dd'
         )
