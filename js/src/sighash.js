@@ -32,10 +32,19 @@ export const U32_MAX = new Uint8Array([0xff, 0xff, 0xff, 0xff]);
  */
 
 /**
+ * @typedef {Object} RPC
+ * @property {SerTx}       serTx The tx all as hex
+ * @property {number}      index
+ * @property {number}      sighashFlag The sighash flag
+ * @property {string}      prevoutScript The prevout script in hex
+ * @property {string}      prevoutValue The prevout value in hex
+ */
+
+/**
  * 
  * Validates a flag
  * 
- * @param {number}      flag The first byte of a VarInt
+ * @param {number}      flag The sighash flag
  * @returns {boolean}   True if the flag is valid
  */
 export function validateFlag(flag) {
@@ -84,7 +93,7 @@ export function parseVout(vout) {
  * - https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
  *
  * @param {array}         inputs An array of inputs (type Uint8Array)
- * @param {number}        flag The first byte of a VarInt
+ * @param {number}        flag The sighash flag
  * @returns {Uint8Array}  The hash of the Prevouts
  */
 export function hashPrevouts(inputs, flag) {
@@ -106,8 +115,8 @@ export function hashPrevouts(inputs, flag) {
  * - https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
  *
  * @param {array}         inputs An array of inputs (type Uint8Array)
- * @param {number}        flag The first byte of a VarInt
- * @returns {Uint8Array}  The hash of the Sequence
+ * @param {number}        flag The sighash flag
+ * @returns {Uint8Array}  BIP143 hashSequence
  */
 export function hashSequence(inputs, flag) {
   if ((flag & 0x80) === 0x80 || (flag & 0x03) === 0x03) {
@@ -127,7 +136,7 @@ export function hashSequence(inputs, flag) {
  * - https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
  *
  * @param {array}         outputs An array of outputs (type Uint8Array)
- * @returns {Uint8Array}  The hash of the Outputs
+ * @returns {Uint8Array}  BIP143 hashOutputs
  */
 export function hashOutputs(outputs) {
   if (outputs.length === 0) {
@@ -142,7 +151,7 @@ export function hashOutputs(outputs) {
  *
  * @param {array}         inputs An array of inputs (type Uint8Array)
  * @param {Uint8Array}    locktime 4-byte tx locktime
- * @param {number}        flag The first byte of a VarInt
+ * @param {number}        flag The sighash flag
  * @returns {boolean}     True if there is a lock
  */
 export function possibleAbsoluteLock(inputs, locktime, flag) {
@@ -188,9 +197,9 @@ export function possibleRelativeLock(inputs, version) {
  *
  * @param {tx}            tx The tx
  * @param {number}        index The index
- * @param {number}        sighashFlag The first byte of a VarInt
- * @param {}              prevoutScript
- * @param {}              prevoutValue
+ * @param {number}        sighashFlag The sighash flag
+ * @param {Uint8Array}    prevoutScript
+ * @param {Uint8Array}    prevoutValue
  * @returns {Sighash}     Data regarding the sighash
  */
 export function sighash(tx, index, sighashFlag, prevoutScript, prevoutValue) {
@@ -244,8 +253,8 @@ export function sighash(tx, index, sighashFlag, prevoutScript, prevoutValue) {
  * Deserializes the args for `sighash` from hex
  *
  * @param {SerTx}         serTx The tx all as hex
- * @param {}              serPrevoutScript
- * @param {}              serPrevoutValue
+ * @param {string}        serPrevoutScript The prevout script as hex
+ * @param {string}        serPrevoutValue The prevout value as hex
  * @returns {object}      The tx object (deserialized version, vin, vout and locktime),
  *                        prevoutScript and prevoutValue
  */
@@ -263,20 +272,11 @@ export function deserSighashArgs(serTx, serPrevoutScript, serPrevoutValue) {
 
 /**
  *
- * Runs `deserSighashArgs` and then`sighash`
+ * Serializes the digest in a sighash object
  *
- * @param {SerTx}         serTx The tx all as hex
- * @param {}              index
- * @param {number}        sighashFlag The first byte of a VarInt
- * @param {}              prevoutScript
- * @param {}              prevoutValue
- * @returns {Sighash}     Data regarding the sighash
+ * @param {Sighash}       sighashObj Data regarding the sighash
+ * @returns {object}      The same sighash object with a serialized digest
  */
-export function deserAndSighash(serTx, index, sighashFlag, prevoutScript, prevoutValue) {
-  const deser = deserSighashArgs(serTx, prevoutScript, prevoutValue);
-  return sighash(deser.tx, index, sighashFlag, deser.prevoutScript, deser.prevoutValue);
-}
-
 export function serSighashObj(sighashObj) {
   return {
     digest: utils.serializeHex(sighashObj.digest),
@@ -288,7 +288,13 @@ export function serSighashObj(sighashObj) {
   };
 }
 
-// runs `deserSighashArgs` and then `sighash`
+/**
+ *
+ * Runs `deserSighashArgs` and then`sighash`
+ *
+ * @param {RPC}           rpcObj The RPC object
+ * @returns {Sighash}     Data regarding the sighash
+ */
 export function rpcSighash(rpcObj) {
   const {
     tx, index, sighashFlag, prevoutScript, prevoutValue
