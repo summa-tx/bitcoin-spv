@@ -17,6 +17,26 @@
 import * as BTCUtils from './BTCUtils';
 import * as utils from './utils';
 
+/**
+ * @typedef {Object} Header
+ * @property {Uint8Array}    raw The bitcoin header
+ * @property {Uint8Array}    hash The hash of the header
+ * @property {Number}        height The height
+ * @property {Uint8Array}    merkle_root The merkle root of the header
+ * @property {Uint8Array}    prevhash The hash of the previous header
+ */
+
+/**
+ * @typedef {Object} Proof
+ * @property {Uint8Array}    version The version
+ * @property {Uint8Array}    vin The vin
+ * @property {Uint8Array}    vout The vout
+ * @property {Uint8Array}    locktime The locktime
+ * @property {Uint8Array}    tx_id The tx ID
+ * @property {Number}        index The index
+ * @property {Uint8Array}    intermediate_nodes The intermediate nodes
+ * @property {Header}        confirming_header The bitcoin header
+ */
 
 /**
  *
@@ -146,13 +166,8 @@ export function validateHeaderChain(headers) {
  * Checks validity of an entire bitcoin header
  *
  * @dev                   Checks that each element in a bitcoin header is valid
- * @param {Object}        header A valid Bitcoin header object, see README for
+ * @param {Header}        header A valid Bitcoin header object, see README for
  *                          more information on creating an Bitcoin Header object
- * @param {Uint8Array}    header.raw The bitcoin header
- * @param {Uint8Array}    header.hash The LE hash of the header
- * @param {Number}        header.height The height
- * @param {Uint8Array}    header.merkle_root The LE merkle root of the header
- * @param {Uint8Array}    header.prevhash The LE hash of the previous header
  * @returns {Boolean}     True if the header object is syntactically valid
  * @throws {Error}        If any of the bitcoin header elements are invalid
 */
@@ -183,23 +198,8 @@ export function validateHeader(header) {
  * Checks validity of an entire SPV Proof
  *
  * @dev                   Checks that each element in an SPV Proof is valid
- * @param {Object}        proof A valid SPV Proof object, see README for
+ * @param {Proof}         proof A valid SPV Proof object, see README for
  *                          more information on creating an SPV Proof object
- * @param {Uint8Array}    proof.version The version
- * @param {Uint8Array}    proof.vin The vin
- * @param {Uint8Array}    proof.vout The vout
- * @param {Uint8Array}    proof.locktime The locktime
- * @param {Uint8Array}    proof.tx_id The LE tx ID
- * @param {Number}        proof.index The index
- * @param {Uint8Array}    proof.intermediate_nodes The intermediate nodes
- * @param {Uint8Array}    proof.confirming_header.raw The bitcoin header
- * @param {Uint8Array}    proof.confirming_header.hash The hash of the header
- * @param {Uint8Array}    proof.confirming_header.hash_le The LE hash of the header
- * @param {Number}        proof.confirming_header.height The height
- * @param {Uint8Array}    proof.confirming_header.merkle_root The merkle root of the header
- * @param {Uint8Array}    proof.confirming_header.merkle_root_le The LE merkle root
- * @param {Uint8Array}    proof.confirming_header.prevhash The hash of the previous header
- * @param {Uint8Array}    proof.confirming_header.prevhash_le The LE hash of the previous header
  * @returns {Boolean}     Returns true if the SPV Proof object is syntactically valid
  * @throws {Error}        If any of the SPV Proof elements are invalid
 */

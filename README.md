@@ -14,6 +14,7 @@ proof (de)serialization is supported in Golang, Python, and JS.
 
 - [Binance X Fellowship](https://binancex.dev/fellowship.html)
 - [Interchain Foundation](https://interchain.io/)
+- [Nervos Foundation](https://www.nervos.org/)
 - [Summa](https://summa.one)
 - [Cross Chain Group](https://crosschain.group/)
 ----------

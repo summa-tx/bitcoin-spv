@@ -185,8 +185,8 @@ describe('BTCUtils', () => {
       );
       assert(false, 'expected an error');
     } catch (e) {
-      const errorMessage = extractInputAtIndexError[0].jsError;
-      assert.include(e.message, errorMessage);
+      const { jsError } = extractInputAtIndexError[0];
+      assert.include(e.message, jsError);
     }
   });
 
