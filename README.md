@@ -42,6 +42,24 @@ recommend a specific security model. Any SPV verification involves complex
 security assumptions. Please seek external review for your design before
 building with these libraries.
 
+### A note about versioning
+
+Implementations are versioned separately. I.e. there is no consistent feature
+set for a given version number. Wherever possible we use SemVer. Because go's
+versioning system is ridiculous, all releases are minor bumps, even when they
+should be major bumps.
+
+This may change in future releases.
+
+At time of writing the following versions are roughly equivalent:
+- Go v1.4.0
+- JS v4.0.0
+- rust v3.0.0
+- py v3.0.0
+
+Versions older than these have incompatible JSON Proof and Header formats.
+
+
 ### Bitcoin Endianness Gotchas
 Block explorers tend to show txids and merkle roots in big-endian (BE) format.
 Most human-facing apps do this as well. However, due to Satoshi's inscrutable
