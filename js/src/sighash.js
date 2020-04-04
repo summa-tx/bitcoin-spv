@@ -41,9 +41,9 @@ export const U32_MAX = new Uint8Array([0xff, 0xff, 0xff, 0xff]);
  */
 
 /**
- * 
+ *
  * Validates a flag
- * 
+ *
  * @param {number}      flag The sighash flag
  * @returns {boolean}   True if the flag is valid
  */
@@ -68,7 +68,6 @@ export function parseVin(vin) {
   return inputs;
 }
 
-// returns an array of uint8arrays.
 /**
  *
  * Parses a vout into an array of outputs
@@ -88,13 +87,13 @@ export function parseVout(vout) {
 /**
  *
  * Hashes prevouts according to BIP143 semantics.
- * 
+ *
  * For BIP143 (Witness and Compatibility sighash) documentation, see here:
  * - https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
  *
  * @param {array}         inputs An array of inputs (type Uint8Array)
  * @param {number}        flag The sighash flag
- * @returns {Uint8Array}  The hash of the Prevouts
+ * @returns {Uint8Array}  BIP143 hashPrevouts
  */
 export function hashPrevouts(inputs, flag) {
   if ((flag & 0x80) === 0x80) {
@@ -110,7 +109,7 @@ export function hashPrevouts(inputs, flag) {
 /**
  *
  * Hashes sequence according to BIP143 semantics.
- * 
+ *
  * For BIP143 (Witness and Compatibility sighash) documentation, see here:
  * - https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
  *
@@ -131,7 +130,7 @@ export function hashSequence(inputs, flag) {
 /**
  *
  * Hashes outputs according to BIP143 semantics.
- * 
+ *
  * For BIP143 (Witness and Compatibility sighash) documentation, see here:
  * - https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
  *
@@ -188,11 +187,10 @@ export function possibleRelativeLock(inputs, version) {
   return false;
 }
 
-// TODO: make typedef for tx
 /**
  *
  * Calculates sighash
- * 
+ *
  * @dev All args are deserialized
  *
  * @param {tx}            tx The tx
