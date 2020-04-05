@@ -248,28 +248,35 @@ int main() {
     return ERROR_WRONG_LISTING;
   }
 
-  // load the first output
-  uint8_t out_lock_hash[32] = {0};
-  uint64_t out_lock_hash_len = 32;
+  // load the first output lock
+  uint8_t out_lock_hash[SCRIPT_SIZE] = {0};
+  uint64_t out_lock_hash_len = SCRIPT_SIZE;
   int lock_hash_load_ret =
       ckb_load_cell_by_field(out_lock_hash, &out_lock_hash_len,
                              0,  // offset
                              0,  // index
-                             CKB_SOURCE_OUTPUT, CKB_CELL_FIELD_LOCK_HASH);
+                             CKB_SOURCE_OUTPUT, CKB_CELL_FIELD_LOCK);
 
   if (lock_hash_load_ret != CKB_SUCCESS) {
     return lock_hash_load_ret;
   }
 
-  // check that this output pays the right person
-  const_view_t payee = VIEW_FROM_ARR(out_lock_hash);
+  // parse the code hash from the lock
+  mol_seg_t output_script;
+  output_script.ptr = (uint8_t *)out_lock_hash;
+  output_script.size = out_lock_hash_len;
+  if (MolReader_Script_verify(&output_script, false) != MOL_OK) {
+    return ERROR_ENCODING;
+  }
 
+  mol_seg_t payee = MolReader_Script_get_code_hash(&output_script);
+
+  // check that this output pays the right person
   const_view_t second_output = btcspv_extract_output_at_index(&vout, 1);
   const_view_t expected_payee = btcspv_extract_op_return_data(&second_output);
 
-  // THIS CHECK FAILS BECAUSE out_lock_hash IS WEIRD
   uint32_t comparison_len = 20; // NB: BAD HACKS. Don't do in prod
-  if (memcmp(payee.loc, expected_payee.loc, comparison_len) != 0) {
+  if (memcmp(payee.ptr, expected_payee.loc, comparison_len) != 0) {
     return ERROR_WRONG_PAYEE;
   }
 

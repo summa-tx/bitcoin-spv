@@ -4,7 +4,7 @@ CFLAGS+=-Wall -Werror
 CFLAGS+=-fprofile-arcs -ftest-coverage
 LIBS=$(shell pkg-config --cflags --libs check)
 
-all: clean test sort coverage # risc risc-test
+all: clean test sort coverage risc risc-test
 
 # add new test executable prerequesites here, then execute them
 test: build/check_btcspv
