@@ -5,6 +5,17 @@ from riemann import tx
 from btcspv.types import RelayHeader, SPVProof
 
 
+def hex_deser(h: str) -> bytes:
+    body = h
+    if h[:2] == '0x':
+        body = h[2:]
+    return bytes.fromhex(body)
+
+
+def hex_ser(b: bytes) -> str:
+    return f'0x{b.hex()}'
+
+
 def dict_from_relay_header(r: RelayHeader) -> dict:
     '''
     Args:
@@ -13,11 +24,11 @@ def dict_from_relay_header(r: RelayHeader) -> dict:
         (dict): A dictionary representing the RelayHeader with serialized keys
     '''
     return {
-        'raw': f"0x{r['raw'].hex()}",
-        'hash': f"0x{r['hash'].hex()}",
+        'raw': hex_ser(r['raw']),
+        'hash': hex_ser(r['hash']),
         'height': r['height'],
-        'prevhash': f"0x{r['prevhash'].hex()}",
-        'merkle_root': f"0x{r['merkle_root'].hex()}",
+        'prevhash': hex_ser(r['prevhash']),
+        'merkle_root': hex_ser(r['merkle_root']),
     }
 
 
@@ -39,11 +50,11 @@ def dict_to_relay_header(d: dict) -> RelayHeader:
         (RelayHeader): The RelayHeader, a TypedDict with deserialized keys
     '''
     return RelayHeader(
-        raw=bytes.fromhex(d['raw'][2:]),
-        hash=bytes.fromhex(d['hash'][2:]),
+        raw=hex_deser(d['raw']),
+        hash=hex_deser(d['hash']),
         height=d['height'],
-        prevhash=bytes.fromhex(d['prevhash'][2:]),
-        merkle_root=bytes.fromhex(d['merkle_root'][2:]),
+        prevhash=hex_deser(d['prevhash']),
+        merkle_root=hex_deser(d['merkle_root'])
     )
 
 
@@ -65,13 +76,13 @@ def dict_from_spv_proof(s: SPVProof) -> dict:
         (dict): A dictionary representing the SPVProof with serialized keys
     '''
     return {
-        'version': f"0x{s['version'].hex()}",
-        'vin': f"0x{s['vin'].hex()}",
-        'vout': f"0x{s['vout'].hex()}",
-        'locktime': f"0x{s['locktime'].hex()}",
-        'tx_id': f"0x{s['tx_id'].hex()}",
+        'version': hex_ser(s['version']),
+        'vin': hex_ser(s['vin']),
+        'vout': hex_ser(s['vout']),
+        'locktime': hex_ser(s['locktime']),
+        'tx_id': hex_ser(s['tx_id']),
         'index': s['index'],
-        'intermediate_nodes': f"0x{s['intermediate_nodes'].hex()}",
+        'intermediate_nodes': hex_ser(s['intermediate_nodes']),
         'confirming_header': dict_from_relay_header(s['confirming_header'])
     }
 
@@ -93,16 +104,21 @@ def dict_to_spv_proof(d: dict) -> SPVProof:
     Returns:
         (SPVProof): The SPVProof, a TypedDict with deserialized keys
     '''
-    t = tx.Tx.from_hex(
-        f'{d["version"][2:]}{d["vin"][2:]}{d["vout"][2:]}{d["locktime"][2:]}')
+
+    t = tx.Tx.from_bytes(
+        hex_deser(d['version'])
+        + hex_deser(d['vin'])
+        + hex_deser(d['vout'])
+        + hex_deser(d['locktime'])
+    )
     return SPVProof(
         tx=t,
-        version=bytes.fromhex(d['version'][2:]),
-        vin=bytes.fromhex(d['vin'][2:]),
-        vout=bytes.fromhex(d['vout'][2:]),
-        locktime=bytes.fromhex(d['locktime'][2:]),
-        tx_id=bytes.fromhex(d['tx_id'][2:]),
-        intermediate_nodes=bytes.fromhex(d['intermediate_nodes'][2:]),
+        version=hex_deser(d['version']),
+        vin=hex_deser(d['vin']),
+        vout=hex_deser(d['vout']),
+        locktime=hex_deser(d['locktime']),
+        tx_id=hex_deser(d['tx_id']),
+        intermediate_nodes=hex_deser(d['intermediate_nodes']),
         index=d['index'],
         confirming_header=dict_to_relay_header(d['confirming_header'])
     )

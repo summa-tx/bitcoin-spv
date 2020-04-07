@@ -1,5 +1,7 @@
 from riemann import utils as rutils
 
+from btcspv.types import SPVProof
+
 
 def verify_proof(proof: bytes, index: int) -> bool:
     '''
@@ -37,3 +39,10 @@ def verify_proof(proof: bytes, index: int) -> bool:
             current = rutils.hash256(current + next)
         idx = idx >> 1
     return current == root
+
+
+def verify_spv_proof(proof: SPVProof) -> bool:
+    merkle = proof['tx_id'] \
+        + proof['intermediate_nodes'] \
+        + proof['confirming_header']['merkle_root']
+    return verify_proof(merkle, proof['index'])
