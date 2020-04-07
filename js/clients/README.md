@@ -82,7 +82,6 @@ const txid =
 //   vout: {String},
 //   locktime: {String},
 //   tx_id: {String},
-//   tx_id_le: {String},
 //   index: {Number},
 //   confirming_header: {Object},
 //   intermediate_nodes: {String}
@@ -102,12 +101,9 @@ const header = client.getHeader(block);
 // {
 //   raw: {String},
 //   hash: {String},
-//   hash_le: {String},
 //   height: {Number},
 //   prevhash: {String},
-//   prevhash_le: {String}
 //   merkle_root: {String},
-//   merkle_root_le: {String}
 // }
 ```
 

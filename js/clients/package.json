@@ -28,12 +28,12 @@
   "license": "LGPLv3",
   "homepage": "https://github.com/summa-tx/bitcoin-spv/js/clients/",
   "devDependencies": {
-    "chai": "4.2.0",
+    "chai": "^4.2.0",
     "eslint": "5.16.0",
     "eslint-config-airbnb-base": "13.2.0",
     "eslint-plugin-import": "2.18.2",
     "esm": "3.2.25",
-    "jest": "24.8.0",
+    "jest": "^24.8.0",
     "mocha": "6.2.0"
   },
   "dependencies": {

@@ -92,8 +92,7 @@ class BcoinClient extends NodeClient {
       vin: txinfo.vin,
       vout: txinfo.vout,
       locktime: txinfo.locktime,
-      tx_id: txid,
-      tx_id_le: reverse(txid),
+      tx_id: reverse(txid),
       index,
       confirming_header: header,
       intermediate_nodes: path
@@ -115,13 +114,10 @@ class BcoinClient extends NodeClient {
 
     return {
       raw: hex,
-      hash: json.hash,
-      hash_le: reverse(json.hash),
+      hash: reverse(json.hash),
       height: typeof block === 'number' ? block : json.height,
-      prevhash: json.prevBlock,
-      prevhash_le: reverse(json.prevBlock),
-      merkle_root: json.merkleRoot,
-      merkle_root_le: reverse(json.merkleRoot)
+      prevhash: reverse(json.prevBlock),
+      merkle_root: reverse(json.merkleRoot),
     };
   }
 
