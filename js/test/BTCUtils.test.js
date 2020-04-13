@@ -260,14 +260,16 @@ describe('BTCUtils', () => {
       assert.isTrue(arraysAreEqual);
     }
 
-    try {
-      BTCUtils.extractOutputAtIndex(
-        extractOutputAtIndexError[2].input.vout,
-        extractOutputAtIndexError[2].input.index
-      );
-      assert(false, 'Expected an error');
-    } catch (e) {
-      assert.include(e.message, extractOutputAtIndexError[2].jsError);
+    for (let i = 0; i < extractOutputAtIndexError.length; i += 1) {
+      try {
+        BTCUtils.extractOutputAtIndex(
+          extractOutputAtIndexError[i].input.vout,
+          extractOutputAtIndexError[i].input.index
+        );
+        assert(false, 'Expected an error');
+      } catch (e) {
+        assert.include(e.message, extractOutputAtIndexError[i].jsError);
+      }
     }
   });
 
