@@ -1,9 +1,4 @@
-extern crate num;
-extern crate num_bigint as bigint;
-extern crate ripemd160;
-extern crate sha2;
-
-use bigint::BigUint;
+use num::bigint::BigUint;
 use num::pow::Pow;
 use ripemd160::{Digest, Ripemd160};
 use sha2::Sha256;
@@ -32,6 +27,10 @@ pub fn determine_var_int_data_length(flag: u8) -> u8 {
 /// # Arguments
 ///
 /// * `b` - A byte-string starting with a VarInt
+///
+/// # Returns
+///
+/// * (length, number) - the length of the data in bytes, and the number it represents
 pub fn parse_var_int(b: &[u8]) -> Result<(usize, usize), SPVError> {
     let length = determine_var_int_data_length(b[0]) as usize;
 
@@ -62,9 +61,7 @@ pub fn hash160(preimage: &[u8]) -> Hash160Digest {
     let mut rmd = Ripemd160::new();
     rmd.input(digest);
 
-    let mut ret = [0; 20];
-    ret.copy_from_slice(&rmd.result()[..]);
-    ret
+    rmd.result().into()
 }
 
 /// Implements bitcoin's hash256 (double sha2).
@@ -82,10 +79,11 @@ pub fn hash256(preimages: &[&[u8]]) -> Hash256Digest {
 
     let mut second_sha = Sha256::new();
     second_sha.input(digest);
+    second_sha.result().into()
 
-    let mut ret = [0; 32];
-    ret.copy_from_slice(&second_sha.result()[..]);
-    ret
+    // let mut ret = [0; 32];
+    // ret.copy_from_slice(&second_sha.result()[..]);
+    // ret
 }
 
 //
@@ -182,7 +180,7 @@ pub fn extract_sequence_le_legacy(tx_in: &[u8]) -> Result<&[u8], SPVError> {
 ///
 /// * `tx_in` - The LEGACY input
 pub fn extract_sequence_legacy(tx_in: &[u8]) -> Result<u32, SPVError> {
-    let mut arr: [u8; 4] = [0, 0, 0, 0];
+    let mut arr: [u8; 4] = [0u8; 4];
     let b = extract_sequence_le_legacy(tx_in)?;
     arr.copy_from_slice(&b[..]);
     Ok(u32::from_le_bytes(arr))
@@ -221,7 +219,7 @@ pub fn extract_sequence_le_witness(tx_in: &[u8]) -> &[u8] {
 ///
 /// * `tx_in` - The WITNESS input
 pub fn extract_sequence_witness(tx_in: &[u8]) -> u32 {
-    let mut arr: [u8; 4] = [0, 0, 0, 0];
+    let mut arr: [u8; 4] = [0u8; 4];
     let b = extract_sequence_le_witness(tx_in);
     arr.copy_from_slice(&b[..]);
     u32::from_le_bytes(arr)
@@ -264,7 +262,7 @@ pub fn extract_tx_index_le(tx_in: &[u8]) -> &[u8] {
 ///
 /// * `tx_in` - The input
 pub fn extract_tx_index(tx_in: &[u8]) -> u32 {
-    let mut arr: [u8; 4] = [0, 0, 0, 0];
+    let mut arr: [u8; 4] = [0u8; 4];
     let b = extract_tx_index_le(tx_in);
     arr.copy_from_slice(&b[..]);
     u32::from_le_bytes(arr)
@@ -372,15 +370,14 @@ pub fn extract_value(tx_out: &[u8]) -> u64 {
 ///
 /// * Errors if the op return output is malformatted
 pub fn extract_op_return_data(tx_out: &[u8]) -> Result<&[u8], SPVError> {
-    match tx_out[9] {
-        0x6a => {
-            let data_len = tx_out[10] as u64;
-            if (data_len + 8 + 3) as usize > tx_out.len() {
-                return Err(SPVError::ReadOverrun);
-            }
-            Ok(&tx_out[11..11 + data_len as usize])
+    if tx_out[9] == 0x6a {
+        let data_len = tx_out[10] as u64;
+        if (data_len + 8 + 3) as usize > tx_out.len() {
+            return Err(SPVError::ReadOverrun);
         }
-        _ => Err(SPVError::MalformattedOpReturnOutput),
+        Ok(&tx_out[11..11 + data_len as usize])
+    } else {
+        Err(SPVError::MalformattedOpReturnOutput)
     }
 }
 
@@ -524,7 +521,9 @@ pub fn extract_merkle_root_le(header: RawHeader) -> Hash256Digest {
 /// * `header` - An 80-byte Bitcoin header
 pub fn extract_target(header: RawHeader) -> BigUint {
     let mantissa = BigUint::from_bytes_le(&header[72..75]);
-    let exponent = header[75] - 3 as u8;
+    // We use saturating here to avoid panicking.
+    // This is safe because it saturates at `0`, which gives an unreachable target of `1`
+    let exponent = header[75].saturating_sub(3);
     let offset = BigUint::from(256 as u64).pow(exponent);
 
     mantissa * offset
@@ -662,12 +661,8 @@ pub fn retarget_algorithm(
     let upper_bound = retarget_period * 4;
 
     let mut elapsed_time = second_timestamp - first_timestamp;
-
-    if elapsed_time > upper_bound {
-        elapsed_time = upper_bound;
-    } else if elapsed_time < lower_bound {
-        elapsed_time = lower_bound;
-    }
+    elapsed_time = core::cmp::min(upper_bound, elapsed_time);
+    elapsed_time = core::cmp::max(lower_bound, elapsed_time);
 
     previous_target * elapsed_time / retarget_period
 }
@@ -675,7 +670,7 @@ pub fn retarget_algorithm(
 #[cfg(test)]
 #[cfg_attr(tarpaulin, skip)]
 mod tests {
-    use bigint::BigUint;
+    use num::bigint::BigUint;
     extern crate std;
 
     use std::{println, vec};

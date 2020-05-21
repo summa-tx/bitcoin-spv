@@ -70,7 +70,6 @@ pub mod test_utils {
 
     use bigint::BigUint;
     use serde::Deserialize;
-    use serde_json;
     use std::fs::File;
     use std::io::Read;
     use std::panic;

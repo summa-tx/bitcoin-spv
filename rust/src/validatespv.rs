@@ -1,9 +1,6 @@
-extern crate num_bigint as bigint;
+use num::bigint::BigUint;
 
-use bigint::BigUint;
-
-use crate::btcspv;
-use crate::types::{Hash256Digest, RawHeader, SPVError};
+use crate::{btcspv, types::{Hash256Digest, RawHeader, SPVError}};
 
 /// Evaluates a Bitcoin merkle inclusion proof.
 /// Note that `index` is not a reliable indicator of location within a block.
