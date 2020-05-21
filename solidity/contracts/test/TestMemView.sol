@@ -100,6 +100,8 @@ contract TestMemView {
 
     function slicing() public pure {
         // 76 bytes - 3 words
+
+        // solium-disable-next-line max-len
         bytes memory one = hex"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b";
 
         bytes32 v1 = TypedMemView.ref(one, 1);

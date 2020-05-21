@@ -46,16 +46,16 @@ library BTCUtils {
     /// @param _b   A byte-string starting with a VarInt
     /// @return     number of bytes in the encoding (not counting the tag), the encoded int
     function parseVarInt(bytes memory _b) internal pure returns (uint256, uint256) {
-      uint8 _dataLen = determineVarIntDataLength(_b);
+        uint8 _dataLen = determineVarIntDataLength(_b);
 
-      if (_dataLen == 0) {
-        return (0, uint8(_b[0]));
-      }
-      if (_b.length < 1 + _dataLen) {
-          return (ERR_BAD_ARG, 0);
-      }
-      uint256 _number = bytesToUint(reverseEndianness(_b.slice(1, _dataLen)));
-      return (_dataLen, _number);
+        if (_dataLen == 0) {
+            return (0, uint8(_b[0]));
+        }
+        if (_b.length < 1 + _dataLen) {
+            return (ERR_BAD_ARG, 0);
+        }
+        uint256 _number = bytesToUint(reverseEndianness(_b.slice(1, _dataLen)));
+        return (_dataLen, _number);
     }
 
     /// @notice          Changes the endianness of a byte array
@@ -140,6 +140,7 @@ library BTCUtils {
     /// @param _b        The pre-image
     /// @return          The digest
     function hash256View(bytes memory _b) internal view returns (bytes32 res) {
+        // solium-disable-next-line security/no-inline-assembly
         assembly {
             let ptr := mload(0x40)
             pop(staticcall(gas, 2, add(_b, 32), mload(_b), ptr, 32))
@@ -197,7 +198,7 @@ library BTCUtils {
     /// @return          The length of the script sig
     function extractScriptSigLen(bytes memory _input) internal pure returns (uint256, uint256) {
         if (_input.length < 37) {
-          return (ERR_BAD_ARG, 0);
+            return (ERR_BAD_ARG, 0);
         }
         bytes memory _afterOutpoint = _input.slice(36, _input.length - 36);
 
@@ -217,7 +218,7 @@ library BTCUtils {
         uint256 _scriptSigLen;
         (_varIntDataLen, _scriptSigLen) = extractScriptSigLen(_input);
         if (_varIntDataLen == ERR_BAD_ARG) {
-          return ERR_BAD_ARG;
+            return ERR_BAD_ARG;
         }
 
         return 36 + 1 + _varIntDataLen + _scriptSigLen + 4;
@@ -313,7 +314,7 @@ library BTCUtils {
     /// @return          The length indicated by the prefix, error if invalid length
     function determineOutputLength(bytes memory _output) internal pure returns (uint256) {
         if (_output.length < 9) {
-          return ERR_BAD_ARG;
+            return ERR_BAD_ARG;
         }
         bytes memory _afterValue = _output.slice(8, _output.length - 8);
 
@@ -322,7 +323,7 @@ library BTCUtils {
         (_varIntDataLen, _scriptPubkeyLength) = parseVarInt(_afterValue);
 
         if (_varIntDataLen == ERR_BAD_ARG) {
-          return ERR_BAD_ARG;
+            return ERR_BAD_ARG;
         }
 
         // 8 byte value, 1 byte for tag itself
@@ -406,7 +407,7 @@ library BTCUtils {
         if (uint8(_output.slice(9, 1)[0]) == 0) {
             uint256 _len = uint8(extractOutputScriptLen(_output)[0]);
             if (_len < 2) {
-              return hex"";
+                return hex"";
             }
             _len -= 2;
             // Check for maliciously formatted witness outputs
@@ -461,14 +462,14 @@ library BTCUtils {
         for (uint256 i = 0; i < _nIns; i++) {
             // If we're at the end, but still expect more
             if (_offset >= _vin.length) {
-              return false;
+                return false;
             }
 
             // Grab the next input and determine its length.
             bytes memory _next = _vin.slice(_offset, _vin.length - _offset);
             uint256 _nextLen = determineInputLength(_next);
             if (_nextLen == ERR_BAD_ARG) {
-              return false;
+                return false;
             }
 
             // Increase the offset by that much
@@ -499,7 +500,7 @@ library BTCUtils {
         for (uint256 i = 0; i < _nOuts; i++) {
             // If we're at the end, but still expect more
             if (_offset >= _vout.length) {
-              return false;
+                return false;
             }
 
             // Grab the next output and determine its length.
@@ -507,7 +508,7 @@ library BTCUtils {
             bytes memory _next = _vout.slice(_offset, _vout.length - _offset);
             uint256 _nextLen = determineOutputLength(_next);
             if (_nextLen == ERR_BAD_ARG) {
-              return false;
+                return false;
             }
 
             _offset += _nextLen;
