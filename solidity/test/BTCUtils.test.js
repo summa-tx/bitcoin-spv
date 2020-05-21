@@ -186,7 +186,7 @@ contract('BTCUtils', () => {
   it('extracts the length of the output script', async () => {
     for (let i = 0; i < extractOutputScriptLen.length; i += 1) {
       const res = await instance.extractOutputScriptLen(extractOutputScriptLen[i].input);
-      if (extractOutputScriptLen[i].hasOwnProperty('solOutput')) {
+      if (Object.prototype.hasOwnProperty.call(extractOutputScriptLen[i], 'solOutput')) {
         assert.strictEqual(res, extractOutputScriptLen[i].solOutput);
       } else {
         assert.strictEqual(res, extractOutputScriptLen[i].output);
@@ -414,7 +414,7 @@ contract('BTCUtils', () => {
   it('returns error for invalid VarInts', async () => {
     for (let i = 0; i < parseVarIntError.length; i += 1) {
       const res = await instance.parseVarInt(parseVarIntError[i].input);
-      assert(res[0].eq(new BN("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16)), "did not get error code");
+      assert(res[0].eq(new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)), 'did not get error code');
       assert(res[1].eq(new BN(0, 10)), `got non-0 value: ${res[1].toString()}`);
     }
   });

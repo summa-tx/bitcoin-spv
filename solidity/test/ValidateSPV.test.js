@@ -1,7 +1,6 @@
 /* global artifacts contract describe before it assert */
 /* eslint-disable no-underscore-dangle */
 const BN = require('bn.js');
-const utils = require('./utils');
 
 /* eslint-disable-next-line no-unresolved */
 const vectors = require('./testVectors.json');
