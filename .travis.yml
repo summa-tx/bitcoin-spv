@@ -55,3 +55,15 @@ matrix:
         - make setup
       script:
         - make
+
+    - language: rust
+      rust: stable
+      cache:
+        directories:
+            - ./target
+            - /home/travis/.cargo
+      before_script:
+        - cd rust
+      script:
+        - cargo test
+        - cargo test --no-default-features
