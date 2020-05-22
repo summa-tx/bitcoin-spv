@@ -80,10 +80,6 @@ pub fn hash256(preimages: &[&[u8]]) -> Hash256Digest {
     let mut second_sha = Sha256::new();
     second_sha.input(digest);
     second_sha.result().into()
-
-    // let mut ret = [0; 32];
-    // ret.copy_from_slice(&second_sha.result()[..]);
-    // ret
 }
 
 //
