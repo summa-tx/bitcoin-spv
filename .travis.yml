@@ -40,3 +40,18 @@ matrix:
         - pipenv install --dev
       script:
         - pipenv run test
+
+    - language: rust
+      rust: stable
+      cache:
+        directories:
+            - ./target
+            - /home/travis/.cargo
+      before_install:
+        - cd c
+        - sudo apt-get install build-essential
+        - sudo apt-get install check
+      install:
+        - make setup
+      script:
+        - make
