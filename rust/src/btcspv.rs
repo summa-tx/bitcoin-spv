@@ -670,13 +670,17 @@ pub fn retarget_algorithm(
 #[cfg(test)]
 #[cfg_attr(tarpaulin, skip)]
 mod tests {
-    use num::bigint::BigUint;
     extern crate std;
+    extern crate hex;
 
-    use std::{println, vec};
+    use std::{
+        println,
+        vec,      // The macro
+    };
+
+    use num::bigint::BigUint;
     use super::*;
-    use crate::utils::test_utils;
-    use crate::utils::*;
+    use crate::test_utils::{self, force_deserialize_hex};
 
     #[test]
     fn it_determines_var_int_data_length() {

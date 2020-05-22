@@ -102,9 +102,9 @@ pub fn validate_header_chain(headers: &[u8]) -> Result<BigUint, SPVError> {
 #[cfg(test)]
 #[cfg_attr(tarpaulin, skip)]
 mod tests {
-
+    use crate::test_utils::{self, force_deserialize_hex};
+    
     use super::*;
-    use crate::utils::*;
 
     #[test]
     fn it_verifies_merkle_inclusion_proofs() {

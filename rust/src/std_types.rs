@@ -337,7 +337,7 @@ mod tests {
     };
 
     use super::*;
-    use crate::utils::test_utils;
+    use crate::test_utils;
 
     #[derive(Debug, Deserialize)]
     struct InvalidHeadersCases {
