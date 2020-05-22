@@ -18,9 +18,14 @@ num = "0.2.0"
 num-bigint = "0.2"
 ripemd160 = "0.8.0"
 sha2 = "0.8.0"
-hex = "0.4.2"
+hex = {version = "0.4.2", optional = true}
 serde_json = { version = "1.0", optional = true }
 serde = { version = "1.0.99", features = ["derive"], optional = true }
+
+[dev-dependencies]
+hex = "0.4.2"
+serde_json = { version = "1.0" }
+serde = { version = "1.0.99", features = ["derive"] }
 
 [features]
 default=["std"]

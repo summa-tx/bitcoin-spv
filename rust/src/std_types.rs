@@ -69,11 +69,11 @@ impl PartialEq for BitcoinHeader {
     /// * `self` - The Bitcoin header
     /// * ` other` - The second Bitcoin header
     fn eq(&self, other: &Self) -> bool {
-        (self.raw[..] == other.raw[..]
+        self.raw[..] == other.raw[..]
             && self.hash == other.hash
             && self.height == other.height
             && self.prevhash == other.prevhash
-            && self.merkle_root == other.merkle_root)
+            && self.merkle_root == other.merkle_root
     }
 }
 
@@ -243,11 +243,8 @@ mod internal_ser {
             D: Deserializer<'de>,
         {
             let s: &str = Deserialize::deserialize(deserializer)?;
-            let result = utils::deserialize_hex(s);
-            match result {
-                Ok(v) => Ok(v),
-                Err(e) => Err(serde::de::Error::custom(e.to_string())),
-            }
+            utils::deserialize_hex(s)
+                .map_err(|e| serde::de::Error::custom(e.to_string()))
         }
 
         pub fn serialize<S>(d: &[u8], serializer: S) -> Result<S::Ok, S::Error>
@@ -340,7 +337,7 @@ mod tests {
     };
 
     use super::*;
-    use crate::utils::test_utils;
+    use crate::test_utils;
 
     #[derive(Debug, Deserialize)]
     struct InvalidHeadersCases {

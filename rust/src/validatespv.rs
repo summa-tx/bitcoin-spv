@@ -1,9 +1,6 @@
-extern crate num_bigint as bigint;
+use num::bigint::BigUint;
 
-use bigint::BigUint;
-
-use crate::btcspv;
-use crate::types::{Hash256Digest, RawHeader, SPVError};
+use crate::{btcspv, types::{Hash256Digest, RawHeader, SPVError}};
 
 /// Evaluates a Bitcoin merkle inclusion proof.
 /// Note that `index` is not a reliable indicator of location within a block.
@@ -105,9 +102,9 @@ pub fn validate_header_chain(headers: &[u8]) -> Result<BigUint, SPVError> {
 #[cfg(test)]
 #[cfg_attr(tarpaulin, skip)]
 mod tests {
-
+    use crate::test_utils::{self, force_deserialize_hex};
+    
     use super::*;
-    use crate::utils::*;
 
     #[test]
     fn it_verifies_merkle_inclusion_proofs() {
