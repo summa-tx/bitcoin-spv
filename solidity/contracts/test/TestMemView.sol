@@ -98,7 +98,7 @@ contract TestMemView {
         );
     }
 
-    function slicing() public pure {
+    function slicing() public {
         // 76 bytes - 3 words
 
         // solium-disable-next-line max-len
@@ -150,6 +150,11 @@ contract TestMemView {
         require(
             v1.indexUint(0, 14) == 0x000102030405060708090a0b0c0d,
             "index mismatch 14 byte uint"
+        );
+
+        require(
+            v1.indexLEUint(0, 14) == 0x0d0c0b0a09080706050403020100,
+            "index mismatch 14 byte uint le"
         );
 
         require(
