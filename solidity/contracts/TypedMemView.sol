@@ -50,6 +50,7 @@ library TypedMemView {
     /// Create a mask with the highest `_len` bits set
     function leftMask(uint8 _len) private pure returns (uint256 mask) {
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             mask := sar(
                 sub(_len, 1),
                 0x8000000000000000000000000000000000000000000000000000000000000000
@@ -77,9 +78,10 @@ library TypedMemView {
     /// memory pointer and ensuring that the view's upper bound is less than
     /// that.
     function isValid(bytes32 memView) internal pure returns (bool ret) {
-        if (typeOf(memView) == 0xffff) { return false; }
+        if (typeOf(memView) == 0xffff) {return false;}
         uint256 _end = end(memView);
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             ret := lt(_end, mload(0x40))
         }
     }
@@ -98,6 +100,7 @@ library TypedMemView {
     function build(uint256 _type, uint256 _loc, uint256 _len) internal pure returns (bytes32) {
         uint256 _end = _loc.add(_len);
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             if gt(_end, mload(0x40)) {
                 _end := 0
             }
@@ -124,6 +127,7 @@ library TypedMemView {
 
         uint256 _loc;
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             _loc := add(arr, 0x20)  // our view is of the data, not the struct
         }
 
@@ -134,6 +138,7 @@ library TypedMemView {
     function typeOf(bytes32 memView) internal pure returns (uint16 _type) {
         uint256 _mask = leftMask(16); // first two bytes
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             _type := shr(240, and(memView, _mask)) // shift out lower 30
             }
     }
@@ -197,13 +202,14 @@ library TypedMemView {
     /// This can be immediately cast to a smaller fixed-length byte array.
     /// To automatically cast to an integer, use `indexUint` or `indexInt`.
     function index(bytes32 memView, uint256 _index, uint8 _bytes) internal pure returns (bytes32 result) {
-        if (_bytes == 0) { return bytes32(0); }
+        if (_bytes == 0) {return bytes32(0);}
         require(_index.add(_bytes) <= len(memView), "TypedMemView/index - Overran the view.");
         require(_bytes <= 32, "TypedMemView/index - Attempted to index more than 32 bytes");
         uint8 bitLength = _bytes * 8;
         uint256 _loc = loc(memView);
         uint256 mask = leftMask(bitLength);
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             result := and(mload(add(_loc, _index)), mask)
         }
     }
@@ -230,6 +236,7 @@ library TypedMemView {
         uint256 _loc = loc(memView);
         uint256 _len = len(memView);
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             digest := keccak256(_loc, _len)
         }
     }
@@ -241,6 +248,7 @@ library TypedMemView {
 
         // for cleanliness, avoid growing the free pointer
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             mstore(0x40, copy)
         }
     }
@@ -276,6 +284,7 @@ library TypedMemView {
         uint256 _loc = loc(memView);
         uint256 _len = len(memView);
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             ret := mload(0x40) // load unused pointer to the array
             mstore(0x40, add(add(ret, _footprint), 0x20)) // write new unused pointer
             mstore(ret, _len) // write len of new array (in bytes)

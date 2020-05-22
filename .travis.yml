@@ -1,0 +1,69 @@
+matrix:
+  include:
+    - language: go
+      go: 1.13.1
+      env:
+        - GO111MODULE=on
+      before_script:
+        - cd golang
+        - curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.20.0
+      script:
+        - go test ./btcspv
+
+    - language: node_js
+      node_js: 10.14.2
+      before_script:
+        - cp testVectors.json solidity/test
+        - cd solidity
+        - npm install -g truffle
+        - npm install
+      script:
+        - npm run lint
+        - npm run test
+
+    - language: node_js
+      node_js: 10.14.2
+      before_script:
+        - cd js
+        - npm install
+      script:
+        - npm run lint
+        - npm run test
+
+    - language: python
+      python:
+        - "3.6"
+      before_install:
+        - cd python
+        - pip install pipenv
+      install:
+        - pipenv install --dev
+      script:
+        - pipenv run test
+
+    - language: rust
+      rust: stable
+      cache:
+        directories:
+            - ./target
+            - /home/travis/.cargo
+      before_install:
+        - cd c
+        - sudo apt-get install build-essential
+        - sudo apt-get install check
+      install:
+        - make setup
+      script:
+        - make
+
+    - language: rust
+      rust: stable
+      cache:
+        directories:
+            - ./target
+            - /home/travis/.cargo
+      before_script:
+        - cd rust
+      script:
+        - cargo test
+        - cargo test --no-default-features

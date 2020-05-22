@@ -174,14 +174,14 @@ library CheckBitcoinSigs {
         bytes20 _outputPKH  // 20 byte hash160
     ) internal pure returns (bytes32) {
         return wpkhSpendSighash(
-          _outpoint,
-          _inputPKH,
-          _inputValue,
-          _outputValue,
-          abi.encodePacked(
+            _outpoint,
+            _inputPKH,
+            _inputValue,
+            _outputValue,
+            abi.encodePacked(
               hex"160014",  // wpkh tag
               _outputPKH)
-          );
+            );
     }
 
     /// @notice                 Preserved for API compatibility with older version
@@ -193,13 +193,13 @@ library CheckBitcoinSigs {
     /// @param _outputPKH       the output pubkeyhash (hash160(recipient_pubkey))
     /// @return                 the double-sha256 (hash256) signature hash as defined by bip143
     function oneInputOneOutputSighash(
-      bytes memory _outpoint,  // 36 byte UTXO id
-      bytes20 _inputPKH,  // 20 byte hash160
-      bytes8 _inputValue,  // 8-byte LE
-      bytes8 _outputValue,  // 8-byte LE
-      bytes20 _outputPKH  // 20 byte hash160
+        bytes memory _outpoint,  // 36 byte UTXO id
+        bytes20 _inputPKH,  // 20 byte hash160
+        bytes8 _inputValue,  // 8-byte LE
+        bytes8 _outputValue,  // 8-byte LE
+        bytes20 _outputPKH  // 20 byte hash160
     ) internal pure returns (bytes32) {
-      return wpkhToWpkhSighash(_outpoint, _inputPKH, _inputValue, _outputValue, _outputPKH);
+        return wpkhToWpkhSighash(_outpoint, _inputPKH, _inputValue, _outputValue, _outputPKH);
     }
 
 }
