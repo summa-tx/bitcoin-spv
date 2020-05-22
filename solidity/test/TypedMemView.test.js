@@ -2,7 +2,7 @@
 
 const TypedMemView = artifacts.require('TestMemView');
 
-contract.only('TypedMemView', () => {
+contract('TypedMemView', () => {
   let instance;
 
   describe('#tests', async () => {
