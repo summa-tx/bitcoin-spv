@@ -118,6 +118,13 @@ library TypedMemView {
         require(isType(memView, _expected), "Type assertion failed");
     }
 
+    /// Return an identical view with a different type
+    function castTo(bytes32 memView, uint16 _newType) internal pure returns (bytes32 newView) {
+         // mask out top 16 bits
+         // then | in the new type
+        newView = bytes32((uint256(memView) & rightMask(240)) | (uint256(_newType) << 240));
+    }
+
     /// Instantiate a new memory view. This should generally not be called
     /// directly. Prefer `ref` wherever possible.
     function build(uint256 _type, uint256 _loc, uint256 _len) internal pure returns (bytes32) {
@@ -278,6 +285,28 @@ library TypedMemView {
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
             mstore(0x40, copy)
+        }
+    }
+
+    /// @notice          Implements bitcoin's hash160 (rmd160(sha2()))
+    /// @param memView   The pre-image
+    /// @return          The digest
+    function hash160(bytes32 memView) internal pure returns (bytes20 digest) {
+        return ripemd160(abi.encodePacked(sha2(memView)));
+    }
+
+    /// @notice          Implements bitcoin's hash256 (double sha2)
+    /// @dev             abi.encodePacked changes the return to bytes instead of bytes32
+    /// @param memView   A view of the preimage
+    /// @return          The digest
+    function hash256(bytes32 memView) internal view returns (bytes32 digest) {
+        uint256 _loc = loc(memView);
+        uint256 _len = len(memView);
+        assembly {
+            let ptr := mload(0x40)
+            pop(staticcall(gas, 2, _loc, _len, ptr, 0x20)) // sha2 #1
+            pop(staticcall(gas, 2, ptr, 0x20, ptr, 0x20)) // sha2 #2
+            digest := mload(ptr)
         }
     }
 

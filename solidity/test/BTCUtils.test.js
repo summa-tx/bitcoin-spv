@@ -7,8 +7,6 @@ const vectors = require('./testVectors.json');
 const BTCUtilsDelegate = artifacts.require('BTCUtilsTest');
 
 const {
-  lastBytes,
-  lastBytesError,
   reverseEndianness,
   bytesToUint,
   hash160,
@@ -56,26 +54,6 @@ contract('BTCUtils', () => {
 
   before(async () => {
     instance = await BTCUtilsDelegate.new();
-  });
-
-  it('gets the last bytes correctly', async () => {
-    for (let i = 0; i < lastBytes.length; i += 1) {
-      const res = await instance.lastBytes(lastBytes[i].input.bytes, lastBytes[i].input.num);
-      assert.strictEqual(res, lastBytes[i].output);
-    }
-  });
-
-  it('errors if slice is larger than the bytearray', async () => {
-    for (let i = 0; i < lastBytesError.length; i += 1) {
-      try {
-        await instance.lastBytes(lastBytesError[i].input.bytes, lastBytesError[i].input.num);
-        assert(false, 'expected an errror');
-      } catch (e) {
-        const err = (lastBytesError[i].solidityError
-          ? lastBytesError[i].solidityError : lastBytesError[i].errorMessage);
-        assert.include(e.message, err);
-      }
-    }
   });
 
   it('reverses endianness', async () => {

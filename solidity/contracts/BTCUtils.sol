@@ -109,16 +109,6 @@ library BTCUtils {
         return _number;
     }
 
-    /// @notice          Get the last _num bytes from a byte array
-    /// @param _b        The byte array to slice
-    /// @param _num      The number of bytes to extract from the end
-    /// @return          The last _num bytes of _b
-    function lastBytes(bytes memory _b, uint256 _num) internal pure returns (bytes memory) {
-        uint256 _start = _b.length.sub(_num);
-
-        return _b.slice(_start, _num);
-    }
-
     /// @notice          Implements bitcoin's hash160 (rmd160(sha2()))
     /// @dev             abi.encodePacked changes the return to bytes instead of bytes32
     /// @param _b        The pre-image
