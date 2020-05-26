@@ -68,6 +68,7 @@ library TypedMemView {
     /// Create a mask with the lowest `_len` bits set
     function rightMask(uint8 _len) private pure returns (uint256 mask) {
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             mask := sub(shr(0x1ffffff, _len), 1)
         }
     }
@@ -125,6 +126,7 @@ library TypedMemView {
     function castTo(bytes29 memView, uint40 _newType) internal pure returns (bytes29 newView) {
         // then | in the new type
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             // shift off the top 5 bytes
             newView := or(newView, shr(40, shl(40, memView)))
             newView := or(newView, shl(216, _newType))
@@ -146,6 +148,7 @@ library TypedMemView {
         }
 
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             newView := shl(96, or(newView, _type))
             newView := shl(96, or(newView, _loc))
             newView := shl(24, or(newView, _len))
@@ -183,8 +186,12 @@ library TypedMemView {
     }
 
     /// Return the memory address of the underlying bytes
-    function loc(bytes29 memView) internal pure returns (uint96) {
-        return uint96((uint232(memView) >> TWELVE_BYTES) & LOW_12_MASK);
+    function loc(bytes29 memView) internal pure returns (uint96 _loc) {
+        uint256 _mask = LOW_12_MASK;  // assembly can't use globals
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            _loc := and(shr(120, memView), _mask)
+        }
     }
 
     /// The number of memory words this memory view occupies, rounded up
@@ -198,8 +205,12 @@ library TypedMemView {
     }
 
     /// The number of bytes of the view
-    function len(bytes29 memView) internal pure returns (uint96) {
-        return uint96(uint232(memView) & LOW_12_MASK);
+    function len(bytes29 memView) internal pure returns (uint96 _len) {
+        uint256 _mask = LOW_12_MASK;  // assembly can't use globals
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            _len := and(shr(24, memView), _mask)
+        }
     }
 
     /// Returns the endpoint of the `memView`
@@ -307,6 +318,7 @@ library TypedMemView {
         uint256 _loc = loc(memView);
         uint256 _len = len(memView);
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             let ptr := mload(0x40)
             pop(staticcall(gas, 2, _loc, _len, ptr, 0x20)) // sha2 #1
             pop(staticcall(gas, 2, ptr, 0x20, ptr, 0x20)) // sha2 #2
