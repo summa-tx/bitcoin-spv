@@ -7,7 +7,7 @@ import {TypedMemView} from "./TypedMemView.sol";
 import {SafeMath} from "./SafeMath.sol";
 
 library BTCUtils {
-    using TypedMemView for bytes32;
+    using TypedMemView for bytes29;
     using SafeMath for uint256;
 
     // The target at minimum Difficulty. Also the target of the genesis block
@@ -41,12 +41,12 @@ library BTCUtils {
     }
 
     // TODO: any way to bubble up more info?
-    modifier typeAssert(bytes32 memView, BTCTypes t) {
-        require(memView.typeOf() == uint16(t), "type assertion failed");
+    modifier typeAssert(bytes29 memView, BTCTypes t) {
+        require(memView.typeOf() == uint40(t), "type assertion failed");
         _;
     }
 
-    function indexCompactInt(bytes32 memView, uint256 _index) internal pure returns (uint64 number) {
+    function indexCompactInt(bytes29 memView, uint256 _index) internal pure returns (uint64 number) {
         uint256 flag = memView.indexUint(_index, 1);
         uint256 payload;
         if (flag <= 0xfc) {
@@ -73,94 +73,94 @@ library BTCUtils {
         }
     }
 
-    function txidLE(bytes32 _outpoint) internal pure typeAssert(_outpoint, BTCTypes.Outpoint) returns (bytes32) {
+    function txidLE(bytes29 _outpoint) internal pure typeAssert(_outpoint, BTCTypes.Outpoint) returns (bytes32) {
         return _outpoint.index(0, 32);
     }
 
-    function outpointIdx(bytes32 _outpoint) internal pure typeAssert(_outpoint, BTCTypes.Outpoint) returns (uint32) {
+    function outpointIdx(bytes29 _outpoint) internal pure typeAssert(_outpoint, BTCTypes.Outpoint) returns (uint32) {
         return uint32(_outpoint.indexLEUint(32, 4));
     }
 
-    function outpoint(bytes32 _input) internal pure typeAssert(_input, BTCTypes.TxIn) returns (bytes32) {
-        return _input.slice(0, 36, uint16(BTCTypes.Outpoint));
+    function outpoint(bytes29 _input) internal pure typeAssert(_input, BTCTypes.TxIn) returns (bytes29) {
+        return _input.slice(0, 36, uint40(BTCTypes.Outpoint));
     }
 
-    function scriptSig(bytes32 _input) internal pure typeAssert(_input, BTCTypes.TxIn) returns (bytes32) {
+    function scriptSig(bytes29 _input) internal pure typeAssert(_input, BTCTypes.TxIn) returns (bytes29) {
         uint64 scriptLength = indexCompactInt(_input, 36);
-        return _input.slice(36, compactIntLength(scriptLength) + scriptLength, uint16(BTCTypes.ScriptSig));
+        return _input.slice(36, compactIntLength(scriptLength) + scriptLength, uint40(BTCTypes.ScriptSig));
     }
 
-    function sequence(bytes32 _input) internal pure typeAssert(_input, BTCTypes.TxIn) returns (uint32) {
+    function sequence(bytes29 _input) internal pure typeAssert(_input, BTCTypes.TxIn) returns (uint32) {
         uint64 scriptLength = indexCompactInt(_input, 36);
         uint256 scriptEnd = 36 + compactIntLength(scriptLength) + scriptLength;
         return uint32(_input.indexLEUint(scriptEnd, 4));
     }
 
-    function inputLength(bytes32 _inputs) internal pure typeAssert(_inputs, BTCTypes.IntermediateTxIns) returns (uint256) {
+    function inputLength(bytes29 _inputs) internal pure typeAssert(_inputs, BTCTypes.IntermediateTxIns) returns (uint256) {
         uint64 scriptLength = indexCompactInt(_inputs, 36);
         return uint256(compactIntLength(scriptLength)) + uint256(scriptLength) + 36 + 4;
     }
 
-    function indexVin(bytes32 _vin, uint64 _index) internal pure typeAssert(_vin, BTCTypes.Vin) returns (bytes32) {
+    function indexVin(bytes29 _vin, uint64 _index) internal pure typeAssert(_vin, BTCTypes.Vin) returns (bytes29) {
         uint64 _vinLen = indexCompactInt(_vin, 0);
         require(_index < _vinLen, "Vin read overrun");
 
         uint256 _offset = uint256(compactIntLength(_vinLen));
-        bytes32 _remaining;
+        bytes29 _remaining;
         for (uint256 _i = 0; _i < _index; _i ++) {
-            _remaining = _vin.postfix(_vinLen - _offset, uint16(BTCTypes.IntermediateTxIns));
+            _remaining = _vin.postfix(_vinLen - _offset, uint40(BTCTypes.IntermediateTxIns));
             _offset += inputLength(_remaining);
         }
 
-        _remaining = _vin.postfix(_vinLen - _offset, uint16(BTCTypes.IntermediateTxIns));
+        _remaining = _vin.postfix(_vinLen - _offset, uint40(BTCTypes.IntermediateTxIns));
         uint256 _len = inputLength(_remaining);
-        return _vin.slice(_offset, _len, uint16(BTCTypes.TxIn));
+        return _vin.slice(_offset, _len, uint40(BTCTypes.TxIn));
     }
 
-    function valueBytes(bytes32 _output) internal pure typeAssert(_output, BTCTypes.TxOut) returns (bytes8) {
+    function valueBytes(bytes29 _output) internal pure typeAssert(_output, BTCTypes.TxOut) returns (bytes8) {
         return bytes8(_output.index(0, 8));
     }
 
-    function value(bytes32 _output) internal pure typeAssert(_output, BTCTypes.TxOut) returns (uint64) {
+    function value(bytes29 _output) internal pure typeAssert(_output, BTCTypes.TxOut) returns (uint64) {
         return uint64(_output.indexLEUint(0, 8));
     }
 
-    function scriptPubkey(bytes32 _output) internal pure typeAssert(_output, BTCTypes.TxOut) returns (bytes32) {
+    function scriptPubkey(bytes29 _output) internal pure typeAssert(_output, BTCTypes.TxOut) returns (bytes29) {
         uint64 scriptLength = indexCompactInt(_output, 8);
-        return _output.slice(8, compactIntLength(scriptLength) + scriptLength, uint16(BTCTypes.ScriptPubkey));
+        return _output.slice(8, compactIntLength(scriptLength) + scriptLength, uint40(BTCTypes.ScriptPubkey));
     }
 
-    function outputLength(bytes32 _outputs) internal pure typeAssert(_outputs, BTCTypes.IntermediateTxOuts) returns (uint256) {
+    function outputLength(bytes29 _outputs) internal pure typeAssert(_outputs, BTCTypes.IntermediateTxOuts) returns (uint256) {
         uint64 scriptLength = indexCompactInt(_outputs, 8);
         return uint256(compactIntLength(scriptLength)) + uint256(scriptLength) + 8;
     }
 
-    function indexVout(bytes32 _vout, uint64 _index) internal pure typeAssert(_vout, BTCTypes.Vout) returns (bytes32) {
+    function indexVout(bytes29 _vout, uint64 _index) internal pure typeAssert(_vout, BTCTypes.Vout) returns (bytes29) {
         uint64 _voutLen = indexCompactInt(_vout, 0);
         require(_index < _voutLen, "Vout read overrun");
 
         uint256 _offset = uint256(compactIntLength(_voutLen));
-        bytes32 _remaining;
+        bytes29 _remaining;
         for (uint256 _i = 0; _i < _index; _i ++) {
-            _remaining = _vout.postfix(_voutLen - _offset, uint16(BTCTypes.IntermediateTxOuts));
+            _remaining = _vout.postfix(_voutLen - _offset, uint40(BTCTypes.IntermediateTxOuts));
             _offset += outputLength(_remaining);
         }
 
-        _remaining = _vout.postfix(_voutLen - _offset, uint16(BTCTypes.IntermediateTxOuts));
+        _remaining = _vout.postfix(_voutLen - _offset, uint40(BTCTypes.IntermediateTxOuts));
         uint256 _len = outputLength(_remaining);
-        return _vout.slice(_offset, _len, uint16(BTCTypes.TxOut));
+        return _vout.slice(_offset, _len, uint40(BTCTypes.TxOut));
     }
 
-    function opReturnPayload(bytes32 _spk) internal pure typeAssert(_spk, BTCTypes.ScriptPubkey) returns (bytes32) {
+    function opReturnPayload(bytes29 _spk) internal pure typeAssert(_spk, BTCTypes.ScriptPubkey) returns (bytes29) {
         uint64 _bodyLength = indexCompactInt(_spk, 0);
         uint64 _payloadLen = uint64(_spk.indexUint(2, 1));
         if (_bodyLength > 77 || _bodyLength < 4 || _spk.indexUint(1, 1) != 0x6a || _spk.indexUint(2, 1) != _bodyLength - 2) {
             return TypedMemView.nullView();
         }
-        return _spk.slice(3, _payloadLen, uint16(BTCTypes.OpReturnPayload));
+        return _spk.slice(3, _payloadLen, uint40(BTCTypes.OpReturnPayload));
     }
 
-    function payload(bytes32 _spk) internal pure typeAssert(_spk, BTCTypes.ScriptPubkey) returns (bytes32) {
+    function payload(bytes29 _spk) internal pure typeAssert(_spk, BTCTypes.ScriptPubkey) returns (bytes29) {
         uint256 _spkLength = _spk.len();
         uint256 _bodyLength = _spk.indexUint(0, 1);
         if (_bodyLength + 1 != _spkLength) {
@@ -169,9 +169,9 @@ library BTCUtils {
 
         // Legacy
         if (_bodyLength == 0x19 && _spk.indexUint(0, 4) == 0x1976a914 && _spk.indexUint(_spkLength - 2, 2) == 0x88ac) {
-            return _spk.slice(4, 20, uint16(BTCTypes.PKH));
+            return _spk.slice(4, 20, uint40(BTCTypes.PKH));
         } else if (_bodyLength == 0x16 && _spk.indexUint(0, 3) == 0x17a914 && _spk.indexUint(_spkLength - 1, 1) == 0x87) {
-            return _spk.slice(3, 20, uint16(BTCTypes.SH));
+            return _spk.slice(3, 20, uint40(BTCTypes.SH));
         }
 
         // Witness v0
@@ -180,14 +180,14 @@ library BTCUtils {
             if (_bodyLength != 0x22 && _bodyLength != 0x16 || _payloadLen != _bodyLength - 2) {
                 return TypedMemView.nullView();
             }
-            uint16 newType = uint16(_payloadLen == 0x20 ? BTCTypes.WSH : BTCTypes.WPKH);
+            uint40 newType = uint40(_payloadLen == 0x20 ? BTCTypes.WSH : BTCTypes.WPKH);
             return _spk.slice(3, _payloadLen, newType);
         }
 
         return TypedMemView.nullView();
     }
 
-    function tryAsVin(bytes32 _vin) internal pure typeAssert(_vin, BTCTypes.Unknown) returns (bytes32) {
+    function tryAsVin(bytes29 _vin) internal pure typeAssert(_vin, BTCTypes.Unknown) returns (bytes29) {
         uint64 _vinLen = indexCompactInt(_vin, 0);
         uint256 _viewLen = _vin.len();
         if (_vinLen == 0) {
@@ -199,16 +199,16 @@ library BTCUtils {
             if (_offset >= _viewLen) {
                 return TypedMemView.nullView();
             }
-            bytes32 _remaining = _vin.postfix(_vinLen - _offset, uint16(BTCTypes.IntermediateTxIns));
+            bytes29 _remaining = _vin.postfix(_vinLen - _offset, uint40(BTCTypes.IntermediateTxIns));
             _offset += inputLength(_remaining);
         }
         if (_offset == _viewLen) {
             return TypedMemView.nullView();
         }
-        return _vin.castTo(uint16(BTCTypes.Vin));
+        return _vin.castTo(uint40(BTCTypes.Vin));
     }
 
-    function tryAsVout(bytes32 _vout) internal pure typeAssert(_vout, BTCTypes.Unknown) returns (bytes32) {
+    function tryAsVout(bytes29 _vout) internal pure typeAssert(_vout, BTCTypes.Unknown) returns (bytes29) {
         uint64 _voutLen = indexCompactInt(_vout, 0);
         uint256 _viewLen = _vout.len();
         if (_voutLen == 0) {
@@ -220,59 +220,59 @@ library BTCUtils {
             if (_offset >= _viewLen) {
                 return TypedMemView.nullView();
             }
-            bytes32 _remaining = _vout.postfix(_voutLen - _offset, uint16(BTCTypes.IntermediateTxOuts));
+            bytes29 _remaining = _vout.postfix(_voutLen - _offset, uint40(BTCTypes.IntermediateTxOuts));
             _offset += inputLength(_remaining);
         }
         if (_offset == _viewLen) {
             return TypedMemView.nullView();
         }
-        return _vout.castTo(uint16(BTCTypes.Vout));
+        return _vout.castTo(uint40(BTCTypes.Vout));
     }
 
-    function tryAsHeader(bytes32 _header) internal pure typeAssert(_header, BTCTypes.Unknown) returns (bytes32) {
+    function tryAsHeader(bytes29 _header) internal pure typeAssert(_header, BTCTypes.Unknown) returns (bytes29) {
         if (_header.len() != 80) {
             return TypedMemView.nullView();
         }
-        return _header.castTo(uint16(BTCTypes.Header));
+        return _header.castTo(uint40(BTCTypes.Header));
     }
 
-    function tryAsHeaderArray(bytes32 _arr) internal pure typeAssert(_arr, BTCTypes.Unknown) returns (bytes32) {
+    function tryAsHeaderArray(bytes29 _arr) internal pure typeAssert(_arr, BTCTypes.Unknown) returns (bytes29) {
         if (_arr.len() % 80 != 0) {
             return TypedMemView.nullView();
         }
-        return _arr.castTo(uint16(BTCTypes.HeaderArray));
+        return _arr.castTo(uint40(BTCTypes.HeaderArray));
     }
 
-    function tryAsMerkleArray(bytes32 _arr) internal pure typeAssert(_arr, BTCTypes.Unknown) returns (bytes32) {
+    function tryAsMerkleArray(bytes29 _arr) internal pure typeAssert(_arr, BTCTypes.Unknown) returns (bytes29) {
         if (_arr.len() % 32 != 0) {
             return TypedMemView.nullView();
         }
-        return _arr.castTo(uint16(BTCTypes.MerkleArray));
+        return _arr.castTo(uint40(BTCTypes.MerkleArray));
     }
 
-    function merkleRoot(bytes32 _header) internal pure typeAssert(_header, BTCTypes.Header) returns (bytes32) {
+    function merkleRoot(bytes29 _header) internal pure typeAssert(_header, BTCTypes.Header) returns (bytes32) {
         return _header.index(36, 32);
     }
 
-    function target(bytes32  _header) internal pure typeAssert(_header, BTCTypes.Header) returns (uint256) {
+    function target(bytes29  _header) internal pure typeAssert(_header, BTCTypes.Header) returns (uint256) {
         uint256 _mantissa = _header.indexLEUint(72, 3);
         uint256 _exponent = _header.indexUint(75, 1).sub(3);
         return _mantissa.mul(256 ** _exponent);
     }
 
-    function diff(bytes32  _header) internal pure typeAssert(_header, BTCTypes.Header) returns (uint256) {
+    function diff(bytes29  _header) internal pure typeAssert(_header, BTCTypes.Header) returns (uint256) {
         return DIFF1_TARGET.div(target(_header));
     }
 
-    function time(bytes32  _header) internal pure typeAssert(_header, BTCTypes.Header) returns (uint32) {
+    function time(bytes29  _header) internal pure typeAssert(_header, BTCTypes.Header) returns (uint32) {
         return uint32(_header.indexLEUint(68, 4));
     }
 
-    function parent(bytes32 _header) internal pure typeAssert(_header, BTCTypes.Header) returns (bytes32) {
+    function parent(bytes29 _header) internal pure typeAssert(_header, BTCTypes.Header) returns (bytes32) {
         return _header.index(4, 32);
     }
 
-    function work(bytes32 _header) internal view typeAssert(_header, BTCTypes.Header) returns (bytes32) {
+    function work(bytes29 _header) internal view typeAssert(_header, BTCTypes.Header) returns (bytes32) {
         return _header.hash256();
     }
 
@@ -292,7 +292,7 @@ library BTCUtils {
         }
     }
 
-    function checkMerkle(bytes32 _leaf, bytes32 _proof, bytes32 _root, uint256 _index) internal view typeAssert(_proof, BTCTypes.MerkleArray) returns (bool) {
+    function checkMerkle(bytes32 _leaf, bytes29 _proof, bytes32 _root, uint256 _index) internal view typeAssert(_proof, BTCTypes.MerkleArray) returns (bool) {
         uint256 nodes = _proof.len() / 32;
         if (nodes == 0) {
             return _leaf == _root;
