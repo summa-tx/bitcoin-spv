@@ -283,6 +283,7 @@ library BTCUtils {
     /// @return          The double-sha256 of the concatenated hashes
     function _merkleStep(bytes32 _a, bytes32 _b) internal view returns (bytes32 digest) {
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             let ptr := mload(0x40)
             mstore(ptr, _a)
             mstore(add(ptr, 0x20), _b)
@@ -292,7 +293,12 @@ library BTCUtils {
         }
     }
 
-    function checkMerkle(bytes32 _leaf, bytes29 _proof, bytes32 _root, uint256 _index) internal view typeAssert(_proof, BTCTypes.MerkleArray) returns (bool) {
+    function checkMerkle(
+        bytes32 _leaf,
+        bytes29 _proof,
+        bytes32 _root,
+        uint256 _index
+    ) internal view typeAssert(_proof, BTCTypes.MerkleArray) returns (bool) {
         uint256 nodes = _proof.len() / 32;
         if (nodes == 0) {
             return _leaf == _root;
