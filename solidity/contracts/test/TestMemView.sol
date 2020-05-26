@@ -17,6 +17,8 @@ contract TestMemView {
         bytes29 v2 = TypedMemView.ref(two, 2);
         require(v1.isValid(), "1 ought to be valid");
         require(v2.isValid(), "2 ought to be valid");
+        require(v1.len() == 38, "1 ought to be length 32");
+        require(v2.len() == 38, "2 ought to be length 32");
         require(v1.typeOf() == 1, "1 ought to be type 1");
         require(v2.typeOf() == 2, "2 ought to be type 2");
         require(v1.castTo(2).equal(v2), "1 cast to 2 ought to equal 2");
