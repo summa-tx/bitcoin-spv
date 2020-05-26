@@ -50,7 +50,10 @@ library BTCUtils {
         _;
     }
 
-    // TODO: what does this do?
+    /// @notice             reads a compact int from the view at the specified index
+    /// @param memView      a 29-byte view with a 5-byte type
+    /// @param _index       the index
+    /// @return             the compact int at the specified index
     function indexCompactInt(bytes29 memView, uint256 _index) internal pure returns (uint64 number) {
         uint256 flag = memView.indexUint(_index, 1);
         uint256 payload;
@@ -66,7 +69,7 @@ library BTCUtils {
         number = uint64(payload);
     }
 
-    /// @notice         converts an integer from uint64 to uint8
+    /// @notice         gives the total length (in bytes) of a CompactInt-encoded number
     /// @param number   the number as uint64
     /// @return         the compact integer as uint8
     function compactIntLength(uint64 number) internal pure returns (uint8) {
@@ -97,14 +100,14 @@ library BTCUtils {
 
     /// @notice          extracts the outpoint from an input
     /// @param _input    the input
-    /// @return          the outpoint as a typed bytes29
+    /// @return          the outpoint as a typed memory
     function outpoint(bytes29 _input) internal pure typeAssert(_input, BTCTypes.TxIn) returns (bytes29) {
         return _input.slice(0, 36, uint40(BTCTypes.Outpoint));
     }
 
     /// @notice           extracts the script sig from an input
     /// @param _input     the input
-    /// @return           the script sig as a typed bytes29
+    /// @return           the script sig as a typed memory
     function scriptSig(bytes29 _input) internal pure typeAssert(_input, BTCTypes.TxIn) returns (bytes29) {
         uint64 scriptLength = indexCompactInt(_input, 36);
         return _input.slice(36, compactIntLength(scriptLength) + scriptLength, uint40(BTCTypes.ScriptSig));
@@ -112,7 +115,7 @@ library BTCUtils {
 
     /// @notice         extracts the sequence from an input
     /// @param _input   the input
-    /// @return         the sequence as a typed bytes29
+    /// @return         the sequence as a typed memory
     function sequence(bytes29 _input) internal pure typeAssert(_input, BTCTypes.TxIn) returns (uint32) {
         uint64 scriptLength = indexCompactInt(_input, 36);
         uint256 scriptEnd = 36 + compactIntLength(scriptLength) + scriptLength;
@@ -120,7 +123,7 @@ library BTCUtils {
     }
 
     /// @notice         determines the input length
-    /// @param _inputs  the input
+    /// @param _inputs  the vin without its length prefix
     /// @return         the input length
     function inputLength(bytes29 _inputs) internal pure typeAssert(_inputs, BTCTypes.IntermediateTxIns) returns (uint256) {
         uint64 scriptLength = indexCompactInt(_inputs, 36);
@@ -147,7 +150,9 @@ library BTCUtils {
         return _vin.slice(_offset, _len, uint40(BTCTypes.TxIn));
     }
 
-    // TODO: what does this do?
+    /// @notice         extracts the raw LE bytes of the output value
+    /// @param _output  the output
+    /// @return         the raw LE bytes of the output value
     function valueBytes(bytes29 _output) internal pure typeAssert(_output, BTCTypes.TxOut) returns (bytes8) {
         return bytes8(_output.index(0, 8));
     }
@@ -159,16 +164,16 @@ library BTCUtils {
         return uint64(_output.indexLEUint(0, 8));
     }
 
-    /// @notice             extracts the script pub key from an output
+    /// @notice             extracts the scriptPubkey from an output
     /// @param _output      the output
-    /// @return             the script pub key
+    /// @return             the scriptPubkey
     function scriptPubkey(bytes29 _output) internal pure typeAssert(_output, BTCTypes.TxOut) returns (bytes29) {
         uint64 scriptLength = indexCompactInt(_output, 8);
         return _output.slice(8, compactIntLength(scriptLength) + scriptLength, uint40(BTCTypes.ScriptPubkey));
     }
 
     /// @notice             determines the output length
-    /// @param _outputs     the outputs
+    /// @param _outputs     the vout without its length prefix
     /// @return             the output length
     function outputLength(bytes29 _outputs) internal pure typeAssert(_outputs, BTCTypes.IntermediateTxOuts) returns (uint256) {
         uint64 scriptLength = indexCompactInt(_outputs, 8);
@@ -196,8 +201,8 @@ library BTCUtils {
     }
 
     /// @notice         extracts the Op Return Payload
-    /// @param _spk     the script pub key
-    /// @return         the Op Return Payload
+    /// @param _spk     the scriptPubkey
+    /// @return         the Op Return Payload (or null if not a valid Op Return output)
     function opReturnPayload(bytes29 _spk) internal pure typeAssert(_spk, BTCTypes.ScriptPubkey) returns (bytes29) {
         uint64 _bodyLength = indexCompactInt(_spk, 0);
         uint64 _payloadLen = uint64(_spk.indexUint(2, 1));
@@ -207,9 +212,9 @@ library BTCUtils {
         return _spk.slice(3, _payloadLen, uint40(BTCTypes.OpReturnPayload));
     }
 
-    /// @notice         extracts the payload from a script pub key
-    /// @param _spk     the script pub key
-    /// @return         the payload
+    /// @notice         extracts the payload from a scriptPubkey
+    /// @param _spk     the scriptPubkey
+    /// @return         the payload (or null if not a valid PKH, SH, WPKH, or WSH output)
     function payload(bytes29 _spk) internal pure typeAssert(_spk, BTCTypes.ScriptPubkey) returns (bytes29) {
         uint256 _spkLength = _spk.len();
         uint256 _bodyLength = _spk.indexUint(0, 1);
@@ -237,9 +242,10 @@ library BTCUtils {
         return TypedMemView.nullView();
     }
 
-    /// @notice     verifies the vin and converts to a typed bytes29
+    /// @notice     verifies the vin and converts to a typed memory
+    /// @dev        will return null in error cases
     /// @param _vin the vin
-    /// @return     the typed vin
+    /// @return     the typed vin (or null if error)
     function tryAsVin(bytes29 _vin) internal pure typeAssert(_vin, BTCTypes.Unknown) returns (bytes29) {
         uint64 _vinLen = indexCompactInt(_vin, 0);
         uint256 _viewLen = _vin.len();
@@ -261,9 +267,10 @@ library BTCUtils {
         return _vin.castTo(uint40(BTCTypes.Vin));
     }
 
-    /// @notice         verifies the vout and converts to a typed bytes29
+    /// @notice         verifies the vout and converts to a typed memory
+    /// @dev            will return null in error cases
     /// @param _vout    the vout
-    /// @return         the typed vout
+    /// @return         the typed vout (or null if error)
     function tryAsVout(bytes29 _vout) internal pure typeAssert(_vout, BTCTypes.Unknown) returns (bytes29) {
         uint64 _voutLen = indexCompactInt(_vout, 0);
         uint256 _viewLen = _vout.len();
@@ -285,9 +292,10 @@ library BTCUtils {
         return _vout.castTo(uint40(BTCTypes.Vout));
     }
 
-    /// @notice         verifies the header and converts to a typed bytes29
+    /// @notice         verifies the header and converts to a typed memory
+    /// @dev            will return null in error cases
     /// @param _header  the header
-    /// @return         the typed header
+    /// @return         the typed header (or null if error)
     function tryAsHeader(bytes29 _header) internal pure typeAssert(_header, BTCTypes.Unknown) returns (bytes29) {
         if (_header.len() != 80) {
             return TypedMemView.nullView();
@@ -295,9 +303,10 @@ library BTCUtils {
         return _header.castTo(uint40(BTCTypes.Header));
     }
 
-    /// @notice     verifies the header array and converts to a typed bytes29
+    /// @notice     verifies the header array and converts to a typed memory
+    /// @dev        will return null in error cases
     /// @param _arr the header array
-    /// @return     the typed header array
+    /// @return     the typed header array (or null if error)
     function tryAsHeaderArray(bytes29 _arr) internal pure typeAssert(_arr, BTCTypes.Unknown) returns (bytes29) {
         if (_arr.len() % 80 != 0) {
             return TypedMemView.nullView();
@@ -305,9 +314,10 @@ library BTCUtils {
         return _arr.castTo(uint40(BTCTypes.HeaderArray));
     }
 
-    /// @notice     verifies the merkle array and converts to a typed bytes29
+    /// @notice     verifies the merkle array and converts to a typed memory
+    /// @dev        will return null in error cases
     /// @param _arr the merkle array
-    /// @return     the typed merkle array
+    /// @return     the typed merkle array (or null if error)
     function tryAsMerkleArray(bytes29 _arr) internal pure typeAssert(_arr, BTCTypes.Unknown) returns (bytes29) {
         if (_arr.len() % 32 != 0) {
             return TypedMemView.nullView();
@@ -353,7 +363,9 @@ library BTCUtils {
     }
 
     // TODO: What does this do?
+    /// @notice         calculates the Proof of Work hash of the header
     /// @param _header  the header
+    /// @return         the Proof of Work hash
     function work(bytes29 _header) internal view typeAssert(_header, BTCTypes.Header) returns (bytes32) {
         return _header.hash256();
     }
