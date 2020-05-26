@@ -5,11 +5,21 @@ import {SafeMath} from "./SafeMath.sol";
 library TypedMemView {
     using SafeMath for uint256;
 
+
+    // Why bytes29?
+    // We want to avoid confusion between views, digests, and other common
+    // types so we chose a large and uncommonly used odd number of bytes
+    //
+    // Note that while bytes are left-aligned in a word, integers and addresses
+    // are right-aligned. This means when working in assembly we have to
+    // account for the 3 unused bytes on the righthand side
+    //
     // First 5 bytes are a type flag.
     // - ff_ffff_fffe is reserved for unknown type.
     // - ff_ffff_ffff is reserved for invalid types/errors.
     // next 12 are memory address
-    // last 12 are len
+    // next 12 are len
+    // bottom 3 bytes are empty
 
     // Assumptions:
     // - non-modification of memory.
@@ -65,14 +75,6 @@ library TypedMemView {
         v = (v >> 128) | (v << 128);
     }
 
-    /// Create a mask with the lowest `_len` bits set
-    function rightMask(uint8 _len) private pure returns (uint256 mask) {
-        assembly {
-            // solium-disable-previous-line security/no-inline-assembly
-            mask := sub(shr(0x1ffffff, _len), 1)
-        }
-    }
-
     /// Create a mask with the highest `_len` bits set
     function leftMask(uint8 _len) private pure returns (uint256 mask) {
         // ugly. redo without assembly?
@@ -105,7 +107,7 @@ library TypedMemView {
     /// memory pointer and ensuring that the view's upper bound is less than
     /// that.
     function isValid(bytes29 memView) internal pure returns (bool ret) {
-        if (typeOf(memView) == 0xffff) {return false;}
+        if (typeOf(memView) == 0xffffffffff) {return false;}
         uint256 _end = end(memView);
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
@@ -253,10 +255,10 @@ library TypedMemView {
 
         uint8 bitLength = _bytes * 8;
         uint256 _loc = loc(memView);
-        uint256 mask = leftMask(bitLength);
+        uint256 _mask = leftMask(bitLength);
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
-            result := and(mload(add(_loc, _index)), mask)
+            result := and(mload(add(_loc, _index)), _mask)
         }
     }
 
@@ -268,7 +270,7 @@ library TypedMemView {
 
     /// Parse an unsigned integer from LE bytes.
     function indexLEUint(bytes29 memView, uint256 _index, uint8 _bytes) internal pure returns (uint256 result) {
-        return reverseUint256(uint256(index(memView, _index, _bytes))) & rightMask(_bytes * 8);
+        return reverseUint256(uint256(index(memView, _index, _bytes)));
     }
 
     /// Parse a signed integer from the view at `_index`. Requires that the
