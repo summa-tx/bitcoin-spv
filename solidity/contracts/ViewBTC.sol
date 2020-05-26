@@ -122,7 +122,7 @@ library BTCUtils {
         return uint32(_input.indexLEUint(scriptEnd, 4));
     }
 
-    /// @notice         determines the input length
+    /// @notice         ddetermines the length of the first input in an array of inputs
     /// @param _inputs  the vin without its length prefix
     /// @return         the input length
     function inputLength(bytes29 _inputs) internal pure typeAssert(_inputs, BTCTypes.IntermediateTxIns) returns (uint256) {
@@ -172,7 +172,7 @@ library BTCUtils {
         return _output.slice(8, compactIntLength(scriptLength) + scriptLength, uint40(BTCTypes.ScriptPubkey));
     }
 
-    /// @notice             determines the output length
+    /// @notice             determines the length of the first output in an array of outputs
     /// @param _outputs     the vout without its length prefix
     /// @return             the output length
     function outputLength(bytes29 _outputs) internal pure typeAssert(_outputs, BTCTypes.IntermediateTxOuts) returns (uint256) {
@@ -362,7 +362,6 @@ library BTCUtils {
         return _header.index(4, 32);
     }
 
-    // TODO: What does this do?
     /// @notice         calculates the Proof of Work hash of the header
     /// @param _header  the header
     /// @return         the Proof of Work hash
