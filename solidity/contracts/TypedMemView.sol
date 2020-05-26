@@ -42,6 +42,29 @@ library TypedMemView {
     uint256 constant TWO_BYTE_MASK = 0xffff; // mask out top 28 bytes
     uint256 constant FIFTEEN_BYTE_MASK = 0xffffffffffffffffffffffffffffff;  // mask out top 17 bytes
 
+    /// @notice          Changes the endianness of a uint256
+    /// @dev             https://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel
+    /// @param _b        The unsigned integer to reverse
+    /// @return          The reversed value
+    function reverseUint256(uint256 _b) private pure returns (uint256 v) {
+        v = _b;
+
+        // swap bytes
+        v = ((v >> 8) & 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF) |
+            ((v & 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF) << 8);
+        // swap 2-byte long pairs
+        v = ((v >> 16) & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) |
+            ((v & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) << 16);
+        // swap 4-byte long pairs
+        v = ((v >> 32) & 0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) |
+            ((v & 0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) << 32);
+        // swap 8-byte long pairs
+        v = ((v >> 64) & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) |
+            ((v & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) << 64);
+        // swap 16-byte long pairs
+        v = (v >> 128) | (v << 128);
+    }
+
     /// Create a mask with the lowest `_len` bits set
     function rightMask(uint8 _len) private pure returns (uint256 mask) {
         mask = (1 << uint256(_len)) - 1;
@@ -218,6 +241,11 @@ library TypedMemView {
     /// view have >= `_bytes` bytes following that index.
     function indexUint(bytes32 memView, uint256 _index, uint8 _bytes) internal pure returns (uint256 result) {
         return uint256(index(memView, _index, _bytes)) >> ((32 - _bytes) * 8);
+    }
+
+    /// Parse an unsigned integer from LE bytes.
+    function indexLEUint(bytes32 memView, uint256 _index, uint8 _bytes) internal pure returns (uint256 result) {
+        return reverseUint256(uint256(index(memView, _index, _bytes))) & rightMask(_bytes * 8);
     }
 
     /// Parse a signed integer from the view at `_index`. Requires that the
