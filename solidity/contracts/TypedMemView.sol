@@ -39,10 +39,8 @@ library TypedMemView {
 
     // The null view
     bytes29 public constant NULL = hex"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-    uint256 constant LOW_5_MASK = 0xffffffffff;
-    uint8 constant TYPE_BITS = 40;
     uint256 constant LOW_12_MASK = 0xffffffffffffffffffffffff;
-    uint8 constant LOC_OR_LEN_BITS = 96;
+    uint8 constant TWELVE_BYTES = 96;
 
     /// @notice          Changes the endianness of a uint256
     /// @dev             https://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel
@@ -72,7 +70,6 @@ library TypedMemView {
         assembly {
             mask := sub(shr(0x1ffffff, _len), 1)
         }
-        /* mask = (uint232(1) << uint232(_len)) - 1; */
     }
 
     /// Create a mask with the highest `_len` bits set
@@ -126,18 +123,17 @@ library TypedMemView {
 
     /// Return an identical view with a different type
     function castTo(bytes29 memView, uint40 _newType) internal pure returns (bytes29 newView) {
-         // mask out top 16 bits
-         // then | in the new type
-
-        ///
-        uint232 untyped = uint232(memView) & uint232(rightMask(LOC_OR_LEN_BITS * 2));
-        uint232 retyped = untyped | (uint232(_newType) << LOC_OR_LEN_BITS * 2);
-        newView = bytes29(retyped);
+        // then | in the new type
+        assembly {
+            // shift off the top 5 bytes
+            newView := or(newView, shr(40, shl(40, memView)))
+            newView := or(newView, shl(216, _newType))
+        }
     }
 
     /// Instantiate a new memory view. This should generally not be called
     /// directly. Prefer `ref` wherever possible.
-    function build(uint256 _type, uint256 _loc, uint256 _len) internal pure returns (bytes29) {
+    function build(uint256 _type, uint256 _loc, uint256 _len) internal pure returns (bytes29 newView) {
         uint256 _end = _loc.add(_len);
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
@@ -149,13 +145,11 @@ library TypedMemView {
             return NULL;
         }
 
-        uint256 _view = 0;
-        _view |= _type & LOW_5_MASK;
-        _view <<= (8 * 12);
-        _view |= _loc & LOW_12_MASK;
-        _view <<= (8 * 12);
-        _view |= _len & LOW_12_MASK;
-        return bytes29(uint232(_view));
+        assembly {
+            newView := shl(96, or(newView, _type))
+            newView := shl(96, or(newView, _loc))
+            newView := shl(24, or(newView, _len))
+        }
     }
 
     /// Instantiate a memory view from a byte array.
@@ -185,12 +179,12 @@ library TypedMemView {
 
     /// Optimized type comparison. Checks that the 5-byte type flag is equal.
     function sameType(bytes29 left, bytes29 right) internal pure returns (bool) {
-        return (left ^ right) >> (2 * LOC_OR_LEN_BITS) == 0;
+        return (left ^ right) >> (2 * TWELVE_BYTES) == 0;
     }
 
     /// Return the memory address of the underlying bytes
     function loc(bytes29 memView) internal pure returns (uint96) {
-        return uint96((uint232(memView) >> (LOC_OR_LEN_BITS)) & LOW_12_MASK);
+        return uint96((uint232(memView) >> TWELVE_BYTES) & LOW_12_MASK);
     }
 
     /// The number of memory words this memory view occupies, rounded up

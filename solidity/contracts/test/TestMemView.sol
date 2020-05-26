@@ -17,6 +17,7 @@ contract TestMemView {
         bytes29 v2 = TypedMemView.ref(two, 2);
         require(v1.typeOf() == 1, "1 ought to be type 1");
         require(v2.typeOf() == 2, "2 ought to be type 2");
+        require(v1.castTo(2).equal(v2), "1 cast to 2 ought to equal 2");
 
         require(v1.words() == 2, "1 ought to have words 2");
         require(v1.footprint() == 64, "1 ought to have foortprint 64");
