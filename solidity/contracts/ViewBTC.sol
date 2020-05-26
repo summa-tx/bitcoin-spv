@@ -51,10 +51,6 @@ library BTCUtils {
     }
 
     // TODO: what does this do?
-    /// @notice
-    /// @param memView
-    /// @param _index
-    /// @return
     function indexCompactInt(bytes29 memView, uint256 _index) internal pure returns (uint64 number) {
         uint256 flag = memView.indexUint(_index, 1);
         uint256 payload;
@@ -124,7 +120,7 @@ library BTCUtils {
     }
 
     /// @notice         determines the input length
-    /// @param _input   the input
+    /// @param _inputs  the input
     /// @return         the input length
     function inputLength(bytes29 _inputs) internal pure typeAssert(_inputs, BTCTypes.IntermediateTxIns) returns (uint256) {
         uint64 scriptLength = indexCompactInt(_inputs, 36);
@@ -152,9 +148,6 @@ library BTCUtils {
     }
 
     // TODO: what does this do?
-    /// @notice
-    /// @param _output  the output
-    /// @return
     function valueBytes(bytes29 _output) internal pure typeAssert(_output, BTCTypes.TxOut) returns (bytes8) {
         return bytes8(_output.index(0, 8));
     }
@@ -359,9 +352,8 @@ library BTCUtils {
         return _header.index(4, 32);
     }
 
-    /// @notice
+    // TODO: What does this do?
     /// @param _header  the header
-    /// @return
     function work(bytes29 _header) internal view typeAssert(_header, BTCTypes.Header) returns (bytes32) {
         return _header.hash256();
     }
