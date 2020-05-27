@@ -104,8 +104,12 @@ contract ViewBTCTest {
         return _header.ref(0).tryAsHeader().assertValid().parent();
     }
 
-    function work(bytes memory _header) public view returns (bytes32) {
+    function work(bytes memory _header) public view returns (uint256) {
         return _header.ref(0).tryAsHeader().assertValid().work();
+    }
+
+    function workHash(bytes memory _header) public view returns (bytes32) {
+        return _header.ref(0).tryAsHeader().assertValid().workHash();
     }
 
     function verifyHash256Merkle(bytes memory _proof, uint _index) public view returns (bool) {
