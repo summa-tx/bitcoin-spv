@@ -330,7 +330,7 @@ library BTCUtils {
         return 8 + 1 + _varIntDataLen + _scriptPubkeyLength;
     }
 
-    /// @notice          Extracts the output at a given index in the TxIns vector
+    /// @notice          Extracts the output at a given index in the TxOuts vector
     /// @dev             Iterates over the vout. If you need to extract multiple, write a custom function
     /// @param _vout     The _vout to extract from
     /// @param _index    The 0-indexed location of the output to extract
