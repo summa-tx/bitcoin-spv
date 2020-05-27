@@ -63,11 +63,10 @@ library TypedMemView {
     // - - make sure to explicitly check for this with `isNotNull` or `assertType`
     // - use `equal` for typed comparisons.
 
-
-    // The null
-    bytes32 public constant NULL = hex"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-    uint256 constant TWO_BYTE_MASK = 0xffff; // mask out top 28 bytes
-    uint256 constant FIFTEEN_BYTE_MASK = 0xffffffffffffffffffffffffffffff;  // mask out top 17 bytes
+    // The null view
+    bytes29 public constant NULL = hex"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+    uint256 constant LOW_12_MASK = 0xffffffffffffffffffffffff;
+    uint8 constant TWELVE_BYTES = 96;
 
     /// @notice          Changes the endianness of a uint256
     /// @dev             https://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel
