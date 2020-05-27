@@ -6,6 +6,23 @@ library TypedMemView {
     using SafeMath for uint256;
 
 
+    // Why does this exist?
+    // the solidity `bytes memory` type has a few weaknesses.
+    // 1. You can't index ranges effectively
+    // 2. You can't slice without copying
+    // 3. The underlying data may represent any type
+    // 4. Solidity never deallocates memory, and memory costs grow
+    //    superlinearly
+
+    // By using a memory view instead of a `bytes memory` we get the following
+    // advantages:
+    // 1. Slices are done on the stack, by manipulating the pointer
+    // 2. We can index arbitrary ranges and quickly convert them to stack types
+    // 3. We can insert type info into the pointer, and typecheck at runtime
+
+    // This makes `TypedMemView` a useful tool for efficient zero-copy
+    // algorithms.
+
     // Why bytes29?
     // We want to avoid confusion between views, digests, and other common
     // types so we chose a large and uncommonly used odd number of bytes
@@ -151,9 +168,9 @@ library TypedMemView {
 
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
-            newView := shl(96, or(newView, _type))
-            newView := shl(96, or(newView, _loc))
-            newView := shl(24, or(newView, _len))
+            newView := shl(96, or(newView, _type)) // insert type
+            newView := shl(96, or(newView, _loc))  // insert loc
+            newView := shl(24, or(newView, _len))  // empty bottom 3 bytes
         }
     }
 
