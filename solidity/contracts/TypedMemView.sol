@@ -132,13 +132,23 @@ library TypedMemView {
         }
     }
 
+    /// Require that a typed memory view be valid.
+    /// Returns the view for easy chaining
+    function assertValid(bytes29 memView) internal pure returns (bytes29) {
+        require(isValid(memView), "Validity assertion failed");
+        return memView;
+    }
+
+    /// Return true if the memview is of the expected type. Otherwise false.
     function isType(bytes29 memView, uint40 _expected) internal pure returns (bool) {
         return typeOf(memView) == _expected;
     }
 
     /// Require that a typed memory view has a specific type.
-    function assertType(bytes29 memView, uint40 _expected) internal pure {
+    /// Returns the view for easy chaining
+    function assertType(bytes29 memView, uint40 _expected) internal pure returns (bytes29) {
         require(isType(memView, _expected), "Type assertion failed");
+        return memView;
     }
 
     /// Return an identical view with a different type
