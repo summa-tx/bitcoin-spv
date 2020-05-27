@@ -257,17 +257,6 @@ func (suite *UtilsSuite) TestExtractOutpoint() {
 	}
 }
 
-func (suite *UtilsSuite) TestExtractOuputScriptLen() {
-	fixture := suite.Fixtures.ExtractOutputScriptLen
-
-	for i := range fixture {
-		testCase := fixture[i]
-		expected := testCase.Output
-		actual := btcspv.ExtractOutputScriptLen(testCase.Input)
-		suite.Equal(expected, actual)
-	}
-}
-
 func (suite *UtilsSuite) TestExtractHash() {
 	fixture := suite.Fixtures.ExtractHash
 

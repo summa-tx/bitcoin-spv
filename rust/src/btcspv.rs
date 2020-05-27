@@ -323,16 +323,6 @@ pub fn extract_output_at_index(vout: &[u8], index: usize) -> Result<&[u8], SPVEr
     Ok(&vout[offset..offset + length])
 }
 
-/// Extracts the output script length.
-/// Indexes the length prefix on the pk_script.
-///
-/// # Arguments
-///
-/// * `tx_out` - The output
-pub fn extract_output_script_len(tx_out: &[u8]) -> usize {
-    tx_out[8] as usize
-}
-
 /// Extracts the value bytes from the output in a tx.
 /// Value is an 8-byte little-endian number.
 ///
@@ -390,15 +380,20 @@ pub fn extract_op_return_data(tx_out: &[u8]) -> Result<&[u8], SPVError> {
 pub fn extract_hash(tx_out: &[u8]) -> Result<&[u8], SPVError> {
     let tag = &tx_out[8..11];
 
+    if (tag[0]) as usize + 9 != tx_out.len() {
+      return Err(SPVError::OutputLengthMismatch);
+    }
+
     /* Witness */
     if tx_out[9] == 0 {
-        let mut length = extract_output_script_len(tx_out);
-        if length < 2 {
+        let script_len = tx_out[8];
+        let payload_len = tx_out[10];
+        if script_len < 2 {
             return Err(SPVError::MalformattedWitnessOutput);
         }
-        length -= 2;
-        if tx_out[10] == length as u8 {
-            return Ok(&tx_out[11..11 + length as usize]);
+
+        if payload_len + 2 == script_len && (payload_len == 0x20 || payload_len == 0x14) {
+            return Ok(&tx_out[11..11 + payload_len as usize]);
         } else {
             return Err(SPVError::MalformattedWitnessOutput);
         }
@@ -982,18 +977,6 @@ mod tests {
                     Ok(_) => assert!(false, "expected an error"),
                     Err(e) => assert_eq!(e, expected),
                 }
-            }
-        })
-    }
-
-    #[test]
-    fn it_extracts_output_script_length() {
-        test_utils::run_test(|fixtures| {
-            let test_cases = test_utils::get_test_cases("extractOutputScriptLen", &fixtures);
-            for case in test_cases {
-                let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let expected = case.output.as_u64().unwrap() as usize;
-                assert_eq!(extract_output_script_len(&input), expected);
             }
         })
     }

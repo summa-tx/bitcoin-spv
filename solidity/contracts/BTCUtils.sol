@@ -414,8 +414,9 @@ library BTCUtils {
                 return hex"";
             }
             _len -= 2;
+            uint256 _payloadLen = uint8(_output[10]);
             // Check for maliciously formatted witness outputs
-            if (uint8(_output.slice(10, 1)[0]) != uint8(_len)) {
+            if (_payloadLen != _len || (_payloadLen != 0x20 && _payloadLen != 0x14)) {
                 return hex"";
             }
             return _output.slice(11, _len);
