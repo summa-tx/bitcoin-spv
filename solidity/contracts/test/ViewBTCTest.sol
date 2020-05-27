@@ -45,16 +45,12 @@ contract ViewBTCTest {
     }
 
     function outpointIdx(bytes memory _input) public pure returns (uint32) {
-        return _input.ref(uint40(ViewBTC.BTCTypes.Outpoint)).outpointIdx();
+        return _input.ref(uint40(ViewBTC.BTCTypes.TxIn)).outpoint().outpointIdx();
     }
 
     function txidLE(bytes memory _input) public pure returns (bytes32) {
-        return _input.ref(uint40(ViewBTC.BTCTypes.Outpoint)).txidLE();
+        return _input.ref(uint40(ViewBTC.BTCTypes.TxIn)).outpoint().txidLE();
     }
-
-    /* ****** */
-    /* Output */
-    /* ****** */
 
     function outputLength(bytes memory _output) public pure returns (uint256) {
         return _output.ref(uint40(ViewBTC.BTCTypes.IntermediateTxOuts)).outputLength();
