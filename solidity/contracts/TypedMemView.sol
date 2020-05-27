@@ -382,7 +382,7 @@ library TypedMemView {
         require(isValid(memView), "TypedMemView/clone - Invalid pointer deref");
         uint256 _len = len(memView);
         uint256 _loc = loc(memView);
-            assembly {
+        assembly {
             // solium-disable-previous-line security/no-inline-assembly
             ret := mload(0x40) // load unused pointer to the array
             mstore(0x40, add(add(ret, _len), 0x20)) // write new unused pointer
