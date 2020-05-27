@@ -15,9 +15,6 @@ library ValidateSPV {
     using BytesLib for bytes;
     using SafeMath for uint256;
 
-    enum InputTypes { NONE, LEGACY, COMPATIBILITY, WITNESS }
-    enum OutputTypes { NONE, WPKH, WSH, OP_RETURN, PKH, SH, NONSTANDARD }
-
     uint256 constant ERR_BAD_LENGTH = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
     uint256 constant ERR_INVALID_CHAIN = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe;
     uint256 constant ERR_LOW_WORK = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd;
@@ -79,11 +76,9 @@ library ValidateSPV {
     /// @param _headers     Raw byte array of header chain
     /// @return             The total accumulated difficulty of the header chain, or an error code
     function validateHeaderChain(bytes memory _headers) internal view returns (uint256 _totalDifficulty) {
-
         // Check header chain length
         if (_headers.length % 80 != 0) {return ERR_BAD_LENGTH;}
 
-        // Initialize header start index
         bytes32 _digest;
 
         _totalDifficulty = 0;
