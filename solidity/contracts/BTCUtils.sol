@@ -404,6 +404,10 @@ library BTCUtils {
     /// @param _output   The output
     /// @return          The hash committed to by the pk_script, or null for errors
     function extractHash(bytes memory _output) internal pure returns (bytes memory) {
+        if (uint8(_output[8]) + 9 != _output.length) {
+            return hex"";
+        }
+
         if (uint8(_output.slice(9, 1)[0]) == 0) {
             uint256 _len = uint8(_output[8]);
             if (_len < 2) {
