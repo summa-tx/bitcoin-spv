@@ -3,155 +3,121 @@ pragma solidity ^0.5.10;
 /** @title BitcoinSPV */
 /** @author Summa (https://summa.one) */
 
+import {TypedMemView} from "../TypedMemView.sol";
 import {ViewBTC} from "../ViewBTC.sol";
 
 contract ViewBTCTest {
 
-    using ViewBTC for bytes memory;
+    using TypedMemView for bytes;
+    using TypedMemView for bytes29;
     using ViewBTC for bytes29;
 
-
     function indexVarInt(bytes memory _b) public pure returns (uint64) {
-        return parseVarInt(_b.ref(0).parseVarInt(0);
+        return _b.ref(0).indexCompactInt(0);
     }
 
     function hash160(bytes memory _b) public pure returns (bytes20) {
-        return _b.ref().hash160();
+        return _b.ref(0).hash160();
     }
 
-    function hash256(bytes memory _b) public pure returns (bytes32) {
-        return _b.ref().hash256();
+    function hash256(bytes memory _b) public view returns (bytes32) {
+        return _b.ref(0).hash256();
     }
 
     function indexVin(bytes memory _vin, uint256 _index) public pure returns (bytes memory) {
-        return ViewBTC.extractInputAtIndex(_vin, _index);
+        return _vin.ref(uint40(ViewBTC.BTCTypes.Vin)).indexVin(uint64(_index)).clone();
     }
 
-    function isLegacyInput(bytes memory _input) public pure returns (bool) {
-        return ViewBTC.isLegacyInput(_input);
+    function inputLength(bytes memory _input) public pure returns (uint256) {
+        return _input.ref(uint40(ViewBTC.BTCTypes.IntermediateTxIns)).inputLength();
     }
 
-    function determineInputLength(bytes memory _input) public pure returns (uint256) {
-        return ViewBTC.determineInputLength(_input);
+    function sequence(bytes memory _input) public pure returns (uint32) {
+        return _input.ref(uint40(ViewBTC.BTCTypes.TxIn)).sequence();
+
+    }
+    function scriptSig(bytes memory _input) public pure returns (bytes memory) {
+        return _input.ref(uint40(ViewBTC.BTCTypes.TxIn)).scriptSig().clone();
     }
 
-    function extractSequenceLELegacy(bytes memory _input) public pure returns (bytes memory) {
-        return ViewBTC.extractSequenceLELegacy(_input);
+    function outpoint(bytes memory _input) public pure returns (bytes memory) {
+        return _input.ref(uint40(ViewBTC.BTCTypes.TxIn)).outpoint().clone();
     }
 
-    function extractSequenceLegacy(bytes memory _input) public pure returns (uint32) {
-        return ViewBTC.extractSequenceLegacy(_input);
-    }
-    function extractScriptSig(bytes memory _input) public pure returns (bytes memory) {
-        return ViewBTC.extractScriptSig(_input);
+    function outpointIdx(bytes memory _input) public pure returns (uint32) {
+        return _input.ref(uint40(ViewBTC.BTCTypes.Outpoint)).outpointIdx();
     }
 
-    function extractScriptSigLen(bytes memory _input) public pure returns (uint256, uint256) {
-        return ViewBTC.extractScriptSigLen(_input);
+    function txidLE(bytes memory _input) public pure returns (bytes32) {
+        return _input.ref(uint40(ViewBTC.BTCTypes.Outpoint)).txidLE();
     }
-
-
-    /* ************* */
-    /* Witness Input */
-    /* ************* */
-
-    function extractSequenceLEWitness(bytes memory _input) public pure returns (bytes memory) {
-        return ViewBTC.extractSequenceLEWitness(_input);
-    }
-
-
-    function extractSequenceWitness(bytes memory _input) public pure returns (uint32) {
-        return ViewBTC.extractSequenceWitness(_input);
-    }
-
-    function extractOutpoint(bytes memory _input) public pure returns (bytes memory) {
-        return ViewBTC.extractOutpoint(_input);
-    }
-
-
-    function extractInputTxIdLE(bytes memory _input) public pure returns (bytes32) {
-        return ViewBTC.extractInputTxIdLE(_input);
-    }
-
-    function extractTxIndexLE(bytes memory _input) public pure returns (bytes memory) {
-        return ViewBTC.extractTxIndexLE(_input);
-    }
-
 
     /* ****** */
     /* Output */
     /* ****** */
 
-    function determineOutputLength(bytes memory _output) public pure returns (uint256) {
-        return ViewBTC.determineOutputLength(_output);
+    function outputLength(bytes memory _output) public pure returns (uint256) {
+        return _output.ref(uint40(ViewBTC.BTCTypes.IntermediateTxOuts)).outputLength();
     }
 
-    function extractOutputAtIndex(bytes memory _vout, uint256 _index) public pure returns (bytes memory) {
-        return ViewBTC.extractOutputAtIndex(_vout, _index);
+    function indexVout(bytes memory _vout, uint256 _index) public pure returns (bytes memory) {
+        return _vout.ref(uint40(ViewBTC.BTCTypes.Vout)).indexVout(uint64(_index)).clone();
     }
 
-    function extractOutputScriptLen(bytes memory _output) public pure returns (bytes memory) {
-        return ViewBTC.extractOutputScriptLen(_output);
-    }
-
-    function extractValueLE(bytes memory _output) public pure returns (bytes memory) {
-        return ViewBTC.extractValueLE(_output);
+    function valueBytes(bytes memory _output) public pure returns (bytes8) {
+        return _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).valueBytes();
     }
 
     function extractValue(bytes memory _output) public pure returns (uint64) {
-        return ViewBTC.extractValue(_output);
+        return _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).value();
     }
 
-    function extractOpReturnData(bytes memory _output) public pure returns (bytes memory) {
-        return ViewBTC.extractOpReturnData(_output);
+    function opReturnPayload(bytes memory _output) public pure returns (bytes memory) {
+        return _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).opReturnPayload().clone();
     }
 
-    function extractHash(bytes memory _output) public pure returns (bytes memory) {
-        return ViewBTC.extractHash(_output);
+    function payload(bytes memory _output) public pure returns (bytes memory) {
+        return _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).payload().clone();
     }
 
-    function validateVin(bytes memory _vin) public pure returns (bool) {
-        return ViewBTC.validateVin(_vin);
+    function tryAsVin(bytes memory _vin) public pure returns (bool) {
+        return _vin.ref(0).tryAsVin().isValid();
     }
 
-    function validateVout(bytes memory _vout) public pure returns (bool) {
-        return ViewBTC.validateVout(_vout);
+    function tryAsVout(bytes memory _vout) public pure returns (bool) {
+        return _vout.ref(0).tryAsVout().isValid();
     }
 
-    function extractMerkleRootLE(bytes memory _header) public pure returns (bytes memory) {
-        return ViewBTC.extractMerkleRootLE(_header);
+    function merkleRoot(bytes memory _header) public pure returns (bytes32) {
+        return _header.ref(0).tryAsHeader().assertValid().merkleRoot();
     }
 
-    function extractTarget(bytes memory _header) public pure returns (uint256) {
-        return ViewBTC.extractTarget(_header);
+    function target(bytes memory _header) public pure returns (uint256) {
+        return _header.ref(0).tryAsHeader().assertValid().target();
     }
 
-    function calculateDifficulty(uint256 _target) public pure returns (uint256) {
-        return ViewBTC.calculateDifficulty(_target);
+    function diff(bytes memory _header) public pure returns (uint256) {
+        return _header.ref(0).tryAsHeader().assertValid().diff();
     }
 
-    function extractPrevBlockLE(bytes memory _header) public pure returns (bytes memory) {
-        return ViewBTC.extractPrevBlockLE(_header);
+    function time(bytes memory _header) public pure returns (uint256) {
+        return _header.ref(0).tryAsHeader().assertValid().time();
     }
 
-    function extractTimestampLE(bytes memory _header) public pure returns (bytes memory) {
-        return ViewBTC.extractTimestampLE(_header);
+    function parent(bytes memory _header) public pure returns (bytes32) {
+        return _header.ref(0).tryAsHeader().assertValid().parent();
     }
 
-    function extractTimestamp(bytes memory _header) public pure returns (uint32) {
-        return ViewBTC.extractTimestamp(_header);
+    function work(bytes memory _header) public view returns (bytes32) {
+        return _header.ref(0).tryAsHeader().assertValid().work();
     }
 
-    function extractDifficulty(bytes memory _header) public pure returns (uint256) {
-        return ViewBTC.extractDifficulty(_header);
-    }
-
-
-    function verifyHash256Merkle(bytes memory _proof, uint _index) public pure returns (bool) {
-        bytes29 _nodes = _b.slice(32, _proof.length - 64);
-        bytes32 _leaf = _b.index(0, 32);
-        bytes32 _root = _b.index(_proof.length - 32, 32);
-        return ViewBTC.checkMerkle(_leaf, _proof, _root, _index);
+    function verifyHash256Merkle(bytes memory _proof, uint _index) public view returns (bool) {
+        bytes29 _proof_ref = _proof.ref(0);
+        bytes29 _nodes = _proof_ref.slice(32, _proof.length - 64, 0).tryAsMerkleArray().assertValid();
+        bytes32 _leaf = _proof_ref.index(0, 32);
+        bytes32 _root = _proof_ref.index(_proof.length - 32, 32);
+        return ViewBTC.checkMerkle(_leaf, _nodes, _root, _index);
     }
 
     function retargetAlgorithm(

@@ -6,7 +6,7 @@ pragma solidity ^0.5.10;
 import {TypedMemView} from "./TypedMemView.sol";
 import {SafeMath} from "./SafeMath.sol";
 
-library BTCUtils {
+library ViewBTC {
     using TypedMemView for bytes29;
     using SafeMath for uint256;
 
