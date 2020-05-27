@@ -470,17 +470,17 @@ library BTCUtils {
         return _offset == _vin.length;
     }
 
-    /// @notice      Checks that the vin passed up is properly formatted
-    /// @dev         Consider a vin with a valid vout in its scriptsig
+    /// @notice      Checks that the vout passed up is properly formatted
+    /// @dev         Consider a vout with a valid scriptpubkey
     /// @param _vout Raw bytes length-prefixed output vector
-    /// @return      True if it represents a validly formatted bout
+    /// @return      True if it represents a validly formatted vout
     function validateVout(bytes memory _vout) internal pure returns (bool) {
         uint256 _varIntDataLen;
         uint256 _nOuts;
 
         (_varIntDataLen, _nOuts) = parseVarInt(_vout);
 
-        // Not valid if it says there are too many or no inputs
+        // Not valid if it says there are too many or no outputs
         if (_nOuts == 0 || _varIntDataLen == ERR_BAD_ARG) {
             return false;
         }

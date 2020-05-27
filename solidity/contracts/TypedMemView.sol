@@ -64,10 +64,10 @@ library TypedMemView {
     // - use `equal` for typed comparisons.
 
 
-    // The null view
-    bytes29 public constant NULL = hex"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-    uint256 constant LOW_12_MASK = 0xffffffffffffffffffffffff;
-    uint8 constant TWELVE_BYTES = 96;
+    // The null
+    bytes32 public constant NULL = hex"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+    uint256 constant TWO_BYTE_MASK = 0xffff; // mask out top 28 bytes
+    uint256 constant FIFTEEN_BYTE_MASK = 0xffffffffffffffffffffffffffffff;  // mask out top 17 bytes
 
     /// @notice          Changes the endianness of a uint256
     /// @dev             https://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel
@@ -90,6 +90,11 @@ library TypedMemView {
             ((v & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) << 64);
         // swap 16-byte long pairs
         v = (v >> 128) | (v << 128);
+    }
+
+    /// Create a mask with the lowest `_len` bits set
+    function rightMask(uint8 _len) private pure returns (uint256 mask) {
+        mask = (1 << uint256(_len)) - 1;
     }
 
     /// Create a mask with the highest `_len` bits set
@@ -296,8 +301,8 @@ library TypedMemView {
     }
 
     /// Parse an unsigned integer from LE bytes.
-    function indexLEUint(bytes29 memView, uint256 _index, uint8 _bytes) internal pure returns (uint256 result) {
-        return reverseUint256(uint256(index(memView, _index, _bytes)));
+    function indexLEUint(bytes32 memView, uint256 _index, uint8 _bytes) internal pure returns (uint256 result) {
+        return reverseUint256(uint256(index(memView, _index, _bytes))) & rightMask(_bytes * 8);
     }
 
     /// Parse a signed integer from the view at `_index`. Requires that the
