@@ -220,7 +220,6 @@ contract('BTCUtils', () => {
   //   }
   // });
 
-  // TODO: Currently on this one
   // it('extracts op_return data blobs', async () => {
   //   for (let i = 0; i < extractOpReturnData.length; i += 1) {
   //     const res = await instance.opReturnPayload(extractOpReturnData[i].input);
