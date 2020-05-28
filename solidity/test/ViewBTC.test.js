@@ -389,13 +389,13 @@ contract('BTCUtils', () => {
     }
   });
 
-  // it('returns error for invalid VarInts', async () => {
-  //   for (let i = 0; i < parseVarIntError.length; i += 1) {
-  //     const res = await instance.parseVarInt(parseVarIntError[i].input);
-  //     assert(res[0].eq(new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)), 'did not get error code');
-  //     assert(res[1].eq(new BN(0, 10)), `got non-0 value: ${res[1].toString()}`);
-  //   }
-  // });
+  it('returns error for invalid VarInts', async () => {
+    for (let i = 0; i < parseVarIntError.length; i += 1) {
+      const res = await instance.indexVarInt(parseVarIntError[i].input);
+      // assert(res.eq(new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)), 'did not get error code');
+      assert(res.eq(new BN(0, 10)), `got non-0 value: ${res.toString()}`);
+    }
+  });
 
   // it('calculates consensus-correct retargets', async () => {
   //   let firstTimestamp;

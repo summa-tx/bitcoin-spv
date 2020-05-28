@@ -300,8 +300,8 @@ library TypedMemView {
     }
 
     /// Parse an unsigned integer from LE bytes.
-    function indexLEUint(bytes32 memView, uint256 _index, uint8 _bytes) internal pure returns (uint256 result) {
-        return reverseUint256(uint256(index(memView, _index, _bytes))) & rightMask(_bytes * 8);
+    function indexLEUint(bytes29 memView, uint256 _index, uint8 _bytes) internal pure returns (uint256 result) {
+        return reverseUint256(uint256(index(memView, _index, _bytes)));
     }
 
     /// Parse a signed integer from the view at `_index`. Requires that the
