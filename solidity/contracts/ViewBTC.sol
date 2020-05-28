@@ -115,14 +115,14 @@ library ViewBTC {
 
     /// @notice         extracts the sequence from an input
     /// @param _input   the input
-    /// @return         the sequence as a typed memory
+    /// @return         the sequence
     function sequence(bytes29 _input) internal pure typeAssert(_input, BTCTypes.TxIn) returns (uint32) {
         uint64 scriptLength = indexCompactInt(_input, 36);
         uint256 scriptEnd = 36 + compactIntLength(scriptLength) + scriptLength;
         return uint32(_input.indexLEUint(scriptEnd, 4));
     }
 
-    /// @notice         ddetermines the length of the first input in an array of inputs
+    /// @notice         determines the length of the first input in an array of inputs
     /// @param _inputs  the vin without its length prefix
     /// @return         the input length
     function inputLength(bytes29 _inputs) internal pure typeAssert(_inputs, BTCTypes.IntermediateTxIns) returns (uint256) {
