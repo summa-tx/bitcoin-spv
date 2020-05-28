@@ -384,7 +384,7 @@ library ViewBTC {
 
     /// @notice         calculates the Proof of Work hash of the header, and converts to an integer
     /// @param _header  the header
-    /// @return         the Proof of Work hash
+    /// @return         the Proof of Work hash as an integer
     function work(bytes29 _header) internal view typeAssert(_header, BTCTypes.Header) returns (uint256) {
         return TypedMemView.reverseUint256(uint256(workHash(_header)));
     }
