@@ -95,7 +95,7 @@ library ViewSPV {
     /// @notice             Compares the hash of each header to the prevHash in the next header
     /// @param _headers     Raw byte array of header chain
     /// @return             The total accumulated difficulty of the header chain, or an error code
-    function validateHeaderChain(bytes29 _headers) internal view returns (uint256 _totalDifficulty) {
+    function checkChain(bytes29 _headers) internal view returns (uint256 _totalDifficulty) {
         bytes29 _headerChain = _headers.tryAsHeaderArray().assertValid();
         bytes32 _digest;
 

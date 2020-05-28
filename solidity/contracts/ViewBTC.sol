@@ -17,6 +17,7 @@ library ViewBTC {
     uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
 
     enum BTCTypes {
+        Unknown,
         CompactInt,
         ScriptSig,  // with length prefix
         Outpoint,
@@ -36,8 +37,7 @@ library ViewBTC {
         HeaderArray,
         MerkleNode,
         MerkleStep,
-        MerkleArray,
-        Unknown
+        MerkleArray
     }
 
     // TODO: any way to bubble up more info?
