@@ -17,6 +17,7 @@ library ViewBTC {
     uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
 
     enum BTCTypes {
+        Unknown,
         CompactInt,
         ScriptSig,  // with length prefix
         Outpoint,
@@ -36,8 +37,7 @@ library ViewBTC {
         HeaderArray,
         MerkleNode,
         MerkleStep,
-        MerkleArray,
-        Unknown
+        MerkleArray
     }
 
     // TODO: any way to bubble up more info?
@@ -303,6 +303,12 @@ library ViewBTC {
         return _header.castTo(uint40(BTCTypes.Header));
     }
 
+    function indexHeaderArray(bytes29 _arr, uint256 index) internal pure typeAssert(_arr, BTCTypes.HeaderArray) returns (bytes29) {
+        require(_arr.len() > index.add(1).mul(80), "Header array read overrun");
+        return _arr.slice(index.mul(80), index.add(1).mul(80), uint40(BTCTypes.Header));
+    }
+
+
     /// @notice     verifies the header array and converts to a typed memory
     /// @dev        will return null in error cases
     /// @param _arr the header array
@@ -341,11 +347,18 @@ library ViewBTC {
         return _mantissa.mul(256 ** _exponent);
     }
 
+    /// @notice         calculates the difficulty from a target
+    /// @param _target  the target
+    /// @return         the difficulty
+    function toDiff(uint256  _target) internal pure returns (uint256) {
+        return DIFF1_TARGET.div(_target);
+    }
+
     /// @notice         extracts the difficulty from the header
     /// @param _header  the header
     /// @return         the difficulty
     function diff(bytes29  _header) internal pure typeAssert(_header, BTCTypes.Header) returns (uint256) {
-        return DIFF1_TARGET.div(target(_header));
+        return toDiff(target(_header));
     }
 
     /// @notice         extracts the timestamp from the header
@@ -365,8 +378,15 @@ library ViewBTC {
     /// @notice         calculates the Proof of Work hash of the header
     /// @param _header  the header
     /// @return         the Proof of Work hash
-    function work(bytes29 _header) internal view typeAssert(_header, BTCTypes.Header) returns (bytes32) {
+    function workHash(bytes29 _header) internal view typeAssert(_header, BTCTypes.Header) returns (bytes32) {
         return _header.hash256();
+    }
+
+    /// @notice         calculates the Proof of Work hash of the header, and converts to an integer
+    /// @param _header  the header
+    /// @return         the Proof of Work hash as an integer
+    function work(bytes29 _header) internal view typeAssert(_header, BTCTypes.Header) returns (uint256) {
+        return TypedMemView.reverseUint256(uint256(workHash(_header)));
     }
 
     /// @notice          Concatenates and hashes two inputs for merkle proving

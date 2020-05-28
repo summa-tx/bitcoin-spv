@@ -60,7 +60,7 @@ library TypedMemView {
     // - - `slice can decrease the length`
     // - - must specify the output type of `slice`
     // - - `slice` will return a null view if you try to overrun
-    // - - make sure to explicitly check for this with `isNotNull` or `assertType`
+    // - - make sure to explicitly check for this with `notNull` or `assertType`
     // - use `equal` for typed comparisons.
 
 
@@ -73,7 +73,7 @@ library TypedMemView {
     /// @dev             https://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel
     /// @param _b        The unsigned integer to reverse
     /// @return          The reversed value
-    function reverseUint256(uint256 _b) private pure returns (uint256 v) {
+    function reverseUint256(uint256 _b) internal pure returns (uint256 v) {
         v = _b;
 
         // swap bytes
@@ -377,20 +377,17 @@ library TypedMemView {
 
     /// Copies the referenced memory to a new loc in memory, returning a
     /// `bytes` pointing to the new memory
-    ///
-    /// Current implementation copies memory to the next word boundary. This
-    /// creates some dirty memory that is not accessible without assembly.
     function clone(bytes29 memView) internal pure returns (bytes memory ret) {
-        require(!isNull(memView), "TypedMemView/clone - Null pointer deref");
-        uint256 _footprint = footprint(memView);
-        uint256 _loc = loc(memView);
+        require(notNull(memView), "TypedMemView/clone - Null pointer deref");
+        require(isValid(memView), "TypedMemView/clone - Invalid pointer deref");
         uint256 _len = len(memView);
+        uint256 _loc = loc(memView);
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
             ret := mload(0x40) // load unused pointer to the array
-            mstore(0x40, add(add(ret, _footprint), 0x20)) // write new unused pointer
+            mstore(0x40, add(add(ret, _len), 0x20)) // write new unused pointer
             mstore(ret, _len) // write len of new array (in bytes)
-            for { let offset := 0 } lt(offset, _footprint) { offset := add(offset, 0x20) }
+            for { let offset := 0 } lt(offset, _len) { offset := add(offset, 0x20) }
             {
                 // copy each chunk
                 let chunk := mload(add(_loc, offset))
