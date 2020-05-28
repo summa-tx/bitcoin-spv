@@ -7,33 +7,23 @@ const vectors = require('./testVectors.json');
 const BTCUtilsDelegate = artifacts.require('ViewBTCTest');
 
 const {
-  reverseEndianness,
-  bytesToUint,
   hash160,
   hash256,
-  hash256MerkleStep,
   extractOutpoint,
   extractInputTxIdLE,
   extractTxIndexLE,
   extractSequenceLEWitness,
-  extractSequenceWitness,
   extractSequenceLELegacy,
-  extractSequenceLegacy,
   extractSequenceLegacyError,
-  extractOutputScriptLen,
-  extractHash,
-  extractHashError,
   extractOpReturnData,
   extractOpReturnDataError,
   extractInputAtIndex,
   extractInputAtIndexError,
-  isLegacyInput,
   extractValueLE,
   extractValue,
   determineInputLength,
   extractScriptSig,
   extractScriptSigError,
-  extractScriptSigLen,
   validateVin,
   validateVout,
   determineOutputLength,
@@ -44,11 +34,64 @@ const {
   extractPrevBlockLE,
   extractTimestamp,
   verifyHash256Merkle,
-  determineVarIntDataLength,
   parseVarInt,
   parseVarIntError,
   retargetAlgorithm
 } = vectors;
+
+// indexVarInt
+
+// hash160: Passing
+
+// hash256: Passing
+
+// indexVin: Erroring
+
+// inputLength: Passing
+
+// sequence: Passing
+
+// scriptSig: Partially Passing
+
+// outpoint: Passing
+
+// outpointIdx: Passing
+
+// txidLE: Passing
+
+// outputLength: Partially Passing
+
+// indexVout: Erroring
+
+// valueBytes: Passing
+
+// extractValue: Passing
+
+// opReturnPayload: Not Completed
+
+// payload: Not Completed
+
+// tryAsVin: Erroring
+
+// tryAsVout: Erroring
+
+// merkleRoot: Passing
+
+// target: Passing
+
+// diff: Passing
+
+// time: Passing
+
+// parent: Passing
+
+// work: Not Completed
+
+// workHash: Not Completed
+
+// verifyHash256Merkle: Partially Passing
+
+// retargetAlgorithm: Passing
 
 contract('BTCUtils', () => {
   let instance;
@@ -56,26 +99,6 @@ contract('BTCUtils', () => {
   before(async () => {
     instance = await BTCUtilsDelegate.new();
   });
-
-  // it('reverses endianness', async () => {
-  //   for (let i = 0; i < reverseEndianness.length; i += 1) {
-  //     const res = await instance.reverseEndianness(reverseEndianness[i].input);
-  //     assert.strictEqual(res, reverseEndianness[i].output);
-  //   }
-  // });
-
-  // it('converts big-endian bytes to integers', async () => {
-  //   for (let i = 0; i < bytesToUint.length; i += 1) {
-  //     const res = await instance.bytesToUint(bytesToUint[i].input);
-  //     assert(res, new BN(bytesToUint[i].output, 10));
-  //   }
-
-  //   // max uint256: (2^256)-1
-  //   const res = await instance.bytesToUint(`0x${'ff'.repeat(32)}`);
-  //   assert(
-  //     res, new BN('115792089237316195423570985008687907853269984665640564039457584007913129639935', 10)
-  //   );
-  // });
 
   it('implements bitcoin\'s hash160', async () => {
     for (let i = 0; i < hash160.length; i += 1) {
@@ -91,28 +114,12 @@ contract('BTCUtils', () => {
     }
   });
 
-  // it('implements hash256MerkleStep', async () => {
-  //   for (let i = 0; i < hash256MerkleStep.length; i += 1) {
-  //     /* eslint-disable-next-line */
-  //     const res = await instance._hash256MerkleStep(
-  //       hash256MerkleStep[i].input[0],
-  //       hash256MerkleStep[i].input[1]
-  //     );
-  //     assert.strictEqual(res, hash256MerkleStep[i].output);
-  //   }
-  // });
-
   it('extracts a sequence from a witness input as LE and int', async () => {
     for (let i = 0; i < extractSequenceLEWitness.length; i += 1) {
       const res = await instance.sequence(extractSequenceLEWitness[i].input);
       const expected = new BN(extractSequenceLEWitness[i].output.slice(2), 16)
       assert(res.eq(expected));
     }
-
-    // for (let i = 0; i < extractSequenceWitness.length; i += 1) {
-    //   const res = await instance.extractSequenceWitness(extractSequenceWitness[i].input);
-    //   assert(res.eq(new BN(extractSequenceWitness[i].output, 16)));
-    // }
   });
 
   it('extracts a sequence from a legacy input as LE and int', async () => {
@@ -121,17 +128,13 @@ contract('BTCUtils', () => {
       const expected = new BN(extractSequenceLELegacy[i].output.slice(2), 16)
       assert(res.eq(expected))
     }
-
-    // for (let i = 0; i < extractSequenceLegacy.length; i += 1) {
-    //   const res = await instance.extractSequenceLegacy(extractSequenceLegacy[i].input);
-    //   assert(res.eq(new BN(extractSequenceLegacy[i].output, 16)));
-    // }
   });
 
+  // TODO: Error cases
   // it('errors on bad varints in extractSequenceLegacy', async () => {
   //   for (let i = 0; i < extractSequenceLegacyError.length; i += 1) {
   //     try {
-  //       await instance.extractSequenceLegacy(
+  //       await instance.sequence(
   //         extractSequenceLegacyError[i].input
   //       );
   //       assert(false, 'expected an error');
@@ -148,15 +151,6 @@ contract('BTCUtils', () => {
     }
   });
 
-  // TODO: come back to this - needs json test vectors?
-  // it('extracts an outpoint as an integer', async () => {
-  //   for (let i = 0; i < extractOutpoint.length; i += 1) {
-  //     const res = await instance.outpointIdx(extractOutpoint[i].input);
-  //     const expected = // index as an integer
-  //     assert.strictEqual(expected, res);
-  //   }
-  // });
-
   it('extracts a txid from an outpoint', async () => {
     for (let i = 0; i < extractInputTxIdLE.length; i += 1) {
       const outpoint = await instance.outpoint(extractInputTxIdLE[i].input)
@@ -165,51 +159,28 @@ contract('BTCUtils', () => {
     }
   });
 
-  // it('extracts an outpoint tx index LE', async () => {
-  //   for (let i = 0; i < extractTxIndexLE.length; i += 1) {
-  //     const res = await instance.extractTxIndexLE(extractTxIndexLE[i].input);
-  //     assert.strictEqual(res, extractTxIndexLE[i].output);
-  //   }
-  // });
+  it('extracts an outpoint tx index LE', async () => {
+    for (let i = 0; i < extractTxIndexLE.length; i += 1) {
+      const res = await instance.outpointIdx(extractTxIndexLE[i].input);
+      const expected = new BN(extractTxIndexLE[i].output.slice(2), 16)
+      assert(res.eq(expected));
+    }
+  });
 
-  // /* Witness Output */
-  // it('extracts the length of the output script', async () => {
-  //   for (let i = 0; i < extractOutputScriptLen.length; i += 1) {
-  //     const res = await instance.extractOutputScriptLen(extractOutputScriptLen[i].input);
-  //     if (Object.prototype.hasOwnProperty.call(extractOutputScriptLen[i], 'solOutput')) {
-  //       assert.strictEqual(res, extractOutputScriptLen[i].solOutput);
-  //     } else {
-  //       assert.strictEqual(res, extractOutputScriptLen[i].output);
-  //     }
-  //   }
-  // });
+  it('extracts the value as LE bytes', async () => {
+    for (let i = 0; i < extractValueLE.length; i += 1) {
+      const res = await instance.valueBytes(extractValueLE[i].input);
+      assert.strictEqual(extractValueLE[i].output, res);
+    }
+  });
 
-  // it('extracts the hash from a standard output', async () => {
-  //   for (let i = 0; i < extractHash.length; i += 1) {
-  //     const res = await instance.extractHash(extractHash[i].input);
-  //     assert.strictEqual(res, extractHash[i].output);
-  //   }
-
-  //   for (let i = 0; i < extractHashError.length; i += 1) {
-  //     const res = await instance.extractHash(extractHashError[i].input);
-  //     assert.isNull(res);
-  //   }
-  // });
-
-  // TODO: Come back to this - Probably just need to convert bytes to integer or visa versa...
-  // #1
-  // expected: 497480
-  // actual: '0x4897070000000000'
-
-  // #2
-  // expected: 0
-  // actual: '0x0000000000000000'
-  // it('extracts the value as LE and int', async () => {
-  //   for (let i = 0; i < extractValue.length; i += 1) {
-  //     const res = await instance.valueBytes(extractValue[i].input);
-  //     assert.strictEqual(extractValue[i].output, res);
-  //   }
-  // });
+  it('extracts the value as an integer', async () => {
+    for (let i = 0; i < extractValue.length; i += 1) {
+      const res = await instance.extractValue(extractValue[i].input);
+      const expected = new BN(extractValue[i].output, 10)
+      assert(res.eq(expected));
+    }
+  });
 
   it('determines input length', async () => {
     for (let i = 0; i < determineInputLength.length; i += 1) {
@@ -222,6 +193,7 @@ contract('BTCUtils', () => {
     }
   });
 
+  // TODO: opReturnPayload
   // it('extracts op_return data blobs', async () => {
   //   for (let i = 0; i < extractOpReturnData.length; i += 1) {
   //     const res = await instance.opReturnPayload(extractOpReturnData[i].input);
@@ -247,14 +219,15 @@ contract('BTCUtils', () => {
   //       extractInputAtIndex[i].input.vin,
   //       extractInputAtIndex[i].input.index
   //     );
-  //     assert.strictEqual(res, extractInputAtIndex[i].output);
+  //     assert.strictEqual(extractInputAtIndex[i].output, res);
   //   }
   // });
 
+  // TODO: Error cases
   // it('extract input errors on bad vin', async () => {
   //   for (let i = 0; i < extractInputAtIndexError.length; i += 1) {
   //     try {
-  //       await instance.extractInputAtIndex(
+  //       await instance.indexVin(
   //         extractInputAtIndexError[i].input.vin,
   //         extractInputAtIndexError[i].input.index
   //       );
@@ -262,13 +235,6 @@ contract('BTCUtils', () => {
   //     } catch (e) {
   //       assert.include(e.message, extractInputAtIndexError[i].solidityError, `${extractInputAtIndexError[i].input.vin} ${extractInputAtIndexError[i].input.index}`);
   //     }
-  //   }
-  // });
-
-  // it('sorts legacy from witness inputs', async () => {
-  //   for (let i = 0; i < isLegacyInput.length; i += 1) {
-  //     const res = await instance.isLegacyInput(isLegacyInput[i].input);
-  //     assert.strictEqual(isLegacyInput[i].output, res);
   //   }
   // });
 
@@ -295,10 +261,11 @@ contract('BTCUtils', () => {
   //   }
   // });
 
+  // TODO: Error cases
   // it('errors on bad varints in extractScriptSig', async () => {
   //   for (let i = 0; i < extractScriptSigError.length; i += 1) {
   //     try {
-  //       await instance.extractScriptSig(
+  //       await instance.scriptSig(
   //         extractScriptSigError[i].input
   //       );
   //       assert(false, 'expected an error');
@@ -308,34 +275,30 @@ contract('BTCUtils', () => {
   //   }
   // });
 
-  // it('extracts the length of the VarInt and scriptSig from inputs', async () => {
-  //   for (let i = 0; i < extractScriptSigLen.length; i += 1) {
-  //     const res = await instance.extractScriptSigLen(extractScriptSigLen[i].input);
-  //     assert(res[0].eq(new BN(extractScriptSigLen[i].output[0], 10)));
-  //     assert(res[1].eq(new BN(extractScriptSigLen[i].output[1], 10)));
-  //   }
-  // });
-
+  // TODO: Come back to this
+  // Error: TypedMemView/index - Overran the view.
   // it('validates vin length based on stated size', async () => {
   //   for (let i = 0; i < validateVin.length; i += 1) {
-  //     const res = await instance.validateVin(validateVin[i].input);
-  //     assert.strictEqual(res, validateVin[i].output);
+  //     const res = await instance.tryAsVin(validateVin[i].input);
+  //     assert.strictEqual(validateVin[i].output, res);
   //   }
   // });
 
+  // TODO: Come back to this
+  // Error: type assertion failed
   // it('validates vout length based on stated size', async () => {
   //   for (let i = 0; i < validateVout.length; i += 1) {
-  //     if (validateVout[i].solidityError) {
-  //       try {
-  //         await instance.validateVout(validateVout[i].input);
-  //         assert(false, 'expected an error');
-  //       } catch (e) {
-  //         assert.include(e.message, validateVout[i].solidityError);
-  //       }
-  //     } else {
-  //       const res = await instance.validateVout(validateVout[i].input);
-  //       assert.strictEqual(res, validateVout[i].output);
-  //     }
+  //     // if (validateVout[i].solidityError) {
+  //       // try {
+  //       //   await instance.tryAsVout(validateVout[i].input);
+  //       //   assert(false, 'expected an error');
+  //       // } catch (e) {
+  //       //   assert.include(e.message, validateVout[i].solidityError);
+  //       // }
+  //     // } else {
+  //     const res = await instance.tryAsVout(validateVout[i].input);
+  //     assert.strictEqual(validateVout[i].output, res);
+  //     // }
   //   }
   // });
 
@@ -357,19 +320,20 @@ contract('BTCUtils', () => {
   // TODO: come back to this
   // error - "TypedMemView/index - Overran the view."
   // it('extracts outputs at specified indices', async () => {
-  //   for (let i = 0; i < extractInputAtIndex.length; i += 1) {
+  //   for (let i = 0; i < extractOutputAtIndex.length; i += 1) {
   //     const res = await instance.indexVout(
   //       extractOutputAtIndex[i].input.vout,
   //       extractOutputAtIndex[i].input.index
   //     );
-  //     assert.strictEqual(res, extractOutputAtIndex[i].output);
+  //     assert.strictEqual(extractOutputAtIndex[i].output, res);
   //   }
   // });
 
+  // TODO: Error cases
   // it('errors while extracting outputs at specified indices', async () => {
   //   for (let i = 0; i < extractOutputAtIndexError.length; i += 1) {
   //     try {
-  //       await instance.extractOutputAtIndex(
+  //       await instance.indexVout(
   //         extractOutputAtIndexError[i].input.vout,
   //         extractOutputAtIndexError[i].input.index
   //       );
@@ -408,20 +372,16 @@ contract('BTCUtils', () => {
     }
   });
 
+  // TODO: Come back to this
+  // All pass except...
+  // Error on test cases 6 & 7: Overflow during addition.
   // it('verifies a bitcoin merkle root', async () => {
   //   for (let i = 0; i < verifyHash256Merkle.length; i += 1) {
   //     const res = await instance.verifyHash256Merkle(
   //       verifyHash256Merkle[i].input.proof,
   //       verifyHash256Merkle[i].input.index
   //     ); // 0-indexed
-  //     assert.strictEqual(res, verifyHash256Merkle[i].output);
-  //   }
-  // });
-
-  // it('determines VarInt data lengths correctly', async () => {
-  //   for (let i = 0; i < determineVarIntDataLength.length; i += 1) {
-  //     const res = await instance.determineVarIntDataLength(`0x${(determineVarIntDataLength[i].input).toString(16)}`);
-  //     assert(res.eq(new BN(determineVarIntDataLength[i].output, 10)));
+  //     assert.strictEqual(verifyHash256Merkle[i].output, res);
   //   }
   // });
 
@@ -433,39 +393,40 @@ contract('BTCUtils', () => {
     }
   });
 
+  // TODO: Error cases
   // it('returns error for invalid VarInts', async () => {
   //   for (let i = 0; i < parseVarIntError.length; i += 1) {
-  //     const res = await instance.parseVarInt(parseVarIntError[i].input);
+  //     const res = await instance.indexVarInt(parseVarIntError[i].input);
   //     assert(res[0].eq(new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)), 'did not get error code');
   //     assert(res[1].eq(new BN(0, 10)), `got non-0 value: ${res[1].toString()}`);
   //   }
   // });
 
-  // it('calculates consensus-correct retargets', async () => {
-  //   let firstTimestamp;
-  //   let secondTimestamp;
-  //   let previousTarget;
-  //   let expectedNewTarget;
-  //   let res;
-  //   for (let i = 0; i < retargetAlgorithm.length; i += 1) {
-  //     firstTimestamp = retargetAlgorithm[i].input[0].timestamp;
-  //     secondTimestamp = retargetAlgorithm[i].input[1].timestamp;
-  //     previousTarget = await instance.extractTarget.call(retargetAlgorithm[i].input[1].hex);
-  //     expectedNewTarget = await instance.extractTarget.call(retargetAlgorithm[i].input[2].hex);
-  //     res = await instance.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-  //     // (response & expected) == expected
-  //     // this converts our full-length target into truncated block target
-  //     assert(res.uand(expectedNewTarget).eq(expectedNewTarget));
+  it('calculates consensus-correct retargets', async () => {
+    let firstTimestamp;
+    let secondTimestamp;
+    let previousTarget;
+    let expectedNewTarget;
+    let res;
+    for (let i = 0; i < retargetAlgorithm.length; i += 1) {
+      firstTimestamp = retargetAlgorithm[i].input[0].timestamp;
+      secondTimestamp = retargetAlgorithm[i].input[1].timestamp;
+      previousTarget = await instance.target.call(retargetAlgorithm[i].input[1].hex);
+      expectedNewTarget = await instance.target.call(retargetAlgorithm[i].input[2].hex);
+      res = await instance.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
+      // (response & expected) == expected
+      // this converts our full-length target into truncated block target
+      assert(res.uand(expectedNewTarget).eq(expectedNewTarget));
 
-  //     secondTimestamp = firstTimestamp + 5 * 2016 * 10 * 60; // longer than 4x
-  //     res = await instance.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-  //     assert(res.divn(4).uand(previousTarget).eq(previousTarget));
+      secondTimestamp = firstTimestamp + 5 * 2016 * 10 * 60; // longer than 4x
+      res = await instance.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
+      assert(res.divn(4).uand(previousTarget).eq(previousTarget));
 
-  //     secondTimestamp = firstTimestamp + 2016 * 10 * 14; // shorter than 1/4x
-  //     res = await instance.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
-  //     assert(res.muln(4).uand(previousTarget).eq(previousTarget));
-  //   }
-  // });
+      secondTimestamp = firstTimestamp + 2016 * 10 * 14; // shorter than 1/4x
+      res = await instance.retargetAlgorithm(previousTarget, firstTimestamp, secondTimestamp);
+      assert(res.muln(4).uand(previousTarget).eq(previousTarget));
+    }
+  });
 
   it('extracts difficulty from a header', async () => {
     let actual;
