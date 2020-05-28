@@ -121,15 +121,15 @@ library CheckBitcoinSigs {
 
     /// @notice                 calculates the signature hash of a Bitcoin transaction with the provided details
     /// @dev                    documented in bip143. many values are hardcoded here
-    /// @param _outpoint        the bitcoin output script
+    /// @param _outpoint        the bitcoin UTXO id (32-byte txid + 4-byte output index)
     /// @param _inputPKH        the input pubkeyhash (hash160(sender_pubkey))
     /// @param _inputValue      the value of the input in satoshi
     /// @param _outputValue     the value of the output in satoshi
     /// @param _outputScript    the length-prefixed output script
     /// @return                 the double-sha256 (hash256) signature hash as defined by bip143
     function wpkhSpendSighash(
-        bytes memory _outpoint,  // 36 byte UTXO id
-        bytes20 _inputPKH,       // 20 byte hash160
+        bytes memory _outpoint,  // 36-byte UTXO id
+        bytes20 _inputPKH,       // 20-byte hash160
         bytes8 _inputValue,      // 8-byte LE
         bytes8 _outputValue,     // 8-byte LE
         bytes memory _outputScript    // lenght-prefixed output script
@@ -160,18 +160,18 @@ library CheckBitcoinSigs {
 
     /// @notice                 calculates the signature hash of a Bitcoin transaction with the provided details
     /// @dev                    documented in bip143. many values are hardcoded here
-    /// @param _outpoint        the bitcoin output script
+    /// @param _outpoint        the bitcoin UTXO id (32-byte txid + 4-byte output index)
     /// @param _inputPKH        the input pubkeyhash (hash160(sender_pubkey))
     /// @param _inputValue      the value of the input in satoshi
     /// @param _outputValue     the value of the output in satoshi
     /// @param _outputPKH       the output pubkeyhash (hash160(recipient_pubkey))
     /// @return                 the double-sha256 (hash256) signature hash as defined by bip143
     function wpkhToWpkhSighash(
-        bytes memory _outpoint,  // 36 byte UTXO id
-        bytes20 _inputPKH,  // 20 byte hash160
+        bytes memory _outpoint,  // 36-byte UTXO id
+        bytes20 _inputPKH,  // 20-byte hash160
         bytes8 _inputValue,  // 8-byte LE
         bytes8 _outputValue,  // 8-byte LE
-        bytes20 _outputPKH  // 20 byte hash160
+        bytes20 _outputPKH  // 20-byte hash160
     ) internal pure returns (bytes32) {
         return wpkhSpendSighash(
             _outpoint,
@@ -186,18 +186,18 @@ library CheckBitcoinSigs {
 
     /// @notice                 Preserved for API compatibility with older version
     /// @dev                    documented in bip143. many values are hardcoded here
-    /// @param _outpoint        the bitcoin output script
+    /// @param _outpoint        the bitcoin UTXO id (32-byte txid + 4-byte output index)
     /// @param _inputPKH        the input pubkeyhash (hash160(sender_pubkey))
     /// @param _inputValue      the value of the input in satoshi
     /// @param _outputValue     the value of the output in satoshi
     /// @param _outputPKH       the output pubkeyhash (hash160(recipient_pubkey))
     /// @return                 the double-sha256 (hash256) signature hash as defined by bip143
     function oneInputOneOutputSighash(
-        bytes memory _outpoint,  // 36 byte UTXO id
-        bytes20 _inputPKH,  // 20 byte hash160
+        bytes memory _outpoint,  // 36-byte UTXO id
+        bytes20 _inputPKH,  // 20-byte hash160
         bytes8 _inputValue,  // 8-byte LE
         bytes8 _outputValue,  // 8-byte LE
-        bytes20 _outputPKH  // 20 byte hash160
+        bytes20 _outputPKH  // 20-byte hash160
     ) internal pure returns (bytes32) {
         return wpkhToWpkhSighash(_outpoint, _inputPKH, _inputValue, _outputValue, _outputPKH);
     }
