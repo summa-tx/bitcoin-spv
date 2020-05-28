@@ -1,6 +1,6 @@
 pragma solidity ^0.5.10;
 
-/** @title ValidateSPV*/
+/** @title ViewSPV */
 /** @author Summa (https://summa.one) */
 
 import {TypedMemView} from "./TypedMemView.sol";
@@ -8,7 +8,7 @@ import {ViewBTC} from "./ViewBTC.sol";
 import {SafeMath} from "./SafeMath.sol";
 
 
-library ValidateSPV {
+library ViewSPV {
     using TypedMemView for bytes;
     using TypedMemView for bytes29;
     using ViewBTC for bytes29;
