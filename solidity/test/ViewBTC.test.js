@@ -53,6 +53,8 @@ const {
 
 // scriptSig: Partially Passing
 
+// scriptPubkey: Not Completed
+
 // outpoint: Passing
 
 // outpointIdx: Passing
@@ -193,23 +195,22 @@ contract('BTCUtils', () => {
     }
   });
 
-  // TODO: opReturnPayload
-  // it('extracts op_return data blobs', async () => {
-  //   for (let i = 0; i < extractOpReturnData.length; i += 1) {
-  //     const res = await instance.opReturnPayload(extractOpReturnData[i].input);
-  //     assert.strictEqual(extractOpReturnData[i].output, res);
-  //   }
+  it('extracts op_return data blobs', async () => {
+    for (let i = 0; i < extractOpReturnData.length; i += 1) {
+      const res = await instance.opReturnPayload(extractOpReturnData[i].input);
+      assert.strictEqual(extractOpReturnData[i].output, res);
+    }
 
-  //   // for (let i = 0; i < extractOpReturnDataError.length; i += 1) {
-  //   //   try {
-  //   //     const res = await instance.extractOpReturnData(extractOpReturnDataError[i].input);
-  //   //     assert(!(extractOpReturnDataError[i].solidityError), 'expected an error message');
-  //   //     assert.isNull(res);
-  //   //   } catch (e) {
-  //   //     assert.include(e.message, extractOpReturnDataError[i].solidityError);
-  //   //   }
-  //   // }
-  // });
+    // for (let i = 0; i < extractOpReturnDataError.length; i += 1) {
+    //   try {
+    //     const res = await instance.extractOpReturnData(extractOpReturnDataError[i].input);
+    //     assert(!(extractOpReturnDataError[i].solidityError), 'expected an error message');
+    //     assert.isNull(res);
+    //   } catch (e) {
+    //     assert.include(e.message, extractOpReturnDataError[i].solidityError);
+    //   }
+    // }
+  });
 
   // TODO: come back to this
   // error - "TypedMemView/index - Overran the view."

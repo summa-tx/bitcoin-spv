@@ -40,6 +40,10 @@ contract ViewBTCTest {
         return _input.ref(uint40(ViewBTC.BTCTypes.TxIn)).scriptSig().clone();
     }
 
+    function scriptPubkey(bytes memory _output) public pure returns (bytes memory) {
+        return _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).scriptPubkey().clone();
+    }
+
     function outpoint(bytes memory _input) public pure returns (bytes memory) {
         return _input.ref(uint40(ViewBTC.BTCTypes.TxIn)).outpoint().clone();
     }
@@ -69,7 +73,7 @@ contract ViewBTCTest {
     }
 
     function opReturnPayload(bytes memory _output) public pure returns (bytes memory) {
-        return _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).opReturnPayload().clone();
+        return _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).scriptPubkey().opReturnPayload().clone();
     }
 
     function payload(bytes memory _output) public pure returns (bytes memory) {
