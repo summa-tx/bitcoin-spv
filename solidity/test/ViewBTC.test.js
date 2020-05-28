@@ -4,7 +4,7 @@ const BN = require('bn.js');
 /* eslint-disable-next-line no-unresolved */
 const vectors = require('./testVectors.json');
 
-const BTCUtilsDelegate = artifacts.require('ViewBTCTest');
+const ViewBTC = artifacts.require('ViewBTCTest');
 
 const {
   hash160,
@@ -93,12 +93,18 @@ const {
 
 // retargetAlgorithm: Passing
 
-contract('BTCUtils', () => {
+contract.only('ViewBTC', () => {
   let instance;
 
   before(async () => {
-    instance = await BTCUtilsDelegate.new();
+    instance = await ViewBTC.new();
   });
+
+  // it('asHex', async () => {
+  //   const avar = new BN('000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f', 16);
+  //   const res = await instance.encodeHex.call(avar);
+  //   console.log(res[0].toString(16), res[1].toString(16))
+  // });
 
   it('implements bitcoin\'s hash160', async () => {
     for (let i = 0; i < hash160.length; i += 1) {
@@ -213,15 +219,15 @@ contract('BTCUtils', () => {
 
   // TODO: come back to this
   // error - "TypedMemView/index - Overran the view."
-  // it('extracts inputs at specified indices', async () => {
-  //   for (let i = 0; i < extractInputAtIndex.length; i += 1) {
-  //     const res = await instance.indexVin(
-  //       extractInputAtIndex[i].input.vin,
-  //       extractInputAtIndex[i].input.index
-  //     );
-  //     assert.strictEqual(extractInputAtIndex[i].output, res);
-  //   }
-  // });
+  it.only('extracts inputs at specified indices', async () => {
+    for (let i = 0; i < extractInputAtIndex.length; i += 1) {
+      const res = await instance.indexVin(
+        extractInputAtIndex[i].input.vin,
+        extractInputAtIndex[i].input.index
+      );
+      assert.strictEqual(extractInputAtIndex[i].output, res);
+    }
+  });
 
   // TODO: Error cases
   // it('extract input errors on bad vin', async () => {

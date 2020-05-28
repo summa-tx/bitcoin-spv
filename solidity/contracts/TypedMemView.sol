@@ -69,6 +69,51 @@ library TypedMemView {
     uint256 constant LOW_12_MASK = 0xffffffffffffffffffffffff;
     uint8 constant TWELVE_BYTES = 96;
 
+    function nibbleHex(uint8 _b) internal pure returns (uint8) {
+        _b &= 0x0f;
+        if (_b | 0x00 == 0x00) { return 0x30; }
+        if (_b | 0x01 == 0x01) { return 0x31; }
+        if (_b | 0x02 == 0x02) { return 0x32; }
+        if (_b | 0x03 == 0x03) { return 0x33; }
+        if (_b | 0x04 == 0x04) { return 0x34; }
+        if (_b | 0x05 == 0x05) { return 0x35; }
+        if (_b | 0x06 == 0x06) { return 0x36; }
+        if (_b | 0x07 == 0x07) { return 0x37; }
+        if (_b | 0x08 == 0x08) { return 0x38; }
+        if (_b | 0x09 == 0x09) { return 0x39; }
+        if (_b | 0x0a == 0x0a) { return 0x61; }
+        if (_b | 0x0b == 0x0b) { return 0x62; }
+        if (_b | 0x0c == 0x0c) { return 0x63; }
+        if (_b | 0x0d == 0x0d) { return 0x64; }
+        if (_b | 0x0e == 0x0e) { return 0x65; }
+        if (_b | 0x0e == 0x0f) { return 0x66; }
+    }
+
+    function byteHex(uint8 _b) internal pure returns (uint16 encoded) {
+        encoded |= nibbleHex(_b >> 4);
+        encoded <<= 8;
+        encoded |= nibbleHex(_b);
+    }
+
+    function encodeHex(uint256 _b) internal pure returns (uint256 first, uint256 second) {
+        for (uint8 i = 31; i > 15; i -= 1) {
+            uint8 _byte = uint8(_b >> (i * 8));
+            first |= byteHex(_byte);
+            if (i != 16) {
+                first <<= 16;
+            }
+        }
+
+        // abusing underflow here =_=
+        for (uint8 i = 15; i < 255 ; i -= 1) {
+            uint8 _byte = uint8(_b >> (i * 8));
+            second |= byteHex(_byte);
+            if (i!= 0) {
+                second <<= 16;
+            }
+        }
+    }
+
     /// @notice          Changes the endianness of a uint256
     /// @dev             https://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel
     /// @param _b        The unsigned integer to reverse
@@ -147,7 +192,17 @@ library TypedMemView {
     /// Require that a typed memory view has a specific type.
     /// Returns the view for easy chaining
     function assertType(bytes29 memView, uint40 _expected) internal pure returns (bytes29) {
-        require(isType(memView, _expected), "Type assertion failed");
+        if (!isType(memView, _expected)) {
+            (, uint256 g) = encodeHex(uint256(typeOf(memView)));
+            (, uint256 e) = encodeHex(uint256(_expected));
+            string memory err = string(abi.encodePacked(
+                "Type assertion failed. Got 0x",
+                uint80(g),
+                ". Expected 0x",
+                uint80(e))
+            );
+            revert(err);
+        }
         return memView;
     }
 
@@ -270,6 +325,29 @@ library TypedMemView {
         return slice(memView, uint256(len(memView)).sub(_len), _len, newType);
     }
 
+    function indexErrOverrun(
+        uint256 _loc,
+        uint256 _len,
+        uint256 _index,
+        uint256 _slice
+    ) internal pure returns (string memory err) {
+        (, uint256 a) = encodeHex(_loc);
+        (, uint256 b) = encodeHex(_len);
+        (, uint256 c) = encodeHex(_index);
+        (, uint256 d) = encodeHex(_slice);
+        err = string(abi.encodePacked(
+            "TypedMemView/index - Overran the view. Slice is at 0x",
+            uint48(a),
+            " with length 0x",
+            uint48(b),
+            ". Attempted to index at offset 0x",
+            uint48(c),
+            " with length 0x",
+            uint48(d),
+            "."
+        ));
+    }
+
     /// Load up to 32 bytes from the view onto the stack.
     ///
     /// Returns a bytes32 with only the `_bytes` highest bytes set.
@@ -277,7 +355,9 @@ library TypedMemView {
     /// To automatically cast to an integer, use `indexUint` or `indexInt`.
     function index(bytes29 memView, uint256 _index, uint8 _bytes) internal pure returns (bytes32 result) {
         if (_bytes == 0) {return bytes32(0);}
-        require(_index.add(_bytes) <= len(memView), "TypedMemView/index - Overran the view.");
+        if (_index.add(_bytes) > len(memView)) {
+            revert(indexErrOverrun(loc(memView), len(memView), _index, uint256(_bytes)));
+        }
         require(_bytes <= 32, "TypedMemView/index - Attempted to index more than 32 bytes");
 
         uint8 bitLength = _bytes * 8;
