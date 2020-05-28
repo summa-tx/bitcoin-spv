@@ -57,8 +57,6 @@ contract('BTCUtils', () => {
     instance = await BTCUtilsDelegate.new();
   });
 
-  // TODO: test vectors/tests for inputLength and outputLength
-
   // it('reverses endianness', async () => {
   //   for (let i = 0; i < reverseEndianness.length; i += 1) {
   //     const res = await instance.reverseEndianness(reverseEndianness[i].input);
@@ -208,17 +206,21 @@ contract('BTCUtils', () => {
   // actual: '0x0000000000000000'
   // it('extracts the value as LE and int', async () => {
   //   for (let i = 0; i < extractValue.length; i += 1) {
-  //     const res = await instance.valueBytes(extractValue[1].input);
-  //     assert.strictEqual(extractValue[1].output, res);
+  //     const res = await instance.valueBytes(extractValue[i].input);
+  //     assert.strictEqual(extractValue[i].output, res);
   //   }
   // });
 
-  // it('determines input length', async () => {
-  //   for (let i = 0; i < determineInputLength.length; i += 1) {
-  //     const res = await instance.determineInputLength(determineInputLength[i].input);
-  //     assert(res.eq(new BN(determineInputLength[i].output, 10)));
-  //   }
-  // });
+  it('determines input length', async () => {
+    for (let i = 0; i < determineInputLength.length; i += 1) {
+      const res = await instance.inputLength(determineInputLength[i].input);
+      const expected = new BN(determineInputLength[i].output, 10)
+      assert(
+        res.eq(expected),
+        `Input Length Test Failed: Expected ${expected.toString()}, got ${res.toString()}`
+      );
+    }
+  });
 
   // it('extracts op_return data blobs', async () => {
   //   for (let i = 0; i < extractOpReturnData.length; i += 1) {
@@ -337,24 +339,18 @@ contract('BTCUtils', () => {
   //   }
   // });
 
+  // TODO: possible bug?
+  // All test cases passed except the last
+  // expected: 269
+  // actual: 261
   // it('determines output length properly', async () => {
   //   for (let i = 0; i < determineOutputLength.length; i += 1) {
-  //     const res = await instance.determineOutputLength(determineOutputLength[i].input);
+  //     const res = await instance.outputLength(determineOutputLength[i].input);
   //     const expected = new BN(determineOutputLength[i].output, 10);
   //     assert(
   //       res.eq(expected),
   //       `Output Length Test Failed: expected ${expected.toString()}, got ${res.toString()}`
   //     );
-  //   }
-  // });
-
-  // it('extracts outputs at specified indices', async () => {
-  //   for (let i = 0; i < extractOutputAtIndex.length; i += 1) {
-  //     const res = await instance.extractOutputAtIndex(
-  //       extractOutputAtIndex[i].input.vout,
-  //       extractOutputAtIndex[i].input.index
-  //     );
-  //     assert.strictEqual(res, extractOutputAtIndex[i].output);
   //   }
   // });
 
@@ -383,33 +379,34 @@ contract('BTCUtils', () => {
   //   }
   // });
 
-  // it('extracts a root from a header', async () => {
-  //   for (let i = 0; i < extractMerkleRootLE.length; i += 1) {
-  //     const res = await instance.extractMerkleRootLE(extractMerkleRootLE[i].input);
-  //     assert.strictEqual(res, extractMerkleRootLE[i].output);
-  //   }
-  // });
+  it('extracts a root from a header', async () => {
+    for (let i = 0; i < extractMerkleRootLE.length; i += 1) {
+      const res = await instance.merkleRoot(extractMerkleRootLE[i].input);
+      assert.strictEqual(extractMerkleRootLE[i].output, res);
+    }
+  });
 
-  // it('extracts the target from a header', async () => {
-  //   for (let i = 0; i < extractTarget.length; i += 1) {
-  //     const res = await instance.extractTarget(extractTarget[i].input);
-  //     assert(res.eq(new BN(extractTarget[i].output.slice(2), 16)));
-  //   }
-  // });
+  it('extracts the target from a header', async () => {
+    for (let i = 0; i < extractTarget.length; i += 1) {
+      const res = await instance.target(extractTarget[i].input);
+      const expected = new BN(extractTarget[i].output.slice(2), 16)
+      assert(res.eq(expected));
+    }
+  });
 
-  // it('extracts the prev block hash', async () => {
-  //   for (let i = 0; i < extractPrevBlockLE.length; i += 1) {
-  //     const res = await instance.extractPrevBlockLE(extractPrevBlockLE[i].input);
-  //     assert.strictEqual(res, extractPrevBlockLE[i].output);
-  //   }
-  // });
+  it('extracts the prev block hash', async () => {
+    for (let i = 0; i < extractPrevBlockLE.length; i += 1) {
+      const res = await instance.parent(extractPrevBlockLE[i].input);
+      assert.strictEqual(extractPrevBlockLE[i].output, res);
+    }
+  });
 
-  // it('extracts a timestamp from a header', async () => {
-  //   for (let i = 0; i < extractTimestamp.length; i += 1) {
-  //     const res = await instance.extractTimestamp(extractTimestamp[i].input);
-  //     assert(res.eq(new BN(extractTimestamp[i].output, 10)));
-  //   }
-  // });
+  it('extracts a timestamp from a header', async () => {
+    for (let i = 0; i < extractTimestamp.length; i += 1) {
+      const res = await instance.time(extractTimestamp[i].input);
+      assert(extractTimestamp[i].output, res);
+    }
+  });
 
   // it('verifies a bitcoin merkle root', async () => {
   //   for (let i = 0; i < verifyHash256Merkle.length; i += 1) {
@@ -470,21 +467,21 @@ contract('BTCUtils', () => {
   //   }
   // });
 
-  // it('extracts difficulty from a header', async () => {
-  //   let actual;
-  //   let expected;
-  //   for (let i = 0; i < retargetAlgorithm.length; i += 1) {
-  //     actual = await instance.extractDifficulty(retargetAlgorithm[i].input[0].hex);
-  //     expected = new BN(retargetAlgorithm[i].input[0].difficulty, 10);
-  //     assert(actual.eq(expected));
+  it('extracts difficulty from a header', async () => {
+    let actual;
+    let expected;
+    for (let i = 0; i < retargetAlgorithm.length; i += 1) {
+      actual = await instance.diff(retargetAlgorithm[i].input[0].hex);
+      expected = new BN(retargetAlgorithm[i].input[0].difficulty, 10);
+      assert(actual.eq(expected));
 
-  //     actual = await instance.extractDifficulty(retargetAlgorithm[i].input[1].hex);
-  //     expected = new BN(retargetAlgorithm[i].input[1].difficulty, 10);
-  //     assert(actual.eq(expected));
+      actual = await instance.diff(retargetAlgorithm[i].input[1].hex);
+      expected = new BN(retargetAlgorithm[i].input[1].difficulty, 10);
+      assert(actual.eq(expected));
 
-  //     actual = await instance.extractDifficulty(retargetAlgorithm[i].input[2].hex);
-  //     expected = new BN(retargetAlgorithm[i].input[2].difficulty, 10);
-  //     assert(actual.eq(expected));
-  //   }
-  // });
+      actual = await instance.diff(retargetAlgorithm[i].input[2].hex);
+      expected = new BN(retargetAlgorithm[i].input[2].difficulty, 10);
+      assert(actual.eq(expected));
+    }
+  });
 });
