@@ -404,28 +404,32 @@ library BTCUtils {
     /// @param _output   The output
     /// @return          The hash committed to by the pk_script, or null for errors
     function extractHash(bytes memory _output) internal pure returns (bytes memory) {
-        if (uint8(_output[8]) + 9 != _output.length) {
+        uint8 _scriptLen = uint8(_output[8]);
+
+        // don't have to worry about overflow here.
+        // if _scriptLen + 9 overflows, then output.length would have to be < 8
+        // for this check to pass. if it's <8, then we errored when assigning
+        // _scriptLen
+        if (_scriptLen + 9 != _output.length) {
             return hex"";
         }
 
         if (uint8(_output.slice(9, 1)[0]) == 0) {
-            uint256 _len = uint8(_output[8]);
-            if (_len < 2) {
+            if (_scriptLen < 2) {
                 return hex"";
             }
-            _len -= 2;
             uint256 _payloadLen = uint8(_output[10]);
             // Check for maliciously formatted witness outputs
-            if (_payloadLen != _len || (_payloadLen != 0x20 && _payloadLen != 0x14)) {
+            if (_payloadLen != _scriptLen - 2 || (_payloadLen != 0x20 && _payloadLen != 0x14)) {
                 return hex"";
             }
-            return _output.slice(11, _len);
+            return _output.slice(11, _payloadLen);
         } else {
             bytes32 _tag = _output.keccak256Slice(8, 3);
             // p2pkh
             if (_tag == keccak256(hex"1976a9")) {
                 // Check for maliciously formatted p2pkh
-                if (uint8(_output.slice(11, 1)[0]) != 0x14 ||
+                if (uint8(_output[11]) != 0x14 ||
                     _output.keccak256Slice(_output.length - 2, 2) != keccak256(hex"88ac")) {
                     return hex"";
                 }
