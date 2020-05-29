@@ -181,30 +181,6 @@
       "output": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff"
     },
     {
-      "comment": "3-byte VarInt",
-      "input": {
-        "vin": "0xFD01001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
-        "index": 0
-      },
-      "output": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff"
-    },
-    {
-      "comment": "5-byte VarInt",
-      "input": {
-        "vin": "0xFE010000001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
-        "index": 0
-      },
-      "output": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff"
-    },
-    {
-      "comment": "9-byte VarInt",
-      "input": {
-        "vin": "0xFF01000000000000001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
-        "index": 0
-      },
-      "output": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff"
-    },
-    {
       "input": {
         "vin": "0x027bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff",
         "index": 0
@@ -414,30 +390,6 @@
     {
       "input": {
         "vout": "0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-        "index": 1
-      },
-      "output": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211"
-    },
-    {
-      "comment": "3-byte VarInt",
-      "input": {
-        "vout": "0xFD02004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-        "index": 1
-      },
-      "output": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211"
-    },
-    {
-      "comment": "5-byte VarInt",
-      "input": {
-        "vout": "0xFE020000004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-        "index": 1
-      },
-      "output": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211"
-    },
-    {
-      "comment": "9-byte VarInt",
-      "input": {
-        "vout": "0xFF02000000000000004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
         "index": 1
       },
       "output": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211"

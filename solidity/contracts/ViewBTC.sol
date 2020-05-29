@@ -17,27 +17,27 @@ library ViewBTC {
     uint256 public constant RETARGET_PERIOD_BLOCKS = 2016;  // 2 weeks in blocks
 
     enum BTCTypes {
-        Unknown,
-        CompactInt,
-        ScriptSig,  // with length prefix
-        Outpoint,
-        TxIn,
-        IntermediateTxIns,  // used in vin parsing
-        Vin,
-        ScriptPubkey,  // with length prefix
-        PKH,   // the 20-byte payload digest
-        WPKH,  // the 20-byte payload digest
-        WSH,   // the 32-byte payload digest
-        SH,    // the 20-byte payload digest
-        OpReturnPayload,
-        TxOut,
-        IntermediateTxOuts,  // used in vout parsing
-        Vout,
-        Header,
-        HeaderArray,
-        MerkleNode,
-        MerkleStep,
-        MerkleArray
+        Unknown,            // 0x0
+        CompactInt,         // 0x1
+        ScriptSig,          // 0x2 - with length prefix
+        Outpoint,           // 0x3
+        TxIn,               // 0x4
+        IntermediateTxIns,  // 0x5 - used in vin parsing
+        Vin,                // 0x6
+        ScriptPubkey,       // 0x7 - with length prefix
+        PKH,                // 0x8 - the 20-byte payload digest
+        WPKH,               // 0x9 - the 20-byte payload digest
+        WSH,                // 0xa - the 32-byte payload digest
+        SH,                 // 0xb - the 20-byte payload digest
+        OpReturnPayload,    // 0xc
+        TxOut,              // 0xd
+        IntermediateTxOuts, // 0xe - used in vout parsing
+        Vout,               // 0xf
+        Header,             // 0x10
+        HeaderArray,        // 0x11
+        MerkleNode,         // 0x12
+        MerkleStep,         // 0x13
+        MerkleArray         // 0x14
     }
 
     // TODO: any way to bubble up more info?
@@ -46,7 +46,7 @@ library ViewBTC {
     /// @param t            the expected type (e.g. BTCTypes.Outpoint, BTCTypes.TxIn, etc)
     /// @return             passes if it is the correct type, errors if not
     modifier typeAssert(bytes29 memView, BTCTypes t) {
-        require(memView.typeOf() == uint40(t), "type assertion failed");
+        memView.assertType(uint40(t));
         _;
     }
 
@@ -134,18 +134,19 @@ library ViewBTC {
     /// @param _vin     the vin
     /// @param _index   the index of the desired input
     /// @return         the desired input
-    function indexVin(bytes29 _vin, uint64 _index) internal pure typeAssert(_vin, BTCTypes.Vin) returns (bytes29) {
-        uint64 _vinLen = indexCompactInt(_vin, 0);
-        require(_index < _vinLen, "Vin read overrun");
+    function indexVin(bytes29 _vin, uint256 _index) internal pure typeAssert(_vin, BTCTypes.Vin) returns (bytes29) {
+        uint256 _nIns = uint256(indexCompactInt(_vin, 0));
+        uint256 _viewLen = _vin.len();
+        require(_index < _nIns, "Vin read overrun");
 
-        uint256 _offset = uint256(compactIntLength(_vinLen));
+        uint256 _offset = uint256(compactIntLength(uint64(_nIns)));
         bytes29 _remaining;
-        for (uint256 _i = 0; _i < _index; _i ++) {
-            _remaining = _vin.postfix(_vinLen - _offset, uint40(BTCTypes.IntermediateTxIns));
+        for (uint256 _i = 0; _i < _index; _i += 1) {
+            _remaining = _vin.postfix(_viewLen.sub(_offset), uint40(BTCTypes.IntermediateTxIns));
             _offset += inputLength(_remaining);
         }
 
-        _remaining = _vin.postfix(_vinLen - _offset, uint40(BTCTypes.IntermediateTxIns));
+        _remaining = _vin.postfix(_viewLen.sub(_offset), uint40(BTCTypes.IntermediateTxIns));
         uint256 _len = inputLength(_remaining);
         return _vin.slice(_offset, _len, uint40(BTCTypes.TxIn));
     }
@@ -184,18 +185,19 @@ library ViewBTC {
     /// @param _vout    the vout
     /// @param _index   the index of the desired output
     /// @return         the desired output
-    function indexVout(bytes29 _vout, uint64 _index) internal pure typeAssert(_vout, BTCTypes.Vout) returns (bytes29) {
-        uint64 _voutLen = indexCompactInt(_vout, 0);
-        require(_index < _voutLen, "Vout read overrun");
+    function indexVout(bytes29 _vout, uint256 _index) internal pure typeAssert(_vout, BTCTypes.Vout) returns (bytes29) {
+        uint256 _nOuts = uint256(indexCompactInt(_vout, 0));
+        uint256 _viewLen = _vout.len();
+        require(_index < _nOuts, "Vout read overrun");
 
-        uint256 _offset = uint256(compactIntLength(_voutLen));
+        uint256 _offset = uint256(compactIntLength(uint64(_nOuts)));
         bytes29 _remaining;
-        for (uint256 _i = 0; _i < _index; _i ++) {
-            _remaining = _vout.postfix(_voutLen - _offset, uint40(BTCTypes.IntermediateTxOuts));
+        for (uint256 _i = 0; _i < _index; _i += 1) {
+            _remaining = _vout.postfix(_viewLen - _offset, uint40(BTCTypes.IntermediateTxOuts));
             _offset += outputLength(_remaining);
         }
 
-        _remaining = _vout.postfix(_voutLen - _offset, uint40(BTCTypes.IntermediateTxOuts));
+        _remaining = _vout.postfix(_viewLen - _offset, uint40(BTCTypes.IntermediateTxOuts));
         uint256 _len = outputLength(_remaining);
         return _vout.slice(_offset, _len, uint40(BTCTypes.TxOut));
     }
@@ -247,22 +249,26 @@ library ViewBTC {
     /// @param _vin the vin
     /// @return     the typed vin (or null if error)
     function tryAsVin(bytes29 _vin) internal pure typeAssert(_vin, BTCTypes.Unknown) returns (bytes29) {
-        uint64 _vinLen = indexCompactInt(_vin, 0);
+        uint64 _nIns = indexCompactInt(_vin, 0);
         uint256 _viewLen = _vin.len();
-        if (_vinLen == 0) {
-            return TypedMemView.nullView();
+        if (_nIns == 0) {
+            return TypedMemView.build(0xffeeffee, 0x4939343943, 0x1892340918);
+            /* return TypedMemView.nullView(); */
         }
 
-        uint256 _offset = uint256(compactIntLength(_vinLen));
-        for (uint256 i = 0; i < _vinLen; i++) {
+        uint256 _offset = uint256(compactIntLength(_nIns));
+        for (uint256 i = 0; i < _nIns; i++) {
             if (_offset >= _viewLen) {
-                return TypedMemView.nullView();
+                // We've reached the end, but are still trying to read more
+                return TypedMemView.build(0xffddffdd, 0x4939343943, 0x1892340918);
+                /* return TypedMemView.nullView(); */
             }
-            bytes29 _remaining = _vin.postfix(_vinLen - _offset, uint40(BTCTypes.IntermediateTxIns));
+            bytes29 _remaining = _vin.postfix(_viewLen - _offset, uint40(BTCTypes.IntermediateTxIns));
             _offset += inputLength(_remaining);
         }
-        if (_offset == _viewLen) {
-            return TypedMemView.nullView();
+        if (_offset != _viewLen) {
+            return TypedMemView.build(0xffccffcc, 0x4939343943, 0x1892340918);
+            /* return TypedMemView.nullView(); */
         }
         return _vin.castTo(uint40(BTCTypes.Vin));
     }
@@ -272,21 +278,22 @@ library ViewBTC {
     /// @param _vout    the vout
     /// @return         the typed vout (or null if error)
     function tryAsVout(bytes29 _vout) internal pure typeAssert(_vout, BTCTypes.Unknown) returns (bytes29) {
-        uint64 _voutLen = indexCompactInt(_vout, 0);
+        uint64 _nOuts = indexCompactInt(_vout, 0);
         uint256 _viewLen = _vout.len();
-        if (_voutLen == 0) {
+        if (_nOuts == 0) {
             return TypedMemView.nullView();
         }
 
-        uint256 _offset = uint256(compactIntLength(_voutLen));
-        for (uint256 i = 0; i < _voutLen; i++) {
+        uint256 _offset = uint256(compactIntLength(_nOuts));
+        for (uint256 i = 0; i < _nOuts; i++) {
             if (_offset >= _viewLen) {
+                // We've reached the end, but are still trying to read more
                 return TypedMemView.nullView();
             }
-            bytes29 _remaining = _vout.postfix(_voutLen - _offset, uint40(BTCTypes.IntermediateTxOuts));
-            _offset += inputLength(_remaining);
+            bytes29 _remaining = _vout.postfix(_viewLen - _offset, uint40(BTCTypes.IntermediateTxOuts));
+            _offset += outputLength(_remaining);
         }
-        if (_offset == _viewLen) {
+        if (_offset != _viewLen) {
             return TypedMemView.nullView();
         }
         return _vout.castTo(uint40(BTCTypes.Vout));
