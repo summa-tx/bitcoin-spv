@@ -28,8 +28,8 @@ contract ViewBTCTest {
         return _b.ref(0).hash256();
     }
 
-    function indexVin(bytes memory _vin, uint256 _index) public pure returns (bytes memory) {
-        return _vin.ref(0).tryAsVin().assertValid().indexVin(uint64(_index)).clone();
+    function indexVin(bytes memory _vin, uint256 _index) public returns (bytes memory) {
+        return _vin.ref(0).tryAsVin().assertValid().indexVin(_index).clone();
     }
 
     function inputLength(bytes memory _input) public pure returns (uint256) {
@@ -61,7 +61,7 @@ contract ViewBTCTest {
     }
 
     function indexVout(bytes memory _vout, uint256 _index) public pure returns (bytes memory) {
-        return _vout.ref(0).tryAsVout().assertValid().indexVout(uint64(_index)).clone();
+        return _vout.ref(0).tryAsVout().assertValid().indexVout(_index).clone();
     }
 
     function valueBytes(bytes memory _output) public pure returns (bytes8) {

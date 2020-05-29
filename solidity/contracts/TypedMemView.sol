@@ -70,23 +70,23 @@ library TypedMemView {
     uint8 constant TWELVE_BYTES = 96;
 
     function nibbleHex(uint8 _b) internal pure returns (uint8) {
-        _b &= 0x0f;
-        if (_b | 0x00 == 0x00) { return 0x30; }
-        if (_b | 0x01 == 0x01) { return 0x31; }
-        if (_b | 0x02 == 0x02) { return 0x32; }
-        if (_b | 0x03 == 0x03) { return 0x33; }
-        if (_b | 0x04 == 0x04) { return 0x34; }
-        if (_b | 0x05 == 0x05) { return 0x35; }
-        if (_b | 0x06 == 0x06) { return 0x36; }
-        if (_b | 0x07 == 0x07) { return 0x37; }
-        if (_b | 0x08 == 0x08) { return 0x38; }
-        if (_b | 0x09 == 0x09) { return 0x39; }
-        if (_b | 0x0a == 0x0a) { return 0x61; }
-        if (_b | 0x0b == 0x0b) { return 0x62; }
-        if (_b | 0x0c == 0x0c) { return 0x63; }
-        if (_b | 0x0d == 0x0d) { return 0x64; }
-        if (_b | 0x0e == 0x0e) { return 0x65; }
-        if (_b | 0x0e == 0x0f) { return 0x66; }
+        uint8 _n &= 0x0f;
+        if (_n | 0x00 == 0x00) {return 0x30;}
+        if (_n | 0x01 == 0x01) {return 0x31;}
+        if (_n | 0x02 == 0x02) {return 0x32;}
+        if (_n | 0x03 == 0x03) {return 0x33;}
+        if (_n | 0x04 == 0x04) {return 0x34;}
+        if (_n | 0x05 == 0x05) {return 0x35;}
+        if (_n | 0x06 == 0x06) {return 0x36;}
+        if (_n | 0x07 == 0x07) {return 0x37;}
+        if (_n | 0x08 == 0x08) {return 0x38;}
+        if (_n | 0x09 == 0x09) {return 0x39;}
+        if (_n | 0x0a == 0x0a) {return 0x61;}
+        if (_n | 0x0b == 0x0b) {return 0x62;}
+        if (_n | 0x0c == 0x0c) {return 0x63;}
+        if (_n | 0x0d == 0x0d) {return 0x64;}
+        if (_n | 0x0e == 0x0e) {return 0x65;}
+        if (_n | 0x0e == 0x0f) {return 0x66;}
     }
 
     function byteHex(uint8 _b) internal pure returns (uint16 encoded) {
@@ -108,7 +108,7 @@ library TypedMemView {
         for (uint8 i = 15; i < 255 ; i -= 1) {
             uint8 _byte = uint8(_b >> (i * 8));
             second |= byteHex(_byte);
-            if (i!= 0) {
+            if (i != 0) {
                 second <<= 16;
             }
         }
@@ -195,11 +195,13 @@ library TypedMemView {
         if (!isType(memView, _expected)) {
             (, uint256 g) = encodeHex(uint256(typeOf(memView)));
             (, uint256 e) = encodeHex(uint256(_expected));
-            string memory err = string(abi.encodePacked(
-                "Type assertion failed. Got 0x",
-                uint80(g),
-                ". Expected 0x",
-                uint80(e))
+            string memory err = string(
+                abi.encodePacked(
+                    "Type assertion failed. Got 0x",
+                    uint80(g),
+                    ". Expected 0x",
+                    uint80(e)
+                )
             );
             revert(err);
         }
@@ -260,7 +262,7 @@ library TypedMemView {
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
             // 216 == 256 - 40
-            _type := shr(216, memView) // shift out lower 24
+            _type := shr(216, memView) // shift out lower 24 bytes
         }
     }
 
@@ -274,6 +276,7 @@ library TypedMemView {
         uint256 _mask = LOW_12_MASK;  // assembly can't use globals
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
+            // 120 bits = 12 bytes (the encoded loc) + 3 bytes (empty low space)
             _loc := and(shr(120, memView), _mask)
         }
     }
@@ -335,17 +338,19 @@ library TypedMemView {
         (, uint256 b) = encodeHex(_len);
         (, uint256 c) = encodeHex(_index);
         (, uint256 d) = encodeHex(_slice);
-        err = string(abi.encodePacked(
-            "TypedMemView/index - Overran the view. Slice is at 0x",
-            uint48(a),
-            " with length 0x",
-            uint48(b),
-            ". Attempted to index at offset 0x",
-            uint48(c),
-            " with length 0x",
-            uint48(d),
-            "."
-        ));
+        err = string(
+            abi.encodePacked(
+                "TypedMemView/index - Overran the view. Slice is at 0x",
+                uint48(a),
+                " with length 0x",
+                uint48(b),
+                ". Attempted to index at offset 0x",
+                uint48(c),
+                " with length 0x",
+                uint48(d),
+                "."
+            )
+        );
     }
 
     /// Load up to 32 bytes from the view onto the stack.

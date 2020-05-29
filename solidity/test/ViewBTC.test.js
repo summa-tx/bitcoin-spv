@@ -93,7 +93,7 @@ const {
 
 // retargetAlgorithm: Passing
 
-contract.only('ViewBTC', () => {
+contract('ViewBTC', () => {
   let instance;
 
   before(async () => {
@@ -123,7 +123,7 @@ contract.only('ViewBTC', () => {
   it('extracts a sequence from a witness input as LE and int', async () => {
     for (let i = 0; i < extractSequenceLEWitness.length; i += 1) {
       const res = await instance.sequence(extractSequenceLEWitness[i].input);
-      const expected = new BN(extractSequenceLEWitness[i].output.slice(2), 16)
+      const expected = new BN(extractSequenceLEWitness[i].output.slice(2), 16);
       assert(res.eq(expected));
     }
   });
@@ -131,8 +131,8 @@ contract.only('ViewBTC', () => {
   it('extracts a sequence from a legacy input as LE and int', async () => {
     for (let i = 0; i < extractSequenceLELegacy.length; i += 1) {
       const res = await instance.sequence(extractSequenceLELegacy[i].input);
-      const expected = new BN(extractSequenceLELegacy[i].output.slice(2), 16)
-      assert(res.eq(expected))
+      const expected = new BN(extractSequenceLELegacy[i].output.slice(2), 16);
+      assert(res.eq(expected));
     }
   });
 
@@ -159,7 +159,7 @@ contract.only('ViewBTC', () => {
 
   it('extracts a txid from an outpoint', async () => {
     for (let i = 0; i < extractInputTxIdLE.length; i += 1) {
-      const outpoint = await instance.outpoint(extractInputTxIdLE[i].input)
+      const outpoint = await instance.outpoint(extractInputTxIdLE[i].input);
       const res = await instance.txidLE(outpoint);
       assert.strictEqual(extractInputTxIdLE[i].output, res);
     }
@@ -168,7 +168,7 @@ contract.only('ViewBTC', () => {
   it('extracts an outpoint tx index LE', async () => {
     for (let i = 0; i < extractTxIndexLE.length; i += 1) {
       const res = await instance.outpointIdx(extractTxIndexLE[i].input);
-      const expected = new BN(extractTxIndexLE[i].output.slice(2), 16)
+      const expected = new BN(extractTxIndexLE[i].output.slice(2), 16);
       assert(res.eq(expected));
     }
   });
@@ -183,7 +183,7 @@ contract.only('ViewBTC', () => {
   it('extracts the value as an integer', async () => {
     for (let i = 0; i < extractValue.length; i += 1) {
       const res = await instance.extractValue(extractValue[i].input);
-      const expected = new BN(extractValue[i].output, 10)
+      const expected = new BN(extractValue[i].output, 10);
       assert(res.eq(expected));
     }
   });
@@ -191,7 +191,7 @@ contract.only('ViewBTC', () => {
   it('determines input length', async () => {
     for (let i = 0; i < determineInputLength.length; i += 1) {
       const res = await instance.inputLength(determineInputLength[i].input);
-      const expected = new BN(determineInputLength[i].output, 10)
+      const expected = new BN(determineInputLength[i].output, 10);
       assert(
         res.eq(expected),
         `Input Length Test Failed: Expected ${expected.toString()}, got ${res.toString()}`
@@ -219,13 +219,13 @@ contract.only('ViewBTC', () => {
 
   // TODO: come back to this
   // error - "TypedMemView/index - Overran the view."
-  it.only('extracts inputs at specified indices', async () => {
+  it('extracts inputs at specified indices', async () => {
     for (let i = 0; i < extractInputAtIndex.length; i += 1) {
-      const res = await instance.indexVin(
+      const res = await instance.indexVin.call(
         extractInputAtIndex[i].input.vin,
         extractInputAtIndex[i].input.index
       );
-      assert.strictEqual(extractInputAtIndex[i].output, res);
+      assert.strictEqual(res, extractInputAtIndex[i].output);
     }
   });
 
@@ -325,15 +325,15 @@ contract.only('ViewBTC', () => {
 
   // TODO: come back to this
   // error - "TypedMemView/index - Overran the view."
-  // it('extracts outputs at specified indices', async () => {
-  //   for (let i = 0; i < extractOutputAtIndex.length; i += 1) {
-  //     const res = await instance.indexVout(
-  //       extractOutputAtIndex[i].input.vout,
-  //       extractOutputAtIndex[i].input.index
-  //     );
-  //     assert.strictEqual(extractOutputAtIndex[i].output, res);
-  //   }
-  // });
+  it('extracts outputs at specified indices', async () => {
+    for (let i = 0; i < extractOutputAtIndex.length; i += 1) {
+      const res = await instance.indexVout(
+        extractOutputAtIndex[i].input.vout,
+        extractOutputAtIndex[i].input.index
+      );
+      assert.strictEqual(extractOutputAtIndex[i].output, res);
+    }
+  });
 
   // TODO: Error cases
   // it('errors while extracting outputs at specified indices', async () => {
@@ -359,7 +359,7 @@ contract.only('ViewBTC', () => {
   it('extracts the target from a header', async () => {
     for (let i = 0; i < extractTarget.length; i += 1) {
       const res = await instance.target(extractTarget[i].input);
-      const expected = new BN(extractTarget[i].output.slice(2), 16)
+      const expected = new BN(extractTarget[i].output.slice(2), 16);
       assert(res.eq(expected));
     }
   });
