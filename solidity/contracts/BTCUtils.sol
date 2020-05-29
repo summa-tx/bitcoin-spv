@@ -430,8 +430,8 @@ library BTCUtils {
             // p2pkh
             if (_tag == keccak256(hex"1976a9")) {
                 // Check for maliciously formatted p2pkh
-                if (uint8(_output[11]) != 0x14 ||
                 // No need to worry about underflow, b/c of _scriptLen check
+                if (uint8(_output[11]) != 0x14 ||
                     _output.keccak256Slice(_output.length - 2, 2) != keccak256(hex"88ac")) {
                     return hex"";
                 }
