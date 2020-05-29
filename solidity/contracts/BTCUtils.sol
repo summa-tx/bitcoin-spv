@@ -414,12 +414,13 @@ library BTCUtils {
             return hex"";
         }
 
-        if (uint8(_output.slice(9, 1)[0]) == 0) {
+        if (uint8(_output[9]) == 0) {
             if (_scriptLen < 2) {
                 return hex"";
             }
             uint256 _payloadLen = uint8(_output[10]);
-            // Check for maliciously formatted witness outputs
+            // Check for maliciously formatted witness outputs.
+            // No need to worry about underflow as long b/c of the `< 2` check
             if (_payloadLen != _scriptLen - 2 || (_payloadLen != 0x20 && _payloadLen != 0x14)) {
                 return hex"";
             }
@@ -430,6 +431,7 @@ library BTCUtils {
             if (_tag == keccak256(hex"1976a9")) {
                 // Check for maliciously formatted p2pkh
                 if (uint8(_output[11]) != 0x14 ||
+                // No need to worry about underflow, b/c of _scriptLen check
                     _output.keccak256Slice(_output.length - 2, 2) != keccak256(hex"88ac")) {
                     return hex"";
                 }
@@ -437,13 +439,14 @@ library BTCUtils {
             //p2sh
             } else if (_tag == keccak256(hex"17a914")) {
                 // Check for maliciously formatted p2sh
-                if (uint8(_output.slice(_output.length - 1, 1)[0]) != 0x87) {
+                // No need to worry about underflow, b/c of _scriptLen check
+                if (uint8(_output[_output.length - 1]) != 0x87) {
                     return hex"";
                 }
                 return _output.slice(11, 20);
             }
         }
-        return hex"";  /* NB: will trigger on OPRETURN and non-standard that don't overrun */
+        return hex"";  /* NB: will trigger on OPRETURN and any non-standard that doesn't overrun */
     }
 
     /* ********** */
