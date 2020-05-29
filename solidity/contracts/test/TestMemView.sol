@@ -131,6 +131,7 @@ contract TestMemView {
             keccak256(v3.clone()) == v3.keccak(),
             "clone slice hash mismatch"
         );
+
         require(
             sha256(v3.clone()) == v3.sha2(),
             "clone slice sha2 mismatch"
