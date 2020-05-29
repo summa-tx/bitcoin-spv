@@ -4,7 +4,7 @@ const BN = require('bn.js');
 /* eslint-disable-next-line no-unresolved */
 const vectors = require('./testVectors.json');
 
-const BTCUtilsDelegate = artifacts.require('ViewBTCTest');
+const ViewBTC = artifacts.require('ViewBTCTest');
 
 const {
   hash160,
@@ -93,12 +93,18 @@ const {
 
 // retargetAlgorithm: Passing
 
-contract('BTCUtils', () => {
+contract('ViewBTC', () => {
   let instance;
 
   before(async () => {
-    instance = await BTCUtilsDelegate.new();
+    instance = await ViewBTC.new();
   });
+
+  // it('asHex', async () => {
+  //   const avar = new BN('000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f', 16);
+  //   const res = await instance.encodeHex.call(avar);
+  //   console.log(res[0].toString(16), res[1].toString(16))
+  // });
 
   it('implements bitcoin\'s hash160', async () => {
     for (let i = 0; i < hash160.length; i += 1) {
@@ -117,7 +123,7 @@ contract('BTCUtils', () => {
   it('extracts a sequence from a witness input as LE and int', async () => {
     for (let i = 0; i < extractSequenceLEWitness.length; i += 1) {
       const res = await instance.sequence(extractSequenceLEWitness[i].input);
-      const expected = new BN(extractSequenceLEWitness[i].output.slice(2), 16)
+      const expected = new BN(extractSequenceLEWitness[i].output.slice(2), 16);
       assert(res.eq(expected));
     }
   });
@@ -125,8 +131,8 @@ contract('BTCUtils', () => {
   it('extracts a sequence from a legacy input as LE and int', async () => {
     for (let i = 0; i < extractSequenceLELegacy.length; i += 1) {
       const res = await instance.sequence(extractSequenceLELegacy[i].input);
-      const expected = new BN(extractSequenceLELegacy[i].output.slice(2), 16)
-      assert(res.eq(expected))
+      const expected = new BN(extractSequenceLELegacy[i].output.slice(2), 16);
+      assert(res.eq(expected));
     }
   });
 
@@ -153,7 +159,7 @@ contract('BTCUtils', () => {
 
   it('extracts a txid from an outpoint', async () => {
     for (let i = 0; i < extractInputTxIdLE.length; i += 1) {
-      const outpoint = await instance.outpoint(extractInputTxIdLE[i].input)
+      const outpoint = await instance.outpoint(extractInputTxIdLE[i].input);
       const res = await instance.txidLE(outpoint);
       assert.strictEqual(extractInputTxIdLE[i].output, res);
     }
@@ -162,7 +168,7 @@ contract('BTCUtils', () => {
   it('extracts an outpoint tx index LE', async () => {
     for (let i = 0; i < extractTxIndexLE.length; i += 1) {
       const res = await instance.outpointIdx(extractTxIndexLE[i].input);
-      const expected = new BN(extractTxIndexLE[i].output.slice(2), 16)
+      const expected = new BN(extractTxIndexLE[i].output.slice(2), 16);
       assert(res.eq(expected));
     }
   });
@@ -177,7 +183,7 @@ contract('BTCUtils', () => {
   it('extracts the value as an integer', async () => {
     for (let i = 0; i < extractValue.length; i += 1) {
       const res = await instance.extractValue(extractValue[i].input);
-      const expected = new BN(extractValue[i].output, 10)
+      const expected = new BN(extractValue[i].output, 10);
       assert(res.eq(expected));
     }
   });
@@ -185,7 +191,7 @@ contract('BTCUtils', () => {
   it('determines input length', async () => {
     for (let i = 0; i < determineInputLength.length; i += 1) {
       const res = await instance.inputLength(determineInputLength[i].input);
-      const expected = new BN(determineInputLength[i].output, 10)
+      const expected = new BN(determineInputLength[i].output, 10);
       assert(
         res.eq(expected),
         `Input Length Test Failed: Expected ${expected.toString()}, got ${res.toString()}`
@@ -213,15 +219,15 @@ contract('BTCUtils', () => {
 
   // TODO: come back to this
   // error - "TypedMemView/index - Overran the view."
-  // it('extracts inputs at specified indices', async () => {
-  //   for (let i = 0; i < extractInputAtIndex.length; i += 1) {
-  //     const res = await instance.indexVin(
-  //       extractInputAtIndex[i].input.vin,
-  //       extractInputAtIndex[i].input.index
-  //     );
-  //     assert.strictEqual(extractInputAtIndex[i].output, res);
-  //   }
-  // });
+  it('extracts inputs at specified indices', async () => {
+    for (let i = 0; i < extractInputAtIndex.length; i += 1) {
+      const res = await instance.indexVin.call(
+        extractInputAtIndex[i].input.vin,
+        extractInputAtIndex[i].input.index
+      );
+      assert.strictEqual(res, extractInputAtIndex[i].output);
+    }
+  });
 
   // TODO: Error cases
   // it('extract input errors on bad vin', async () => {
@@ -319,15 +325,15 @@ contract('BTCUtils', () => {
 
   // TODO: come back to this
   // error - "TypedMemView/index - Overran the view."
-  // it('extracts outputs at specified indices', async () => {
-  //   for (let i = 0; i < extractOutputAtIndex.length; i += 1) {
-  //     const res = await instance.indexVout(
-  //       extractOutputAtIndex[i].input.vout,
-  //       extractOutputAtIndex[i].input.index
-  //     );
-  //     assert.strictEqual(extractOutputAtIndex[i].output, res);
-  //   }
-  // });
+  it('extracts outputs at specified indices', async () => {
+    for (let i = 0; i < extractOutputAtIndex.length; i += 1) {
+      const res = await instance.indexVout(
+        extractOutputAtIndex[i].input.vout,
+        extractOutputAtIndex[i].input.index
+      );
+      assert.strictEqual(extractOutputAtIndex[i].output, res);
+    }
+  });
 
   // TODO: Error cases
   // it('errors while extracting outputs at specified indices', async () => {
@@ -353,7 +359,7 @@ contract('BTCUtils', () => {
   it('extracts the target from a header', async () => {
     for (let i = 0; i < extractTarget.length; i += 1) {
       const res = await instance.target(extractTarget[i].input);
-      const expected = new BN(extractTarget[i].output.slice(2), 16)
+      const expected = new BN(extractTarget[i].output.slice(2), 16);
       assert(res.eq(expected));
     }
   });

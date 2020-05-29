@@ -350,7 +350,7 @@ contract('BTCUtils', () => {
   it('extracts the target from a header', async () => {
     for (let i = 0; i < extractTarget.length; i += 1) {
       const res = await instance.extractTarget(extractTarget[i].input);
-      const expected = new BN(extractTarget[i].output.slice(2), 16)
+      const expected = new BN(extractTarget[i].output.slice(2), 16);
       assert(res.eq(expected));
     }
   });
@@ -365,7 +365,7 @@ contract('BTCUtils', () => {
   it('extracts a timestamp from a header', async () => {
     for (let i = 0; i < extractTimestamp.length; i += 1) {
       const res = await instance.extractTimestamp(extractTimestamp[i].input);
-      const expected = new BN(extractTimestamp[i].output, 10)
+      const expected = new BN(extractTimestamp[i].output, 10);
       assert(res.eq(expected));
     }
   });
@@ -383,7 +383,7 @@ contract('BTCUtils', () => {
   it('determines VarInt data lengths correctly', async () => {
     for (let i = 0; i < determineVarIntDataLength.length; i += 1) {
       const res = await instance.determineVarIntDataLength(`0x${(determineVarIntDataLength[i].input).toString(16)}`);
-      const expected = new BN(determineVarIntDataLength[i].output, 10)
+      const expected = new BN(determineVarIntDataLength[i].output, 10);
       assert(res.eq(expected));
     }
   });

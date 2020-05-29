@@ -12,6 +12,10 @@ contract ViewBTCTest {
     using TypedMemView for bytes29;
     using ViewBTC for bytes29;
 
+    function encodeHex(uint256 _b) public pure returns (uint256, uint256) {
+        return TypedMemView.encodeHex(_b);
+    }
+
     function indexVarInt(bytes memory _b) public pure returns (uint64) {
         return _b.ref(0).indexCompactInt(0);
     }
@@ -24,8 +28,8 @@ contract ViewBTCTest {
         return _b.ref(0).hash256();
     }
 
-    function indexVin(bytes memory _vin, uint256 _index) public pure returns (bytes memory) {
-        return _vin.ref(uint40(ViewBTC.BTCTypes.Vin)).indexVin(uint64(_index)).clone();
+    function indexVin(bytes memory _vin, uint256 _index) public returns (bytes memory) {
+        return _vin.ref(0).tryAsVin().assertValid().indexVin(_index).clone();
     }
 
     function inputLength(bytes memory _input) public pure returns (uint256) {
@@ -57,7 +61,7 @@ contract ViewBTCTest {
     }
 
     function indexVout(bytes memory _vout, uint256 _index) public pure returns (bytes memory) {
-        return _vout.ref(uint40(ViewBTC.BTCTypes.Vout)).indexVout(uint64(_index)).clone();
+        return _vout.ref(0).tryAsVout().assertValid().indexVout(_index).clone();
     }
 
     function valueBytes(bytes memory _output) public pure returns (bytes8) {
