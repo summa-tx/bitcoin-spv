@@ -375,6 +375,30 @@ library TypedMemView {
         return !equal(left, right);
     }
 
+    /// Super Dangerous direct memory access.
+    ///
+    /// reverts _location is in occupied memory
+    function writeTo(bytes29 memView, uint256 _location) internal pure returns (bytes29 written) {
+        require(notNull(memView), "TypedMemView/clone - Null pointer deref");
+        require(isValid(memView), "TypedMemView/clone - Invalid pointer deref");
+        uint256 _len = len(memView);
+        uint256 _loc = loc(memView);
+        assembly {
+            let ptr := mload(0x40)
+            // revert if we're writing in occupied memory
+            if gt(ptr, _location) {
+                revert(0x60, 0x20) // empty revert message
+            }
+            for { let offset := 0 } lt(offset, _len) { offset := add(offset, 0x20) }
+            {
+                let chunk := mload(add(_loc, offset))
+                mstore(add(ptr, add(offset, 0x20)), chunk)
+            }
+        }
+
+        written = build(typeOf(memView), _location, _len);
+    }
+
     /// Copies the referenced memory to a new loc in memory, returning a
     /// `bytes` pointing to the new memory
     function clone(bytes29 memView) internal pure returns (bytes memory ret) {
@@ -393,6 +417,31 @@ library TypedMemView {
                 let chunk := mload(add(_loc, offset))
                 mstore(add(ret, add(offset, 0x20)), chunk)
             }
+        }
+    }
+
+    /// copies all views, joins them into a new bytearray
+    function join(bytes29[] memory memViews) internal pure returns (bytes memory ret) {
+        uint256 ptr;
+        assembly {
+            ptr := mload(0x40) // load unused memory pointer
+        }
+
+        uint256 offset = 0;
+        for (uint256 i = 0; i < memViews.length; i ++) {
+            bytes29 memView = memViews[i];
+            writeTo(memView, ptr + 0x20 + offset);
+            offset += len(memView);
+        }
+
+        uint256 bodyMem = offset + (32 - (offset % 32));
+
+        assembly {
+            // store the legnth
+            mstore(ptr, offset)
+            // new pointer is old + 0x20 + the words the body used
+            mstore(0x40, add(add(ptr, bodyMem), 0x20))
+            ret := ptr
         }
     }
 }
