@@ -60,7 +60,7 @@ contract('BTCUtils', () => {
   it('reverses endianness', async () => {
     for (let i = 0; i < reverseEndianness.length; i += 1) {
       const res = await instance.reverseEndianness(reverseEndianness[i].input);
-      assert.strictEqual(reverseEndianness[i].output, res);
+      assert.strictEqual(res, reverseEndianness[i].output);
     }
   });
 
@@ -68,26 +68,26 @@ contract('BTCUtils', () => {
     for (let i = 0; i < bytesToUint.length; i += 1) {
       const res = await instance.bytesToUint(bytesToUint[i].input);
       const expected = new BN(bytesToUint[i].output, 10);
-      assert(expected, res);
+      assert(res, expected);
     }
 
     // max uint256: (2^256)-1
     const res = await instance.bytesToUint(`0x${'ff'.repeat(32)}`);
     const expected = new BN('115792089237316195423570985008687907853269984665640564039457584007913129639935', 10);
-    assert(expected, res);
+    assert(res, expected);
   });
 
   it('implements bitcoin\'s hash160', async () => {
     for (let i = 0; i < hash160.length; i += 1) {
       const res = await instance.hash160(hash160[i].input);
-      assert.strictEqual(hash160[i].output, res);
+      assert.strictEqual(res, hash160[i].output);
     }
   });
 
   it('implements bitcoin\'s hash256', async () => {
     for (let i = 0; i < hash256.length; i += 1) {
       const res = await instance.hash256(hash256[i].input);
-      assert.strictEqual(hash256[i].output, res);
+      assert.strictEqual(res, hash256[i].output);
     }
   });
 
@@ -98,14 +98,14 @@ contract('BTCUtils', () => {
         hash256MerkleStep[i].input[0],
         hash256MerkleStep[i].input[1]
       );
-      assert.strictEqual(hash256MerkleStep[i].output, res);
+      assert.strictEqual(res, hash256MerkleStep[i].output);
     }
   });
 
   it('extracts a sequence from a witness input as LE and int', async () => {
     for (let i = 0; i < extractSequenceLEWitness.length; i += 1) {
       const res = await instance.extractSequenceLEWitness(extractSequenceLEWitness[i].input);
-      assert.strictEqual(extractSequenceLEWitness[i].output, res);
+      assert.strictEqual(res, extractSequenceLEWitness[i].output);
     }
 
     for (let i = 0; i < extractSequenceWitness.length; i += 1) {
@@ -118,7 +118,7 @@ contract('BTCUtils', () => {
   it('extracts a sequence from a legacy input as LE and int', async () => {
     for (let i = 0; i < extractSequenceLELegacy.length; i += 1) {
       const res = await instance.extractSequenceLELegacy(extractSequenceLELegacy[i].input);
-      assert.strictEqual(extractSequenceLELegacy[i].output, res);
+      assert.strictEqual(res, extractSequenceLELegacy[i].output);
     }
 
     for (let i = 0; i < extractSequenceLegacy.length; i += 1) {
@@ -144,21 +144,21 @@ contract('BTCUtils', () => {
   it('extracts an outpoint as bytes', async () => {
     for (let i = 0; i < extractOutpoint.length; i += 1) {
       const res = await instance.extractOutpoint(extractOutpoint[i].input);
-      assert.strictEqual(extractOutpoint[i].output, res);
+      assert.strictEqual(res, extractOutpoint[i].output);
     }
   });
 
   it('extracts an outpoint txid', async () => {
     for (let i = 0; i < extractInputTxIdLE.length; i += 1) {
       const res = await instance.extractInputTxIdLE(extractInputTxIdLE[i].input);
-      assert.strictEqual(extractInputTxIdLE[i].output, res);
+      assert.strictEqual(res, extractInputTxIdLE[i].output);
     }
   });
 
   it('extracts an outpoint tx index LE', async () => {
     for (let i = 0; i < extractTxIndexLE.length; i += 1) {
       const res = await instance.extractTxIndexLE(extractTxIndexLE[i].input);
-      assert.strictEqual(extractTxIndexLE[i].output, res);
+      assert.strictEqual(res, extractTxIndexLE[i].output);
     }
   });
 
@@ -167,9 +167,9 @@ contract('BTCUtils', () => {
     for (let i = 0; i < extractOutputScriptLen.length; i += 1) {
       const res = await instance.extractOutputScriptLen(extractOutputScriptLen[i].input);
       if (Object.prototype.hasOwnProperty.call(extractOutputScriptLen[i], 'solOutput')) {
-        assert.strictEqual(extractOutputScriptLen[i].solOutput, res);
+        assert.strictEqual(res, extractOutputScriptLen[i].solOutput);
       } else {
-        assert.strictEqual(extractOutputScriptLen[i].output, res);
+        assert.strictEqual(res, extractOutputScriptLen[i].output);
       }
     }
   });
@@ -177,7 +177,7 @@ contract('BTCUtils', () => {
   it('extracts the hash from a standard output', async () => {
     for (let i = 0; i < extractHash.length; i += 1) {
       const res = await instance.extractHash(extractHash[i].input);
-      assert.strictEqual(extractHash[i].output, res);
+      assert.strictEqual(res, extractHash[i].output);
     }
 
     for (let i = 0; i < extractHashError.length; i += 1) {
@@ -189,7 +189,7 @@ contract('BTCUtils', () => {
   it('extracts the value as LE and int', async () => {
     for (let i = 0; i < extractValueLE.length; i += 1) {
       const res = await instance.extractValueLE(extractValueLE[i].input);
-      assert.strictEqual(extractValueLE[i].output, res);
+      assert.strictEqual(res, extractValueLE[i].output);
     }
 
     for (let i = 0; i < extractValue.length; i += 1) {
@@ -210,7 +210,7 @@ contract('BTCUtils', () => {
   it('extracts op_return data blobs', async () => {
     for (let i = 0; i < extractOpReturnData.length; i += 1) {
       const res = await instance.extractOpReturnData(extractOpReturnData[i].input);
-      assert.strictEqual(extractOpReturnData[i].output, res);
+      assert.strictEqual(res, extractOpReturnData[i].output);
     }
 
     for (let i = 0; i < extractOpReturnDataError.length; i += 1) {
@@ -230,7 +230,7 @@ contract('BTCUtils', () => {
         extractInputAtIndex[i].input.vin,
         extractInputAtIndex[i].input.index
       );
-      assert.strictEqual(extractInputAtIndex[i].output, res);
+      assert.strictEqual(res, extractInputAtIndex[i].output);
     }
   });
 
@@ -251,14 +251,14 @@ contract('BTCUtils', () => {
   it('sorts legacy from witness inputs', async () => {
     for (let i = 0; i < isLegacyInput.length; i += 1) {
       const res = await instance.isLegacyInput(isLegacyInput[i].input);
-      assert.strictEqual(isLegacyInput[i].output, res);
+      assert.strictEqual(res, isLegacyInput[i].output);
     }
   });
 
   it('extracts the scriptSig from inputs', async () => {
     for (let i = 0; i < extractScriptSig.length; i += 1) {
       const res = await instance.extractScriptSig(extractScriptSig[i].input);
-      assert.strictEqual(extractScriptSig[i].output, res);
+      assert.strictEqual(res, extractScriptSig[i].output);
     }
   });
 
@@ -286,7 +286,7 @@ contract('BTCUtils', () => {
   it('validates vin length based on stated size', async () => {
     for (let i = 0; i < validateVin.length; i += 1) {
       const res = await instance.validateVin(validateVin[i].input);
-      assert.strictEqual(validateVin[i].output, res);
+      assert.strictEqual(res, validateVin[i].output);
     }
   });
 
@@ -301,7 +301,7 @@ contract('BTCUtils', () => {
         }
       } else {
         const res = await instance.validateVout(validateVout[i].input);
-        assert.strictEqual(validateVout[i].output, res);
+        assert.strictEqual(res, validateVout[i].output);
       }
     }
   });
@@ -323,7 +323,7 @@ contract('BTCUtils', () => {
         extractOutputAtIndex[i].input.vout,
         extractOutputAtIndex[i].input.index
       );
-      assert.strictEqual(extractOutputAtIndex[i].output, res);
+      assert.strictEqual(res, extractOutputAtIndex[i].output);
     }
   });
 
@@ -343,7 +343,7 @@ contract('BTCUtils', () => {
   it('extracts a root from a header', async () => {
     for (let i = 0; i < extractMerkleRootLE.length; i += 1) {
       const res = await instance.extractMerkleRootLE(extractMerkleRootLE[i].input);
-      assert.strictEqual(extractMerkleRootLE[i].output, res);
+      assert.strictEqual(res, extractMerkleRootLE[i].output);
     }
   });
 
@@ -358,7 +358,7 @@ contract('BTCUtils', () => {
   it('extracts the prev block hash', async () => {
     for (let i = 0; i < extractPrevBlockLE.length; i += 1) {
       const res = await instance.extractPrevBlockLE(extractPrevBlockLE[i].input);
-      assert.strictEqual(extractPrevBlockLE[i].output, res);
+      assert.strictEqual(res, extractPrevBlockLE[i].output);
     }
   });
 
@@ -376,7 +376,7 @@ contract('BTCUtils', () => {
         verifyHash256Merkle[i].input.proof,
         verifyHash256Merkle[i].input.index
       ); // 0-indexed
-      assert.strictEqual(verifyHash256Merkle[i].output, res);
+      assert.strictEqual(res, verifyHash256Merkle[i].output);
     }
   });
 

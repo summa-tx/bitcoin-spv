@@ -111,14 +111,14 @@ contract('ViewBTC', () => {
   it('implements bitcoin\'s hash160', async () => {
     for (let i = 0; i < hash160.length; i += 1) {
       const res = await instance.hash160(hash160[i].input);
-      assert.strictEqual(hash160[i].output, res);
+      assert.strictEqual(res, hash160[i].output);
     }
   });
 
   it('implements bitcoin\'s hash256', async () => {
     for (let i = 0; i < hash256.length; i += 1) {
       const res = await instance.hash256(hash256[i].input);
-      assert.strictEqual(hash256[i].output, res);
+      assert.strictEqual(res, hash256[i].output);
     }
   });
 
@@ -155,7 +155,7 @@ contract('ViewBTC', () => {
   it('extracts an outpoint as bytes', async () => {
     for (let i = 0; i < extractOutpoint.length; i += 1) {
       const res = await instance.outpoint(extractOutpoint[i].input);
-      assert.strictEqual(extractOutpoint[i].output, res);
+      assert.strictEqual(res, extractOutpoint[i].output);
     }
   });
 
@@ -163,7 +163,7 @@ contract('ViewBTC', () => {
     for (let i = 0; i < extractInputTxIdLE.length; i += 1) {
       const outpoint = await instance.outpoint(extractInputTxIdLE[i].input);
       const res = await instance.txidLE(outpoint);
-      assert.strictEqual(extractInputTxIdLE[i].output, res);
+      assert.strictEqual(res, extractInputTxIdLE[i].output);
     }
   });
 
@@ -178,7 +178,7 @@ contract('ViewBTC', () => {
   it('extracts the value as LE bytes', async () => {
     for (let i = 0; i < extractValueLE.length; i += 1) {
       const res = await instance.valueBytes(extractValueLE[i].input);
-      assert.strictEqual(extractValueLE[i].output, res);
+      assert.strictEqual(res, extractValueLE[i].output);
     }
   });
 
@@ -204,7 +204,7 @@ contract('ViewBTC', () => {
   it('extracts op_return data blobs', async () => {
     for (let i = 0; i < extractOpReturnData.length; i += 1) {
       const res = await instance.opReturnPayload(extractOpReturnData[i].input);
-      assert.strictEqual(extractOpReturnData[i].output, res);
+      assert.strictEqual(res, extractOpReturnData[i].output);
     }
 
     // for (let i = 0; i < extractOpReturnDataError.length; i += 1) {
@@ -218,8 +218,6 @@ contract('ViewBTC', () => {
     // }
   });
 
-  // TODO: come back to this
-  // error - "TypedMemView/index - Overran the view."
   it('extracts inputs at specified indices', async () => {
     for (let i = 0; i < extractInputAtIndex.length; i += 1) {
       const res = await instance.indexVin.call(
@@ -264,7 +262,7 @@ contract('ViewBTC', () => {
   // it('extracts the scriptSig from inputs', async () => {
   //   for (let i = 0; i < extractScriptSig.length; i += 1) {
   //     const res = await instance.scriptSig(extractScriptSig[3].input);
-  //     assert.strictEqual(extractScriptSig[3].output, res);
+  //     assert.strictEqual(res, extractScriptSig[3].output);
   //   }
   // });
 
@@ -283,11 +281,19 @@ contract('ViewBTC', () => {
   // });
 
   // TODO: Come back to this
-  // Error: TypedMemView/index - Overran the view.
+  // #1 passing
+  // #2 expected true to equal false
+  // #3 Error
+  // #4 passing
+  // #5 passing
+  // #6 passing
+  // #7 passing
+  // #8 passing
+  // #9 Error: VM Exception while processing transaction: revert TypedMemView/index - Overran the view. Slice is at 0x0000a0 with length 0x000001. Attempted to index at offset 0x000001 with length 0x000008.
   // it('validates vin length based on stated size', async () => {
   //   for (let i = 0; i < validateVin.length; i += 1) {
   //     const res = await instance.tryAsVin(validateVin[i].input);
-  //     assert.strictEqual(validateVin[i].output, res);
+  //     assert.strictEqual(res, validateVin[i].output);
   //   }
   // });
 
@@ -304,7 +310,7 @@ contract('ViewBTC', () => {
   //       // }
   //     // } else {
   //     const res = await instance.tryAsVout(validateVout[i].input);
-  //     assert.strictEqual(validateVout[i].output, res);
+  //     assert.strictEqual(res, validateVout[i].output);
   //     // }
   //   }
   // });
@@ -324,15 +330,13 @@ contract('ViewBTC', () => {
   //   }
   // });
 
-  // TODO: come back to this
-  // error - "TypedMemView/index - Overran the view."
   it('extracts outputs at specified indices', async () => {
     for (let i = 0; i < extractOutputAtIndex.length; i += 1) {
       const res = await instance.indexVout(
         extractOutputAtIndex[i].input.vout,
         extractOutputAtIndex[i].input.index
       );
-      assert.strictEqual(extractOutputAtIndex[i].output, res);
+      assert.strictEqual(res, extractOutputAtIndex[i].output);
     }
   });
 
@@ -353,7 +357,7 @@ contract('ViewBTC', () => {
   it('extracts a root from a header', async () => {
     for (let i = 0; i < extractMerkleRootLE.length; i += 1) {
       const res = await instance.merkleRoot(extractMerkleRootLE[i].input);
-      assert.strictEqual(extractMerkleRootLE[i].output, res);
+      assert.strictEqual(res, extractMerkleRootLE[i].output);
     }
   });
 
@@ -368,29 +372,26 @@ contract('ViewBTC', () => {
   it('extracts the prev block hash', async () => {
     for (let i = 0; i < extractPrevBlockLE.length; i += 1) {
       const res = await instance.parent(extractPrevBlockLE[i].input);
-      assert.strictEqual(extractPrevBlockLE[i].output, res);
+      assert.strictEqual(res, extractPrevBlockLE[i].output);
     }
   });
 
   it('extracts a timestamp from a header', async () => {
     for (let i = 0; i < extractTimestamp.length; i += 1) {
       const res = await instance.time(extractTimestamp[i].input);
-      assert(extractTimestamp[i].output, res);
+      assert(res, extractTimestamp[i].output);
     }
   });
 
-  // TODO: Come back to this
-  // All pass except...
-  // Error on test cases 6 & 7: Overflow during addition.
-  // it('verifies a bitcoin merkle root', async () => {
-  //   for (let i = 0; i < verifyHash256Merkle.length; i += 1) {
-  //     const res = await instance.verifyHash256Merkle(
-  //       verifyHash256Merkle[i].input.proof,
-  //       verifyHash256Merkle[i].input.index
-  //     ); // 0-indexed
-  //     assert.strictEqual(verifyHash256Merkle[i].output, res);
-  //   }
-  // });
+  it('verifies a bitcoin merkle root', async () => {
+    for (let i = 0; i < verifyHash256Merkle.length; i += 1) {
+      const res = await instance.verifyHash256Merkle(
+        verifyHash256Merkle[i].input.proof,
+        verifyHash256Merkle[i].input.index
+      ); // 0-indexed
+      assert.strictEqual(res, verifyHash256Merkle[i].output);
+    }
+  });
 
   // indexCompactInt / indexVarInt
   it('parses VarInts', async () => {

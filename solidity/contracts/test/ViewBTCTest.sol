@@ -28,7 +28,7 @@ contract ViewBTCTest {
         return _b.ref(0).hash256();
     }
 
-    function indexVin(bytes memory _vin, uint256 _index) public returns (bytes memory) {
+    function indexVin(bytes memory _vin, uint256 _index) public pure returns (bytes memory) {
         return _vin.ref(0).tryAsVin().assertValid().indexVin(_index).clone();
     }
 
@@ -121,10 +121,23 @@ contract ViewBTCTest {
     }
 
     function verifyHash256Merkle(bytes memory _proof, uint _index) public view returns (bool) {
-        bytes29 _proof_ref = _proof.ref(0);
-        bytes29 _nodes = _proof_ref.slice(32, _proof.length - 64, 0).tryAsMerkleArray().assertValid();
-        bytes32 _leaf = _proof_ref.index(0, 32);
-        bytes32 _root = _proof_ref.index(_proof.length - 32, 32);
+        bytes29 _proof_ref = _proof.ref(0).tryAsMerkleArray();
+        bytes29 _nodes;
+        bytes32 _leaf;
+        bytes32 _root;
+
+        if (_proof.length == 32) {
+            _nodes = _nodes.castTo(uint40(ViewBTC.BTCTypes.MerkleArray));
+            _leaf = _proof_ref.index(0,32);
+            _root = _proof_ref.index(0,32);
+        } else if (!_proof_ref.isValid() || _proof.length < 64) {
+            return false;
+        } else {
+            _nodes = _proof_ref.slice(32, _proof.length - 64, 0).tryAsMerkleArray().assertValid();
+            _leaf = _proof_ref.index(0, 32);
+            _root = _proof_ref.index(_proof.length - 32, 32);
+        }
+
         return ViewBTC.checkMerkle(_leaf, _nodes, _root, _index);
     }
 
