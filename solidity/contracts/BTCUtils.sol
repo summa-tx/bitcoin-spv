@@ -309,7 +309,7 @@ library BTCUtils {
     /* ****** */
 
     /// @notice          Determines the length of an output
-    /// @dev             5 types: WPKH, WSH, PKH, SH, and OP_RETURN
+    /// @dev             Works with any properly formatted output
     /// @param _output   The output
     /// @return          The length indicated by the prefix, error if invalid length
     function determineOutputLength(bytes memory _output) internal pure returns (uint256) {
