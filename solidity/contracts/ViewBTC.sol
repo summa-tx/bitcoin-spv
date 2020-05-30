@@ -311,8 +311,8 @@ library ViewBTC {
     }
 
     function indexHeaderArray(bytes29 _arr, uint256 index) internal pure typeAssert(_arr, BTCTypes.HeaderArray) returns (bytes29) {
-        require(_arr.len() > index.add(1).mul(80), "Header array read overrun");
-        return _arr.slice(index.mul(80), index.add(1).mul(80), uint40(BTCTypes.Header));
+        uint256 _start = index.mul(80);
+        return _arr.slice(_start, 80, uint40(BTCTypes.Header));
     }
 
 

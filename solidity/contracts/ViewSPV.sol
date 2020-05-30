@@ -66,8 +66,8 @@ library ViewSPV {
         bytes29 _vout,
         bytes4 _locktime
     ) internal view returns (bytes32) {
-        bytes29 _ins = _vin.tryAsVin().assertValid();
-        bytes29 _outs = _vout.tryAsVin().assertValid();
+        bytes29 _ins = _vin.tryAsVin().assertValid();  // do we really need to check these?
+        bytes29 _outs = _vout.tryAsVout().assertValid();  // do we need to check these?
         // lazy. causes an extra allocation of vin and vout
         // TODO: write in assembly
         return abi.encodePacked(_version, _ins.clone(), _outs.clone(), _locktime).ref(0).hash256();
@@ -98,17 +98,17 @@ library ViewSPV {
     function checkChain(bytes29 _headers) internal view returns (uint256 _totalDifficulty) {
         bytes29 _headerChain = _headers.tryAsHeaderArray().assertValid();
         bytes32 _digest;
-
-        for (uint256 i = 0; i < _headerChain.len() / 80; i += 1) {
+        uint256 _headerCount = _headerChain.len() / 80;
+        for (uint256 i = 0; i < _headerCount; i += 1) {
             bytes29 _header = _headerChain.indexHeaderArray(i);
             if (i != 0) {
                 if (!checkParent(_header, _digest)) {return ERR_INVALID_CHAIN;}
             }
-            // ith header target
+            _digest = _header.workHash();
+            uint256 _work = TypedMemView.reverseUint256(uint256(_digest));
             uint256 _target = _header.target();
-            if (!checkWork(_header, _target)) {
-                return ERR_LOW_WORK;
-            }
+
+            if (_work > _target) {return ERR_LOW_WORK;}
 
             _totalDifficulty += ViewBTC.toDiff(_target);
         }

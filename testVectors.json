@@ -947,6 +947,7 @@
       "jsError": "Header bytes not multiple of 80",
       "golangError": "Header bytes not multiple of 80",
       "solidityError": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "solidityViewError": "Validity assertion failed",
       "rustError": "Header bytes not multiple of 80",
       "cError": "0xffffffffffffffff"
     },
