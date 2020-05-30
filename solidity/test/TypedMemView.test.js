@@ -5,7 +5,7 @@ const TypedMemView = artifacts.require('TestMemView');
 contract('TypedMemView', () => {
   let instance;
 
-  describe('#tests', async () => {
+  describe.only('#tests', async () => {
     before(async () => {
       instance = await TypedMemView.new();
     });

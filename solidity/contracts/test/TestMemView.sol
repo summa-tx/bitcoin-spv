@@ -102,7 +102,7 @@ contract TestMemView {
         );
     }
 
-    function slicing() public pure {
+    function slicing() public {
         // 76 bytes - 3 words
 
         // solium-disable-next-line max-len
@@ -181,6 +181,8 @@ contract TestMemView {
             v6.indexInt(0, 2) == -32513,
             "indexInt mismatch 0x80ff"
         );
+
+        revert("DEBUG ME");
     }
 
     function typeError() public pure {
