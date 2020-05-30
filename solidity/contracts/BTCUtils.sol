@@ -209,8 +209,8 @@ library BTCUtils {
         return (_varIntDataLen, _scriptSigLen);
     }
 
-    /// @notice          Determines the length of an input from its scriptsig
-    /// @dev             36 for outpoint, 1 for scriptsig length, 4 for sequence
+    /// @notice          Determines the length of an input from its scriptSig
+    /// @dev             36 for outpoint, 1 for scriptSig length, 4 for sequence
     /// @param _input    The input
     /// @return          The length of the input in bytes
     function determineInputLength(bytes memory _input) internal pure returns (uint256) {
@@ -248,7 +248,7 @@ library BTCUtils {
     /// @notice          Extracts the VarInt-prepended scriptSig from the input in a tx
     /// @dev             Will return hex"00" if passed a witness input
     /// @param _input    The LEGACY input
-    /// @return          The length-prepended script sig
+    /// @return          The length-prepended scriptSig
     function extractScriptSig(bytes memory _input) internal pure returns (bytes memory) {
         uint256 _varIntDataLen;
         uint256 _scriptSigLen;
@@ -281,7 +281,7 @@ library BTCUtils {
     }
 
     /// @notice          Extracts the outpoint from the input in a tx
-    /// @dev             32 byte tx id with 4 byte index
+    /// @dev             32-byte tx id with 4-byte index
     /// @param _input    The input
     /// @return          The outpoint (LE bytes of prev tx hash + LE bytes of prev tx index)
     function extractOutpoint(bytes memory _input) internal pure returns (bytes memory) {
@@ -289,7 +289,7 @@ library BTCUtils {
     }
 
     /// @notice          Extracts the outpoint tx id from an input
-    /// @dev             32 byte tx id
+    /// @dev             32-byte tx id
     /// @param _input    The input
     /// @return          The tx id (little-endian bytes)
     function extractInputTxIdLE(bytes memory _input) internal pure returns (bytes32) {
@@ -297,7 +297,7 @@ library BTCUtils {
     }
 
     /// @notice          Extracts the LE tx input index from the input in a tx
-    /// @dev             4 byte tx index
+    /// @dev             4-byte tx index
     /// @param _input    The input
     /// @return          The tx index (little-endian bytes)
     function extractTxIndexLE(bytes memory _input) internal pure returns (bytes memory) {
@@ -326,7 +326,7 @@ library BTCUtils {
             return ERR_BAD_ARG;
         }
 
-        // 8 byte value, 1 byte for tag itself
+        // 8-byte value, 1-byte for tag itself
         return 8 + 1 + _varIntDataLen + _scriptPubkeyLength;
     }
 
@@ -364,7 +364,7 @@ library BTCUtils {
     /// @notice          Extracts the output script length
     /// @dev             Indexes the length prefix on the pk_script
     /// @param _output   The output
-    /// @return          The 1 byte length prefix
+    /// @return          The 1-byte length prefix
     function extractOutputScriptLen(bytes memory _output) internal pure returns (bytes memory) {
         return _output.slice(8, 1);
     }
@@ -533,7 +533,7 @@ library BTCUtils {
     }
 
     /// @notice          Extracts the target from a block header
-    /// @dev             Target is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
+    /// @dev             Target is a 256-bit number encoded as a 3-byte mantissa and 1-byte exponent
     /// @param _header   The header
     /// @return          The target threshold
     function extractTarget(bytes memory _header) internal pure returns (uint256) {
@@ -547,7 +547,7 @@ library BTCUtils {
 
     /// @notice          Calculate difficulty from the difficulty 1 target and current target
     /// @dev             Difficulty 1 is 0x1d00ffff on mainnet and testnet
-    /// @dev             Difficulty 1 is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
+    /// @dev             Difficulty 1 is a 256-bit number encoded as a 3-byte mantissa and 1-byte exponent
     /// @param _target   The current target
     /// @return          The block difficulty (bdiff)
     function calculateDifficulty(uint256 _target) internal pure returns (uint256) {
