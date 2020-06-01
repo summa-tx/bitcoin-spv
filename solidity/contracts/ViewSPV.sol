@@ -77,6 +77,7 @@ library ViewSPV {
         return abi.encodePacked(_version, _vin.clone(), _vout.clone(), _locktime).ref(0).hash256();
     }
 
+    // TODO: add test for checkWork
     /// @notice             Checks validity of header work
     /// @param _header      Header view
     /// @param _target      The target threshold

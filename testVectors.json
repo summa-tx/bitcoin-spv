@@ -57,15 +57,18 @@
   "parseVarIntError": [
     {
       "comment": "Not enough bytes",
-      "input": "0xfd01"
+      "input": "0xfd01",
+      "solidityError": "Overran the view"
     },
     {
       "comment": "Not enough bytes",
-      "input": "0xfe010000"
+      "input": "0xfe010000",
+      "solidityError": "Overran the view"
     },
     {
       "comment": "Not enough bytes",
-      "input": "0xff01000000000000"
+      "input": "0xff01000000000000",
+      "solidityError": "Overran the view"
     }
   ],
   "hash160": [
@@ -134,7 +137,8 @@
       "comment": "Read overrun, input length less than 37 bytes",
       "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000",
       "jsError": "Read overrun",
-      "golangError": "Read overrun"
+      "golangError": "Read overrun",
+      "solidityError": "Overran the view"
     }
   ],
   "extractSequenceLegacy": [
@@ -265,6 +269,56 @@
       "rustError": "Read overrun when parsing vin"
     }
   ],
+  "indexVinError": [
+    {
+      "comment": "Read overrun, index is greater than the number of inputs",
+      "input": {
+        "vin": "0x027bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff",
+        "index": 3
+      },
+      "solidityError": "Vin read overrun"
+    },
+    {
+      "comment": "Read Overrun at beginning of vin",
+      "input": {
+        "vin": "0xff",
+        "index": 3
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Read overrun, index is greater than the number of inputs",
+      "input": {
+        "vin": "0x027bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444560000000000ffffffff",
+        "index": 3
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Bad VarInt in scriptsig of input being extracted",
+      "input": {
+        "vin": "0x01000000000000000000000000000000000000000000000000000000000000000000000000FF",
+        "index": 0
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Bad VarInt in scriptsig of input being extracted",
+      "input": {
+        "vin": "0x02000000000000000000000000000000000000000000000000000000000000000000000000FF",
+        "index": 1
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Bad VarInt in scriptsig of input being extracted",
+      "input": {
+        "vin": "0x01000000000000000000000000000000000000000000000000000000000000000000000000FC",
+        "index": 0
+      },
+      "solidityError": "Validity assertion failed"
+    }
+  ],
   "isLegacyInput": [
     {
       "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
@@ -302,6 +356,33 @@
       "jsError": "Read overrun",
       "golangError": "Read overrun",
       "solidityError": "Bad VarInt in scriptSig"
+    }
+  ],
+  "scriptSig": [
+    {
+      "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
+      "output": "0x00"
+    },
+    {
+      "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff",
+      "output": "0x01ee"
+    }
+  ],
+  "scriptSigError": [
+    {
+      "comment": "Invalid input, not enough bytes",
+      "input": "0xff",
+      "solidityError": "Overran the view"
+    },
+    {
+      "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff",
+      "output": "0xfd0100ee",
+      "solidityError": "Non-minimal var int"
+    },
+    {
+      "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff",
+      "output": "0xfe01000000ee",
+      "solidityError": "Non-minimal var int"
     }
   ],
   "extractSequenceLEWitness": [
@@ -513,6 +594,80 @@
       "golangError": "Read overrun when parsing vout",
       "solidityError": "Slice out of bounds",
       "rustError": "Read overrun when parsing vout"
+    }
+  ],
+  "indexVoutError": [
+    {
+      "comment": "Read overrun during VarInt parsing",
+      "input": {
+        "vout": "0xff",
+        "index": 1
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Bad VarInt in scriptPubKey",
+      "input": {
+        "vout": "0x010101010101010101ff",
+        "index": 0
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Read overrun, index is greater than the number of outputs",
+      "input": {
+        "vout": "0x010101010101010101ff",
+        "index": 1
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Bad VarInt inside loop",
+      "input": {
+        "vout": "0x020101010101010101ff",
+        "index": 1
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Read overrun, index is greater than the number of outputs",
+      "input": {
+        "vout": "0x024db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f040420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922",
+        "index": 3
+      },
+      "solidityError": "Vout read overrun"
+    },
+    {
+      "comment": "Read overrun, index is greater than the number of outputs",
+      "input": {
+        "vout": "0x024db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f040420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922",
+        "index": 3
+      },
+      "solidityError": "Vout read overrun"
+    },
+    {
+      "comment": "Bad VarInt in scriptPubkey",
+      "input": {
+        "vout": "0x014db6000000000000ff",
+        "index": 0
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Bad VarInt in scriptPubkey",
+      "input": {
+        "vout": "0x024db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f040420f0000000000FF",
+        "index": 1
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Invalid vout",
+      "input": {
+        "vout": "0x024db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f040420f0000000000FB",
+        "index": 1
+      },
+      "solidityError": "Validity assertion failed"
     }
   ],
   "extractValueLE": [

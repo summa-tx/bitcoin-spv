@@ -14,21 +14,20 @@ const {
   extractTxIndexLE,
   extractSequenceLEWitness,
   extractSequenceLELegacy,
-  extractSequenceLegacyError,
+  extractSequenceLELegacyError,
   extractOpReturnData,
-  extractOpReturnDataError,
   extractInputAtIndex,
-  extractInputAtIndexError,
+  indexVinError,
   extractValueLE,
   extractValue,
   determineInputLength,
-  extractScriptSig,
-  extractScriptSigError,
+  scriptSig,
+  scriptSigError,
   tryAsVin,
   tryAsVout,
   determineOutputLength,
   extractOutputAtIndex,
-  extractOutputAtIndexError,
+  indexVoutError,
   extractMerkleRootLE,
   extractTarget,
   extractPrevBlockLE,
@@ -87,19 +86,16 @@ contract('ViewBTC', () => {
     }
   });
 
-  // TODO: Error cases
-  // it('errors on bad varints in extractSequenceLegacy', async () => {
-  //   for (let i = 0; i < extractSequenceLegacyError.length; i += 1) {
-  //     try {
-  //       await instance.sequence(
-  //         extractSequenceLegacyError[i].input
-  //       );
-  //       assert(false, 'expected an error');
-  //     } catch (e) {
-  //       assert.include(e.message, extractSequenceLegacyError[i].solidityError);
-  //     }
-  //   }
-  // });
+  it('errors on bad varints in sequence', async () => {
+    for (let i = 0; i < extractSequenceLELegacyError.length; i += 1) {
+      try {
+        await instance.sequence(extractSequenceLELegacyError[i].input);
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, extractSequenceLELegacyError[i].solidityError);
+      }
+    }
+  });
 
   it('extracts an outpoint as bytes', async () => {
     for (let i = 0; i < extractOutpoint.length; i += 1) {
@@ -155,16 +151,20 @@ contract('ViewBTC', () => {
       const res = await instance.opReturnPayload(extractOpReturnData[i].input);
       assert.strictEqual(res, extractOpReturnData[i].output);
     }
+  });
 
-    // for (let i = 0; i < extractOpReturnDataError.length; i += 1) {
-    //   try {
-    //     const res = await instance.extractOpReturnData(extractOpReturnDataError[i].input);
-    //     assert(!(extractOpReturnDataError[i].solidityError), 'expected an error message');
-    //     assert.isNull(res);
-    //   } catch (e) {
-    //     assert.include(e.message, extractOpReturnDataError[i].solidityError);
-    //   }
-    // }
+  it('errors appropriately when extracting Op Return Payload', async () => {
+    // Not an op return output
+    const res = await instance.opReturnPayload("0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18");
+    assert.isNull(res)
+
+    // One byte too short
+    try {
+      await instance.opReturnPayload("0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952");
+      assert(false, 'expected an error message');
+    } catch (e) {
+      assert.include(e.message, "Type assertion failed");
+    }
   });
 
   it('extracts inputs at specified indices', async () => {
@@ -177,50 +177,37 @@ contract('ViewBTC', () => {
     }
   });
 
-  // TODO: Error cases
-  // it('extract input errors on bad vin', async () => {
-  //   for (let i = 0; i < extractInputAtIndexError.length; i += 1) {
-  //     try {
-  //       await instance.indexVin(
-  //         extractInputAtIndexError[i].input.vin,
-  //         extractInputAtIndexError[i].input.index
-  //       );
-  //       assert(false, 'expected an error');
-  //     } catch (e) {
-  //       assert.include(e.message, extractInputAtIndexError[i].solidityError, `${extractInputAtIndexError[i].input.vin} ${extractInputAtIndexError[i].input.index}`);
-  //     }
-  //   }
-  // });
-
-  it('extracts the scriptSig from inputs', async () => {
-    for (let i = 0; i < extractScriptSig.length; i += 1) {
-      if (extractScriptSig[i].solidityError) {
-        try {
-          await instance.scriptSig(extractScriptSig[i].input)
-          assert(false, 'expected an error')
-        } catch (e) {
-          assert.include(e.message, extractScriptSig[i].solidityError)
-        }
-      } else {
-        const res = await instance.scriptSig(extractScriptSig[i].input);
-        assert.strictEqual(res, extractScriptSig[i].output);
+  it('extract input errors on bad vin', async () => {
+    for (let i = 0; i < indexVinError.length; i += 1) {
+      try {
+        await instance.indexVin.call(
+          indexVinError[i].input.vin,
+          indexVinError[i].input.index
+        );
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, indexVinError[i].solidityError, `${indexVinError[i].input.vin}, ${indexVinError[i].input.index}`);
       }
     }
   });
 
-  // TODO: Error cases
-  // it('errors on bad varints in extractScriptSig', async () => {
-  //   for (let i = 0; i < extractScriptSigError.length; i += 1) {
-  //     try {
-  //       await instance.scriptSig(
-  //         extractScriptSigError[i].input
-  //       );
-  //       assert(false, 'expected an error');
-  //     } catch (e) {
-  //       assert.include(e.message, extractScriptSigError[i].solidityError);
-  //     }
-  //   }
-  // });
+  it('extracts the scriptSig from inputs', async () => {
+    for (let i = 0; i < scriptSig.length; i += 1) {
+      const res = await instance.scriptSig(scriptSig[i].input);
+      assert.strictEqual(res, scriptSig[i].output);
+    }
+  });
+
+  it('errors on bad (or non-minimal) varints in scriptSig', async () => {
+    for (let i = 0; i < scriptSigError.length; i += 1) {
+      try {
+        await instance.scriptSig(scriptSigError[i].input);
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, scriptSigError[i].solidityError);
+      }
+    }
+  });
 
   it('validates vin length based on stated size', async () => {
     for (let i = 0; i < tryAsVin.length; i += 1) {
@@ -287,19 +274,18 @@ contract('ViewBTC', () => {
     }
   });
 
-  // TODO: Error cases
-  // it('errors while extracting outputs at specified indices', async () => {
-  //   for (let i = 0; i < extractOutputAtIndexError.length; i += 1) {
-  //     try {
-  //       await instance.indexVout(
-  //         extractOutputAtIndexError[i].input.vout,
-  //         extractOutputAtIndexError[i].input.index
-  //       );
-  //     } catch (e) {
-  //       assert.include(e.message, extractOutputAtIndexError[i].solidityError, `${extractOutputAtIndexError[i].input.vout} ${extractOutputAtIndexError[i].input.index}`);
-  //     }
-  //   }
-  // });
+  it('errors while extracting outputs at specified indices', async () => {
+    for (let i = 0; i < indexVoutError.length; i += 1) {
+      try {
+        await instance.indexVout(
+          indexVoutError[i].input.vout,
+          indexVoutError[i].input.index
+        );
+      } catch (e) {
+        assert.include(e.message, indexVoutError[i].solidityError, `${indexVoutError[i].input.vout} ${indexVoutError[i].input.index}`);
+      }
+    }
+  });
 
   it('extracts a root from a header', async () => {
     for (let i = 0; i < extractMerkleRootLE.length; i += 1) {
@@ -357,14 +343,16 @@ contract('ViewBTC', () => {
     }
   });
 
-  // TODO: Error cases
-  // it('returns error for invalid VarInts', async () => {
-  //   for (let i = 0; i < parseVarIntError.length; i += 1) {
-  //     const res = await instance.indexVarInt(parseVarIntError[i].input);
-  //     assert(res[0].eq(new BN('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 16)), 'did not get error code');
-  //     assert(res[1].eq(new BN(0, 10)), `got non-0 value: ${res[1].toString()}`);
-  //   }
-  // });
+  it('returns error for invalid VarInts', async () => {
+    for (let i = 0; i < parseVarIntError.length; i += 1) {
+      try {
+        await instance.indexVarInt(parseVarIntError[i].input);
+        assert(false, "expected an error");
+      } catch (e) {
+        assert.include(e.message, parseVarIntError[i].solidityError)
+      }
+    }
+  });
 
   it('calculates consensus-correct retargets', async () => {
     let firstTimestamp;

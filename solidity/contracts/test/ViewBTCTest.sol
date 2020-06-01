@@ -77,7 +77,12 @@ contract ViewBTCTest {
     }
 
     function opReturnPayload(bytes memory _output) public pure returns (bytes memory) {
-        return _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).scriptPubkey().opReturnPayload().clone();
+        bytes29 res = _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).scriptPubkey().opReturnPayload();
+        bytes memory nullVal;
+        if (res.isNull()) {
+            return nullVal;
+        }
+        return res.clone();
     }
 
     function payload(bytes memory _output) public pure returns (bytes memory) {
