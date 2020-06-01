@@ -81,7 +81,7 @@ library ViewSPV {
     /// @param _header      Header view
     /// @param _target      The target threshold
     /// @return             true if header work is valid, false otherwise
-    function checkWork(bytes29 _header, uint256 _target) internal view returns (bool) {
+    function checkWork(bytes29 _header, uint256 _target) internal view typeAssert(_header, ViewBTC.BTCTypes.Header) returns (bool) {
         return _header.work() < _target;
     }
 
@@ -99,7 +99,7 @@ library ViewSPV {
     /// @notice             Compares the hash of each header to the prevHash in the next header
     /// @param _headers     Raw byte array of header chain
     /// @return             The total accumulated difficulty of the header chain, or an error code
-    function checkChain(bytes29 _headers) internal view returns (uint256 _totalDifficulty) {
+    function checkChain(bytes29 _headers) internal view typeAssert(_headers, ViewBTC.BTCTypes.HeaderArray) returns (uint256 _totalDifficulty) {
         bytes32 _digest;
         uint256 _headerCount = _headers.len() / 80;
         for (uint256 i = 0; i < _headerCount; i += 1) {
