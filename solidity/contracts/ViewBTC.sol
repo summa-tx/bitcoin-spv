@@ -61,10 +61,13 @@ library ViewBTC {
             return uint64(flag);
         } else if (flag == 0xfd) {
             payload = memView.indexLEUint(_index + 1, 2);
+            require(compactIntLength(uint64(payload)) == 3, "Non-minimal compact int");
         } else if (flag == 0xfe) {
             payload = memView.indexLEUint(_index + 1, 4);
+            require(compactIntLength(uint64(payload)) == 5, "Non-minimal compact int");
         } else if (flag == 0xff) {
             payload = memView.indexLEUint(_index + 1, 8);
+            require(compactIntLength(uint64(payload)) == 9, "Non-minimal compact int");
         }
         number = uint64(payload);
     }
