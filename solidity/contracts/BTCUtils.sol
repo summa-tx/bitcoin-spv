@@ -361,14 +361,6 @@ library BTCUtils {
         return _vout.slice(_offset, _len);
     }
 
-    /// @notice          Extracts the output script length
-    /// @dev             Indexes the length prefix on the pk_script
-    /// @param _output   The output
-    /// @return          The 1 byte length prefix
-    function extractOutputScriptLen(bytes memory _output) internal pure returns (bytes memory) {
-        return _output.slice(8, 1);
-    }
-
     /// @notice          Extracts the value bytes from the output in a tx
     /// @dev             Value is an 8-byte little-endian number
     /// @param _output   The output
@@ -404,23 +396,34 @@ library BTCUtils {
     /// @param _output   The output
     /// @return          The hash committed to by the pk_script, or null for errors
     function extractHash(bytes memory _output) internal pure returns (bytes memory) {
-        if (uint8(_output.slice(9, 1)[0]) == 0) {
-            uint256 _len = uint8(_output[8]);
-            if (_len < 2) {
+        uint8 _scriptLen = uint8(_output[8]);
+
+        // don't have to worry about overflow here.
+        // if _scriptLen + 9 overflows, then output.length would have to be < 8
+        // for this check to pass. if it's <8, then we errored when assigning
+        // _scriptLen
+        if (_scriptLen + 9 != _output.length) {
+            return hex"";
+        }
+
+        if (uint8(_output[9]) == 0) {
+            if (_scriptLen < 2) {
                 return hex"";
             }
-            _len -= 2;
-            // Check for maliciously formatted witness outputs
-            if (uint8(_output.slice(10, 1)[0]) != uint8(_len)) {
+            uint256 _payloadLen = uint8(_output[10]);
+            // Check for maliciously formatted witness outputs.
+            // No need to worry about underflow as long b/c of the `< 2` check
+            if (_payloadLen != _scriptLen - 2 || (_payloadLen != 0x20 && _payloadLen != 0x14)) {
                 return hex"";
             }
-            return _output.slice(11, _len);
+            return _output.slice(11, _payloadLen);
         } else {
             bytes32 _tag = _output.keccak256Slice(8, 3);
             // p2pkh
             if (_tag == keccak256(hex"1976a9")) {
                 // Check for maliciously formatted p2pkh
-                if (uint8(_output.slice(11, 1)[0]) != 0x14 ||
+                // No need to worry about underflow, b/c of _scriptLen check
+                if (uint8(_output[11]) != 0x14 ||
                     _output.keccak256Slice(_output.length - 2, 2) != keccak256(hex"88ac")) {
                     return hex"";
                 }
@@ -428,13 +431,14 @@ library BTCUtils {
             //p2sh
             } else if (_tag == keccak256(hex"17a914")) {
                 // Check for maliciously formatted p2sh
-                if (uint8(_output.slice(_output.length - 1, 1)[0]) != 0x87) {
+                // No need to worry about underflow, b/c of _scriptLen check
+                if (uint8(_output[_output.length - 1]) != 0x87) {
                     return hex"";
                 }
                 return _output.slice(11, 20);
             }
         }
-        return hex"";  /* NB: will trigger on OPRETURN and non-standard that don't overrun */
+        return hex"";  /* NB: will trigger on OPRETURN and any non-standard that doesn't overrun */
     }
 
     /* ********** */

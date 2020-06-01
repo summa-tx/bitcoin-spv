@@ -223,6 +223,7 @@ pub mod test_utils {
             "Vout is not valid" => SPVError::InvalidVout,
             "Version, Vin, Vout and Locktime did not yield correct TxID" => SPVError::WrongTxID,
             "Merkle Proof is not valid" => SPVError::BadMerkleProof,
+            "Reported length mismatch" => SPVError::OutputLengthMismatch,
             _ => SPVError::UnknownError,
         }
     }
