@@ -20,7 +20,6 @@ const {
   extractSequenceLELegacy,
   extractSequenceLegacy,
   extractSequenceLegacyError,
-  extractOutputScriptLen,
   extractHash,
   extractHashError,
   extractOpReturnData,
@@ -159,18 +158,6 @@ contract('BTCUtils', () => {
     for (let i = 0; i < extractTxIndexLE.length; i += 1) {
       const res = await instance.extractTxIndexLE(extractTxIndexLE[i].input);
       assert.strictEqual(res, extractTxIndexLE[i].output);
-    }
-  });
-
-  /* Witness Output */
-  it('extracts the length of the output script', async () => {
-    for (let i = 0; i < extractOutputScriptLen.length; i += 1) {
-      const res = await instance.extractOutputScriptLen(extractOutputScriptLen[i].input);
-      if (Object.prototype.hasOwnProperty.call(extractOutputScriptLen[i], 'solOutput')) {
-        assert.strictEqual(res, extractOutputScriptLen[i].solOutput);
-      } else {
-        assert.strictEqual(res, extractOutputScriptLen[i].output);
-      }
     }
   });
 

@@ -49,6 +49,8 @@ pub enum SPVError {
     /// When validating an `SPVProof`, the `intermediate_nodes` is not a valid
     /// merkle proof connecting the `tx_id_le` to the `confirming_header`.
     BadMerkleProof,
+    /// TxOut's reported length does not match passed-in byte slice's length
+    OutputLengthMismatch,
     /// Any other error
     UnknownError,
 }

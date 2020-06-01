@@ -218,6 +218,15 @@ library TypedMemView {
         }
     }
 
+    function buildUnchecked(uint256 _type, uint256 _loc, uint256 _len) private pure returns (bytes29 newView) {
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            newView := shl(96, or(newView, _type)) // insert type
+            newView := shl(96, or(newView, _loc))  // insert loc
+            newView := shl(24, or(newView, _len))  // empty bottom 3 bytes
+        }
+    }
+
     /// Instantiate a new memory view. This should generally not be called
     /// directly. Prefer `ref` wherever possible.
     function build(uint256 _type, uint256 _loc, uint256 _len) internal pure returns (bytes29 newView) {
@@ -231,13 +240,7 @@ library TypedMemView {
         if (_end == 0) {
             return NULL;
         }
-
-        assembly {
-            // solium-disable-previous-line security/no-inline-assembly
-            newView := shl(96, or(newView, _type)) // insert type
-            newView := shl(96, or(newView, _loc))  // insert loc
-            newView := shl(24, or(newView, _len))  // empty bottom 3 bytes
-        }
+        newView = buildUnchecked(_type, _loc, _len);
     }
 
     /// Instantiate a memory view from a byte array.
@@ -459,24 +462,120 @@ library TypedMemView {
         return !equal(left, right);
     }
 
+    /// Copy the view to a location, return an unsafe memory reference
+    ///
+    /// Super Dangerous direct memory access.
+    /// This reference can be overwritten if anything else modifies memory (!!!).
+    /// As such it MUST be consumed IMMEDIATELY.
+    /// This function is private to prevent unsafe usage by callers
+    function copyTo(bytes29 memView, uint256 _newLoc) private pure returns (bytes29 written) {
+        require(notNull(memView), "TypedMemView/copyTo - Null pointer deref");
+        require(isValid(memView), "TypedMemView/copyTo - Invalid pointer deref");
+        uint256 _len = len(memView);
+        uint256 _oldLoc = loc(memView);
+
+        uint256 ptr;
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            ptr := mload(0x40)
+            // revert if we're writing in occupied memory
+            if gt(ptr, _newLoc) {
+                revert(0x60, 0x20) // empty revert message
+            }
+            for { let offset := 0 } lt(offset, _len) { offset := add(offset, 0x20) }
+            {
+                let chunk := mload(add(_oldLoc, offset))
+                mstore(add(_newLoc, offset), chunk)
+            }
+        }
+
+        written = buildUnchecked(typeOf(memView), _newLoc, _len);
+    }
+
     /// Copies the referenced memory to a new loc in memory, returning a
     /// `bytes` pointing to the new memory
     function clone(bytes29 memView) internal pure returns (bytes memory ret) {
-        require(notNull(memView), "TypedMemView/clone - Null pointer deref");
-        require(isValid(memView), "TypedMemView/clone - Invalid pointer deref");
-        uint256 _len = len(memView);
-        uint256 _loc = loc(memView);
+        uint256 ptr;
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
-            ret := mload(0x40) // load unused pointer to the array
-            mstore(0x40, add(add(ret, _len), 0x20)) // write new unused pointer
-            mstore(ret, _len) // write len of new array (in bytes)
-            for { let offset := 0 } lt(offset, _len) { offset := add(offset, 0x20) }
-            {
-                // copy each chunk
-                let chunk := mload(add(_loc, offset))
-                mstore(add(ret, add(offset, 0x20)), chunk)
+            ptr := mload(0x40) // load unused memory pointer
+        }
+
+        bytes29 _written = copyTo(memView, ptr + 0x20);
+        uint256 _len = len(_written);
+        uint256 _footprint = footprint(_written);
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            mstore(0x40, add(add(ptr, _footprint), 0x20)) // write new unused pointer
+            mstore(ptr, _len) // write len of new array (in bytes)
+            ret := ptr
+        }
+    }
+
+    /// Join the views in memory, return an unsafe reference to the memory.
+    ///
+    /// Super Dangerous direct memory access.
+    /// This reference can be overwritten if anything else modifies memory (!!!).
+    /// As such it MUST be consumed IMMEDIATELY.
+    /// This function is private to prevent unsafe usage by callers
+    function unsafeJoin(bytes29[] memory memViews, uint256 _location) private pure returns (bytes29 unsafeView) {
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            let ptr := mload(0x40)
+            // revert if we're writing in occupied memory
+            if gt(ptr, _location) {
+                revert(0x60, 0x20) // empty revert message
             }
+        }
+
+        uint256 _offset = 0;
+        for (uint256 i = 0; i < memViews.length; i ++) {
+            bytes29 memView = memViews[i];
+            copyTo(memView, _location + _offset);
+            _offset += len(memView);
+        }
+        unsafeView = buildUnchecked(0, _location, _offset);
+    }
+
+    /// Produce the keccak256 digest of the concatenated contents of multiple views
+    function joinKeccak(bytes29[] memory memViews) internal pure returns (bytes32) {
+        uint256 ptr;
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            ptr := mload(0x40) // load unused memory pointer
+        }
+        return keccak(unsafeJoin(memViews, ptr));
+    }
+
+    /// Produce the sha256 digest of the concatenated contents of multiple views
+    function joinSha2(bytes29[] memory memViews) internal pure returns (bytes32) {
+        uint256 ptr;
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            ptr := mload(0x40) // load unused memory pointer
+        }
+        return sha2(unsafeJoin(memViews, ptr));
+    }
+
+    /// copies all views, joins them into a new bytearray
+    function join(bytes29[] memory memViews) internal pure returns (bytes memory ret) {
+        uint256 ptr;
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            ptr := mload(0x40) // load unused memory pointer
+        }
+
+        bytes29 _newView = unsafeJoin(memViews, ptr + 0x20);
+        uint256 _written = len(_newView);
+        uint256 _footprint = footprint(_newView);
+
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            // store the legnth
+            mstore(ptr, _written)
+            // new pointer is old + 0x20 + the footprint of the body
+            mstore(0x40, add(add(ptr, _footprint), 0x20))
+            ret := ptr
         }
     }
 }

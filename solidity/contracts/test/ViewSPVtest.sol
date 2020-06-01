@@ -37,7 +37,8 @@ contract ViewSPVTest {
         bytes memory _proof,
         uint _index
     ) public view returns (bool) {
-        return ViewSPV.prove(_txid, _merkleRoot, _proof.ref(0), _index);
+        bytes29 _proof_ref = _proof.ref(0).tryAsMerkleArray();
+        return ViewSPV.prove(_txid, _merkleRoot, _proof_ref, _index);
     }
 
     /// @notice             Hashes transaction to get txid
@@ -53,7 +54,9 @@ contract ViewSPVTest {
         bytes memory _vout,
         bytes4 _locktime
     ) public view returns (bytes32) {
-        return ViewSPV.calculateTxId(_version, _vin.ref(0), _vout.ref(0), _locktime);
+        bytes29 _ins = _vin.ref(0).tryAsVin().assertValid();
+        bytes29 _outs = _vout.ref(0).tryAsVout().assertValid();
+        return ViewSPV.calculateTxId(_version, _ins, _outs, _locktime);
     }
 
     /// @notice             Checks validity of header chain
@@ -61,7 +64,7 @@ contract ViewSPVTest {
     /// @param _headers     Raw byte array of header chain
     /// @return             The total accumulated difficulty of the header chain
     function checkChain(bytes memory _headers) public view returns (uint256 _reqDiff) {
-        return _headers.ref(0).checkChain();
+        return _headers.ref(0).tryAsHeaderArray().assertValid().checkChain();
     }
 
     /// @notice             Checks validity of header chain
@@ -69,7 +72,7 @@ contract ViewSPVTest {
     /// @param _headers     Raw byte array of header chain
     /// @return             The total accumulated difficulty of the header chain
     function checkChainTx(bytes memory _headers) public view returns (uint256 _reqDiff) {
-        return _headers.ref(0).checkChain();
+        return _headers.ref(0).tryAsHeaderArray().assertValid().checkChain();
     }
 
     /// @notice                     Checks validity of header chain
@@ -78,6 +81,6 @@ contract ViewSPVTest {
     /// @param _prevHeaderDigest    The previous header's digest
     /// @return                     true if header chain is valid, false otherwise
     function checkParent(bytes memory _header, bytes32 _prevHeaderDigest) public pure returns (bool) {
-        return _header.ref(0).tryAsHeader().checkParent(_prevHeaderDigest);
+        return _header.ref(0).tryAsHeader().assertValid().checkParent(_prevHeaderDigest);
     }
 }
