@@ -172,7 +172,7 @@ library TypedMemView {
         uint256 _end = end(memView);
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
-            ret := lt(_end, mload(0x40))
+            ret := not(gt(_end, mload(0x40)))
         }
     }
 
