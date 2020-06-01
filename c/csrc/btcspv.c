@@ -276,10 +276,6 @@ byte_view_t btcspv_extract_output_at_index(const_view_t *vout, uint64_t index) {
   return tx_out;
 }
 
-uint32_t btcspv_extract_output_script_len(const_view_t *tx_out) {
-  return tx_out->loc[8];
-}
-
 byte_view_t btcspv_extract_value_le(const_view_t *tx_out) {
   const_view_t val = {tx_out->loc, 8};
   return val;
@@ -306,14 +302,19 @@ byte_view_t btcspv_extract_op_return_data(const_view_t *tx_out) {
 
 byte_view_t btcspv_extract_hash(const_view_t *tx_out) {
   const_view_t tag = {tx_out->loc + 8, 3};
-
-  if (tx_out->loc[9] == 0) {
-    uint32_t script_len = btcspv_extract_output_script_len(tx_out) - 2;
-    if (tx_out->loc[10] == script_len) {
-      const_view_t payload = {tx_out->loc + 11, script_len};
-      return payload;
-    }
+  if (tag.loc[0] + 9 != tx_out->len) {
     RET_NULL_VIEW;
+  }
+
+  if (tag.loc[1] == 0) {
+    uint32_t script_len = tag.loc[0];
+    uint32_t payload_len = tag.loc[2];
+    if (payload_len != script_len - 2 || (payload_len != 0x20 && payload_len != 0x14)) {
+      RET_NULL_VIEW;
+    }
+
+    const_view_t payload = {tx_out->loc + 11, payload_len};
+    return payload;
   }
 
   uint8_t P2PKH_PREFIX[3] = {0x19, 0x76, 0xa9};

@@ -44,7 +44,6 @@ type TestCases struct {
 	Hash256                      []tutils.Hash256TC                    `json:"hash256"`
 	BytesToBigUint               []tutils.BytesToBigUintTC             `json:"bytesToBigUint"`
 	ExtractOutpoint              []tutils.ExtractOutpointTC            `json:"extractOutpoint"`
-	ExtractOutputScriptLen       []tutils.ExtractOutputScriptLenTC     `json:"extractOutputScriptLen"`
 	ExtractHash                  []tutils.ExtractHashTC                `json:"extractHash"`
 	ExtractHashError             []tutils.ExtractHashError             `json:"extractHashError"`
 	ExtractValue                 []tutils.ExtractValueTC               `json:"extractValue"`
@@ -253,17 +252,6 @@ func (suite *UtilsSuite) TestExtractOutpoint() {
 		testCase := fixture[i]
 		expected := []byte(testCase.Output)
 		actual := btcspv.ExtractOutpoint(testCase.Input)
-		suite.Equal(expected, actual)
-	}
-}
-
-func (suite *UtilsSuite) TestExtractOuputScriptLen() {
-	fixture := suite.Fixtures.ExtractOutputScriptLen
-
-	for i := range fixture {
-		testCase := fixture[i]
-		expected := testCase.Output
-		actual := btcspv.ExtractOutputScriptLen(testCase.Input)
 		suite.Equal(expected, actual)
 	}
 }
