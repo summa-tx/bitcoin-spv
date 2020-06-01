@@ -476,6 +476,7 @@ library TypedMemView {
 
         uint256 ptr;
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             ptr := mload(0x40)
             // revert if we're writing in occupied memory
             if gt(ptr, _newLoc) {
@@ -496,6 +497,7 @@ library TypedMemView {
     function clone(bytes29 memView) internal pure returns (bytes memory ret) {
         uint256 ptr;
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             ptr := mload(0x40) // load unused memory pointer
         }
 
@@ -518,6 +520,7 @@ library TypedMemView {
     /// This function is private to prevent unsafe usage by callers
     function unsafeJoin(bytes29[] memory memViews, uint256 _location) private pure returns (bytes29 unsafeView) {
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             let ptr := mload(0x40)
             // revert if we're writing in occupied memory
             if gt(ptr, _location) {
@@ -538,6 +541,7 @@ library TypedMemView {
     function joinKeccak(bytes29[] memory memViews) internal pure returns (bytes32) {
         uint256 ptr;
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             ptr := mload(0x40) // load unused memory pointer
         }
         return keccak(unsafeJoin(memViews, ptr));
@@ -547,6 +551,7 @@ library TypedMemView {
     function joinSha2(bytes29[] memory memViews) internal pure returns (bytes32) {
         uint256 ptr;
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             ptr := mload(0x40) // load unused memory pointer
         }
         return sha2(unsafeJoin(memViews, ptr));
@@ -556,6 +561,7 @@ library TypedMemView {
     function join(bytes29[] memory memViews) internal pure returns (bytes memory ret) {
         uint256 ptr;
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             ptr := mload(0x40) // load unused memory pointer
         }
 
@@ -564,6 +570,7 @@ library TypedMemView {
         uint256 _footprint = footprint(_newView);
 
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             // store the legnth
             mstore(ptr, _written)
             // new pointer is old + 0x20 + the footprint of the body
