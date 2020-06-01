@@ -356,18 +356,6 @@ export function extractOutputAtIndex(vout, index) {
 
 /**
  *
- * Extracts the output script length
- * Indexes the length prefix on the pk_script
- *
- * @param {Uint8Array}    output The output
- * @returns {Uint8Array}  The 1 byte length prefix
- */
-export function extractOutputScriptLen(output) {
-  return output[8];
-}
-
-/**
- *
  * Extracts the value bytes from the output in a tx
  * Value is an 8-byte little-endian number
  *
@@ -419,16 +407,18 @@ export function extractOpReturnData(output) {
  * @throws {TypeError}    When passed a non-standard output type
  */
 export function extractHash(output) {
+  if (output[8] + 9 !== output.length) {
+    throw new TypeError('Reported length mismatch');
+  }
   const tag = utils.safeSlice(output, 8, 11);
 
   /* Witness Case */
   if (output[9] === 0) {
-    const len = extractOutputScriptLen(output) - 2;
     // Check for maliciously formatted witness outputs
-    if (output[10] !== len) {
+    if (output[10] !== output[8] - 2 || (output[10] !== 0x20 && output[10] !== 0x14)) {
       throw new TypeError('Maliciously formatted witness output.');
     }
-    return utils.safeSlice(output, 11, 11 + len);
+    return utils.safeSlice(output, 11, 11 + output[10]);
   }
 
   /* P2PKH */

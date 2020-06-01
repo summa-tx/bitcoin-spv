@@ -73,11 +73,6 @@ type ExtractOutpointTC struct {
 	Output HexBytes `json:"output"`
 }
 
-type ExtractOutputScriptLenTC struct {
-	Input  HexBytes `json:"input"`
-	Output uint     `json:"output"`
-}
-
 type ExtractHashTC struct {
 	Input  HexBytes `json:"input"`
 	Output HexBytes `json:"output"`

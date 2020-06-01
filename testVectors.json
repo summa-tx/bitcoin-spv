@@ -510,18 +510,6 @@
       "rustError": "Read overrun when parsing vout"
     }
   ],
-  "extractOutputScriptLen": [
-    {
-      "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
-      "output": 34,
-      "solOutput": "0x22"
-    },
-    {
-      "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-      "output": 22,
-      "solOutput": "0x16"
-    }
-  ],
   "extractValueLE": [
     {
       "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
@@ -592,8 +580,29 @@
       "rustError": "Nonstandard, OP_RETURN, or malformatted output"
     },
     {
+      "comment": "Witness misreports own length",
+      "input": "0x0000000000000000160014edb1b5c2f39af0fec151732585b1049b078952110000000000",
+      "jsError": "Reported length mismatch",
+      "golangError": "Reported length mismatch",
+      "rustError": "Reported length mismatch"
+    },
+    {
+      "comment": "Legacy PKH misreports own length",
+      "input": "0x00000000000000001976a914edb1b5c2f39af0fec151732585b1049b0789521100000000000000000088ac",
+      "jsError": "Reported length mismatch",
+      "golangError": "Reported length mismatch",
+      "rustError": "Reported length mismatch"
+    },
+    {
+      "comment": "Legacy SH misreports own length",
+      "input": "0x000000000000000017a914edb1b5c2f39af0fec151732585b1049b0789521100000000000000000087",
+      "jsError": "Reported length mismatch",
+      "golangError": "Reported length mismatch",
+      "rustError": "Reported length mismatch"
+    },
+    {
       "comment": "Maliciously formatted witness output",
-      "input": "0x0000000000000000220017",
+      "input": "0x0000000000000000050003112233",
       "jsError": "Maliciously formatted witness output",
       "golangError": "Maliciously formatted witness output",
       "rustError": "Maliciously formatted witness output"
@@ -601,51 +610,44 @@
     {
       "comment": "Maliciously formatted witness output",
       "input": "0x0000000000000000fd0001000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff",
-      "jsError": "Maliciously formatted witness output",
-      "golangError": "Maliciously formatted witness output",
-      "rustError": "Maliciously formatted witness output"
+      "jsError": "Reported length mismatch",
+      "golangError": "Reported length mismatch",
+      "rustError": "Reported length mismatch"
     },
     {
-      "comment": "Maliciously formatted witness output",
-      "input": "0x0000000000000000220017",
-      "jsError": "Maliciously formatted witness output",
-      "golangError": "Maliciously formatted witness output",
-      "rustError": "Maliciously formatted witness output"
-    },
-    {
-      "comment": "Maliciously formatted witness output",
-      "input": "0x0000000000000000220017",
-      "jsError": "Maliciously formatted witness output",
-      "golangError": "Maliciously formatted witness output",
-      "rustError": "Maliciously formatted witness output"
-    },
-    {
-      "comment": "Maliciously formatted p2pkh output",
-      "input": "0x00000000000000001976a912",
+      "comment": "Maliciously formatted p2pkh output (wrong postfix)",
+      "input": "0x00000000000000001976a9140102030405060708090a0b0c0d0e0f101112131488ad",
       "jsError": "Maliciously formatted p2pkh output",
       "golangError": "Maliciously formatted p2pkh output",
       "rustError": "Maliciously formatted p2pkh output"
     },
     {
-      "comment": "Maliciously formatted p2pkh output",
-      "input": "0x00000000000000001976a914FFFF",
+      "comment": "Maliciously formatted p2pkh output (payload reports self as 0x15 bytes)",
+      "input": "0x00000000000000001976a9150102030405060708090a0b0c0d0e0f101112131488ac",
       "jsError": "Maliciously formatted p2pkh output",
       "golangError": "Maliciously formatted p2pkh output",
       "rustError": "Maliciously formatted p2pkh output"
     },
     {
-      "comment": "Maliciously formatted p2sh output",
-      "input": "0x000000000000000017a914FF",
+      "comment": "Maliciously formatted p2sh output (wrong last byte)",
+      "input": "0x000000000000000017a9140102030405060708090a0b0c0d0e0f101112131489",
       "jsError": "Maliciously formatted p2sh output",
       "golangError": "Maliciously formatted p2sh output",
       "rustError": "Maliciously formatted p2sh output"
     },
     {
+      "comment": "Maliciously formatted p2sh output (payload reports as 0x15 bytes)",
+      "input": "0x000000000000000017a9150102030405060708090a0b0c0d0e0f101112131487",
+      "jsError": "Nonstandard, OP_RETURN, or malformatted output",
+      "golangError": "Nonstandard, OP_RETURN, or malformatted output",
+      "rustError": "Nonstandard, OP_RETURN, or malformatted output"
+    },
+    {
       "comment": "Underflow of length regression test",
       "input": "0x00000000000000000100FF111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",
-      "jsError": "Maliciously formatted witness output",
-      "golangError": "Maliciously formatted witness output",
-      "rustError": "Maliciously formatted witness output"
+      "jsError": "Reported length mismatch",
+      "golangError": "Reported length mismatch",
+      "rustError": "Reported length mismatch"
     }
   ],
   "validateVin": [
