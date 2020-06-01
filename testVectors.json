@@ -684,7 +684,7 @@
       "rustError": "Maliciously formatted p2sh output"
     },
     {
-      "comment": "Maliciously formatted p2sh output (payload reports as 0x15 by)",
+      "comment": "Maliciously formatted p2sh output (payload reports as 0x15 bytes)",
       "input": "0x000000000000000017a9150102030405060708090a0b0c0d0e0f101112131487",
       "jsError": "Nonstandard, OP_RETURN, or malformatted output",
       "golangError": "Nonstandard, OP_RETURN, or malformatted output",

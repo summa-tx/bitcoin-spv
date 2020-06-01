@@ -44,7 +44,6 @@ type TestCases struct {
 	Hash256                      []tutils.Hash256TC                    `json:"hash256"`
 	BytesToBigUint               []tutils.BytesToBigUintTC             `json:"bytesToBigUint"`
 	ExtractOutpoint              []tutils.ExtractOutpointTC            `json:"extractOutpoint"`
-	ExtractOutputScriptLen       []tutils.ExtractOutputScriptLenTC     `json:"extractOutputScriptLen"`
 	ExtractHash                  []tutils.ExtractHashTC                `json:"extractHash"`
 	ExtractHashError             []tutils.ExtractHashError             `json:"extractHashError"`
 	ExtractValue                 []tutils.ExtractValueTC               `json:"extractValue"`
