@@ -39,61 +39,10 @@ const {
   retargetAlgorithm
 } = vectors;
 
-// indexVarInt
-
-// hash160: Passing
-
-// hash256: Passing
-
-// indexVin: Erroring
-
-// inputLength: Passing
-
-// sequence: Passing
-
-// scriptSig: Partially Passing
-
 // scriptPubkey: Not Completed
-
-// outpoint: Passing
-
-// outpointIdx: Passing
-
-// txidLE: Passing
-
-// outputLength: Partially Passing
-
-// indexVout: Erroring
-
-// valueBytes: Passing
-
-// extractValue: Passing
-
-// opReturnPayload: Not Completed
-
 // payload: Not Completed
-
-// tryAsVin: Erroring
-
-// tryAsVout: Erroring
-
-// merkleRoot: Passing
-
-// target: Passing
-
-// diff: Passing
-
-// time: Passing
-
-// parent: Passing
-
 // work: Not Completed
-
 // workHash: Not Completed
-
-// verifyHash256Merkle: Partially Passing
-
-// retargetAlgorithm: Passing
 
 contract('ViewBTC', () => {
   let instance;
@@ -243,28 +192,21 @@ contract('ViewBTC', () => {
   //   }
   // });
 
-  // TODO: come back to this
-  // #1
-  // expected: "0x00"
-  // actual: "0x00"
-
-  // #2
-  // expected: "0x01ee"
-  // actual: "0x01ee"
-
-  // #3
-  // expected: "0xfd0100ee"
-  // actual: "0xfd01"
-
-  // #4
-  // expected: "0xfe01000000ee"
-  // actual: "0xfe01"
-  // it('extracts the scriptSig from inputs', async () => {
-  //   for (let i = 0; i < extractScriptSig.length; i += 1) {
-  //     const res = await instance.scriptSig(extractScriptSig[3].input);
-  //     assert.strictEqual(res, extractScriptSig[3].output);
-  //   }
-  // });
+  it('extracts the scriptSig from inputs', async () => {
+    for (let i = 0; i < extractScriptSig.length; i += 1) {
+      if (extractScriptSig[i].solidityError) {
+        try {
+          await instance.scriptSig(extractScriptSig[i].input)
+          assert(false, 'expected an error')
+        } catch (e) {
+          assert.include(e.message, extractScriptSig[i].solidityError)
+        }
+      } else {
+        const res = await instance.scriptSig(extractScriptSig[i].input);
+        assert.strictEqual(res, extractScriptSig[i].output);
+      }
+    }
+  });
 
   // TODO: Error cases
   // it('errors on bad varints in extractScriptSig', async () => {
@@ -297,7 +239,7 @@ contract('ViewBTC', () => {
     }
   });
 
-  it.only('validates vout length based on stated size', async () => {
+  it('validates vout length based on stated size', async () => {
     for (let i = 0; i < tryAsVout.length; i += 1) {
       // TODO: Separate out error cases
       if (tryAsVout[i].solidityError) {
@@ -314,18 +256,24 @@ contract('ViewBTC', () => {
     }
   });
 
-  // TODO: possible bug?
-  // All test cases passed except the last
-  // expected: 269
-  // actual: 261
   it('determines output length properly', async () => {
     for (let i = 0; i < determineOutputLength.length; i += 1) {
-      const res = await instance.outputLength(determineOutputLength[i].input);
-      const expected = new BN(determineOutputLength[i].output, 10);
-      assert(
-        res.eq(expected),
-        `Output Length Test Failed: expected ${expected.toString()}, got ${res.toString()}`
-      );
+      // TODO: Separate out error cases
+      if (determineOutputLength[i].solidityError) {
+        try {
+          await instance.outputLength(determineOutputLength[i].input);
+          assert(false, 'expected an error');
+        } catch (e) {
+          assert.include(e.message, determineOutputLength[i].solidityError);
+        }
+      } else {
+        const res = await instance.outputLength(determineOutputLength[i].input);
+        const expected = new BN(determineOutputLength[i].output, 10);
+        assert(
+          res.eq(expected),
+          `Output Length Test Failed: expected ${expected.toString()}, got ${res.toString()}`
+        );
+      }
     }
   });
 
@@ -395,8 +343,17 @@ contract('ViewBTC', () => {
   // indexCompactInt / indexVarInt
   it('parses VarInts', async () => {
     for (let i = 0; i < parseVarInt.length; i += 1) {
-      const res = await instance.indexVarInt(parseVarInt[i].input);
-      assert(res.eq(new BN(parseVarInt[i].output[1], 10)));
+      if (parseVarInt[i].solidityError) {
+        try {
+          await instance.indexVarInt(parseVarInt[i].input);
+          assert(false, "expected an error");
+        } catch (e) {
+          assert.include(e.message, parseVarInt[i].solidityError);
+        }
+      } else {
+        const res = await instance.indexVarInt(parseVarInt[i].input);
+        assert(res.eq(new BN(parseVarInt[i].output[1], 10)));
+      }
     }
   });
 
