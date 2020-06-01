@@ -300,11 +300,6 @@ func ExtractOutputAtIndex(vout []byte, index uint) ([]byte, error) {
 	return output, nil
 }
 
-// ExtractOutputScriptLen extracts the output script length
-func ExtractOutputScriptLen(output []byte) uint {
-	return uint(output[8])
-}
-
 // ExtractValueLE extracts the value in from the output in a tx
 // Returns a little endian []byte of the output value
 func ExtractValueLE(output []byte) []byte {
@@ -335,12 +330,16 @@ func ExtractOpReturnData(output []byte) ([]byte, error) {
 // ExtractHash extracts the hash from the output script
 // Returns the hash committed to by the pk_script
 func ExtractHash(output []byte) ([]byte, error) {
+	if uint(output[8] + 9) != uint(len(output)) {
+		return nil, errors.New("Reported length mismatch")
+	}
+
 	tag := output[8:11:11]
 
 	/* Witness Case */
 	if output[9] == 0 {
-		length := ExtractOutputScriptLen(output) - 2
-		if uint(output[10]) != length {
+		length := uint(output[8]) - 2
+		if uint(output[10]) != length || (output[10] != 0x14 && output[10] != 0x20) {
 			return nil, errors.New("Maliciously formatted witness output")
 		}
 

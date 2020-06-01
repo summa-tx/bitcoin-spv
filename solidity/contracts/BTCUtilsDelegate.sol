@@ -196,14 +196,6 @@ library BTCUtilsDelegate {
         return BTCUtils.extractOutputAtIndex(_vout, _index);
     }
 
-    /// @notice          Extracts the output script length
-    /// @dev             Indexes the length prefix on the pk_script
-    /// @param _output   The output
-    /// @return          The 1 byte length prefix
-    function extractOutputScriptLen(bytes memory _output) public pure returns (bytes memory) {
-        return BTCUtils.extractOutputScriptLen(_output);
-    }
-
     /// @notice          Extracts the value bytes from the output in a tx
     /// @dev             Value is an 8-byte little-endian number
     /// @param _output   The output

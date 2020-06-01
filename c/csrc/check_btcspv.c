@@ -647,26 +647,6 @@ START_TEST(extract_output_at_index_error) {
 }
 END_TEST
 
-
-START_TEST(extract_output_script_len) {
-  TEST_LOOP_START("extractOutputScriptLen")
-
-  uint8_t *input_buf;
-  const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
-
-  uint32_t expected = token_as_long(output_tok);
-
-  uint32_t actual = btcspv_extract_output_script_len(&input);
-
-  ck_assert_int_eq(actual, expected);
-
-  free(input_buf);
-
-  TEST_LOOP_END
-}
-END_TEST
-
 START_TEST(extract_value_le) {
   TEST_LOOP_START("extractValueLE")
 
@@ -1033,7 +1013,6 @@ int main(int argc, char *argv[]) {
   tcase_add_test(btcspv_case, determine_output_length);
   tcase_add_test(btcspv_case, extract_output_at_index);
   tcase_add_test(btcspv_case, extract_output_at_index_error);
-  tcase_add_test(btcspv_case, extract_output_script_len);
   tcase_add_test(btcspv_case, extract_value_le);
   tcase_add_test(btcspv_case, extract_value);
   tcase_add_test(btcspv_case, extract_op_return_data);
