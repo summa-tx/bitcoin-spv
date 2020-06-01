@@ -52,10 +52,11 @@ library ViewBTC {
 
     /// Revert with an error message re: non-minimal VarInts
     function revertNonMinimal(bytes29 ref) private pure returns (string memory) {
+        (, uint256 g) = encodeHex(ref.indexUint(0, ref.len()));
         string memory err = string(
             abi.encodePacked(
                 "Non-minimal var int. Got 0x",
-                ref.clone()
+                g
             )
         );
         revert(err);
