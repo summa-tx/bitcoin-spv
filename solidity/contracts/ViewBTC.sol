@@ -50,23 +50,35 @@ library ViewBTC {
         _;
     }
 
+    /// Revert with an error message re: non-minimal VarInts
+    function revertNonMinimal(bytes29 ref) private pure returns (string memory) {
+        string memory err = string(
+            abi.encodePacked(
+                "Non-minimal var int. Got 0x",
+                ref.clone()
+            )
+        );
+        revert(err);
+    }
+
     /// @notice             reads a compact int from the view at the specified index
     /// @param memView      a 29-byte view with a 5-byte type
     /// @param _index       the index
     /// @return             the compact int at the specified index
     function indexCompactInt(bytes29 memView, uint256 _index) internal pure returns (uint64 number) {
         uint256 flag = memView.indexUint(_index, 1);
-        uint256 payload;
         if (flag <= 0xfc) {
             return uint64(flag);
         } else if (flag == 0xfd) {
-            payload = memView.indexLEUint(_index + 1, 2);
+            number = uint64(memView.indexLEUint(_index + 1, 2));
+            if (compactIntLength(number) != 3) {revertNonMinimal(memView.slice(_index, 3, 0));}
         } else if (flag == 0xfe) {
-            payload = memView.indexLEUint(_index + 1, 4);
+            number = uint64(memView.indexLEUint(_index + 1, 4));
+            if (compactIntLength(number) != 5) {revertNonMinimal(memView.slice(_index, 5, 0));}
         } else if (flag == 0xff) {
-            payload = memView.indexLEUint(_index + 1, 8);
+            number = uint64(memView.indexLEUint(_index + 1, 8));
+            if (compactIntLength(number) != 9) {revertNonMinimal(memView.slice(_index, 9, 0));}
         }
-        number = uint64(payload);
     }
 
     /// @notice         gives the total length (in bytes) of a CompactInt-encoded number
