@@ -56,7 +56,7 @@ library ViewBTC {
         string memory err = string(
             abi.encodePacked(
                 "Non-minimal var int. Got 0x",
-                g
+                uint144(g)
             )
         );
         revert(err);
