@@ -298,8 +298,9 @@ contract('ViewBTC', () => {
   // });
 
   // TODO: Come back to this
-  // Error: type assertion failed
-  // it('validates vout length based on stated size', async () => {
+  // #1 passing
+  // #2 error: VM Exception while processing transaction: revert TypedMemView/index - Overran the view. Slice is at 0x0000f2 with length 0x000001. Attempted to index at offset 0x000008 with length 0x000001.
+  // it.only('validates vout length based on stated size', async () => {
   //   for (let i = 0; i < validateVout.length; i += 1) {
   //     // if (validateVout[i].solidityError) {
   //       // try {
