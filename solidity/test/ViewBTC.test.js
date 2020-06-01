@@ -300,21 +300,21 @@ contract('ViewBTC', () => {
   // TODO: Come back to this
   // #1 passing
   // #2 error: VM Exception while processing transaction: revert TypedMemView/index - Overran the view. Slice is at 0x0000f2 with length 0x000001. Attempted to index at offset 0x000008 with length 0x000001.
-  // it.only('validates vout length based on stated size', async () => {
-  //   for (let i = 0; i < validateVout.length; i += 1) {
-  //     // if (validateVout[i].solidityError) {
-  //       // try {
-  //       //   await instance.tryAsVout(validateVout[i].input);
-  //       //   assert(false, 'expected an error');
-  //       // } catch (e) {
-  //       //   assert.include(e.message, validateVout[i].solidityError);
-  //       // }
-  //     // } else {
-  //     const res = await instance.tryAsVout(validateVout[i].input);
-  //     assert.strictEqual(res, validateVout[i].output);
-  //     // }
-  //   }
-  // });
+  // #3 passing
+  // #4 passing
+  // #5 passing
+  // #6 passing
+  // #7 passing
+  // #8 error: VM Exception while processing transaction: revert TypedMemView/index - Overran the view. Slice is at 0x0000cc with length 0x000008. Attempted to index at offset 0x000008 with length 0x000001.
+  // #9 passing
+  // #10 error: VM Exception while processing transaction: revert TypedMemView/index - Overran the view. Slice is at 0x0000a0 with length 0x000001. Attempted to index at offset 0x000001 with length 0x000008.
+  // #11 error: VM Exception while processing transaction: revert TypedMemView/index - Overran the view. Slice is at 0x0000a1 with length 0x000009. Attempted to index at offset 0x000009 with length 0x000008.
+  it.only('validates vout length based on stated size', async () => {
+    for (let i = 0; i < validateVout.length; i += 1) {
+      const res = await instance.tryAsVout(validateVout[10].input);
+      assert.strictEqual(res, validateVout[10].output);
+    }
+  });
 
   // TODO: possible bug?
   // All test cases passed except the last
