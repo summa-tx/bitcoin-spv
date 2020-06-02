@@ -17,12 +17,15 @@ const {
   extractSequenceLELegacyError,
   extractOpReturnData,
   extractInputAtIndex,
+  extractHash,
+  extractHashError,
   indexVinError,
   extractValueLE,
   extractValue,
   determineInputLength,
   scriptSig,
   scriptSigError,
+  scriptPubkey,
   tryAsVin,
   tryAsVout,
   determineOutputLength,
@@ -38,7 +41,6 @@ const {
   retargetAlgorithm
 } = vectors;
 
-// scriptPubkey: Not Completed
 // payload: Not Completed
 // work: Not Completed
 // workHash: Not Completed
@@ -167,6 +169,41 @@ contract('ViewBTC', () => {
     }
   });
 
+  // 3: Expected null to equal '0x0000000000000000000000000000000000000000'
+  it('extracts the payload from a scriptPubkey', async () => {
+    for (let i = 0; i < extractHash.length; i += 1) {
+      const res = await instance.payload(extractHash[3].input);
+      assert.strictEqual(res, extractHash[3].output);
+    }
+  });
+
+  // 1: Passing
+  // 2: expected '0xedb1b5c2f39af0fec151732585b1049b07895211' to equal null
+  // 3: Passing
+  // 4: Passing
+  // 5: Passing
+  // 6: Passing
+  // 7: Passing
+  // 8: Passing
+  // 9: Passing
+  // 10: Passing
+  // 11: 
+  it.only('errors appropriately when extracting the payload from a scriptPubkey', async () => {
+    for (let i = 0; i < extractHashError.length; i += 1) {
+      if (extractHashError[i].solidityError) {
+        try {
+          await instance.payload(extractHashError[i].input);
+          assert(false, "expected an error");
+        } catch (e) {
+          assert.include(e.message, extractHashError[i].solidityError)
+        }
+      } else if (i !== 1) {
+        const res = await instance.payload(extractHashError[i].input);
+        assert.isNull(res);
+      }
+    }
+  });
+
   it('extracts inputs at specified indices', async () => {
     for (let i = 0; i < extractInputAtIndex.length; i += 1) {
       const res = await instance.indexVin.call(
@@ -206,6 +243,13 @@ contract('ViewBTC', () => {
       } catch (e) {
         assert.include(e.message, scriptSigError[i].solidityError);
       }
+    }
+  });
+
+  it('extracts the scriptPubkey from an output', async () => {
+    for (let i = 0; i < scriptPubkey.length; i += 1) {
+      const res = await instance.scriptPubkey(scriptPubkey[i].input);
+      assert.strictEqual(res, scriptPubkey[i].output)
     }
   });
 
