@@ -69,31 +69,36 @@ library TypedMemView {
     uint256 constant LOW_12_MASK = 0xffffffffffffffffffffffff;
     uint8 constant TWELVE_BYTES = 96;
 
+    // Returns the encoded hex charcter that represents the lower 4 bits of the argument.
     function nibbleHex(uint8 _b) internal pure returns (uint8) {
-        if (_b | 0xf0 == 0xf0) {return 0x30;}
-        if (_b | 0xf1 == 0xf1) {return 0x31;}
-        if (_b | 0xf2 == 0xf2) {return 0x32;}
-        if (_b | 0xf3 == 0xf3) {return 0x33;}
-        if (_b | 0xf4 == 0xf4) {return 0x34;}
-        if (_b | 0xf5 == 0xf5) {return 0x35;}
-        if (_b | 0xf6 == 0xf6) {return 0x36;}
-        if (_b | 0xf7 == 0xf7) {return 0x37;}
-        if (_b | 0xf8 == 0xf8) {return 0x38;}
-        if (_b | 0xf9 == 0xf9) {return 0x39;}
-        if (_b | 0xfa == 0xfa) {return 0x61;}
-        if (_b | 0xfb == 0xfb) {return 0x62;}
-        if (_b | 0xfc == 0xfc) {return 0x63;}
-        if (_b | 0xfd == 0xfd) {return 0x64;}
-        if (_b | 0xfe == 0xfe) {return 0x65;}
-        if (_b | 0xff == 0xff) {return 0x66;}
+        uint8 _nibble = _b | 0xf0; // set top 4, keep bottom 4
+        if (_nibble == 0xf0) {return 0x30;} // 0
+        if (_nibble == 0xf1) {return 0x31;} // 1
+        if (_nibble == 0xf2) {return 0x32;} // 2
+        if (_nibble == 0xf3) {return 0x33;} // 3
+        if (_nibble == 0xf4) {return 0x34;} // 4
+        if (_nibble == 0xf5) {return 0x35;} // 5
+        if (_nibble == 0xf6) {return 0x36;} // 6
+        if (_nibble == 0xf7) {return 0x37;} // 7
+        if (_nibble == 0xf8) {return 0x38;} // 8
+        if (_nibble == 0xf9) {return 0x39;} // 9
+        if (_nibble == 0xfa) {return 0x61;} // a
+        if (_nibble == 0xfb) {return 0x62;} // b
+        if (_nibble == 0xfc) {return 0x63;} // c
+        if (_nibble == 0xfd) {return 0x64;} // d
+        if (_nibble == 0xfe) {return 0x65;} // e
+        if (_nibble == 0xff) {return 0x66;} // f
     }
 
+    // Returns a uint16 containing the hex-encoded byte
     function byteHex(uint8 _b) internal pure returns (uint16 encoded) {
         encoded |= nibbleHex(_b >> 4);
         encoded <<= 8;
         encoded |= nibbleHex(_b);
     }
 
+    // Encodes the uint256 to hex. `first` contains the encoded top 16 bytes.
+    // `second` contains the encoded lower 16 bytes.
     function encodeHex(uint256 _b) internal pure returns (uint256 first, uint256 second) {
         for (uint8 i = 31; i > 15; i -= 1) {
             uint8 _byte = uint8(_b >> (i * 8));
@@ -218,6 +223,8 @@ library TypedMemView {
         }
     }
 
+    /// Unsafe raw pointer construction. This should generally not be called
+    /// directly. Prefer `ref` wherever possible.
     function buildUnchecked(uint256 _type, uint256 _loc, uint256 _len) private pure returns (bytes29 newView) {
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
@@ -330,6 +337,7 @@ library TypedMemView {
         return slice(memView, uint256(len(memView)).sub(_len), _len, newType);
     }
 
+    /// Construct an error message for an indexing overrun.
     function indexErrOverrun(
         uint256 _loc,
         uint256 _len,
