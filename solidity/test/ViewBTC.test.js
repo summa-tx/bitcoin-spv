@@ -113,7 +113,9 @@ contract('ViewBTC', () => {
         assert.strictEqual(res, extractOutpoint[i].output);
       }
     });
+  });
 
+  describe('#txidLE', async () => {
     it('extracts a txid from an outpoint', async () => {
       for (let i = 0; i < extractInputTxIdLE.length; i += 1) {
         const outpoint = await instance.outpoint(extractInputTxIdLE[i].input);
@@ -124,7 +126,7 @@ contract('ViewBTC', () => {
   });
 
   describe('#outpointIdx', async () => {
-    it('extracts an outpoint tx index LE', async () => {
+    it('extracts the index as an integer from the outpoint', async () => {
       for (let i = 0; i < extractTxIndexLE.length; i += 1) {
         const res = await instance.outpointIdx(extractTxIndexLE[i].input);
         const expected = new BN(extractTxIndexLE[i].output.slice(2), 16);
@@ -166,7 +168,7 @@ contract('ViewBTC', () => {
   });
 
   describe('#opReturnPayload', async () => {
-    it('extracts op_return data blobs', async () => {
+    it('extracts Op Return Payload', async () => {
       for (let i = 0; i < extractOpReturnData.length; i += 1) {
         const res = await instance.opReturnPayload(extractOpReturnData[i].input);
         assert.strictEqual(res, extractOpReturnData[i].output);
@@ -209,7 +211,7 @@ contract('ViewBTC', () => {
       }
     });
 
-    it('extract input errors on bad vin', async () => {
+    it('errors on bad vin', async () => {
       for (let i = 0; i < indexVinError.length; i += 1) {
         try {
           await instance.indexVin.call(
