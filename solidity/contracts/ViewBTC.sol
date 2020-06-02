@@ -233,14 +233,14 @@ library ViewBTC {
     function payload(bytes29 _spk) internal pure typeAssert(_spk, BTCTypes.ScriptPubkey) returns (bytes29) {
         uint256 _spkLength = _spk.len();
         uint256 _bodyLength = indexCompactInt(_spk, 0);
-        if (_bodyLength > 0x20 || _bodyLength + 1 != _spkLength) {
+        if (_bodyLength > 0x22 || _bodyLength < 0x16 || _bodyLength + 1 != _spkLength) {
             return TypedMemView.nullView();
         }
 
         // Legacy
         if (_bodyLength == 0x19 && _spk.indexUint(0, 4) == 0x1976a914 && _spk.indexUint(_spkLength - 2, 2) == 0x88ac) {
             return _spk.slice(4, 20, uint40(BTCTypes.PKH));
-        } else if (_bodyLength == 0x16 && _spk.indexUint(0, 3) == 0x17a914 && _spk.indexUint(_spkLength - 1, 1) == 0x87) {
+        } else if (_bodyLength == 0x17 && _spk.indexUint(0, 3) == 0x17a914 && _spk.indexUint(_spkLength - 1, 1) == 0x87) {
             return _spk.slice(3, 20, uint40(BTCTypes.SH));
         }
 
