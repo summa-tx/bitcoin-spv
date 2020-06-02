@@ -63,6 +63,12 @@ contract('ViewSPV', () => {
     });
   });
 
+  // describe('#checkWork', async () => {
+  //   it('Checks validity of header work', async () => {
+  //     // for (let i = 0; i < )
+  //   })
+  // })
+
   describe('#checkChain', async () => {
     it('returns true if header chain is valid', async () => {
       for (let i = 0; i < validateHeaderChain.length; i += 1) {

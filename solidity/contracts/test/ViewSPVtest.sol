@@ -59,6 +59,14 @@ contract ViewSPVTest {
         return ViewSPV.calculateTxId(_version, _ins, _outs, _locktime);
     }
 
+    /// @notice             Checks validity of header work
+    /// @param _header      Header view
+    /// @param _target      The target threshold
+    /// @return             true if header work is valid, false otherwise
+    function checkWork(bytes memory _header, uint256 _target) public view returns (bool) {
+        return _header.ref(0).tryAsHeader().assertValid().checkWork(_target);
+    }
+
     /// @notice             Checks validity of header chain
     /// @notice             Compares the hash of each header to the prevHash in the next header
     /// @param _headers     Raw byte array of header chain
