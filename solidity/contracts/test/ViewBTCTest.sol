@@ -12,6 +12,10 @@ contract ViewBTCTest {
     using TypedMemView for bytes29;
     using ViewBTC for bytes29;
 
+    function encodeHex(uint256 _b) public pure returns (uint256, uint256) {
+        return TypedMemView.encodeHex(_b);
+    }
+
     function indexVarInt(bytes memory _b) public pure returns (uint64) {
         return _b.ref(0).indexCompactInt(0);
     }
@@ -25,7 +29,7 @@ contract ViewBTCTest {
     }
 
     function indexVin(bytes memory _vin, uint256 _index) public pure returns (bytes memory) {
-        return _vin.ref(uint40(ViewBTC.BTCTypes.Vin)).indexVin(uint64(_index)).clone();
+        return _vin.ref(0).tryAsVin().assertValid().indexVin(_index).clone();
     }
 
     function inputLength(bytes memory _input) public pure returns (uint256) {
@@ -38,6 +42,10 @@ contract ViewBTCTest {
     }
     function scriptSig(bytes memory _input) public pure returns (bytes memory) {
         return _input.ref(uint40(ViewBTC.BTCTypes.TxIn)).scriptSig().clone();
+    }
+
+    function scriptPubkey(bytes memory _output) public pure returns (bytes memory) {
+        return _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).scriptPubkey().clone();
     }
 
     function outpoint(bytes memory _input) public pure returns (bytes memory) {
@@ -57,7 +65,7 @@ contract ViewBTCTest {
     }
 
     function indexVout(bytes memory _vout, uint256 _index) public pure returns (bytes memory) {
-        return _vout.ref(uint40(ViewBTC.BTCTypes.Vout)).indexVout(uint64(_index)).clone();
+        return _vout.ref(0).tryAsVout().assertValid().indexVout(_index).clone();
     }
 
     function valueBytes(bytes memory _output) public pure returns (bytes8) {
@@ -69,11 +77,21 @@ contract ViewBTCTest {
     }
 
     function opReturnPayload(bytes memory _output) public pure returns (bytes memory) {
-        return _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).opReturnPayload().clone();
+        // the argument is a txout. we want to slice off the first 8 bytes (the value)
+        bytes29 v = _output.ref(0);
+        bytes29 res = v.postfix(v.len() - 8, uint40(ViewBTC.BTCTypes.ScriptPubkey)).opReturnPayload();
+        bytes memory nullVal;
+        if (res.isNull()) {return nullVal;}
+        return res.clone();
     }
 
     function payload(bytes memory _output) public pure returns (bytes memory) {
-        return _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).payload().clone();
+        // the argument is a txout. we want to slice off the first 8 bytes (the value)
+        bytes29 v = _output.ref(0);
+        bytes29 res = v.postfix(v.len() - 8, uint40(ViewBTC.BTCTypes.ScriptPubkey)).payload();
+        bytes memory nullVal;
+        if (res.isNull()) {return nullVal;}
+        return res.clone();
     }
 
     function tryAsVin(bytes memory _vin) public pure returns (bool) {
@@ -113,10 +131,23 @@ contract ViewBTCTest {
     }
 
     function verifyHash256Merkle(bytes memory _proof, uint _index) public view returns (bool) {
-        bytes29 _proof_ref = _proof.ref(0);
-        bytes29 _nodes = _proof_ref.slice(32, _proof.length - 64, 0).tryAsMerkleArray().assertValid();
-        bytes32 _leaf = _proof_ref.index(0, 32);
-        bytes32 _root = _proof_ref.index(_proof.length - 32, 32);
+        bytes29 _proof_ref = _proof.ref(0).tryAsMerkleArray();
+        bytes29 _nodes;
+        bytes32 _leaf;
+        bytes32 _root;
+
+        if (_proof.length == 32) {
+            _nodes = _nodes.castTo(uint40(ViewBTC.BTCTypes.MerkleArray));
+            _leaf = _proof_ref.index(0,32);
+            _root = _proof_ref.index(0,32);
+        } else if (!_proof_ref.isValid() || _proof.length < 64) {
+            return false;
+        } else {
+            _nodes = _proof_ref.slice(32, _proof.length - 64, 0).tryAsMerkleArray().assertValid();
+            _leaf = _proof_ref.index(0, 32);
+            _root = _proof_ref.index(_proof.length - 32, 32);
+        }
+
         return ViewBTC.checkMerkle(_leaf, _nodes, _root, _index);
     }
 
