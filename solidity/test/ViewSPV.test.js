@@ -64,9 +64,9 @@ contract('ViewSPV', () => {
     });
   });
 
-  describe.only('#checkWork', async () => {
+  describe('#checkWork', async () => {
     it('Checks validity of header work', async () => {
-      for (let i = 0; i < 2; i += 1) {
+      for (let i = 0; i < checkWork.length; i += 1) {
         const res = await instance.checkWork(
           checkWork[i].input.header,
           checkWork[i].input.target
