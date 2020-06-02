@@ -77,14 +77,18 @@ contract ViewBTCTest {
     }
 
     function opReturnPayload(bytes memory _output) public pure returns (bytes memory) {
-        bytes29 res = _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).scriptPubkey().opReturnPayload();
+        // the argument is a txout. we want to slice off the first 8 bytes (the value)
+        bytes29 v = _output.ref(0);
+        bytes29 res = v.postfix(v.len() - 8, uint40(ViewBTC.BTCTypes.ScriptPubkey)).opReturnPayload();
         bytes memory nullVal;
         if (res.isNull()) {return nullVal;}
         return res.clone();
     }
 
     function payload(bytes memory _output) public pure returns (bytes memory) {
-        bytes29 res = _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).scriptPubkey().payload();
+        // the argument is a txout. we want to slice off the first 8 bytes (the value)
+        bytes29 v = _output.ref(0);
+        bytes29 res = v.postfix(v.len() - 8, uint40(ViewBTC.BTCTypes.ScriptPubkey)).payload();
         bytes memory nullVal;
         if (res.isNull()) {return nullVal;}
         return res.clone();

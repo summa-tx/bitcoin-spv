@@ -232,8 +232,8 @@ library ViewBTC {
     /// @return         the payload (or null if not a valid PKH, SH, WPKH, or WSH output)
     function payload(bytes29 _spk) internal pure typeAssert(_spk, BTCTypes.ScriptPubkey) returns (bytes29) {
         uint256 _spkLength = _spk.len();
-        uint256 _bodyLength = _spk.indexUint(0, 1);
-        if (_bodyLength + 1 != _spkLength) {
+        uint256 _bodyLength = indexCompactInt(_spk, 0);
+        if (_bodyLength > 0x20 || _bodyLength + 1 != _spkLength) {
             return TypedMemView.nullView();
         }
 

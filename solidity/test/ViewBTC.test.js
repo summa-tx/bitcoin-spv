@@ -16,6 +16,7 @@ const {
   extractSequenceLELegacy,
   extractSequenceLELegacyError,
   extractOpReturnData,
+  extractOpReturnDataError,
   extractInputAtIndex,
   extractHash,
   extractHashError,
@@ -35,15 +36,13 @@ const {
   extractTarget,
   extractPrevBlockLE,
   extractTimestamp,
+  work,
+  workHash,
   verifyHash256Merkle,
   parseVarInt,
   parseVarIntError,
   retargetAlgorithm
 } = vectors;
-
-// payload: Not Completed
-// work: Not Completed
-// workHash: Not Completed
 
 contract('ViewBTC', () => {
   let instance;
@@ -156,51 +155,24 @@ contract('ViewBTC', () => {
   });
 
   it('errors appropriately when extracting Op Return Payload', async () => {
-    // Not an op return output
-    const res = await instance.opReturnPayload("0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18");
-    assert.isNull(res)
-
-    // One byte too short
-    try {
-      await instance.opReturnPayload("0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952");
-      assert(false, 'expected an error message');
-    } catch (e) {
-      assert.include(e.message, "Type assertion failed");
+    for (let i = 0; i < extractOpReturnDataError.length; i += 1) {
+      const res = await instance.opReturnPayload(extractOpReturnDataError[i].input);
+      assert.isNull(res)
     }
   });
 
   // 3: Expected null to equal '0x0000000000000000000000000000000000000000'
   it('extracts the payload from a scriptPubkey', async () => {
     for (let i = 0; i < extractHash.length; i += 1) {
-      const res = await instance.payload(extractHash[3].input);
-      assert.strictEqual(res, extractHash[3].output);
+      const res = await instance.payload(extractHash[i].input);
+      assert.strictEqual(res, extractHash[i].output);
     }
   });
 
-  // 1: Passing
-  // 2: expected '0xedb1b5c2f39af0fec151732585b1049b07895211' to equal null
-  // 3: Passing
-  // 4: Passing
-  // 5: Passing
-  // 6: Passing
-  // 7: Passing
-  // 8: Passing
-  // 9: Passing
-  // 10: Passing
-  // 11: 
-  it.only('errors appropriately when extracting the payload from a scriptPubkey', async () => {
+  it('errors appropriately when extracting the payload from a scriptPubkey', async () => {
     for (let i = 0; i < extractHashError.length; i += 1) {
-      if (extractHashError[i].solidityError) {
-        try {
-          await instance.payload(extractHashError[i].input);
-          assert(false, "expected an error");
-        } catch (e) {
-          assert.include(e.message, extractHashError[i].solidityError)
-        }
-      } else {
-        const res = await instance.payload(extractHashError[i].input);
-        assert.isNull(res);
-      }
+      const res = await instance.payload(extractHashError[i].input);
+      assert.isNull(res);
     }
   });
 
@@ -355,8 +327,24 @@ contract('ViewBTC', () => {
 
   it('extracts a timestamp from a header', async () => {
     for (let i = 0; i < extractTimestamp.length; i += 1) {
-      const res = await instance.time(extractTimestamp[i].input);
-      assert(res, extractTimestamp[i].output);
+      const res = await instance.time(extractTimestamp[0].input);
+      const expected = new BN(extractTimestamp[0].output, 10)
+      assert(res.eq(expected));
+    }
+  });
+
+  it('calculates the Proof of Work hash of the header, and converts to an integer', async () => {
+    for (let i = 0; i < work.length; i += 1) {
+      const res = await instance.work(work[i].input);
+      const expected = new BN(work[i].output, 10);
+      assert(res.eq(expected));
+    }
+  });
+
+  it('calculates the Proof of Work hash of the header', async () => {
+    for (let i = 0; i < workHash.length; i += 1) {
+      const res = await instance.workHash(workHash[i].input);
+      assert.strictEqual(res, workHash[i].output);
     }
   });
 
