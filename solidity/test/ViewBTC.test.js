@@ -197,7 +197,7 @@ contract('ViewBTC', () => {
         } catch (e) {
           assert.include(e.message, extractHashError[i].solidityError)
         }
-      } else if (i !== 1) {
+      } else {
         const res = await instance.payload(extractHashError[i].input);
         assert.isNull(res);
       }
