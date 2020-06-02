@@ -28,7 +28,9 @@ const {
   scriptSigError,
   scriptPubkey,
   tryAsVin,
+  tryAsVinError,
   tryAsVout,
+  tryAsVoutError,
   determineOutputLength,
   extractOutputAtIndex,
   indexVoutError,
@@ -225,43 +227,44 @@ contract('ViewBTC', () => {
     }
   });
 
-  it('validates vin length based on stated size', async () => {
+  it('validates vin and converts to typed memory', async () => {
     for (let i = 0; i < tryAsVin.length; i += 1) {
-      // TODO: Separate out error cases
-      if (tryAsVin[i].solidityError) {
-        try {
-          await instance.tryAsVin(tryAsVin[i].input);
-          assert(false, 'expected an error');
-        } catch (e) {
-          assert.include(e.message, tryAsVin[i].solidityError)
-        }
-      } else {
-        const res = await instance.tryAsVin(tryAsVin[i].input);
-        assert.strictEqual(res, tryAsVin[i].output);
-      }
+      const res = await instance.tryAsVin(tryAsVin[i].input);
+      assert.strictEqual(res, tryAsVin[i].output);
     }
   });
 
-  it('validates vout length based on stated size', async () => {
+  it('errors appropriately when validating a vin', async () => {
+    for (let i = 0; i < tryAsVinError.length; i += 1) {
+      try {
+        await instance.tryAsVin(tryAsVinError[i].input);
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, tryAsVinError[i].solidityError)
+      }
+    }
+  })
+
+  it('validates vout and converts to typed memory', async () => {
     for (let i = 0; i < tryAsVout.length; i += 1) {
-      // TODO: Separate out error cases
-      if (tryAsVout[i].solidityError) {
-        try {
-          await instance.tryAsVout(tryAsVout[i].input);
-          assert(false, 'expected an error');
-        } catch (e) {
-          assert.include(e.message, tryAsVout[i].solidityError)
-        }
-      } else {
-        const res = await instance.tryAsVout(tryAsVout[i].input);
-        assert.strictEqual(res, tryAsVout[i].output);
+      const res = await instance.tryAsVout(tryAsVout[i].input);
+      assert.strictEqual(res, tryAsVout[i].output);
+    }
+  });
+
+  it('errors appropriately when validating vout', async () => {
+    for (let i = 0; i < tryAsVoutError.length; i += 1) {
+      try {
+        await instance.tryAsVout(tryAsVoutError[i].input);
+        assert(false, 'expected an error');
+      } catch (e) {
+        assert.include(e.message, tryAsVoutError[i].solidityError)
       }
     }
   });
 
   it('determines output length properly', async () => {
     for (let i = 0; i < determineOutputLength.length; i += 1) {
-      // TODO: Separate out error cases
       if (determineOutputLength[i].solidityError) {
         try {
           await instance.outputLength(determineOutputLength[i].input);

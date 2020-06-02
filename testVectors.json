@@ -908,15 +908,6 @@
       "output": true
     },
     {
-      "comment": "Does not support Non-minimal VarInts",
-      "input": "0xFF01000000000000001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
-      "solidityError": "Non-minimal var int"
-    },
-    {
-      "input": "0xFF1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
-      "solidityError": "Overran the view"
-    },
-    {
       "input": "0x001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
       "output": false
     },
@@ -936,6 +927,17 @@
       "comment": "0 inputs",
       "input": "0x001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
       "output": false
+    }
+  ],
+  "tryAsVinError": [
+    {
+      "comment": "Does not support Non-minimal VarInts",
+      "input": "0xFF01000000000000001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
+      "solidityError": "Non-minimal var int"
+    },
+    {
+      "input": "0xFF1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
+      "solidityError": "Overran the view"
     },
     {
       "comment": "Read overrun",
@@ -947,15 +949,6 @@
     {
       "input": "0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
       "output": true
-    },
-    {
-      "comment": "Does not support Non-minimal VarInts",
-      "input": "0xFF02000000000000004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-      "solidityError": "Non-minimal var int"
-    },
-    {
-      "input": "0xFF4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-      "solidityError": "Non-minimal var int"
     },
     {
       "input": "0x004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
@@ -974,12 +967,23 @@
       "output": false
     },
     {
-      "input": "0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000",
-      "solidityError": "Overran the view"
-    },
-    {
       "input": "0x004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000",
       "output": false
+    }
+  ],
+  "tryAsVoutError": [
+    {
+      "comment": "Does not support Non-minimal VarInts",
+      "input": "0xFF02000000000000004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
+      "solidityError": "Non-minimal var int"
+    },
+    {
+      "input": "0xFF4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
+      "solidityError": "Non-minimal var int"
+    },
+    {
+      "input": "0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000",
+      "solidityError": "Overran the view"
     },
     {
       "comment": "Read overrun",
