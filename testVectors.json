@@ -968,6 +968,22 @@
       "output": true
     }
   ],
+  "checkWork": [
+    {
+      "input": {
+        "header": "0x00004020d3b2d7d61ad2d95ffbd556d9e00f07877423600a8da015000000000000000000d192743a2c190a7421f92fefe92505579d7b8eda568cacee13b25751ac704c669d83195cf41e371721bae3e7",
+        "target": "0x0000000000000000000000000000000000000000000000000000000000000001"
+      },
+      "output": false
+    },
+    {
+      "input": {
+        "header": "0x00004020d3b2d7d61ad2d95ffbd556d9e00f07877423600a8da015000000000000000000d192743a2c190a7421f92fefe92505579d7b8eda568cacee13b25751ac704c669d83195cf41e371721bae3e7",
+        "target": "0xae67207125404fa8786acaeb7cff69156fe0a01b0b3c04000000000000000000"
+      },
+      "output": true
+    }
+  ],
   "validateHeaderPrevHash": [
     {
       "input": {
