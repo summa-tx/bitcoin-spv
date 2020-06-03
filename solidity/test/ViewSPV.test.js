@@ -13,6 +13,7 @@ const {
   getErrLowWork,
   prove,
   calculateTxId,
+  checkWork,
   validateHeaderChain,
   validateHeaderChainError,
   validateHeaderPrevHash
@@ -63,11 +64,17 @@ contract('ViewSPV', () => {
     });
   });
 
-  // describe('#checkWork', async () => {
-  //   it('Checks validity of header work', async () => {
-  //     // for (let i = 0; i < )
-  //   })
-  // })
+  describe('#checkWork', async () => {
+    it('Checks validity of header work', async () => {
+      for (let i = 0; i < checkWork.length; i += 1) {
+        const res = await instance.checkWork(
+          checkWork[i].input.header,
+          checkWork[i].input.target
+        );
+        assert.strictEqual(res, checkWork[i].output);
+      }
+    });
+  });
 
   describe('#checkChain', async () => {
     it('returns true if header chain is valid', async () => {
