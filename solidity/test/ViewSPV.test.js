@@ -71,7 +71,7 @@ contract('ViewSPV', () => {
           checkWork[i].input.header,
           checkWork[i].input.target
         );
-        assert.strictEqual(res, checkWork[i].output)
+        assert.strictEqual(res, checkWork[i].output);
       }
     });
   });
