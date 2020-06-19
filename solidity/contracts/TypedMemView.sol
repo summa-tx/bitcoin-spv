@@ -71,6 +71,8 @@ library TypedMemView {
 
     // Returns the encoded hex charcter that represents the lower 4 bits of the argument.
     function nibbleHex(uint8 _b) internal pure returns (uint8) {
+        // This can probably be done more efficiently, but it's only in error
+        // paths, so we don't really care :)
         uint8 _nibble = _b | 0xf0; // set top 4, keep bottom 4
         if (_nibble == 0xf0) {return 0x30;} // 0
         if (_nibble == 0xf1) {return 0x31;} // 1
@@ -92,9 +94,9 @@ library TypedMemView {
 
     // Returns a uint16 containing the hex-encoded byte
     function byteHex(uint8 _b) internal pure returns (uint16 encoded) {
-        encoded |= nibbleHex(_b >> 4);
+        encoded |= nibbleHex(_b >> 4); // top 4 bits
         encoded <<= 8;
-        encoded |= nibbleHex(_b);
+        encoded |= nibbleHex(_b); // lower 4 bits
     }
 
     // Encodes the uint256 to hex. `first` contains the encoded top 16 bytes.
@@ -435,6 +437,7 @@ library TypedMemView {
         uint256 _loc = loc(memView);
         uint256 _len = len(memView);
         assembly {
+            // solium-disable-previous-line security/no-inline-assembly
             let ptr := mload(0x40)
             pop(staticcall(gas, 2, _loc, _len, ptr, 0x20)) // sha2
             pop(staticcall(gas, 3, ptr, 0x20, ptr, 0x20)) // rmd160
@@ -459,7 +462,7 @@ library TypedMemView {
 
     /// Return true if the underlying memory is equal. Else false.
     function untypedEqual(bytes29 left, bytes29 right) internal pure returns (bool) {
-        return left == right || keccak(left) == keccak(right);
+        return (loc(left) == loc(right) && len(left) == len(right)) || keccak(left) == keccak(right);
     }
 
     /// Return false if the underlying memory is equal. Else true.
@@ -467,12 +470,14 @@ library TypedMemView {
         return !untypedEqual(left, right);
     }
 
-    /// typed equality
+    /// Typed equality. Shortcuts if the pointers are identical, otherwise
+    /// compares type and digest
     function equal(bytes29 left, bytes29 right) internal pure returns (bool) {
         return left == right || (typeOf(left) == typeOf(right) && keccak(left) == keccak(right));
     }
 
-    /// typed inequality
+    /// Typed inequality. Shortcuts if the pointers are identical, otherwise
+    /// compares type and digest
     function notEqual(bytes29 left, bytes29 right) internal pure returns (bool) {
         return !equal(left, right);
     }
@@ -510,19 +515,17 @@ library TypedMemView {
     /// `bytes` pointing to the new memory
     function clone(bytes29 memView) internal view returns (bytes memory ret) {
         uint256 ptr;
+        uint256 _len = len(memView);
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
             ptr := mload(0x40) // load unused memory pointer
+            ret := ptr
         }
-
-        bytes29 _written = copyTo(memView, ptr + 0x20);
-        uint256 _len = len(_written);
-        uint256 _footprint = footprint(_written);
+        copyTo(memView, ptr + 0x20);
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
-            mstore(0x40, add(add(ptr, _footprint), 0x20)) // write new unused pointer
+            mstore(0x40, add(add(ptr, _len), 0x20)) // write new unused pointer
             mstore(ptr, _len) // write len of new array (in bytes)
-            ret := ptr
         }
     }
 
