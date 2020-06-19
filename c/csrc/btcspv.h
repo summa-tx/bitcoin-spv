@@ -4,6 +4,19 @@
 #include "stdbool.h"
 #include "stdint.h"
 
+#define DECLARE_VIEW_TYPE(NAME) \
+  typedef struct { \
+    const uint8_t *loc; \
+    const uint32_t len; \
+  } NAME ## _t; \
+  typedef const NAME ## _t const_ ## NAME ##_t;
+
+#define VIEW_FROM_VIEW(view) \
+  { view.loc, view.len }
+
+#define VIEW_FROM_VIEW_POINTER(view) \
+  { view->loc, view->len }
+
 #define VIEW_FROM_ARR(arr) \
   { arr, sizeof(arr) }
 
@@ -27,8 +40,8 @@
   (((uint32_t)(*(a + 0)) << 24) | ((uint32_t)(*(a + 1)) << 16) | \
    ((uint32_t)(*(a + 2)) << 8) | ((uint32_t)(*(a + 3))))
 
-#define RET_NULL_VIEW                  \
-  const_view_t _null_view = {NULL, 0}; \
+#define RET_NULL_VIEW(type)            \
+  type _null_view = {NULL, 0}; \
   return _null_view;
 
 #define UINT256_EQ(lhs, rhs) (memcmp(lhs, rhs, 32) == 0)
@@ -39,17 +52,39 @@
 
 #define SET_UINT256(to, from) (memcpy(to, from, 32))
 
+DECLARE_VIEW_TYPE(view); // Unknown or unspecified type
+DECLARE_VIEW_TYPE(compact_int);
+DECLARE_VIEW_TYPE(scriptsig);
+DECLARE_VIEW_TYPE(outpoint);
+DECLARE_VIEW_TYPE(txin);
+DECLARE_VIEW_TYPE(vin);
+DECLARE_VIEW_TYPE(script_pubkey);
+DECLARE_VIEW_TYPE(pkh);
+DECLARE_VIEW_TYPE(wpkh);
+DECLARE_VIEW_TYPE(sh);
+DECLARE_VIEW_TYPE(wsh);
+DECLARE_VIEW_TYPE(op_return);
+DECLARE_VIEW_TYPE(txout);
+DECLARE_VIEW_TYPE(vout);
+DECLARE_VIEW_TYPE(header);
+DECLARE_VIEW_TYPE(header_array);
+DECLARE_VIEW_TYPE(merkle_node);
+DECLARE_VIEW_TYPE(merkle_step);
+DECLARE_VIEW_TYPE(merkle_array);
+
+typedef view_t byte_view_t;
+
 /// Error code
 const uint64_t BTCSPV_ERR_BAD_ARG;
 
 /// A 256-bit integer to support Bitcoin operations.
 typedef uint8_t uint256[32];
 
-/// A simple memory view struct.
-typedef struct {
-  const uint8_t *loc;  /** A pointer to the start of the view */
-  const uint32_t len;  /** The number of bytes in the view */
-} byte_view_t;
+// /// A simple memory view struct.
+// typedef struct {
+//   const uint8_t *loc;  /** A pointer to the start of the view */
+//   const uint32_t len;  /** The number of bytes in the view */
+// } byte_view_t;
 
 /// Return type for parse_var_int. Contains information about VarInt structure
 typedef struct {
@@ -63,8 +98,6 @@ typedef struct {
   const uint64_t script_sig_len; /** The number of bytes in the scriptsig */
 } script_sig_t;
 
-/// Alias for constant view
-typedef const byte_view_t const_view_t;
 
 // Utilities
 
@@ -122,63 +155,70 @@ void btcspv_hash256(uint8_t *result, const_view_t *preimage);
  /// @return         The number of non-flag bytes in the VarInt
 uint8_t btcspv_determine_var_int_data_length(uint8_t tag);
 
-/// @brief           Parse a VarInt into its data length and the number it represents
-/// @note            Useful for Parsing Vins and Vouts. Returns ERR_BAD_ARG if insufficient bytes.
+/// @brief           Determines the serialized length of a compact int in bytes
+/// @note            Always returns 1, 3, 5 or 9
+/// @param number    The desrialized number
+/// @return          The number of bytes in the serialized int, including the flag
+uint8_t btcspv_compact_int_length(uint64_t number);
+
+
+/// @brief           Parse a CompactInt to number it represents. First argument is the result
+/// @note            Useful for Parsing Vins and Vouts. Returns false if insufficient bytes.
 /// @param b         A byte-view starting with a VarInt
 /// @return          A struct containing number of bytes in the encoding (not counting the tag) and the encoded int
 /// @warning         Caller MUST check that it does not error
-var_int_t btcspv_parse_var_int(const_view_t *b);
+bool btcspv_parse_compact_int(uint64_t *result, const uint8_t *loc, uint32_t len);
 
 /// @brief           Determines whether an input is legacy
 /// @note            False if no scriptSig, otherwise True
 /// @param input     The input
 /// @return          True for legacy, False for witness
-bool btcspv_is_legacy_input(const_view_t *tx_in);
+bool btcspv_is_legacy_input(const_txin_t *tx_in);
 
 /// @brief           Extracts the LE sequence bytes from an input
 /// @note            Sequence is used for relative time locks
 /// @param input     The WITNESS input
 /// @return          The sequence bytes (LE uint)
-byte_view_t btcspv_extract_sequence_le_witness(const_view_t *tx_in);
+byte_view_t btcspv_extract_sequence_le_witness(const_txin_t *tx_in);
 
 /// @brief           Extracts the sequence from the input in a tx
 /// @note            Sequence is a 4-byte little-endian number
 /// @param input     The WITNESS input
 /// @return          The sequence number (big-endian uint)
-uint32_t btcspv_extract_sequence_witness(const_view_t *tx_in);
+uint32_t btcspv_extract_sequence_witness(const_txin_t *tx_in);
 
 /// @brief           Determines the length of a scriptSig in an input
 /// @note            Will return 0 if passed a witness input
 /// @param input     The LEGACY input
 /// @return          The length of the script sig
 /// @warning         Caller MUST check that it does not error
-script_sig_t btcspv_extract_script_sig_len(const_view_t *tx_in);
+bool btcspv_extract_script_sig_len(uint64_t *result, const_txin_t *tx_in);
 
 /// @brief           Extracts the VarInt-prepended scriptSig from the input in a tx
 /// @note            Will return hex"00" if passed a witness input
 /// @param input     The LEGACY input
 /// @return          The length-prepended script sig
 /// @warning         Caller MUST check that it does not error
-byte_view_t btcspv_extract_script_sig(const_view_t *tx_in);
+byte_view_t btcspv_extract_script_sig(const_txin_t *tx_in);
 
 /// @brief           Extracts the LE sequence bytes from an input
 /// @note            Sequence is used for relative time locks
 /// @param input     The LEGACY input
 /// @return          The sequence bytes (LE uint)
-byte_view_t btcspv_extract_sequence_le_legacy(const_view_t *tx_in);
+byte_view_t btcspv_extract_sequence_le_legacy(const_txin_t *tx_in);
 
 /// @brief           Extracts the sequence from the input
 /// @note            Sequence is a 4-byte little-endian number
 /// @param input     The LEGACY input
 /// @return          The sequence number (big-endian uint)
-uint32_t btcspv_extract_sequence_legacy(const_view_t *tx_in);
+uint32_t btcspv_extract_sequence_legacy(const_txin_t *tx_in);
 
 /// @brief           Determines the length of an input from its scriptsig
 /// @note            36 for outpoint, 1 for scriptsig length, 4 for sequence
 /// @param input     The input
 /// @return          The length of the input in bytes
 /// @warning         Caller MUST check that it does not error
-uint64_t btcspv_determine_input_length(const_view_t *tx_in);
+bool btcspv_determine_input_length(uint64_t *result, const_txin_t *tx_in);
 
 /// @brief           Extracts the nth input from the vin (0-indexed)
 /// @note            Iterates over the vin. If you need to extract several, write a custom function
@@ -186,7 +226,7 @@ uint64_t btcspv_determine_input_length(const_view_t *tx_in);
 /// @param index     The 0-indexed location of the input to extract
 /// @return          The input as a byte array
 /// @warning         Caller must check that resulting view loc is not null, and/or len !=0.
-byte_view_t btcspv_extract_input_at_index(const_view_t *vin, uint64_t index);
+const_txin_t btcspv_extract_input_at_index(const_vin_t *vin, uint64_t index);
 
 /// @brief           Extracts the outpoint from the input in a tx
 /// @note            32 byte tx id with 4 byte index
@@ -216,12 +256,12 @@ uint32_t btcspv_extract_tx_index(const_view_t *tx_in);
  * --- tx_out & vout Functions ---
  */
 
- /// @brief           Determines the length of an output
+ /// @brief           Determines the length of an output, writes it to `number`
  /// @note            5 types: WPKH, WSH, PKH, SH, and OP_RETURN
  /// @param output    The output
  /// @return          The length indicated by the prefix, error if invalid length
  /// @warning         Caller MUST check that it does not error
-uint64_t btcspv_determine_output_length(const_view_t *tx_out);
+ bool btcspv_determine_output_length(uint64_t *result, const_view_t *tx_out);
 
 /// @brief           Extracts the output at a given index in the TxIns vector
 /// @note            Iterates over the vout. If you need to extract multiple, write a custom function
@@ -271,7 +311,7 @@ byte_view_t btcspv_extract_hash(const_view_t *tx_out);
 /// @note        Consider a vin with a valid vout in its scriptsig
 /// @param vin   Raw bytes length-prefixed input vector
 /// @return      True if it represents a validly formatted vin
-bool btcspv_validate_vin(const_view_t *vin);
+bool btcspv_validate_vin(const_vin_t *vin);
 
 /// @brief       Checks that the vin passed up is properly formatted
 /// @note        Consider a vin with a valid vout in its scriptsig

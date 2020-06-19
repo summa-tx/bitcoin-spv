@@ -278,7 +278,8 @@ START_TEST(is_legacy_input) {
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
   const_view_t input = {input_buf, input_len};
 
-  bool actual = btcspv_is_legacy_input(&input);
+  const_txin_t txin = VIEW_FROM_VIEW(input);
+  bool actual = btcspv_is_legacy_input(&txin);
   bool expected = token_as_bool(output_tok);
 
   ck_assert(actual == expected);
@@ -294,13 +295,13 @@ START_TEST(extract_sequence_le_witness) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txin_t txin = {input_buf, input_len};
 
   uint8_t *expected_buf;
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
   const_view_t expected = {expected_buf, expected_len};
 
-  const_view_t actual = btcspv_extract_sequence_le_witness(&input);
+  const_view_t actual = btcspv_extract_sequence_le_witness(&txin);
 
   ck_assert(btcspv_view_eq(&actual, &expected));
 
@@ -316,11 +317,11 @@ START_TEST(extract_sequence_witness) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txin_t txin = {input_buf, input_len};
 
   uint32_t expected = token_as_long(output_tok);
 
-  uint32_t actual = btcspv_extract_sequence_witness(&input);
+  uint32_t actual = btcspv_extract_sequence_witness(&txin);
 
   ck_assert_int_eq(actual, expected);
 
@@ -335,17 +336,20 @@ START_TEST(extract_script_sig_len) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txin_t input = {input_buf, input_len};
 
   size_t output1 = val_pos_by_key(case_pos, "output") + 1;
   size_t output2 = after(output1);
 
   uint32_t expected_var_int_len = pos_as_long(output1);
   uint32_t expected_script_sig_len = pos_as_long(output2);
-  script_sig_t actual = btcspv_extract_script_sig_len(&input);
 
-  ck_assert_int_eq(actual.var_int_len, expected_var_int_len);
-  ck_assert_int_eq(actual.script_sig_len, expected_script_sig_len);
+  uint64_t actual = 0;
+  bool success = btcspv_extract_script_sig_len(&actual, &input);
+
+  ck_assert(success);
+  ck_assert_int_eq(btcspv_compact_int_length(actual) - 1, expected_var_int_len);
+  ck_assert_int_eq(actual, expected_script_sig_len);
 
   TEST_LOOP_END
 }
@@ -356,14 +360,13 @@ START_TEST(extract_script_sig) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txin_t input = {input_buf, input_len};
 
   uint8_t *expected_buf;
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
   const_view_t expected = {expected_buf, expected_len};
 
   const_view_t actual = btcspv_extract_script_sig(&input);
-
   ck_assert(btcspv_view_eq(&actual, &expected));
 
   free(input_buf);
@@ -378,7 +381,7 @@ START_TEST(extract_sequence_le_legacy) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txin_t input = {input_buf, input_len};
 
   uint8_t *expected_buf;
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
@@ -400,7 +403,7 @@ START_TEST(extract_sequence_legacy) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txin_t input = {input_buf, input_len};
 
   uint32_t expected = token_as_long(output_tok);
 
@@ -419,12 +422,14 @@ START_TEST(determine_input_length) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txin_t input = {input_buf, input_len};
 
   uint32_t expected = token_as_long(output_tok);
 
-  uint32_t actual = btcspv_determine_input_length(&input);
+  uint64_t actual = 0;
+  bool success = btcspv_determine_input_length(&actual, &input);
 
+  ck_assert(success);
   ck_assert_int_eq(actual, expected);
 
   free(input_buf);
@@ -443,7 +448,7 @@ START_TEST(extract_input_at_index) {
   uint8_t *vin_buf;
   const uint32_t vin_buf_len =
       token_as_hex_buf(&vin_buf, &test_vec_tokens[vin_val_pos]);
-  const_view_t vin_view = {vin_buf, vin_buf_len};
+  const_vin_t vin_view = {vin_buf, vin_buf_len};
 
   uint8_t input_index = token_as_long(&test_vec_tokens[idx_pos]);
 
@@ -451,9 +456,9 @@ START_TEST(extract_input_at_index) {
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
   const_view_t expected = {expected_buf, expected_len};
 
-  const_view_t actual = btcspv_extract_input_at_index(&vin_view, input_index);
+  const_txin_t actual = btcspv_extract_input_at_index(&vin_view, input_index);
 
-  ck_assert(btcspv_view_eq(&actual, &expected));
+  ck_assert(btcspv_view_eq_buf(&expected, actual.loc, actual.len));
 
   free(vin_buf);
   free(expected_buf);
@@ -472,11 +477,11 @@ START_TEST(extract_input_at_index_error) {
   uint8_t *vin_buf;
   const uint32_t vin_buf_len =
       token_as_hex_buf(&vin_buf, &test_vec_tokens[vin_val_pos]);
-  const_view_t vin_view = {vin_buf, vin_buf_len};
+  const_vin_t vin_view = {vin_buf, vin_buf_len};
 
   uint8_t input_index = token_as_long(&test_vec_tokens[idx_pos]);
 
-  const_view_t actual = btcspv_extract_input_at_index(&vin_view, input_index);
+  const_txin_t actual = btcspv_extract_input_at_index(&vin_view, input_index);
 
   ck_assert(actual.loc == NULL);
   ck_assert_int_eq(actual.len, 0);
@@ -581,8 +586,10 @@ START_TEST(determine_output_length) {
 
   uint32_t expected = token_as_long(output_tok);
 
-  uint32_t actual = btcspv_determine_output_length(&input);
+  uint64_t actual = 0;
+  bool success = btcspv_determine_output_length(&actual, &input);
 
+  ck_assert(success);
   ck_assert_int_eq(actual, expected);
 
   free(input_buf);
@@ -770,7 +777,7 @@ START_TEST(validate_vin) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_vin_t input = {input_buf, input_len};
 
   bool actual = btcspv_validate_vin(&input);
   bool expected = token_as_bool(output_tok);
