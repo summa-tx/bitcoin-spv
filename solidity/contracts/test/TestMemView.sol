@@ -102,7 +102,7 @@ contract TestMemView {
         );
     }
 
-    function slicing() public pure {
+    function slicing() public view {
         // 76 bytes - 3 words
 
         // solium-disable-next-line max-len

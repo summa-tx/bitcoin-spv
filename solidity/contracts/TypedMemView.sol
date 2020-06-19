@@ -417,22 +417,29 @@ library TypedMemView {
     }
 
     /// Return the sha2 digest of the underlying memory. We explicitly deallocate memory afterwards
-    function sha2(bytes29 memView) internal pure returns (bytes32 digest) {
-        bytes memory copy = clone(memView);
-        digest = sha256(copy);
-
-        // for cleanliness, avoid growing the free pointer
+    function sha2(bytes29 memView) internal view returns (bytes32 digest) {
+        uint256 _loc = loc(memView);
+        uint256 _len = len(memView);
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
-            mstore(0x40, copy)
+            let ptr := mload(0x40)
+            pop(staticcall(gas, 2, _loc, _len, ptr, 0x20)) // sha2 #1
+            digest := mload(ptr)
         }
     }
 
     /// @notice          Implements bitcoin's hash160 (rmd160(sha2()))
     /// @param memView   The pre-image
     /// @return          The digest
-    function hash160(bytes29 memView) internal pure returns (bytes20 digest) {
-        return ripemd160(abi.encodePacked(sha2(memView)));
+    function hash160(bytes29 memView) internal view returns (bytes20 digest) {
+        uint256 _loc = loc(memView);
+        uint256 _len = len(memView);
+        assembly {
+            let ptr := mload(0x40)
+            pop(staticcall(gas, 2, _loc, _len, ptr, 0x20)) // sha2
+            pop(staticcall(gas, 3, ptr, 0x20, ptr, 0x20)) // rmd160
+            digest := mload(add(ptr, 0xc)) // return value is 0-prefixed.
+        }
     }
 
     /// @notice          Implements bitcoin's hash256 (double sha2)
@@ -476,7 +483,7 @@ library TypedMemView {
     /// This reference can be overwritten if anything else modifies memory (!!!).
     /// As such it MUST be consumed IMMEDIATELY.
     /// This function is private to prevent unsafe usage by callers
-    function copyTo(bytes29 memView, uint256 _newLoc) private pure returns (bytes29 written) {
+    function copyTo(bytes29 memView, uint256 _newLoc) private view returns (bytes29 written) {
         require(notNull(memView), "TypedMemView/copyTo - Null pointer deref");
         require(isValid(memView), "TypedMemView/copyTo - Invalid pointer deref");
         uint256 _len = len(memView);
@@ -490,11 +497,10 @@ library TypedMemView {
             if gt(ptr, _newLoc) {
                 revert(0x60, 0x20) // empty revert message
             }
-            for { let offset := 0 } lt(offset, _len) { offset := add(offset, 0x20) }
-            {
-                let chunk := mload(add(_oldLoc, offset))
-                mstore(add(_newLoc, offset), chunk)
-            }
+
+            // use the identity precompile to copy
+            // guaranteed not to fail, so pop the success
+            pop(staticcall(gas, 4, _oldLoc, _len, _newLoc, _len))
         }
 
         written = buildUnchecked(typeOf(memView), _newLoc, _len);
@@ -502,7 +508,7 @@ library TypedMemView {
 
     /// Copies the referenced memory to a new loc in memory, returning a
     /// `bytes` pointing to the new memory
-    function clone(bytes29 memView) internal pure returns (bytes memory ret) {
+    function clone(bytes29 memView) internal view returns (bytes memory ret) {
         uint256 ptr;
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
@@ -526,7 +532,7 @@ library TypedMemView {
     /// This reference can be overwritten if anything else modifies memory (!!!).
     /// As such it MUST be consumed IMMEDIATELY.
     /// This function is private to prevent unsafe usage by callers
-    function unsafeJoin(bytes29[] memory memViews, uint256 _location) private pure returns (bytes29 unsafeView) {
+    function unsafeJoin(bytes29[] memory memViews, uint256 _location) private view returns (bytes29 unsafeView) {
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
             let ptr := mload(0x40)
@@ -546,7 +552,7 @@ library TypedMemView {
     }
 
     /// Produce the keccak256 digest of the concatenated contents of multiple views
-    function joinKeccak(bytes29[] memory memViews) internal pure returns (bytes32) {
+    function joinKeccak(bytes29[] memory memViews) internal view returns (bytes32) {
         uint256 ptr;
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
@@ -556,7 +562,7 @@ library TypedMemView {
     }
 
     /// Produce the sha256 digest of the concatenated contents of multiple views
-    function joinSha2(bytes29[] memory memViews) internal pure returns (bytes32) {
+    function joinSha2(bytes29[] memory memViews) internal view returns (bytes32) {
         uint256 ptr;
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
@@ -566,7 +572,7 @@ library TypedMemView {
     }
 
     /// copies all views, joins them into a new bytearray
-    function join(bytes29[] memory memViews) internal pure returns (bytes memory ret) {
+    function join(bytes29[] memory memViews) internal view returns (bytes memory ret) {
         uint256 ptr;
         assembly {
             // solium-disable-previous-line security/no-inline-assembly

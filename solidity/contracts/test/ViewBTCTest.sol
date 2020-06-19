@@ -20,7 +20,7 @@ contract ViewBTCTest {
         return _b.ref(0).indexCompactInt(0);
     }
 
-    function hash160(bytes memory _b) public pure returns (bytes20) {
+    function hash160(bytes memory _b) public view returns (bytes20) {
         return _b.ref(0).hash160();
     }
 
@@ -28,7 +28,7 @@ contract ViewBTCTest {
         return _b.ref(0).hash256();
     }
 
-    function indexVin(bytes memory _vin, uint256 _index) public pure returns (bytes memory) {
+    function indexVin(bytes memory _vin, uint256 _index) public view returns (bytes memory) {
         return _vin.ref(0).tryAsVin().assertValid().indexVin(_index).clone();
     }
 
@@ -40,15 +40,15 @@ contract ViewBTCTest {
         return _input.ref(uint40(ViewBTC.BTCTypes.TxIn)).sequence();
 
     }
-    function scriptSig(bytes memory _input) public pure returns (bytes memory) {
+    function scriptSig(bytes memory _input) public view returns (bytes memory) {
         return _input.ref(uint40(ViewBTC.BTCTypes.TxIn)).scriptSig().clone();
     }
 
-    function scriptPubkey(bytes memory _output) public pure returns (bytes memory) {
+    function scriptPubkey(bytes memory _output) public view returns (bytes memory) {
         return _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).scriptPubkey().clone();
     }
 
-    function outpoint(bytes memory _input) public pure returns (bytes memory) {
+    function outpoint(bytes memory _input) public view returns (bytes memory) {
         return _input.ref(uint40(ViewBTC.BTCTypes.TxIn)).outpoint().clone();
     }
 
@@ -64,7 +64,7 @@ contract ViewBTCTest {
         return _output.ref(uint40(ViewBTC.BTCTypes.IntermediateTxOuts)).outputLength();
     }
 
-    function indexVout(bytes memory _vout, uint256 _index) public pure returns (bytes memory) {
+    function indexVout(bytes memory _vout, uint256 _index) public view returns (bytes memory) {
         return _vout.ref(0).tryAsVout().assertValid().indexVout(_index).clone();
     }
 
@@ -76,7 +76,7 @@ contract ViewBTCTest {
         return _output.ref(uint40(ViewBTC.BTCTypes.TxOut)).value();
     }
 
-    function opReturnPayload(bytes memory _output) public pure returns (bytes memory) {
+    function opReturnPayload(bytes memory _output) public view returns (bytes memory) {
         // the argument is a txout. we want to slice off the first 8 bytes (the value)
         bytes29 v = _output.ref(0);
         bytes29 res = v.postfix(v.len() - 8, uint40(ViewBTC.BTCTypes.ScriptPubkey)).opReturnPayload();
@@ -85,7 +85,7 @@ contract ViewBTCTest {
         return res.clone();
     }
 
-    function payload(bytes memory _output) public pure returns (bytes memory) {
+    function payload(bytes memory _output) public view returns (bytes memory) {
         // the argument is a txout. we want to slice off the first 8 bytes (the value)
         bytes29 v = _output.ref(0);
         bytes29 res = v.postfix(v.len() - 8, uint40(ViewBTC.BTCTypes.ScriptPubkey)).payload();
