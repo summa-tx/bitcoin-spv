@@ -399,8 +399,8 @@ library BTCUtils {
         uint8 _scriptLen = uint8(_output[8]);
 
         // don't have to worry about overflow here.
-        // if _scriptLen + 9 overflows, then output.length would have to be < 8
-        // for this check to pass. if it's <8, then we errored when assigning
+        // if _scriptLen + 9 overflows, then output.length would have to be < 9
+        // for this check to pass. if it's < 9, then we errored when assigning
         // _scriptLen
         if (_scriptLen + 9 != _output.length) {
             return hex"";
