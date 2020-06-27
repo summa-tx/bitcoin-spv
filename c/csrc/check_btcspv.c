@@ -92,11 +92,11 @@ START_TEST(calculate_txid) {
 
   uint8_t *vin_buf;
   const uint32_t vin_len = pos_as_hex_buf(&vin_buf, vin_pos);
-  const_view_t vin = {vin_buf, vin_len};
+  const_vin_t vin = {vin_buf, vin_len};
 
   uint8_t *vout_buf;
   const uint32_t vout_len = pos_as_hex_buf(&vout_buf, vout_pos);
-  const_view_t vout = {vout_buf, vout_len};
+  const_vout_t vout = {vout_buf, vout_len};
 
   uint8_t *locktime_buf;
   const uint32_t locktime_len = pos_as_hex_buf(&locktime_buf, locktime_pos);
@@ -154,7 +154,7 @@ START_TEST(validate_header_prev_hash) {
 
   uint8_t *header_buf;
   uint32_t header_len = pos_as_hex_buf(&header_buf, header_pos);
-  const_view_t header_view = {header_buf, header_len};
+  const_header_t header_view = {header_buf, header_len};
 
   uint8_t *prev_hash_buf;
   pos_as_hex_buf(&prev_hash_buf, prev_hash_pos);
@@ -176,7 +176,7 @@ START_TEST(validate_header_chain) {
 
   uint8_t *headers_buf;
   uint32_t headers_len = token_as_hex_buf(&headers_buf, input_tok);
-  const_view_t headers_view = {headers_buf, headers_len};
+  const_header_array_t headers_view = {headers_buf, headers_len};
 
   uint64_t expected = token_as_long(output_tok);
   uint64_t actual = evalspv_validate_header_chain(&headers_view);
@@ -194,7 +194,7 @@ START_TEST(validate_header_chain_errors) {
 
   uint8_t *headers_buf;
   uint32_t headers_len = token_as_hex_buf(&headers_buf, input_tok);
-  const_view_t headers_view = {headers_buf, headers_len};
+  const_header_array_t headers_view = {headers_buf, headers_len};
 
   size_t c_error_pos = val_pos_by_key(case_pos, "cError");
 
@@ -366,8 +366,8 @@ START_TEST(extract_script_sig) {
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
   const_view_t expected = {expected_buf, expected_len};
 
-  const_view_t actual = btcspv_extract_script_sig(&input);
-  ck_assert(btcspv_view_eq(&actual, &expected));
+  const_scriptsig_t actual = btcspv_extract_script_sig(&input);
+  ck_assert(btcspv_buf_eq(actual.loc, actual.len, expected.loc, expected.len));
 
   free(input_buf);
   free(expected_buf);
@@ -497,16 +497,15 @@ START_TEST(extract_outpoint) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txin_t input = {input_buf, input_len};
 
   uint8_t *expected_buf;
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
   const_view_t expected = {expected_buf, expected_len};
 
-  const_view_t actual = btcspv_extract_outpoint(&input);
+  const_outpoint_t actual = btcspv_extract_outpoint(&input);
 
-  ck_assert(btcspv_view_eq(&actual, &expected));
-
+  ck_assert(btcspv_buf_eq(actual.loc, actual.len, expected.loc, expected.len));
   free(input_buf);
   free(expected_buf);
 
@@ -519,7 +518,7 @@ START_TEST(extract_input_tx_id_le) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txin_t input = {input_buf, input_len};
 
   uint8_t *expected_buf;
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
@@ -541,7 +540,7 @@ START_TEST(extract_tx_index_le) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txin_t input = {input_buf, input_len};
 
   uint8_t *expected_buf;
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
@@ -563,7 +562,7 @@ START_TEST(extract_tx_index) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txin_t input = {input_buf, input_len};
 
   uint32_t expected = token_as_long(output_tok);
 
@@ -608,7 +607,7 @@ START_TEST(extract_output_at_index) {
   uint8_t *vout_buf;
   const uint32_t vout_buf_len =
       token_as_hex_buf(&vout_buf, &test_vec_tokens[vout_val_pos]);
-  const_view_t vout_view = {vout_buf, vout_buf_len};
+  const_vout_t vout_view = {vout_buf, vout_buf_len};
 
   uint8_t input_index = token_as_long(&test_vec_tokens[idx_pos]);
 
@@ -616,11 +615,11 @@ START_TEST(extract_output_at_index) {
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
   const_view_t expected = {expected_buf, expected_len};
 
-  const_view_t actual = btcspv_extract_output_at_index(&vout_view, input_index);
+  const_txout_t actual = btcspv_extract_output_at_index(&vout_view, input_index);
 
   ck_assert(actual.loc != NULL);
   ck_assert_int_ne(actual.len, 0);
-  ck_assert(btcspv_view_eq(&actual, &expected));
+  ck_assert(btcspv_buf_eq(actual.loc, actual.len, expected.loc, expected.len));
 
   free(vout_buf);
   free(expected_buf);
@@ -640,10 +639,10 @@ START_TEST(extract_output_at_index_error) {
   uint8_t *vout_buf;
   const uint32_t vout_buf_len =
       token_as_hex_buf(&vout_buf, &test_vec_tokens[vout_val_pos]);
-  const_view_t vout_view = {vout_buf, vout_buf_len};
+  const_vout_t vout_view = {vout_buf, vout_buf_len};
 
   uint8_t output_index = token_as_long(&test_vec_tokens[idx_pos]);
-  const_view_t actual = btcspv_extract_output_at_index(&vout_view, output_index);
+  const_txout_t actual = btcspv_extract_output_at_index(&vout_view, output_index);
 
   ck_assert(actual.loc == NULL);
   ck_assert_int_eq(actual.len, 0);
@@ -659,7 +658,7 @@ START_TEST(extract_value_le) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txout_t input = {input_buf, input_len};
 
   uint8_t *expected_buf;
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
@@ -681,7 +680,7 @@ START_TEST(extract_value) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txout_t input = {input_buf, input_len};
 
   uint32_t expected = token_as_long(output_tok);
 
@@ -699,17 +698,17 @@ START_TEST(extract_op_return_data) {
   TEST_LOOP_START("extractOpReturnData")
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txout_t input = {input_buf, input_len};
 
   uint8_t *expected_buf;
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
   const_view_t expected = {expected_buf, expected_len};
 
-  const_view_t actual = btcspv_extract_op_return_data(&input);
+  const_op_return_t actual = btcspv_extract_op_return_data(&input);
 
   ck_assert(actual.loc != NULL);
   ck_assert_int_ne(actual.len, 0);
-  ck_assert(btcspv_view_eq(&actual, &expected));
+  ck_assert(btcspv_buf_eq(actual.loc, actual.len, expected.loc, expected.len));
 
   free(input_buf);
   free(expected_buf);
@@ -722,9 +721,9 @@ START_TEST(extract_op_return_data_error) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txout_t input = {input_buf, input_len};
 
-  const_view_t actual = btcspv_extract_op_return_data(&input);
+  const_op_return_t actual = btcspv_extract_op_return_data(&input);
 
   ck_assert(actual.loc == NULL);
   ck_assert_int_eq(actual.len, 0);
@@ -739,7 +738,7 @@ START_TEST(extract_hash) {
   TEST_LOOP_START("extractHash")
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txout_t input = {input_buf, input_len};
 
   uint8_t *expected_buf;
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
@@ -759,7 +758,7 @@ START_TEST(extract_hash_error) {
   TEST_LOOP_START("extractHashError")
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_txout_t input = {input_buf, input_len};
 
   const_view_t actual = btcspv_extract_hash(&input);
 
@@ -795,7 +794,7 @@ START_TEST(validate_vout) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_vout_t input = {input_buf, input_len};
 
   bool actual = btcspv_validate_vout(&input);
   bool expected = token_as_bool(output_tok);
@@ -812,7 +811,7 @@ START_TEST(extract_target) {
   TEST_LOOP_START("extractTarget")
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_header_t input = {input_buf, input_len};
 
   uint8_t *expected_buf;
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
@@ -839,7 +838,7 @@ START_TEST(extract_timestamp) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_header_t input = {input_buf, input_len};
 
   uint32_t expected = token_as_long(output_tok);
 
@@ -858,7 +857,7 @@ START_TEST(extract_merkle_root_le) {
 
   uint8_t *input_buf;
   const uint32_t input_len = token_as_hex_buf(&input_buf, input_tok);
-  const_view_t input = {input_buf, input_len};
+  const_header_t input = {input_buf, input_len};
 
   uint8_t *expected_buf;
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
@@ -884,11 +883,11 @@ START_TEST(hash256_merkle_step) {
 
   uint8_t *a_buf;
   const uint32_t a_len = token_as_hex_buf(&a_buf, &test_vec_tokens[a_val_pos]);
-  const_view_t a = {a_buf, a_len};
+  const_merkle_node_t a = {a_buf, a_len};
 
   uint8_t *b_buf;
   const uint32_t b_len = token_as_hex_buf(&b_buf, &test_vec_tokens[b_val_pos]);
-  const_view_t b = {b_buf, b_len};
+  const_merkle_node_t b = {b_buf, b_len};
 
   uint8_t *expected_buf;
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
@@ -944,7 +943,7 @@ START_TEST(retarget_algorithm) {
   uint8_t *first_header_raw_buf;
   const uint32_t first_header_raw_len = token_as_hex_buf(
       &first_header_raw_buf, &test_vec_tokens[first_header_raw_pos]);
-  const_view_t first_header_raw = {first_header_raw_buf, first_header_raw_len};
+  const_header_t first_header_raw = {first_header_raw_buf, first_header_raw_len};
 
   size_t second_timestamp_pos = val_pos_by_key(second_header, "timestamp");
   uint32_t second_timestamp = pos_as_long(second_timestamp_pos);
@@ -953,7 +952,7 @@ START_TEST(retarget_algorithm) {
   uint8_t *third_header_raw_buf;
   const uint32_t third_header_raw_len = token_as_hex_buf(
       &third_header_raw_buf, &test_vec_tokens[third_header_raw_pos]);
-  const_view_t third_header_raw = {third_header_raw_buf, third_header_raw_len};
+  const_header_t third_header_raw = {third_header_raw_buf, third_header_raw_len};
 
   uint256 previous = {0};
   btcspv_extract_target(previous, &first_header_raw);

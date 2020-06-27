@@ -157,13 +157,13 @@ bool btcspv_extract_script_sig_len(uint64_t *result, const_txin_t *tx_in) {
   return success;
 }
 
-byte_view_t btcspv_extract_script_sig(const_txin_t *tx_in) {
+scriptsig_t btcspv_extract_script_sig(const_txin_t *tx_in) {
   uint64_t script_sig_len = 0;
   bool success = btcspv_extract_script_sig_len(&script_sig_len, tx_in);
-  if (!success) { RET_NULL_VIEW(byte_view_t); }
+  if (!success) { RET_NULL_VIEW(scriptsig_t); }
 
   uint32_t length = btcspv_compact_int_length(script_sig_len) + script_sig_len;
-  byte_view_t script_sig = {(tx_in->loc) + 36, length};
+  scriptsig_t script_sig = {(tx_in->loc) + 36, length};
   return script_sig;
 }
 
@@ -191,12 +191,12 @@ bool btcspv_determine_input_length(uint64_t *result, const_txin_t *tx_in) {
   return true;
 }
 
-const_txin_t btcspv_extract_input_at_index(const_vin_t *vin, uint64_t index) {
+txin_t btcspv_extract_input_at_index(const_vin_t *vin, uint64_t index) {
   uint64_t n_ins = 0;
   bool success = btcspv_parse_compact_int(&n_ins, vin->loc, vin->len);
 
   if (!success || n_ins == 0 || index >= n_ins) {
-    RET_NULL_VIEW(const_txin_t);
+    RET_NULL_VIEW(txin_t);
   }
 
   uint64_t length = 0;
@@ -221,22 +221,22 @@ const_txin_t btcspv_extract_input_at_index(const_vin_t *vin, uint64_t index) {
   return input;
 }
 
-byte_view_t btcspv_extract_outpoint(const_view_t *tx_in) {
-  byte_view_t outpoint = {tx_in->loc, 36};
+outpoint_t btcspv_extract_outpoint(const_txin_t *tx_in) {
+  outpoint_t outpoint = {tx_in->loc, 36};
   return outpoint;
 }
 
-byte_view_t btcspv_extract_input_tx_id_le(const_view_t *tx_in) {
+byte_view_t btcspv_extract_input_tx_id_le(const_txin_t *tx_in) {
   byte_view_t tx_id_le = {tx_in->loc, 32};
   return tx_id_le;
 }
 
-byte_view_t btcspv_extract_tx_index_le(const_view_t *tx_in) {
+byte_view_t btcspv_extract_tx_index_le(const_txin_t *tx_in) {
   byte_view_t idx = {tx_in->loc + 32, 4};
   return idx;
 }
 
-uint32_t btcspv_extract_tx_index(const_view_t *tx_in) {
+uint32_t btcspv_extract_tx_index(const_txin_t *tx_in) {
   const_view_t idx = btcspv_extract_tx_index_le(tx_in);
   return AS_LE_UINT32(idx.loc);
 }
@@ -263,12 +263,12 @@ bool btcspv_determine_output_length(uint64_t *result, const_view_t *tx_out) {
   return true;
 }
 
-byte_view_t btcspv_extract_output_at_index(const_view_t *vout, uint64_t index) {
+txout_t btcspv_extract_output_at_index(const_vout_t *vout, uint64_t index) {
   uint64_t n_outs = 0;
   bool success = btcspv_parse_compact_int(&n_outs, vout->loc, vout->len);
 
   if (!success || n_outs == 0 || index >= n_outs) {
-    RET_NULL_VIEW(byte_view_t);
+    RET_NULL_VIEW(txout_t);
   }
 
   uint64_t length = 0;
@@ -278,7 +278,7 @@ byte_view_t btcspv_extract_output_at_index(const_view_t *vout, uint64_t index) {
     const_view_t remaining = {(vout->loc) + offset, (vout->len) - offset};
     bool success = btcspv_determine_output_length(&length, &remaining);
     if (!success || length == 0) {
-      RET_NULL_VIEW(byte_view_t);
+      RET_NULL_VIEW(txout_t);
     }
     if (i != index) {
       offset += length;
@@ -286,38 +286,44 @@ byte_view_t btcspv_extract_output_at_index(const_view_t *vout, uint64_t index) {
   }
 
   if (offset + length > vout->len) {
-    RET_NULL_VIEW(byte_view_t);
+    RET_NULL_VIEW(txout_t);
   }
 
-  const_view_t tx_out = {(vout->loc) + offset, length};
+  const_txout_t tx_out = {(vout->loc) + offset, length};
   return tx_out;
 }
 
-byte_view_t btcspv_extract_value_le(const_view_t *tx_out) {
+byte_view_t btcspv_extract_value_le(const_txout_t *tx_out) {
   const_view_t val = {tx_out->loc, 8};
   return val;
 }
 
-uint64_t btcspv_extract_value(const_view_t *tx_out) {
+uint64_t btcspv_extract_value(const_txout_t *tx_out) {
   const_view_t val = btcspv_extract_value_le(tx_out);
   return AS_LE_UINT64(val.loc);
 }
 
-byte_view_t btcspv_extract_op_return_data(const_view_t *tx_out) {
+op_return_t btcspv_extract_op_return_data(const_txout_t *tx_out) {
   if (tx_out->loc[9] != 0x6a) {
-    RET_NULL_VIEW(byte_view_t);
+    RET_NULL_VIEW(op_return_t);
   }
   uint8_t data_len = tx_out->loc[10];
 
   if (tx_out->len < data_len + 8 + 3) {
-    RET_NULL_VIEW(byte_view_t);
+    RET_NULL_VIEW(op_return_t);
   }
 
-  const_view_t payload = {tx_out->loc + 11, data_len};
+  op_return_t payload = {tx_out->loc + 11, data_len};
   return payload;
 }
 
-byte_view_t btcspv_extract_hash(const_view_t *tx_out) {
+script_pubkey_t btcspv_extract_script_pubkey(const_txout_t *tx_out) {
+  if (tx_out->len < 8) { RET_NULL_VIEW(script_pubkey_t); }
+   script_pubkey_t spk = {tx_out->loc + 8, tx_out->len - 8};
+   return spk;
+}
+
+byte_view_t btcspv_extract_hash(const_txout_t *tx_out) {
   const_view_t tag = {tx_out->loc + 8, 3};
   if (tag.loc[0] + 9 != tx_out->len) {
     RET_NULL_VIEW(byte_view_t);
@@ -389,7 +395,7 @@ bool btcspv_validate_vin(const_vin_t *vin) {
   return offset == vin->len;
 }
 
-bool btcspv_validate_vout(const_view_t *vout) {
+bool btcspv_validate_vout(const_vout_t *vout) {
   uint64_t n_outs = 0;
   bool success = btcspv_parse_compact_int(&n_outs, vout->loc, vout->len);
 
@@ -420,19 +426,19 @@ bool btcspv_validate_vout(const_view_t *vout) {
 // Header Functions
 //
 
-byte_view_t btcspv_extract_merkle_root_le(const_view_t *header) {
+byte_view_t btcspv_extract_merkle_root_le(const_header_t *header) {
   const_view_t root = {header->loc + 36, 32};
   return root;
 }
 
-void btcspv_extract_target_le(uint256 target, const_view_t *header) {
+void btcspv_extract_target_le(uint256 target, const_header_t *header) {
   uint8_t exponent = header->loc[75] - 3;
   target[exponent + 0] = header->loc[72];
   target[exponent + 1] = header->loc[73];
   target[exponent + 2] = header->loc[74];
 }
 
-void btcspv_extract_target(uint256 target, const_view_t *header) {
+void btcspv_extract_target(uint256 target, const_header_t *header) {
   uint256 target_le = {0};
   btcspv_extract_target_le(target_le, header);
   btcspv_buf_rev(target, target_le, 32);
@@ -447,29 +453,29 @@ uint64_t btcspv_calculate_difficulty(uint256 target) {
   return d1t / t;
 }
 
-byte_view_t btcspv_extract_prev_block_hash_le(const_view_t *header) {
+byte_view_t btcspv_extract_prev_block_hash_le(const_header_t *header) {
   const_view_t prev_hash = {header->loc + 4, 32};
   return prev_hash;
 }
 
-byte_view_t btcspv_extract_timestamp_le(const_view_t *header) {
+byte_view_t btcspv_extract_timestamp_le(const_header_t *header) {
   const_view_t timestamp = {header->loc + 68, 4};
   return timestamp;
 }
 
-uint32_t btcspv_extract_timestamp(const_view_t *header) {
+uint32_t btcspv_extract_timestamp(const_header_t *header) {
   const_view_t timestamp = btcspv_extract_timestamp_le(header);
   return AS_LE_UINT32(timestamp.loc);
 }
 
-uint64_t btcspv_extract_difficulty(const_view_t *header) {
+uint64_t btcspv_extract_difficulty(const_header_t *header) {
   uint256 target = {0};
   btcspv_extract_target(target, header);
   return btcspv_calculate_difficulty(target);
 }
 
-void btcspv_hash256_merkle_step(uint8_t *result, const_view_t *a,
-                                const_view_t *b) {
+void btcspv_hash256_merkle_step(uint8_t *result, const_merkle_node_t *a,
+                                const_merkle_node_t *b) {
   uint8_t intermediate[32] = {0};
 
   SHA256_CTX sha256_ctx;
@@ -497,13 +503,13 @@ bool btcspv_verify_hash256_merkle(const_view_t *proof, uint32_t index) {
     return false;
   }
 
-  byte_view_t current = {proof->loc, 32};
+  merkle_node_t current = {proof->loc, 32};
   const_view_t root = {proof->loc + (proof->len - 32), 32};
   const uint32_t num_steps = (proof->len / 32) - 1;
   uint8_t hash[32] = {0};
 
   for (int i = 1; i < num_steps; i++) {
-    const_view_t next = {proof->loc + (i * 32), 32};
+    merkle_node_t next = {proof->loc + (i * 32), 32};
 
     if (idx % 2 == 1) {
       btcspv_hash256_merkle_step(hash, &next, &current);
@@ -513,7 +519,7 @@ bool btcspv_verify_hash256_merkle(const_view_t *proof, uint32_t index) {
     current.loc = hash;
     idx >>= 1;
   }
-  return btcspv_view_eq(&current, &root);
+  return btcspv_buf_eq(current.loc, current.len, root.loc, root.len);
 }
 
 // new_target should be BE here

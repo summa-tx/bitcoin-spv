@@ -26,7 +26,7 @@ bool evalspv_prove(const uint256 txid, const uint256 root,
 }
 
 void evalspv_calculate_txid(uint256 txid, const_view_t *version,
-                            const_view_t *vin, const_view_t *vout,
+                            const_vin_t *vin, const_vout_t *vout,
                             const_view_t *locktime) {
   uint32_t tx_size = (4 + vin->len + vout->len + 4);
 
@@ -55,13 +55,13 @@ bool evalspv_validate_header_work(const uint256 digest, const uint256 target) {
   return (UINT256_LT(digest_be, target));
 }
 
-bool evalspv_validate_header_prev_hash(const_view_t *header,
+bool evalspv_validate_header_prev_hash(const_header_t *header,
                                        const uint256 prev_hash) {
   const_view_t actual = btcspv_extract_prev_block_hash_le(header);
   return btcspv_view_eq_buf(&actual, prev_hash, 32);
 }
 
-uint64_t evalspv_validate_header_chain(const_view_t *headers) {
+uint64_t evalspv_validate_header_chain(const_header_array_t *headers) {
   if (headers->len % 80 != 0) {
     return BTCSPV_ERR_BAD_LENGTH;
   }
@@ -71,7 +71,7 @@ uint64_t evalspv_validate_header_chain(const_view_t *headers) {
   uint32_t num_headers = headers->len / 80;
   for (int i = 0; i < num_headers; i++) {
     offset = i * 80;
-    const_view_t header = {headers->loc + offset, 80};
+    const_header_t header = {headers->loc + offset, 80};
 
     // skip on first header
     if (i != 0 && !evalspv_validate_header_prev_hash(&header, digest)) {
@@ -82,7 +82,8 @@ uint64_t evalspv_validate_header_chain(const_view_t *headers) {
     btcspv_extract_target(target, &header);
     uint64_t header_work = btcspv_calculate_difficulty(target);
 
-    btcspv_hash256(digest, &header);
+    const_view_t preimage = { header.loc, header.len };
+    btcspv_hash256(digest, &preimage);
     if (header_work == 0 || !(evalspv_validate_header_work(digest, target))) {
       return BTCSPV_ERR_LOW_WORK;
     }

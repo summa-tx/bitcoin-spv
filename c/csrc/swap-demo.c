@@ -85,11 +85,11 @@ bool load_args(uint8_t *view) {
   return true;
 }
 
-byte_view_t extract_headers(const_view_t *wit) {
+header_array_t extract_headers(const_view_t *wit) {
   uint8_t num_headers = wit->loc[0];
 
   // drop the length prefix
-  byte_view_t headers = {wit->loc + 1, 80 * num_headers};
+  const_header_array_t headers = {wit->loc + 1, 80 * num_headers};
   return headers;
 }
 
@@ -101,33 +101,33 @@ byte_view_t extract_intermediate_nodes(const_view_t *wit, uint32_t offset) {
   return nodes;
 }
 
-byte_view_t extract_vin(const_view_t *wit, uint32_t offset) {
-  const_view_t tmp_vin = {wit->loc + offset, wit->len - offset};
+const_vin_t extract_vin(const_view_t *wit, uint32_t offset) {
+  const_vin_t tmp_vin = {wit->loc + offset, wit->len - offset};
   const uint8_t num_ins = tmp_vin.loc[0];
 
   uint32_t vin_bytes = 1;
 
   for (int i = 0; i < num_ins; i++) {
-    const_view_t input = btcspv_extract_input_at_index(&tmp_vin, i);
+    const_txin_t input = btcspv_extract_input_at_index(&tmp_vin, i);
     vin_bytes += input.len;
   }
 
-  byte_view_t vin = {wit->loc + offset, vin_bytes};
+  const_vin_t vin = {wit->loc + offset, vin_bytes};
   return vin;
 }
 
-byte_view_t extract_vout(const_view_t *wit, uint32_t offset) {
-  const_view_t tmp_vout = {wit->loc + offset, wit->len - offset};
+const_vout_t extract_vout(const_view_t *wit, uint32_t offset) {
+  const_vout_t tmp_vout = {wit->loc + offset, wit->len - offset};
   const uint8_t num_outs = tmp_vout.loc[0];
 
   uint32_t vout_bytes = 1;
 
   for (int i = 0; i < num_outs; i++) {
-    const_view_t output = btcspv_extract_output_at_index(&tmp_vout, i);
+    const_txout_t output = btcspv_extract_output_at_index(&tmp_vout, i);
     vout_bytes += output.len;
   }
 
-  byte_view_t vout = {wit->loc + offset, vout_bytes};
+  const_vout_t vout = {wit->loc + offset, vout_bytes};
   return vout;
 }
 
@@ -175,7 +175,7 @@ int main() {
   uint32_t offset = 0;
   const_view_t wit = {witness + 20, witness_len - 20 - 8};
 
-  const_view_t headers = extract_headers(&wit);
+  const_header_array_t headers = extract_headers(&wit);
   offset += 1 + headers.len;
 
   const_view_t intermediate_nodes = extract_intermediate_nodes(&wit, offset);
@@ -190,12 +190,20 @@ int main() {
   offset += 4;
 
   // offset 0x01da == -38
-  const_view_t vin = extract_vin(&wit, offset);
+  const_vin_t vin = extract_vin(&wit, offset);
   offset += vin.len;
 
+  if (!btcspv_validate_vin(&vin)) {
+    return ERROR_BAD_VIN;
+  }
+
   // offset 0x22d == 45
-  const_view_t vout = extract_vout(&wit, offset);
+  const_vout_t vout = extract_vout(&wit, offset);
   offset += vout.len;
+
+  if (!btcspv_validate_vout(&vout)) {
+    return ERROR_BAD_VOUT;
+  }
 
   // offset 0x28b == -117
   const_view_t locktime = {wit.loc + offset, 4};
@@ -205,14 +213,6 @@ int main() {
     return ERROR_BAD_WITNESS;
   }
 
-  if (!btcspv_validate_vin(&vin)) {
-    return ERROR_BAD_VIN;
-  }
-
-  if (!btcspv_validate_vout(&vout)) {
-    return ERROR_BAD_VOUT;
-  }
-
   //
   // CHECK BTC TX INCLUSION
   //
@@ -220,7 +220,8 @@ int main() {
   uint256 txid;
   evalspv_calculate_txid(txid, &version, &vin, &vout, &locktime);
 
-  const_view_t root = btcspv_extract_merkle_root_le(&headers);
+  const_header_t first = {headers.loc, 80};
+  const_view_t root = btcspv_extract_merkle_root_le(&first);
   bool valid = evalspv_prove(txid, root.loc, &intermediate_nodes, tx_index);
   if (!valid) {
     return ERROR_INVALID_MERKLE_PROOF;
@@ -272,8 +273,8 @@ int main() {
   mol_seg_t payee = MolReader_Script_get_code_hash(&output_script);
 
   // check that this output pays the right person
-  const_view_t second_output = btcspv_extract_output_at_index(&vout, 1);
-  const_view_t expected_payee = btcspv_extract_op_return_data(&second_output);
+  const_txout_t second_output = btcspv_extract_output_at_index(&vout, 1);
+  const_op_return_t expected_payee = btcspv_extract_op_return_data(&second_output);
 
   uint32_t comparison_len = 20; // NB: BAD HACKS. Don't do in prod
   if (memcmp(payee.ptr, expected_payee.loc, comparison_len) != 0) {
