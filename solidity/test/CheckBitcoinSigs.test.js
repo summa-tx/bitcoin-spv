@@ -36,16 +36,10 @@ contract('CheckBitcoinSigs', async () => {
   describe('#p2wpkhFromPubkey', async () => {
     const uncompressed = '0x3c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b13b306b0fe085665d8fc1b28ae1676cd3ad6e08eaeda225fe38d0da4de55703e0';
     const compressed = '0x023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1';
-    const prefixedUncompressed = '0x043c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b13b306b0fe085665d8fc1b28ae1676cd3ad6e08eaeda225fe38d0da4de55703e0';
     const outputScript = '0x00143bc28d6d92d9073fb5e3adf481795eaf446bceed';
 
     it('handles unprefixed uncompressed keys', async () => {
       const res = await instance.p2wpkhFromPubkey(uncompressed);
-      assert.equal(res, outputScript);
-    });
-
-    it('handles prefixed uncompressed keys', async () => {
-      const res = await instance.p2wpkhFromPubkey(prefixedUncompressed);
       assert.equal(res, outputScript);
     });
 
@@ -59,7 +53,7 @@ contract('CheckBitcoinSigs', async () => {
         await instance.p2wpkhFromPubkey('0x');
         assert(false);
       } catch (e) {
-        assert.include(e.message, 'Witness PKH requires compressed keys');
+        assert.include(e.message, 'CheckBitcoinSigs/p2wpkhFromPubkey -- Invalid pubkey length. expected 64 or 33');
       }
     });
   });

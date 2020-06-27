@@ -19,7 +19,7 @@ contract CheckBitcoinSigsTest {
     /// @dev             Compresses keys to 33 bytes as required by Bitcoin
     /// @param _pubkey   The public key, compressed or uncompressed
     /// @return          The p2wkph output script
-    function p2wpkhFromPubkey(bytes memory _pubkey) public pure returns (bytes memory) {
+    function p2wpkhFromPubkey(bytes memory _pubkey) public view returns (bytes memory) {
         return CheckBitcoinSigs.p2wpkhFromPubkey(_pubkey);
     }
 
@@ -57,7 +57,7 @@ contract CheckBitcoinSigsTest {
         uint8 _v,
         bytes32 _r,
         bytes32 _s
-    ) public pure returns (bool) {
+    ) public view returns (bool) {
         return CheckBitcoinSigs.checkBitcoinSig(
             _p2wpkhOutputScript,
             _pubkey,
@@ -104,7 +104,7 @@ contract CheckBitcoinSigsTest {
         bytes8 _inputValue,  // 8-byte LE
         bytes8 _outputValue,  // 8-byte LE
         bytes20 _outputPKH  // 20 byte hash160
-    ) public pure returns (bytes32) {
+    ) public view returns (bytes32) {
         return CheckBitcoinSigs.oneInputOneOutputSighash(
             _outpoint,
             _inputPKH,
