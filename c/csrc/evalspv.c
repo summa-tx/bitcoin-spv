@@ -82,7 +82,7 @@ uint64_t evalspv_validate_header_chain(const_header_array_t *headers) {
     btcspv_extract_target(target, &header);
     uint64_t header_work = btcspv_calculate_difficulty(target);
 
-    const_view_t preimage = { header.loc, header.len };
+    const_view_t preimage = {header.loc, header.len};
     btcspv_hash256(digest, &preimage);
     if (header_work == 0 || !(evalspv_validate_header_work(digest, target))) {
       return BTCSPV_ERR_LOW_WORK;

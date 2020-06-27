@@ -5,7 +5,6 @@
 
 const uint64_t BTCSPV_ERR_BAD_ARG = 0xffffffff;
 
-
 // Order matters
 bool btcspv_truncated_uint256_equality(const uint8_t *trun,
                                        const uint8_t *full) {
@@ -19,7 +18,7 @@ bool btcspv_truncated_uint256_equality(const uint8_t *trun,
 
 // equality for 2 buffers
 bool btcspv_buf_eq(const uint8_t *loc1, uint32_t len1, const uint8_t *loc2,
-            uint32_t len2) {
+                   uint32_t len2) {
   if (len1 != len2) {
     return false;
   }
@@ -58,17 +57,18 @@ uint8_t btcspv_determine_var_int_data_length(uint8_t tag) {
 
 uint8_t btcspv_compact_int_length(uint64_t number) {
   if (number <= 0xfc) {
-      return 1;
+    return 1;
   } else if (number <= 0xffff) {
-      return 3;
+    return 3;
   } else if (number <= 0xffffffff) {
-      return 5;
+    return 5;
   } else {
-      return 9;
+    return 9;
   }
 }
 
-bool btcspv_parse_compact_int(uint64_t *result, const uint8_t *loc, uint32_t len) {
+bool btcspv_parse_compact_int(uint64_t *result, const uint8_t *loc,
+                              uint32_t len) {
   if (len == 0) {
     return false;
   }
@@ -151,16 +151,20 @@ bool btcspv_extract_script_sig_len(uint64_t *result, const_txin_t *tx_in) {
     return false;
   }
 
-  const_view_t after_outpoint = {.loc = tx_in->loc + 36, .len = tx_in->len - 36};
+  const_view_t after_outpoint = {.loc = tx_in->loc + 36,
+                                 .len = tx_in->len - 36};
 
-  bool success = btcspv_parse_compact_int(result, after_outpoint.loc, after_outpoint.len);
+  bool success =
+      btcspv_parse_compact_int(result, after_outpoint.loc, after_outpoint.len);
   return success;
 }
 
 scriptsig_t btcspv_extract_script_sig(const_txin_t *tx_in) {
   uint64_t script_sig_len = 0;
   bool success = btcspv_extract_script_sig_len(&script_sig_len, tx_in);
-  if (!success) { RET_NULL_VIEW(scriptsig_t); }
+  if (!success) {
+    RET_NULL_VIEW(scriptsig_t);
+  }
 
   uint32_t length = btcspv_compact_int_length(script_sig_len) + script_sig_len;
   scriptsig_t script_sig = {(tx_in->loc) + 36, length};
@@ -170,9 +174,12 @@ scriptsig_t btcspv_extract_script_sig(const_txin_t *tx_in) {
 byte_view_t btcspv_extract_sequence_le_legacy(const_txin_t *tx_in) {
   uint64_t script_sig_len = 0;
   bool success = btcspv_extract_script_sig_len(&script_sig_len, tx_in);
-  if (!success) { RET_NULL_VIEW(byte_view_t); }
+  if (!success) {
+    RET_NULL_VIEW(byte_view_t);
+  }
 
-  const uint32_t offset = 36 + btcspv_compact_int_length(script_sig_len) + script_sig_len;
+  const uint32_t offset =
+      36 + btcspv_compact_int_length(script_sig_len) + script_sig_len;
 
   byte_view_t seq = {(tx_in->loc) + offset, 4};
   return seq;
@@ -186,7 +193,9 @@ uint32_t btcspv_extract_sequence_legacy(const_txin_t *tx_in) {
 bool btcspv_determine_input_length(uint64_t *result, const_txin_t *tx_in) {
   uint64_t script_sig_len = 0;
   bool success = btcspv_extract_script_sig_len(&script_sig_len, tx_in);
-  if (!success) { return false; }
+  if (!success) {
+    return false;
+  }
   *result = 40 + btcspv_compact_int_length(script_sig_len) + script_sig_len;
   return true;
 }
@@ -253,13 +262,15 @@ bool btcspv_determine_output_length(uint64_t *result, const_view_t *tx_out) {
   const_view_t after_value = {.loc = tx_out->loc + 8, .len = tx_out->len - 8};
 
   uint64_t script_pubkey_length = 0;
-  bool success = btcspv_parse_compact_int(&script_pubkey_length, after_value.loc, after_value.len);
+  bool success = btcspv_parse_compact_int(&script_pubkey_length,
+                                          after_value.loc, after_value.len);
 
   if (!success) {
     return false;
   }
 
-  *result = 8 + btcspv_compact_int_length(script_pubkey_length) + script_pubkey_length;
+  *result = 8 + btcspv_compact_int_length(script_pubkey_length) +
+            script_pubkey_length;
   return true;
 }
 
@@ -318,9 +329,11 @@ op_return_t btcspv_extract_op_return_data(const_txout_t *tx_out) {
 }
 
 script_pubkey_t btcspv_extract_script_pubkey(const_txout_t *tx_out) {
-  if (tx_out->len < 8) { RET_NULL_VIEW(script_pubkey_t); }
-   script_pubkey_t spk = {tx_out->loc + 8, tx_out->len - 8};
-   return spk;
+  if (tx_out->len < 8) {
+    RET_NULL_VIEW(script_pubkey_t);
+  }
+  script_pubkey_t spk = {tx_out->loc + 8, tx_out->len - 8};
+  return spk;
 }
 
 byte_view_t btcspv_extract_hash(const_txout_t *tx_out) {
@@ -332,7 +345,8 @@ byte_view_t btcspv_extract_hash(const_txout_t *tx_out) {
   if (tag.loc[1] == 0) {
     uint32_t script_len = tag.loc[0];
     uint32_t payload_len = tag.loc[2];
-    if (payload_len != script_len - 2 || (payload_len != 0x20 && payload_len != 0x14)) {
+    if (payload_len != script_len - 2 ||
+        (payload_len != 0x20 && payload_len != 0x14)) {
       RET_NULL_VIEW(byte_view_t);
     }
 
@@ -344,7 +358,8 @@ byte_view_t btcspv_extract_hash(const_txout_t *tx_out) {
   if (btcspv_view_eq_buf(&tag, P2PKH_PREFIX, 3)) {
     const_view_t last_two = {tx_out->loc + tx_out->len - 2, 2};
     uint8_t P2PKH_POSTFIX[2] = {0x88, 0xac};
-    if (tx_out->loc[11] != 0x14 || !btcspv_view_eq_buf(&last_two, P2PKH_POSTFIX, 2)) {
+    if (tx_out->loc[11] != 0x14 ||
+        !btcspv_view_eq_buf(&last_two, P2PKH_POSTFIX, 2)) {
       RET_NULL_VIEW(byte_view_t);
     }
     const_view_t payload = {tx_out->loc + 12, 20};

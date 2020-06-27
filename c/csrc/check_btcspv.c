@@ -615,7 +615,8 @@ START_TEST(extract_output_at_index) {
   const uint32_t expected_len = token_as_hex_buf(&expected_buf, output_tok);
   const_view_t expected = {expected_buf, expected_len};
 
-  const_txout_t actual = btcspv_extract_output_at_index(&vout_view, input_index);
+  const_txout_t actual =
+      btcspv_extract_output_at_index(&vout_view, input_index);
 
   ck_assert(actual.loc != NULL);
   ck_assert_int_ne(actual.len, 0);
@@ -627,7 +628,6 @@ START_TEST(extract_output_at_index) {
   TEST_LOOP_END
 }
 END_TEST
-
 
 START_TEST(extract_output_at_index_error) {
   TEST_LOOP_START("extractOutputAtIndexError")
@@ -642,7 +642,8 @@ START_TEST(extract_output_at_index_error) {
   const_vout_t vout_view = {vout_buf, vout_buf_len};
 
   uint8_t output_index = token_as_long(&test_vec_tokens[idx_pos]);
-  const_txout_t actual = btcspv_extract_output_at_index(&vout_view, output_index);
+  const_txout_t actual =
+      btcspv_extract_output_at_index(&vout_view, output_index);
 
   ck_assert(actual.loc == NULL);
   ck_assert_int_eq(actual.len, 0);
@@ -943,7 +944,8 @@ START_TEST(retarget_algorithm) {
   uint8_t *first_header_raw_buf;
   const uint32_t first_header_raw_len = token_as_hex_buf(
       &first_header_raw_buf, &test_vec_tokens[first_header_raw_pos]);
-  const_header_t first_header_raw = {first_header_raw_buf, first_header_raw_len};
+  const_header_t first_header_raw = {first_header_raw_buf,
+                                     first_header_raw_len};
 
   size_t second_timestamp_pos = val_pos_by_key(second_header, "timestamp");
   uint32_t second_timestamp = pos_as_long(second_timestamp_pos);
@@ -952,7 +954,8 @@ START_TEST(retarget_algorithm) {
   uint8_t *third_header_raw_buf;
   const uint32_t third_header_raw_len = token_as_hex_buf(
       &third_header_raw_buf, &test_vec_tokens[third_header_raw_pos]);
-  const_header_t third_header_raw = {third_header_raw_buf, third_header_raw_len};
+  const_header_t third_header_raw = {third_header_raw_buf,
+                                     third_header_raw_len};
 
   uint256 previous = {0};
   btcspv_extract_target(previous, &first_header_raw);

@@ -5,11 +5,11 @@
 #include "stdint.h"
 
 #define DECLARE_VIEW_TYPE(NAME) \
-  typedef struct { \
-    const uint8_t *loc; \
-    const uint32_t len; \
-  } NAME ## _t; \
-  typedef const NAME ## _t const_ ## NAME ##_t;
+  typedef struct {              \
+    const uint8_t *loc;         \
+    const uint32_t len;         \
+  } NAME##_t;                   \
+  typedef const NAME##_t const_##NAME##_t;
 
 #define VIEW_FROM_VIEW(view) \
   { view.loc, view.len }
@@ -40,7 +40,7 @@
   (((uint32_t)(*(a + 0)) << 24) | ((uint32_t)(*(a + 1)) << 16) | \
    ((uint32_t)(*(a + 2)) << 8) | ((uint32_t)(*(a + 3))))
 
-#define RET_NULL_VIEW(type)            \
+#define RET_NULL_VIEW(type)    \
   type _null_view = {NULL, 0}; \
   return _null_view;
 
@@ -52,7 +52,7 @@
 
 #define SET_UINT256(to, from) (memcpy(to, from, 32))
 
-DECLARE_VIEW_TYPE(view); // Unknown or unspecified type
+DECLARE_VIEW_TYPE(view);  // Unknown or unspecified type
 DECLARE_VIEW_TYPE(compact_int);
 DECLARE_VIEW_TYPE(scriptsig);
 DECLARE_VIEW_TYPE(outpoint);
@@ -88,8 +88,8 @@ typedef uint8_t uint256[32];
 
 /// Return type for parse_var_int. Contains information about VarInt structure
 typedef struct {
-  const uint32_t var_int_len;  /** The number of bytes of VarInt data */
-  const uint64_t number; /** The number of bytes in the scriptsig */
+  const uint32_t var_int_len; /** The number of bytes of VarInt data */
+  const uint64_t number;      /** The number of bytes in the scriptsig */
 } var_int_t;
 
 // Utilities
@@ -102,7 +102,7 @@ bool btcspv_truncated_uint256_equality(const uint8_t *trun,
 
 /// @brief equality of 2 memory regions using `memcmp`
 bool btcspv_buf_eq(const uint8_t *loc1, uint32_t len1, const uint8_t *loc2,
-            uint32_t len2);
+                   uint32_t len2);
 
 /// @brief equality between byte_view_t and any other buffer type.
 /// @note  uses buf_eq under the hood
@@ -142,25 +142,30 @@ void btcspv_hash256(uint8_t *result, const_view_t *preimage);
  * --- tx_in & vin Functions ---
  */
 
- /// @brief          Determines the length of a VarInt in bytes
- /// @note           A VarInt of >1 byte is prefixed with a flag indicating its length
- /// @param flag     The first byte of a VarInt
- /// @return         The number of non-flag bytes in the VarInt
+/// @brief          Determines the length of a VarInt in bytes
+/// @note           A VarInt of >1 byte is prefixed with a flag indicating its
+/// length
+/// @param flag     The first byte of a VarInt
+/// @return         The number of non-flag bytes in the VarInt
 uint8_t btcspv_determine_var_int_data_length(uint8_t tag);
 
 /// @brief           Determines the serialized length of a compact int in bytes
 /// @note            Always returns 1, 3, 5 or 9
 /// @param number    The desrialized number
-/// @return          The number of bytes in the serialized int, including the flag
+/// @return          The number of bytes in the serialized int, including the
+/// flag
 uint8_t btcspv_compact_int_length(uint64_t number);
 
-
-/// @brief           Parse a CompactInt to number it represents. First argument is the result
-/// @note            Useful for Parsing Vins and Vouts. Returns false if insufficient bytes.
+/// @brief           Parse a CompactInt to number it represents. First argument
+/// is the result
+/// @note            Useful for Parsing Vins and Vouts. Returns false if
+/// insufficient bytes.
 /// @param b         A byte-view starting with a VarInt
-/// @return          A struct containing number of bytes in the encoding (not counting the tag) and the encoded int
+/// @return          A struct containing number of bytes in the encoding (not
+/// counting the tag) and the encoded int
 /// @warning         Caller MUST check that it does not error
-bool btcspv_parse_compact_int(uint64_t *result, const uint8_t *loc, uint32_t len);
+bool btcspv_parse_compact_int(uint64_t *result, const uint8_t *loc,
+                              uint32_t len);
 
 /// @brief           Determines whether an input is legacy
 /// @note            False if no scriptSig, otherwise True
@@ -187,7 +192,8 @@ uint32_t btcspv_extract_sequence_witness(const_txin_t *tx_in);
 /// @warning         Caller MUST check that it does not error
 bool btcspv_extract_script_sig_len(uint64_t *result, const_txin_t *tx_in);
 
-/// @brief           Extracts the VarInt-prepended scriptSig from the input in a tx
+/// @brief           Extracts the VarInt-prepended scriptSig from the input in a
+/// tx
 /// @note            Will return hex"00" if passed a witness input
 /// @param input     The LEGACY input
 /// @return          The length-prepended script sig
@@ -214,17 +220,20 @@ uint32_t btcspv_extract_sequence_legacy(const_txin_t *tx_in);
 bool btcspv_determine_input_length(uint64_t *result, const_txin_t *tx_in);
 
 /// @brief           Extracts the nth input from the vin (0-indexed)
-/// @note            Iterates over the vin. If you need to extract several, write a custom function
+/// @note            Iterates over the vin. If you need to extract several,
+/// write a custom function
 /// @param vin       The vin as a tightly-packed byte array
 /// @param index     The 0-indexed location of the input to extract
 /// @return          The input as a byte array
-/// @warning         Caller must check that resulting view loc is not null, and/or len !=0.
+/// @warning         Caller must check that resulting view loc is not null,
+/// and/or len !=0.
 txin_t btcspv_extract_input_at_index(const_vin_t *vin, uint64_t index);
 
 /// @brief           Extracts the outpoint from the input in a tx
 /// @note            32 byte tx id with 4 byte index
 /// @param input     The input
-/// @return          The outpoint (LE bytes of prev tx hash + LE bytes of prev tx index)
+/// @return          The outpoint (LE bytes of prev tx hash + LE bytes of prev
+/// tx index)
 outpoint_t btcspv_extract_outpoint(const_txin_t *tx_in);
 
 /// @brief           Extracts the outpoint tx id from an input
@@ -257,11 +266,13 @@ uint32_t btcspv_extract_tx_index(const_txin_t *tx_in);
 bool btcspv_determine_output_length(uint64_t *result, const_view_t *tx_out);
 
 /// @brief           Extracts the output at a given index in the TxIns vector
-/// @note            Iterates over the vout. If you need to extract multiple, write a custom function
+/// @note            Iterates over the vout. If you need to extract multiple,
+/// write a custom function
 /// @param vout      The _vout to extract from
 /// @param index     The 0-indexed location of the output to extract
 /// @return          The specified output
-/// @warning         Caller must check that resulting view loc is not null, and/or len !=0.
+/// @warning         Caller must check that resulting view loc is not null,
+/// and/or len !=0.
 txout_t btcspv_extract_output_at_index(const_vout_t *vout, uint64_t index);
 
 /// @brief           Extracts the output script length
@@ -285,22 +296,26 @@ uint64_t btcspv_extract_value(const_txout_t *tx_out);
 /// @brief           Extracts the data from an op return output
 /// @note            May return a null view, in case of parsing error
 /// @param tx_out    The output
-/// @return          Any data contained in the opreturn output, null if not an op return
-/// @warning         Caller must check that resulting view loc is not null, and/or len !=0.
+/// @return          Any data contained in the opreturn output, null if not an
+/// op return
+/// @warning         Caller must check that resulting view loc is not null,
+/// and/or len !=0.
 op_return_t btcspv_extract_op_return_data(const_txout_t *tx_out);
 
 /// @brief           Extracts the data from an op return output
 /// @note            May return a null view, in case of parsing error
 /// @param tx_out    The output
 /// @return          The script pubkey
-/// @warning         Caller must check that resulting view loc is not null, and/or len !=0.
+/// @warning         Caller must check that resulting view loc is not null,
+/// and/or len !=0.
 script_pubkey_t btcspv_extract_script_pubkey(const_txout_t *tx_out);
 
 /// @brief           Extracts the hash from the output script
 /// @note            Determines type by the length prefix and validates format
 /// @param tx_out    The output
 /// @return          The hash committed to by the pk_script, or null for errors
-/// @warning         Caller must check that resulting view loc is not null, and/or len !=0.
+/// @warning         Caller must check that resulting view loc is not null,
+/// and/or len !=0.
 byte_view_t btcspv_extract_hash(const_txout_t *tx_out);
 
 /*
@@ -323,30 +338,35 @@ bool btcspv_validate_vout(const_vout_t *vout);
  * --- header Functions ---
  */
 
- /// @brief           Extracts the transaction merkle root from a block header
- /// @note            Use verifyHash256Merkle to verify proofs with this root
- /// @param header    The header
- /// @return          The merkle root (little-endian)
+/// @brief           Extracts the transaction merkle root from a block header
+/// @note            Use verifyHash256Merkle to verify proofs with this root
+/// @param header    The header
+/// @return          The merkle root (little-endian)
 byte_view_t btcspv_extract_merkle_root_le(const_header_t *header);
 
 /// @brief           Extracts the target from a block header
-/// @note            Target is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
+/// @note            Target is a 256 bit number encoded as a 3-byte mantissa and
+/// 1 byte exponent
 /// @param header    The header
 /// @warning         overwrites `target` with the LE target
-/// @warning         caller must ensure `target` is allocated and can hold 32 bytes
+/// @warning         caller must ensure `target` is allocated and can hold 32
+/// bytes
 void btcspv_extract_target_le(uint256 target, const_header_t *header);
 
-
 /// @brief           Extracts the target from a block header
-/// @note            Target is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
+/// @note            Target is a 256 bit number encoded as a 3-byte mantissa and
+/// 1 byte exponent
 /// @param header    The header
 /// @warning         overwrites `target` with the BE target
-/// @warning         caller must ensure `target` is allocated and can hold 32 bytes
+/// @warning         caller must ensure `target` is allocated and can hold 32
+/// bytes
 void btcspv_extract_target(uint256 target, const_header_t *header);
 
-/// @brief           Calculate difficulty from the difficulty 1 target and current target
+/// @brief           Calculate difficulty from the difficulty 1 target and
+/// current target
 /// @note            Difficulty 1 is 0x1d00ffff on mainnet and testnet
-/// @note            Difficulty 1 is a 256 bit number encoded as a 3-byte mantissa and 1 byte exponent
+/// @note            Difficulty 1 is a 256 bit number encoded as a 3-byte
+/// mantissa and 1 byte exponent
 /// @param target    The current target
 /// @return          The block difficulty (bdiff)
 /// @warning         Caller should check that output is non-0
@@ -381,25 +401,32 @@ uint64_t btcspv_extract_difficulty(const_header_t *header);
 /// @param a         The first hash
 /// @param b         The second hash
 /// @warning         overwrites `result` with the next merkle step
-/// @warning         caller must ensure `result` is allocated and can hold 32 bytes
+/// @warning         caller must ensure `result` is allocated and can hold 32
+/// bytes
 void btcspv_hash256_merkle_step(uint8_t *result, const_merkle_node_t *a,
                                 const_merkle_node_t *b);
 
 /// @brief           Verifies a Bitcoin-style merkle tree
 /// @note            Leaves are 0-indexed.
-/// @param proof     The proof. Tightly packed LE sha256 hashes. The last hash is the root
+/// @param proof     The proof. Tightly packed LE sha256 hashes. The last hash
+/// is the root
 /// @param index     The index of the leaf
 /// @return          true if the proof is valid, else false
-/// @warning         `index` is not a reliable indicator of location within a block.
+/// @warning         `index` is not a reliable indicator of location within a
+/// block.
 bool btcspv_verify_hash256_merkle(const_view_t *proof, uint32_t index);
 
 /// @brief                  performs the bitcoin difficulty retarget
 /// @note                   implements the Bitcoin algorithm precisely
 /// @param previousTarget   the target of the previous period
-/// @param firstTimestamp   the timestamp of the first block in the difficulty period
-/// @param secondTimestamp  the timestamp of the last block in the difficulty period
-/// @warning                overwrites `new_target` with the updated difficulty target
-/// @warning                caller must ensure `new_target` is allocated and can hold 32 bytes
+/// @param firstTimestamp   the timestamp of the first block in the difficulty
+/// period
+/// @param secondTimestamp  the timestamp of the last block in the difficulty
+/// period
+/// @warning                overwrites `new_target` with the updated difficulty
+/// target
+/// @warning                caller must ensure `new_target` is allocated and can
+/// hold 32 bytes
 void btcspv_retarget_algorithm(uint256 new_target,
                                const uint256 previous_target,
                                uint32_t first_timestamp,

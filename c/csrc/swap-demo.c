@@ -93,7 +93,8 @@ header_array_t extract_headers(const_view_t *wit) {
   return headers;
 }
 
-const_merkle_array_t extract_intermediate_nodes(const_view_t *wit, uint32_t offset) {
+const_merkle_array_t extract_intermediate_nodes(const_view_t *wit,
+                                                uint32_t offset) {
   uint32_t num_nodes = wit->loc[offset];
 
   // drop the length prefix
@@ -178,7 +179,8 @@ int main() {
   const_header_array_t headers = extract_headers(&wit);
   offset += 1 + headers.len;
 
-  const_merkle_array_t intermediate_nodes = extract_intermediate_nodes(&wit, offset);
+  const_merkle_array_t intermediate_nodes =
+      extract_intermediate_nodes(&wit, offset);
   offset += 1 + intermediate_nodes.len;
 
   // offset 0x01d2 == -46
@@ -274,9 +276,10 @@ int main() {
 
   // check that this output pays the right person
   const_txout_t second_output = btcspv_extract_output_at_index(&vout, 1);
-  const_op_return_t expected_payee = btcspv_extract_op_return_data(&second_output);
+  const_op_return_t expected_payee =
+      btcspv_extract_op_return_data(&second_output);
 
-  uint32_t comparison_len = 20; // NB: BAD HACKS. Don't do in prod
+  uint32_t comparison_len = 20;  // NB: BAD HACKS. Don't do in prod
   if (memcmp(payee.ptr, expected_payee.loc, comparison_len) != 0) {
     return ERROR_WRONG_PAYEE;
   }
