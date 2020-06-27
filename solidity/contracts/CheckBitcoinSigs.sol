@@ -1,4 +1,4 @@
-    pragma solidity ^0.5.10;
+pragma solidity ^0.5.10;
 
 /** @title CheckBitcoinSigs */
 /** @author Summa (https://summa.one) */
@@ -29,7 +29,7 @@ library CheckBitcoinSigs {
         bytes29 _pubkeyView = _pubkey.ref(0);
 
         bytes20 _digest;
-        if (_pubkey.length == 33) { _digest = _pubkeyView.hash160(); }
+        if (_pubkey.length == 33) {_digest = _pubkeyView.hash160();}
         else if (_pubkey.length == 64) {
             // This is less memory efficient than it ought to be
             // But we immediately deallocate it, so it's usually no issue
@@ -92,7 +92,7 @@ library CheckBitcoinSigs {
     ) internal view returns (bool) {
         require(_pubkey.length == 64, "CheckBitcoinSigs/checkBitcoinSig -- Requires uncompressed unprefixed pubkey");
         bool _isExpectedSigner = keccak256(p2wpkhFromPubkey(_pubkey)) == keccak256(_p2wpkhOutputScript);  // is it the expected signer?
-        if (!_isExpectedSigner) { return false; }
+        if (!_isExpectedSigner) {return false;}
 
         bool _sigResult = checkSig(_pubkey, _digest, _v, _r, _s);
         return _sigResult;
