@@ -93,11 +93,11 @@ header_array_t extract_headers(const_view_t *wit) {
   return headers;
 }
 
-byte_view_t extract_intermediate_nodes(const_view_t *wit, uint32_t offset) {
+const_merkle_array_t extract_intermediate_nodes(const_view_t *wit, uint32_t offset) {
   uint32_t num_nodes = wit->loc[offset];
 
   // drop the length prefix
-  byte_view_t nodes = {wit->loc + 1 + offset, 32 * num_nodes};
+  const_merkle_array_t nodes = {wit->loc + 1 + offset, 32 * num_nodes};
   return nodes;
 }
 
@@ -178,7 +178,7 @@ int main() {
   const_header_array_t headers = extract_headers(&wit);
   offset += 1 + headers.len;
 
-  const_view_t intermediate_nodes = extract_intermediate_nodes(&wit, offset);
+  const_merkle_array_t intermediate_nodes = extract_intermediate_nodes(&wit, offset);
   offset += 1 + intermediate_nodes.len;
 
   // offset 0x01d2 == -46

@@ -65,7 +65,7 @@ START_TEST(prove) {
 
   uint8_t *nodes_buf;
   const uint32_t nodes_len = pos_as_hex_buf(&nodes_buf, intermediate_nodes_pos);
-  const_view_t nodes = {nodes_buf, nodes_len};
+  const_merkle_array_t nodes = {nodes_buf, nodes_len};
 
   uint32_t idx = pos_as_long(idx_pos);
 

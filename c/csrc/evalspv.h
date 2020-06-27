@@ -25,7 +25,7 @@ const uint64_t BTCSPV_ERR_LOW_WORK;
 ///
 /// @return true if a valid proof, otherwise false.
 bool evalspv_prove(const uint256 txid, const uint256 root,
-                   const_view_t *intermediate_nodes, uint32_t index);
+                   const_merkle_array_t *intermediate_nodes, uint32_t index);
 
 /// @brief              Hashes transaction to get txid
 /// @note               Supports Legacy and Witness

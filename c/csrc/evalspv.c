@@ -5,7 +5,7 @@ const uint64_t BTCSPV_ERR_INVALID_CHAIN = 0xfffffffffffffffe;
 const uint64_t BTCSPV_ERR_LOW_WORK = 0xfffffffffffffffd;
 
 bool evalspv_prove(const uint256 txid, const uint256 root,
-                   const_view_t *intermediate_nodes, uint32_t index) {
+                   const_merkle_array_t *intermediate_nodes, uint32_t index) {
   const uint32_t nodes_len = intermediate_nodes->len;
   if (UINT256_EQ(txid, root) && index == 0 && nodes_len == 0) {
     return true;
