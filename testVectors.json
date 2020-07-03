@@ -41,11 +41,13 @@
     },
     {
       "input": "0xff0000000000000000",
-      "output": [8, 0]
+      "output": [8, 0],
+      "solidityError": "Non-minimal var int"
     },
     {
       "input": "0xfe03000000",
-      "output": [4, 3]
+      "output": [4, 3],
+      "solidityError": "Non-minimal var int"
     },
     {
       "input": "0xfd0001",
@@ -55,15 +57,18 @@
   "parseVarIntError": [
     {
       "comment": "Not enough bytes",
-      "input": "0xfd01"
+      "input": "0xfd01",
+      "solidityError": "Overran the view"
     },
     {
       "comment": "Not enough bytes",
-      "input": "0xfe010000"
+      "input": "0xfe010000",
+      "solidityError": "Overran the view"
     },
     {
       "comment": "Not enough bytes",
-      "input": "0xff01000000000000"
+      "input": "0xff01000000000000",
+      "solidityError": "Overran the view"
     }
   ],
   "hash160": [
@@ -132,7 +137,8 @@
       "comment": "Read overrun, input length less than 37 bytes",
       "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000",
       "jsError": "Read overrun",
-      "golangError": "Read overrun"
+      "golangError": "Read overrun",
+      "solidityError": "Overran the view"
     }
   ],
   "extractSequenceLegacy": [
@@ -176,30 +182,6 @@
     {
       "input": {
         "vin": "0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
-        "index": 0
-      },
-      "output": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff"
-    },
-    {
-      "comment": "3-byte VarInt",
-      "input": {
-        "vin": "0xFD01001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
-        "index": 0
-      },
-      "output": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff"
-    },
-    {
-      "comment": "5-byte VarInt",
-      "input": {
-        "vin": "0xFE010000001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
-        "index": 0
-      },
-      "output": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff"
-    },
-    {
-      "comment": "9-byte VarInt",
-      "input": {
-        "vin": "0xFF01000000000000001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
         "index": 0
       },
       "output": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff"
@@ -287,6 +269,56 @@
       "rustError": "Read overrun when parsing vin"
     }
   ],
+  "indexVinError": [
+    {
+      "comment": "Read overrun, index is greater than the number of inputs",
+      "input": {
+        "vin": "0x027bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444567d0000000000ffffffff",
+        "index": 3
+      },
+      "solidityError": "Vin read overrun"
+    },
+    {
+      "comment": "Read Overrun at beginning of vin",
+      "input": {
+        "vin": "0xff",
+        "index": 3
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Read overrun, index is greater than the number of inputs",
+      "input": {
+        "vin": "0x027bb2b8f32b9ebf13af2b0a2f9dc03797c7b77ccddcac75d1216389abfa7ab3750000000000ffffffffaa15ec17524f1f7bd47ab7caa4c6652cb95eec4c58902984f9b4bcfee444560000000000ffffffff",
+        "index": 3
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Bad VarInt in scriptsig of input being extracted",
+      "input": {
+        "vin": "0x01000000000000000000000000000000000000000000000000000000000000000000000000FF",
+        "index": 0
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Bad VarInt in scriptsig of input being extracted",
+      "input": {
+        "vin": "0x02000000000000000000000000000000000000000000000000000000000000000000000000FF",
+        "index": 1
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Bad VarInt in scriptsig of input being extracted",
+      "input": {
+        "vin": "0x01000000000000000000000000000000000000000000000000000000000000000000000000FC",
+        "index": 0
+      },
+      "solidityError": "Validity assertion failed"
+    }
+  ],
   "isLegacyInput": [
     {
       "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
@@ -308,11 +340,13 @@
     },
     {
       "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff",
-      "output": "0xfd0100ee"
+      "output": "0xfd0100ee",
+      "solidityError": "Non-minimal var int"
     },
     {
       "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff",
-      "output": "0xfe01000000ee"
+      "output": "0xfe01000000ee",
+      "solidityError": "Non-minimal var int"
     }
   ],
   "extractScriptSigError": [
@@ -322,6 +356,39 @@
       "jsError": "Read overrun",
       "golangError": "Read overrun",
       "solidityError": "Bad VarInt in scriptSig"
+    }
+  ],
+  "scriptSig": [
+    {
+      "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
+      "output": "0x00"
+    },
+    {
+      "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000001eeffffffff",
+      "output": "0x01ee"
+    }
+  ],
+  "scriptSigError": [
+    {
+      "comment": "Invalid input, not enough bytes",
+      "input": "0xff",
+      "solidityError": "Overran the view"
+    },
+    {
+      "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fd0100eeffffffff",
+      "output": "0xfd0100ee",
+      "solidityError": "Non-minimal var int"
+    },
+    {
+      "input": "0x1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba3000000000fe01000000eeffffffff",
+      "output": "0xfe01000000ee",
+      "solidityError": "Non-minimal var int"
+    }
+  ],
+  "scriptPubkey": [
+    {
+      "input": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
+      "output": "0x166a14edb1b5c2f39af0fec151732585b1049b07895211"
     }
   ],
   "extractSequenceLEWitness": [
@@ -392,7 +459,8 @@
     {
       "comment": "Non-minimal VarInt encoding",
       "input": "0x0000000000000000FFfc00000000000000",
-      "output": 269
+      "output": 269,
+      "solidityError": "Non-minimal var int"
     }
   ],
   "determineOutputLengthError": [
@@ -414,30 +482,6 @@
     {
       "input": {
         "vout": "0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-        "index": 1
-      },
-      "output": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211"
-    },
-    {
-      "comment": "3-byte VarInt",
-      "input": {
-        "vout": "0xFD02004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-        "index": 1
-      },
-      "output": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211"
-    },
-    {
-      "comment": "5-byte VarInt",
-      "input": {
-        "vout": "0xFE020000004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
-        "index": 1
-      },
-      "output": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211"
-    },
-    {
-      "comment": "9-byte VarInt",
-      "input": {
-        "vout": "0xFF02000000000000004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
         "index": 1
       },
       "output": "0x0000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211"
@@ -558,6 +602,80 @@
       "rustError": "Read overrun when parsing vout"
     }
   ],
+  "indexVoutError": [
+    {
+      "comment": "Read overrun during VarInt parsing",
+      "input": {
+        "vout": "0xff",
+        "index": 1
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Bad VarInt in scriptPubKey",
+      "input": {
+        "vout": "0x010101010101010101ff",
+        "index": 0
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Read overrun, index is greater than the number of outputs",
+      "input": {
+        "vout": "0x010101010101010101ff",
+        "index": 1
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Bad VarInt inside loop",
+      "input": {
+        "vout": "0x020101010101010101ff",
+        "index": 1
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Read overrun, index is greater than the number of outputs",
+      "input": {
+        "vout": "0x024db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f040420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922",
+        "index": 3
+      },
+      "solidityError": "Vout read overrun"
+    },
+    {
+      "comment": "Read overrun, index is greater than the number of outputs",
+      "input": {
+        "vout": "0x024db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f040420f0000000000220020aedad4518f56379ef6f1f52f2e0fed64608006b3ccaff2253d847ddc90c91922",
+        "index": 3
+      },
+      "solidityError": "Vout read overrun"
+    },
+    {
+      "comment": "Bad VarInt in scriptPubkey",
+      "input": {
+        "vout": "0x014db6000000000000ff",
+        "index": 0
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Bad VarInt in scriptPubkey",
+      "input": {
+        "vout": "0x024db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f040420f0000000000FF",
+        "index": 1
+      },
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Invalid vout",
+      "input": {
+        "vout": "0x024db6000000000000160014455c0ea778752831d6fc25f6f8cf55dc49d335f040420f0000000000FB",
+        "index": 1
+      },
+      "solidityError": "Validity assertion failed"
+    }
+  ],
   "extractValueLE": [
     {
       "input": "0x4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18",
@@ -607,11 +725,11 @@
       "output": "0xa4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c18"
     },
     {
-      "input": "0x00000000000000001976a914000000000000000000000000000000000000000088ac",
-      "output": "0x0000000000000000000000000000000000000000"
+      "input": "0x4897070000000000160014a4333e5612ab1a1043b25755c89b16d55184a42f",
+      "output": "0xa4333e5612ab1a1043b25755c89b16d55184a42f"
     },
     {
-      "input": "0x000000000000000017a914000000000000000000000000000000000000000087",
+      "input": "0x00000000000000001976a914000000000000000000000000000000000000000088ac",
       "output": "0x0000000000000000000000000000000000000000"
     },
     {
@@ -788,6 +906,100 @@
       "output": false
     }
   ],
+  "tryAsVin": [
+    {
+      "input": "0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
+      "output": true
+    },
+    {
+      "input": "0x001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
+      "output": false
+    },
+    {
+      "input": "0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffff",
+      "output": false
+    },
+    {
+      "input": "0x011746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffffEEEE",
+      "output": false
+    },
+    {
+      "input": "0x021746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
+      "output": false
+    },
+    {
+      "comment": "0 inputs",
+      "input": "0x001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
+      "output": false
+    }
+  ],
+  "tryAsVinError": [
+    {
+      "comment": "Does not support Non-minimal VarInts",
+      "input": "0xFF01000000000000001746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
+      "solidityError": "Non-minimal var int"
+    },
+    {
+      "input": "0xFF1746bd867400f3494b8f44c24b83e1aa58c4f0ff25b4a61cffeffd4bc0f9ba300000000000ffffffff",
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Read overrun",
+      "input": "0xFF",
+      "solidityError": "Overran the view"
+    }
+  ],
+  "tryAsVout": [
+    {
+      "input": "0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
+      "output": true
+    },
+    {
+      "input": "0x004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
+      "output": false
+    },
+    {
+      "input": "0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b078952",
+      "output": false
+    },
+    {
+      "input": "0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b0789521111111111111111",
+      "output": false
+    },
+    {
+      "input": "0x024897070000000000ff0020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
+      "output": false
+    },
+    {
+      "input": "0x004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000",
+      "output": false
+    }
+  ],
+  "tryAsVoutError": [
+    {
+      "comment": "Does not support Non-minimal VarInts",
+      "input": "0xFF02000000000000004897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
+      "solidityError": "Non-minimal var int"
+    },
+    {
+      "input": "0xFF4897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000166a14edb1b5c2f39af0fec151732585b1049b07895211",
+      "solidityError": "Non-minimal var int"
+    },
+    {
+      "input": "0x024897070000000000220020a4333e5612ab1a1043b25755c89b16d55184a42f81799e623e6bc39db8539c180000000000000000",
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Read overrun",
+      "input": "0xFF",
+      "solidityError": "Overran the view"
+    },
+    {
+      "comment": "Read overrun",
+      "input": "0x010102030405060708FF",
+      "solidityError": "Overran the view"
+    }
+  ],
   "extractMerkleRootLE": [
     {
       "input": "0x0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70",
@@ -810,6 +1022,18 @@
     {
       "input": "0x0100000055bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000ff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d51b96a49ffff001d283e9e70",
       "output": 1231731025
+    }
+  ],
+  "work": [
+    {
+      "input": "0x0000c020c238b601308b7297346ab2ed59942d7d7ecea8d23a1001000000000000000000b61ac92842abc82aa93644b190fc18ad46c6738337e78bc0c69ab21c5d5ee2ddd6376d5d3e211a17d8706a84",
+      "output": "2144308676160250637711317612710453930444554075431963725"
+    }
+  ],
+  "workHash": [
+    {
+      "input": "0x0000c020c238b601308b7297346ab2ed59942d7d7ecea8d23a1001000000000000000000b61ac92842abc82aa93644b190fc18ad46c6738337e78bc0c69ab21c5d5ee2ddd6376d5d3e211a17d8706a84",
+      "output": "0x4d0cfbf5aa3b2359e5cb7dcf3b286264bd22de883b6316000000000000000000"
     }
   ],
   "calculateDifficultyError": [
@@ -968,6 +1192,22 @@
       "output": true
     }
   ],
+  "checkWork": [
+    {
+      "input": {
+        "header": "0x00004020d3b2d7d61ad2d95ffbd556d9e00f07877423600a8da015000000000000000000d192743a2c190a7421f92fefe92505579d7b8eda568cacee13b25751ac704c669d83195cf41e371721bae3e7",
+        "target": "0x0000000000000000000000000000000000000000000000000000000000000001"
+      },
+      "output": false
+    },
+    {
+      "input": {
+        "header": "0x00004020d3b2d7d61ad2d95ffbd556d9e00f07877423600a8da015000000000000000000d192743a2c190a7421f92fefe92505579d7b8eda568cacee13b25751ac704c669d83195cf41e371721bae3e7",
+        "target": "0xae67207125404fa8786acaeb7cff69156fe0a01b0b3c04000000000000000000"
+      },
+      "output": true
+    }
+  ],
   "validateHeaderPrevHash": [
     {
       "input": {
@@ -997,6 +1237,7 @@
       "jsError": "Header bytes not multiple of 80",
       "golangError": "Header bytes not multiple of 80",
       "solidityError": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "solidityViewError": "Validity assertion failed",
       "rustError": "Header bytes not multiple of 80",
       "cError": "0xffffffffffffffff"
     },

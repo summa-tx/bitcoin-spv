@@ -5,7 +5,7 @@ const BN = require('bn.js');
 /* eslint-disable-next-line no-unresolved */
 const vectors = require('./testVectors.json');
 
-const ValidateSPV = artifacts.require('ValidateSPVTest');
+const ViewSPV = artifacts.require('ViewSPVTest');
 
 const {
   getErrBadLength,
@@ -13,18 +13,18 @@ const {
   getErrLowWork,
   prove,
   calculateTxId,
+  checkWork,
   validateHeaderChain,
   validateHeaderChainError,
-  validateHeaderWork,
   validateHeaderPrevHash
 } = vectors;
 
 
-contract('ValidateSPV', () => {
+contract('ViewSPV', () => {
   let instance;
 
   before(async () => {
-    instance = await ValidateSPV.new();
+    instance = await ViewSPV.new();
   });
 
   describe('#error constants', async () => {
@@ -58,51 +58,62 @@ contract('ValidateSPV', () => {
         const {
           version, vin, vout, locktime
         } = calculateTxId[i].input;
-        const res = await instance.calculateTxId(version, vin, vout, locktime);
+        const res = await instance.calculateTxId.call(version, vin, vout, locktime);
         assert.strictEqual(res, calculateTxId[i].output);
       }
     });
   });
 
-  describe('#validateHeaderChain', async () => {
+  describe('#checkWork', async () => {
+    it('Checks validity of header work', async () => {
+      for (let i = 0; i < checkWork.length; i += 1) {
+        const res = await instance.checkWork(
+          checkWork[i].input.header,
+          checkWork[i].input.target
+        );
+        assert.strictEqual(res, checkWork[i].output);
+      }
+    });
+  });
+
+  describe('#checkChain', async () => {
     it('returns true if header chain is valid', async () => {
       for (let i = 0; i < validateHeaderChain.length; i += 1) {
-        const res = await instance.validateHeaderChain(validateHeaderChain[i].input);
+        const res = await instance.checkChain.call(validateHeaderChain[i].input);
+        const expected = new BN(validateHeaderChain[i].output, 10);
+        assert(
+          res.eq(expected),
+          `expected ${expected.toString(16)} got ${res.toString(16)}`
 
-        // Execute within Tx to measure gas amount
-        await instance.validateHeaderChainTx(validateHeaderChain[i].input);
-
-        assert(res.eq(new BN(validateHeaderChain[i].output, 10)));
+        );
       }
     });
 
     it('returns error if header chain is invalid', async () => {
       for (let i = 0; i < validateHeaderChainError.length; i += 1) {
-        const res = await instance.validateHeaderChain(validateHeaderChainError[i].input);
-
-        // Execute within Tx to measure gas amount
-        await instance.validateHeaderChainTx(validateHeaderChainError[i].input);
-
-        assert(res.eq(new BN(validateHeaderChainError[i].solidityError, 16)));
+        if (validateHeaderChainError[i].solidityViewError) {
+          try {
+            await instance.checkChain(validateHeaderChainError[i].input);
+            assert(false, 'expected an error');
+          } catch (e) {
+            assert.include(e.message, validateHeaderChainError[i].solidityViewError);
+          }
+        } else {
+          const res = await instance.checkChain(validateHeaderChainError[i].input);
+          const expected = new BN(validateHeaderChainError[i].solidityError, 16);
+          assert(
+            res.eq(expected),
+            `expected ${expected.toString(16)} got ${res.toString(16)}`
+          );
+        }
       }
     });
   });
 
-  describe('#validateHeaderWork', async () => {
-    it('returns false on an empty digest', async () => {
-      for (let i = 0; i < validateHeaderWork.length; i += 1) {
-        const { digest, target } = validateHeaderWork[i].input;
-        // Is this right?
-        const res = await instance.validateHeaderWork(digest, target);
-        assert.strictEqual(res, validateHeaderWork[i].output);
-      }
-    });
-  });
-
-  describe('#validateHeaderPrevHash', async () => {
+  describe('#checkParent', async () => {
     it('returns true if header prevHash is valid', async () => {
       for (let i = 0; i < validateHeaderPrevHash.length; i += 1) {
-        const res = await instance.validateHeaderPrevHash(
+        const res = await instance.checkParent.call(
           validateHeaderPrevHash[i].input.header,
           validateHeaderPrevHash[i].input.prevHash
         );

@@ -5,11 +5,38 @@ import {SafeMath} from "./SafeMath.sol";
 library TypedMemView {
     using SafeMath for uint256;
 
-    // First 2 bytes are a type flag.
-    // - fffe is reserved for unknown type.
-    // - ffff is reserved for invalid types/errors.
-    // next 15 are memory address
-    // last 15 are len
+
+    // Why does this exist?
+    // the solidity `bytes memory` type has a few weaknesses.
+    // 1. You can't index ranges effectively
+    // 2. You can't slice without copying
+    // 3. The underlying data may represent any type
+    // 4. Solidity never deallocates memory, and memory costs grow
+    //    superlinearly
+
+    // By using a memory view instead of a `bytes memory` we get the following
+    // advantages:
+    // 1. Slices are done on the stack, by manipulating the pointer
+    // 2. We can index arbitrary ranges and quickly convert them to stack types
+    // 3. We can insert type info into the pointer, and typecheck at runtime
+
+    // This makes `TypedMemView` a useful tool for efficient zero-copy
+    // algorithms.
+
+    // Why bytes29?
+    // We want to avoid confusion between views, digests, and other common
+    // types so we chose a large and uncommonly used odd number of bytes
+    //
+    // Note that while bytes are left-aligned in a word, integers and addresses
+    // are right-aligned. This means when working in assembly we have to
+    // account for the 3 unused bytes on the righthand side
+    //
+    // First 5 bytes are a type flag.
+    // - ff_ffff_fffe is reserved for unknown type.
+    // - ff_ffff_ffff is reserved for invalid types/errors.
+    // next 12 are memory address
+    // next 12 are len
+    // bottom 3 bytes are empty
 
     // Assumptions:
     // - non-modification of memory.
@@ -24,8 +51,8 @@ library TypedMemView {
     // - - unfortunately we can't do this at compile time yet :(
     // - recommended: implement modifiers that perform type checking
     // - - e.g.
-    // - - `uint16 constant MY_TYPE = 3;`
-    // - - ` modifer onlyMyType(bytes32 myView) { myView.assertType(MY_TYPE); }`
+    // - - `uint40 constant MY_TYPE = 3;`
+    // - - ` modifer onlyMyType(bytes29 myView) { myView.assertType(MY_TYPE); }`
     // - instantiate a typed view from a bytearray using `ref`
     // - use `index` to inspect the contents of the view
     // - use `slice` to create smaller views into the same memory
@@ -33,20 +60,71 @@ library TypedMemView {
     // - - `slice can decrease the length`
     // - - must specify the output type of `slice`
     // - - `slice` will return a null view if you try to overrun
-    // - - make sure to explicitly check for this with `isNotNull` or `assertType`
+    // - - make sure to explicitly check for this with `notNull` or `assertType`
     // - use `equal` for typed comparisons.
 
 
-    // The null
-    bytes32 public constant NULL = hex"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-    uint256 constant TWO_BYTE_MASK = 0xffff; // mask out top 28 bytes
-    uint256 constant FIFTEEN_BYTE_MASK = 0xffffffffffffffffffffffffffffff;  // mask out top 17 bytes
+    // The null view
+    bytes29 public constant NULL = hex"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+    uint256 constant LOW_12_MASK = 0xffffffffffffffffffffffff;
+    uint8 constant TWELVE_BYTES = 96;
+
+    // Returns the encoded hex charcter that represents the lower 4 bits of the argument.
+    function nibbleHex(uint8 _b) internal pure returns (uint8) {
+        // This can probably be done more efficiently, but it's only in error
+        // paths, so we don't really care :)
+        uint8 _nibble = _b | 0xf0; // set top 4, keep bottom 4
+        if (_nibble == 0xf0) {return 0x30;} // 0
+        if (_nibble == 0xf1) {return 0x31;} // 1
+        if (_nibble == 0xf2) {return 0x32;} // 2
+        if (_nibble == 0xf3) {return 0x33;} // 3
+        if (_nibble == 0xf4) {return 0x34;} // 4
+        if (_nibble == 0xf5) {return 0x35;} // 5
+        if (_nibble == 0xf6) {return 0x36;} // 6
+        if (_nibble == 0xf7) {return 0x37;} // 7
+        if (_nibble == 0xf8) {return 0x38;} // 8
+        if (_nibble == 0xf9) {return 0x39;} // 9
+        if (_nibble == 0xfa) {return 0x61;} // a
+        if (_nibble == 0xfb) {return 0x62;} // b
+        if (_nibble == 0xfc) {return 0x63;} // c
+        if (_nibble == 0xfd) {return 0x64;} // d
+        if (_nibble == 0xfe) {return 0x65;} // e
+        if (_nibble == 0xff) {return 0x66;} // f
+    }
+
+    // Returns a uint16 containing the hex-encoded byte
+    function byteHex(uint8 _b) internal pure returns (uint16 encoded) {
+        encoded |= nibbleHex(_b >> 4); // top 4 bits
+        encoded <<= 8;
+        encoded |= nibbleHex(_b); // lower 4 bits
+    }
+
+    // Encodes the uint256 to hex. `first` contains the encoded top 16 bytes.
+    // `second` contains the encoded lower 16 bytes.
+    function encodeHex(uint256 _b) internal pure returns (uint256 first, uint256 second) {
+        for (uint8 i = 31; i > 15; i -= 1) {
+            uint8 _byte = uint8(_b >> (i * 8));
+            first |= byteHex(_byte);
+            if (i != 16) {
+                first <<= 16;
+            }
+        }
+
+        // abusing underflow here =_=
+        for (uint8 i = 15; i < 255 ; i -= 1) {
+            uint8 _byte = uint8(_b >> (i * 8));
+            second |= byteHex(_byte);
+            if (i != 0) {
+                second <<= 16;
+            }
+        }
+    }
 
     /// @notice          Changes the endianness of a uint256
     /// @dev             https://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel
     /// @param _b        The unsigned integer to reverse
     /// @return          The reversed value
-    function reverseUint256(uint256 _b) private pure returns (uint256 v) {
+    function reverseUint256(uint256 _b) internal pure returns (uint256 v) {
         v = _b;
 
         // swap bytes
@@ -65,13 +143,9 @@ library TypedMemView {
         v = (v >> 128) | (v << 128);
     }
 
-    /// Create a mask with the lowest `_len` bits set
-    function rightMask(uint8 _len) private pure returns (uint256 mask) {
-        mask = (1 << uint256(_len)) - 1;
-    }
-
     /// Create a mask with the highest `_len` bits set
     function leftMask(uint8 _len) private pure returns (uint256 mask) {
+        // ugly. redo without assembly?
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
             mask := sar(
@@ -82,17 +156,17 @@ library TypedMemView {
     }
 
     /// Return the null view
-    function nullView() internal pure returns (bytes32) {
+    function nullView() internal pure returns (bytes29) {
         return NULL;
     }
 
     /// Check if the view is null
-    function isNull(bytes32 memView) internal pure returns (bool) {
+    function isNull(bytes29 memView) internal pure returns (bool) {
         return memView == NULL;
     }
 
     /// Check if the view is not null
-    function notNull(bytes32 memView) internal pure returns (bool) {
+    function notNull(bytes29 memView) internal pure returns (bool) {
         return !isNull(memView);
     }
 
@@ -100,27 +174,71 @@ library TypedMemView {
     /// memory. We perform this check by examining solidity's unallocated
     /// memory pointer and ensuring that the view's upper bound is less than
     /// that.
-    function isValid(bytes32 memView) internal pure returns (bool ret) {
-        if (typeOf(memView) == 0xffff) {return false;}
+    function isValid(bytes29 memView) internal pure returns (bool ret) {
+        if (typeOf(memView) == 0xffffffffff) {return false;}
         uint256 _end = end(memView);
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
-            ret := lt(_end, mload(0x40))
+            ret := not(gt(_end, mload(0x40)))
         }
     }
 
-    function isType(bytes32 memView, uint16 _expected) internal pure returns (bool) {
+    /// Require that a typed memory view be valid.
+    /// Returns the view for easy chaining
+    function assertValid(bytes29 memView) internal pure returns (bytes29) {
+        require(isValid(memView), "Validity assertion failed");
+        return memView;
+    }
+
+    /// Return true if the memview is of the expected type. Otherwise false.
+    function isType(bytes29 memView, uint40 _expected) internal pure returns (bool) {
         return typeOf(memView) == _expected;
     }
 
     /// Require that a typed memory view has a specific type.
-    function assertType(bytes32 memView, uint16 _expected) internal pure {
-        require(isType(memView, _expected), "Type assertion failed");
+    /// Returns the view for easy chaining
+    function assertType(bytes29 memView, uint40 _expected) internal pure returns (bytes29) {
+        if (!isType(memView, _expected)) {
+            (, uint256 g) = encodeHex(uint256(typeOf(memView)));
+            (, uint256 e) = encodeHex(uint256(_expected));
+            string memory err = string(
+                abi.encodePacked(
+                    "Type assertion failed. Got 0x",
+                    uint80(g),
+                    ". Expected 0x",
+                    uint80(e)
+                )
+            );
+            revert(err);
+        }
+        return memView;
+    }
+
+    /// Return an identical view with a different type
+    function castTo(bytes29 memView, uint40 _newType) internal pure returns (bytes29 newView) {
+        // then | in the new type
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            // shift off the top 5 bytes
+            newView := or(newView, shr(40, shl(40, memView)))
+            newView := or(newView, shl(216, _newType))
+        }
+    }
+
+    /// Unsafe raw pointer construction. This should generally not be called
+    /// directly. Prefer `ref` wherever possible.
+    function buildUnchecked(uint256 _type, uint256 _loc, uint256 _len) private pure returns (bytes29 newView) {
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            newView := shl(96, or(newView, _type)) // insert type
+            newView := shl(96, or(newView, _loc))  // insert loc
+            newView := shl(24, or(newView, _len))  // empty bottom 3 bytes
+        }
     }
 
     /// Instantiate a new memory view. This should generally not be called
     /// directly. Prefer `ref` wherever possible.
-    function build(uint256 _type, uint256 _loc, uint256 _len) internal pure returns (bytes32) {
+    function build(uint256 _type, uint256 _loc, uint256 _len) internal pure returns (bytes29 newView) {
         uint256 _end = _loc.add(_len);
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
@@ -131,21 +249,14 @@ library TypedMemView {
         if (_end == 0) {
             return NULL;
         }
-
-        uint256 _view = 0;
-        _view |= _type;
-        _view <<= (8 * 15);
-        _view |= _loc;
-        _view <<= (8 * 15);
-        _view |= _len;
-        return bytes32(_view);
+        newView = buildUnchecked(_type, _loc, _len);
     }
 
     /// Instantiate a memory view from a byte array.
     ///
     /// Note that due to Solidity memory representation, it is not possible to
     /// implement a deref, as the `bytes` type stores its len in memory.
-    function ref(bytes memory arr, uint16 newType) internal pure returns (bytes32) {
+    function ref(bytes memory arr, uint40 newType) internal pure returns (bytes29) {
         uint256 _len = arr.length;
 
         uint256 _loc;
@@ -158,46 +269,55 @@ library TypedMemView {
     }
 
     /// Return the associated type information
-    function typeOf(bytes32 memView) internal pure returns (uint16 _type) {
-        uint256 _mask = leftMask(16); // first two bytes
+    function typeOf(bytes29 memView) internal pure returns (uint40 _type) {
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
-            _type := shr(240, and(memView, _mask)) // shift out lower 30
-            }
+            // 216 == 256 - 40
+            _type := shr(216, memView) // shift out lower 24 bytes
+        }
     }
 
-    /// Optimized type comparison. Checks that the 2-byte type flag is equal.
-    function sameType(bytes32 left, bytes32 right) internal pure returns (bool) {
-        return (left ^ right) >> 240 == 0;
+    /// Optimized type comparison. Checks that the 5-byte type flag is equal.
+    function sameType(bytes29 left, bytes29 right) internal pure returns (bool) {
+        return (left ^ right) >> (2 * TWELVE_BYTES) == 0;
     }
 
     /// Return the memory address of the underlying bytes
-    function loc(bytes32 memView) internal pure returns (uint120) {
-        return uint120((uint256(memView) >> (8 * 15)) & FIFTEEN_BYTE_MASK);
+    function loc(bytes29 memView) internal pure returns (uint96 _loc) {
+        uint256 _mask = LOW_12_MASK;  // assembly can't use globals
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            // 120 bits = 12 bytes (the encoded loc) + 3 bytes (empty low space)
+            _loc := and(shr(120, memView), _mask)
+        }
     }
 
     /// The number of memory words this memory view occupies, rounded up
-    function words(bytes32 memView) internal pure returns (uint256) {
+    function words(bytes29 memView) internal pure returns (uint256) {
         return uint256(len(memView)).add(32) / 32;
     }
 
     /// The in-memory footprint of a fresh copy of the view
-    function footprint(bytes32 memView) internal pure returns (uint256) {
+    function footprint(bytes29 memView) internal pure returns (uint256) {
         return words(memView) * 32;
     }
 
     /// The number of bytes of the view
-    function len(bytes32 memView) internal pure returns (uint120) {
-        return uint120(uint256(memView) & FIFTEEN_BYTE_MASK);
+    function len(bytes29 memView) internal pure returns (uint96 _len) {
+        uint256 _mask = LOW_12_MASK;  // assembly can't use globals
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            _len := and(shr(24, memView), _mask)
+        }
     }
 
     /// Returns the endpoint of the `memView`
-    function end(bytes32 memView) internal pure returns (uint256) {
+    function end(bytes29 memView) internal pure returns (uint256) {
         return loc(memView) + len(memView);
     }
 
     /// Safe slicing without memory modification.
-    function slice(bytes32 memView, uint256 _index, uint256 _len, uint16 newType) internal pure returns (bytes32) {
+    function slice(bytes29 memView, uint256 _index, uint256 _len, uint40 newType) internal pure returns (bytes29) {
         uint256 _loc = loc(memView);
 
         // Ensure it doesn't overrun the view
@@ -210,13 +330,39 @@ library TypedMemView {
     }
 
     /// Shortcut to `slice`. Gets a view representing the first `_len` bytes
-    function prefix(bytes32 memView, uint256 _len, uint16 newType) internal pure returns (bytes32) {
+    function prefix(bytes29 memView, uint256 _len, uint40 newType) internal pure returns (bytes29) {
         return slice(memView, 0, _len, newType);
     }
 
     /// Shortcut to `slice`. Gets a view representing the last `_len` byte
-    function postfix(bytes32 memView, uint256 _len, uint16 newType) internal pure returns (bytes32) {
+    function postfix(bytes29 memView, uint256 _len, uint40 newType) internal pure returns (bytes29) {
         return slice(memView, uint256(len(memView)).sub(_len), _len, newType);
+    }
+
+    /// Construct an error message for an indexing overrun.
+    function indexErrOverrun(
+        uint256 _loc,
+        uint256 _len,
+        uint256 _index,
+        uint256 _slice
+    ) internal pure returns (string memory err) {
+        (, uint256 a) = encodeHex(_loc);
+        (, uint256 b) = encodeHex(_len);
+        (, uint256 c) = encodeHex(_index);
+        (, uint256 d) = encodeHex(_slice);
+        err = string(
+            abi.encodePacked(
+                "TypedMemView/index - Overran the view. Slice is at 0x",
+                uint48(a),
+                " with length 0x",
+                uint48(b),
+                ". Attempted to index at offset 0x",
+                uint48(c),
+                " with length 0x",
+                uint48(d),
+                "."
+            )
+        );
     }
 
     /// Load up to 32 bytes from the view onto the stack.
@@ -224,43 +370,46 @@ library TypedMemView {
     /// Returns a bytes32 with only the `_bytes` highest bytes set.
     /// This can be immediately cast to a smaller fixed-length byte array.
     /// To automatically cast to an integer, use `indexUint` or `indexInt`.
-    function index(bytes32 memView, uint256 _index, uint8 _bytes) internal pure returns (bytes32 result) {
+    function index(bytes29 memView, uint256 _index, uint8 _bytes) internal pure returns (bytes32 result) {
         if (_bytes == 0) {return bytes32(0);}
-        require(_index.add(_bytes) <= len(memView), "TypedMemView/index - Overran the view.");
+        if (_index.add(_bytes) > len(memView)) {
+            revert(indexErrOverrun(loc(memView), len(memView), _index, uint256(_bytes)));
+        }
         require(_bytes <= 32, "TypedMemView/index - Attempted to index more than 32 bytes");
+
         uint8 bitLength = _bytes * 8;
         uint256 _loc = loc(memView);
-        uint256 mask = leftMask(bitLength);
+        uint256 _mask = leftMask(bitLength);
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
-            result := and(mload(add(_loc, _index)), mask)
+            result := and(mload(add(_loc, _index)), _mask)
         }
     }
 
     /// Parse an unsigned integer from the view at `_index`. Requires that the
     /// view have >= `_bytes` bytes following that index.
-    function indexUint(bytes32 memView, uint256 _index, uint8 _bytes) internal pure returns (uint256 result) {
+    function indexUint(bytes29 memView, uint256 _index, uint8 _bytes) internal pure returns (uint256 result) {
         return uint256(index(memView, _index, _bytes)) >> ((32 - _bytes) * 8);
     }
 
     /// Parse an unsigned integer from LE bytes.
-    function indexLEUint(bytes32 memView, uint256 _index, uint8 _bytes) internal pure returns (uint256 result) {
-        return reverseUint256(uint256(index(memView, _index, _bytes))) & rightMask(_bytes * 8);
+    function indexLEUint(bytes29 memView, uint256 _index, uint8 _bytes) internal pure returns (uint256 result) {
+        return reverseUint256(uint256(index(memView, _index, _bytes)));
     }
 
     /// Parse a signed integer from the view at `_index`. Requires that the
     /// view have >= `_bytes` bytes following that index.
-    function indexInt(bytes32 memView, uint256 _index, uint8 _bytes) internal pure returns (int256 result) {
+    function indexInt(bytes29 memView, uint256 _index, uint8 _bytes) internal pure returns (int256 result) {
         return int256(index(memView, _index, _bytes)) >> ((32 - _bytes) * 8);
     }
 
     /// Parse an address from the view at `_index`. Requires that the view have >= 20 bytes following that index.
-    function indexAddress(bytes32 memView, uint256 _index) internal pure returns (address) {
+    function indexAddress(bytes29 memView, uint256 _index) internal pure returns (address) {
         return address(uint160(indexInt(memView, _index, 20)));
     }
 
     /// Return the keccak256 hash of the underlying memory
-    function keccak(bytes32 memView) internal pure returns (bytes32 digest) {
+    function keccak(bytes29 memView) internal pure returns (bytes32 digest) {
         uint256 _loc = loc(memView);
         uint256 _len = len(memView);
         assembly {
@@ -270,58 +419,180 @@ library TypedMemView {
     }
 
     /// Return the sha2 digest of the underlying memory. We explicitly deallocate memory afterwards
-    function sha2(bytes32 memView) internal pure returns (bytes32 digest) {
-        bytes memory copy = clone(memView);
-        digest = sha256(copy);
-
-        // for cleanliness, avoid growing the free pointer
-        assembly {
-            // solium-disable-previous-line security/no-inline-assembly
-            mstore(0x40, copy)
-        }
-    }
-
-    /// Return true if the underlying memory is equal. Else false.
-    function untypedEqual(bytes32 left, bytes32 right) internal pure returns (bool) {
-        return left == right || keccak(left) == keccak(right);
-    }
-
-    /// Return false if the underlying memory is equal. Else true.
-    function untypedNotEqual(bytes32 left, bytes32 right) internal pure returns (bool) {
-        return !untypedEqual(left, right);
-    }
-
-    /// typed equality
-    function equal(bytes32 left, bytes32 right) internal pure returns (bool) {
-        return left == right || (typeOf(left) == typeOf(right) && keccak(left) == keccak(right));
-    }
-
-    /// typed inequality
-    function notEqual(bytes32 left, bytes32 right) internal pure returns (bool) {
-        return !equal(left, right);
-    }
-
-    /// Copies the referenced memory to a new loc in memory, returning a
-    /// `bytes` pointing to the new memory
-    ///
-    /// Current implementation copies memory to the next word boundary. This
-    /// creates some dirty memory that is not accessible without assembly.
-    function clone(bytes32 memView) internal pure returns (bytes memory ret) {
-        require(!isNull(memView), "TypedMemView/clone - Null pointer deref");
-        uint256 _footprint = footprint(memView);
+    function sha2(bytes29 memView) internal view returns (bytes32 digest) {
         uint256 _loc = loc(memView);
         uint256 _len = len(memView);
         assembly {
             // solium-disable-previous-line security/no-inline-assembly
-            ret := mload(0x40) // load unused pointer to the array
-            mstore(0x40, add(add(ret, _footprint), 0x20)) // write new unused pointer
-            mstore(ret, _len) // write len of new array (in bytes)
-            for { let offset := 0 } lt(offset, _footprint) { offset := add(offset, 0x20) }
-            {
-                // copy each chunk
-                let chunk := mload(add(_loc, offset))
-                mstore(add(ret, add(offset, 0x20)), chunk)
+            let ptr := mload(0x40)
+            pop(staticcall(gas, 2, _loc, _len, ptr, 0x20)) // sha2 #1
+            digest := mload(ptr)
+        }
+    }
+
+    /// @notice          Implements bitcoin's hash160 (rmd160(sha2()))
+    /// @param memView   The pre-image
+    /// @return          The digest
+    function hash160(bytes29 memView) internal view returns (bytes20 digest) {
+        uint256 _loc = loc(memView);
+        uint256 _len = len(memView);
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            let ptr := mload(0x40)
+            pop(staticcall(gas, 2, _loc, _len, ptr, 0x20)) // sha2
+            pop(staticcall(gas, 3, ptr, 0x20, ptr, 0x20)) // rmd160
+            digest := mload(add(ptr, 0xc)) // return value is 0-prefixed.
+        }
+    }
+
+    /// @notice          Implements bitcoin's hash256 (double sha2)
+    /// @param memView   A view of the preimage
+    /// @return          The digest
+    function hash256(bytes29 memView) internal view returns (bytes32 digest) {
+        uint256 _loc = loc(memView);
+        uint256 _len = len(memView);
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            let ptr := mload(0x40)
+            pop(staticcall(gas, 2, _loc, _len, ptr, 0x20)) // sha2 #1
+            pop(staticcall(gas, 2, ptr, 0x20, ptr, 0x20)) // sha2 #2
+            digest := mload(ptr)
+        }
+    }
+
+    /// Return true if the underlying memory is equal. Else false.
+    function untypedEqual(bytes29 left, bytes29 right) internal pure returns (bool) {
+        return (loc(left) == loc(right) && len(left) == len(right)) || keccak(left) == keccak(right);
+    }
+
+    /// Return false if the underlying memory is equal. Else true.
+    function untypedNotEqual(bytes29 left, bytes29 right) internal pure returns (bool) {
+        return !untypedEqual(left, right);
+    }
+
+    /// Typed equality. Shortcuts if the pointers are identical, otherwise
+    /// compares type and digest
+    function equal(bytes29 left, bytes29 right) internal pure returns (bool) {
+        return left == right || (typeOf(left) == typeOf(right) && keccak(left) == keccak(right));
+    }
+
+    /// Typed inequality. Shortcuts if the pointers are identical, otherwise
+    /// compares type and digest
+    function notEqual(bytes29 left, bytes29 right) internal pure returns (bool) {
+        return !equal(left, right);
+    }
+
+    /// Copy the view to a location, return an unsafe memory reference
+    ///
+    /// Super Dangerous direct memory access.
+    /// This reference can be overwritten if anything else modifies memory (!!!).
+    /// As such it MUST be consumed IMMEDIATELY.
+    /// This function is private to prevent unsafe usage by callers
+    function copyTo(bytes29 memView, uint256 _newLoc) private view returns (bytes29 written) {
+        require(notNull(memView), "TypedMemView/copyTo - Null pointer deref");
+        require(isValid(memView), "TypedMemView/copyTo - Invalid pointer deref");
+        uint256 _len = len(memView);
+        uint256 _oldLoc = loc(memView);
+
+        uint256 ptr;
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            ptr := mload(0x40)
+            // revert if we're writing in occupied memory
+            if gt(ptr, _newLoc) {
+                revert(0x60, 0x20) // empty revert message
             }
+
+            // use the identity precompile to copy
+            // guaranteed not to fail, so pop the success
+            pop(staticcall(gas, 4, _oldLoc, _len, _newLoc, _len))
+        }
+
+        written = buildUnchecked(typeOf(memView), _newLoc, _len);
+    }
+
+    /// Copies the referenced memory to a new loc in memory, returning a
+    /// `bytes` pointing to the new memory
+    function clone(bytes29 memView) internal view returns (bytes memory ret) {
+        uint256 ptr;
+        uint256 _len = len(memView);
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            ptr := mload(0x40) // load unused memory pointer
+            ret := ptr
+        }
+        copyTo(memView, ptr + 0x20);
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            mstore(0x40, add(add(ptr, _len), 0x20)) // write new unused pointer
+            mstore(ptr, _len) // write len of new array (in bytes)
+        }
+    }
+
+    /// Join the views in memory, return an unsafe reference to the memory.
+    ///
+    /// Super Dangerous direct memory access.
+    /// This reference can be overwritten if anything else modifies memory (!!!).
+    /// As such it MUST be consumed IMMEDIATELY.
+    /// This function is private to prevent unsafe usage by callers
+    function unsafeJoin(bytes29[] memory memViews, uint256 _location) private view returns (bytes29 unsafeView) {
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            let ptr := mload(0x40)
+            // revert if we're writing in occupied memory
+            if gt(ptr, _location) {
+                revert(0x60, 0x20) // empty revert message
+            }
+        }
+
+        uint256 _offset = 0;
+        for (uint256 i = 0; i < memViews.length; i ++) {
+            bytes29 memView = memViews[i];
+            copyTo(memView, _location + _offset);
+            _offset += len(memView);
+        }
+        unsafeView = buildUnchecked(0, _location, _offset);
+    }
+
+    /// Produce the keccak256 digest of the concatenated contents of multiple views
+    function joinKeccak(bytes29[] memory memViews) internal view returns (bytes32) {
+        uint256 ptr;
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            ptr := mload(0x40) // load unused memory pointer
+        }
+        return keccak(unsafeJoin(memViews, ptr));
+    }
+
+    /// Produce the sha256 digest of the concatenated contents of multiple views
+    function joinSha2(bytes29[] memory memViews) internal view returns (bytes32) {
+        uint256 ptr;
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            ptr := mload(0x40) // load unused memory pointer
+        }
+        return sha2(unsafeJoin(memViews, ptr));
+    }
+
+    /// copies all views, joins them into a new bytearray
+    function join(bytes29[] memory memViews) internal view returns (bytes memory ret) {
+        uint256 ptr;
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            ptr := mload(0x40) // load unused memory pointer
+        }
+
+        bytes29 _newView = unsafeJoin(memViews, ptr + 0x20);
+        uint256 _written = len(_newView);
+        uint256 _footprint = footprint(_newView);
+
+        assembly {
+            // solium-disable-previous-line security/no-inline-assembly
+            // store the legnth
+            mstore(ptr, _written)
+            // new pointer is old + 0x20 + the footprint of the body
+            mstore(0x40, add(add(ptr, _footprint), 0x20))
+            ret := ptr
         }
     }
 }

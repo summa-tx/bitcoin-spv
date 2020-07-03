@@ -3,14 +3,12 @@ pragma solidity ^0.5.10;
 /** @title CheckBitcoinSigs */
 /** @author Summa (https://summa.one) */
 
-import {BytesLib} from "./BytesLib.sol";
-import {BTCUtils} from "./BTCUtils.sol";
-
+import {TypedMemView} from "./TypedMemView.sol";
 
 library CheckBitcoinSigs {
 
-    using BytesLib for bytes;
-    using BTCUtils for bytes;
+    using TypedMemView for bytes29;
+    using TypedMemView for bytes;
 
     /// @notice          Derives an Ethereum Account address from a pubkey
     /// @dev             The address is the last 20 bytes of the keccak256 of the address
@@ -19,33 +17,39 @@ library CheckBitcoinSigs {
     function accountFromPubkey(bytes memory _pubkey) internal pure returns (address) {
         require(_pubkey.length == 64, "Pubkey must be 64-byte raw, uncompressed key.");
 
-        // keccak hash of uncompressed unprefixed pubkey
-        bytes32 _digest = keccak256(_pubkey);
+        bytes32 _digest = _pubkey.ref(0).keccak();
         return address(uint256(_digest));
     }
 
     /// @notice          Calculates the p2wpkh output script of a pubkey
-    /// @dev             Compresses keys to 33 bytes as required by Bitcoin
+    /// @dev             Compresses keys to 33 bytes as required by Bitcoin wpkh
     /// @param _pubkey   The public key, compressed or uncompressed
     /// @return          The p2wkph output script
-    function p2wpkhFromPubkey(bytes memory _pubkey) internal pure returns (bytes memory) {
-        bytes memory _compressedPubkey;
-        uint8 _prefix;
+    function p2wpkhFromPubkey(bytes memory _pubkey) internal view returns (bytes memory) {
+        bytes29 _pubkeyView = _pubkey.ref(0);
 
-        if (_pubkey.length == 64) {
-            _prefix = uint8(_pubkey[_pubkey.length - 1]) % 2 == 1 ? 3 : 2;
-            _compressedPubkey = abi.encodePacked(_prefix, _pubkey.slice(0, 32));
-        } else if (_pubkey.length == 65) {
-            _prefix = uint8(_pubkey[_pubkey.length - 1]) % 2 == 1 ? 3 : 2;
-            _compressedPubkey = abi.encodePacked(_prefix, _pubkey.slice(1, 32));
-        } else {
-            _compressedPubkey = _pubkey;
+        bytes20 _digest;
+        if (_pubkey.length == 33) {_digest = _pubkeyView.hash160();}
+        else if (_pubkey.length == 64) {
+            // This is less memory efficient than it ought to be
+            // But we immediately deallocate it, so it's usually no issue
+            uint8 prefix = uint8(_pubkey[_pubkey.length - 1]) % 2 + 2;
+            bytes memory _x = _pubkeyView.prefix(32, 0).clone();
+            bytes memory _compressed = abi.encodePacked(prefix, _x);
+            _digest = _compressed.ref(0).hash160();
+            // Deallocate memory
+            assembly {
+                // solium-disable-previous-line security/no-inline-assembly
+                mstore(0x40, _x)
+            }
         }
 
-        require(_compressedPubkey.length == 33, "Witness PKH requires compressed keys");
+        require(
+            _digest != bytes20(0),
+            "CheckBitcoinSigs/p2wpkhFromPubkey -- Invalid pubkey length. expected 64 or 33"
+        );
 
-        bytes memory _pubkeyHash = _compressedPubkey.hash160();
-        return abi.encodePacked(hex"0014", _pubkeyHash);
+        return abi.encodePacked(hex"0014", _digest);
     }
 
     /// @notice          checks a signed message's validity under a pubkey
@@ -63,7 +67,7 @@ library CheckBitcoinSigs {
         bytes32 _r,
         bytes32 _s
     ) internal pure returns (bool) {
-        require(_pubkey.length == 64, "Requires uncompressed unprefixed pubkey");
+        require(_pubkey.length == 64, "CheckBitcoinSigs/checkSig -- Requires uncompressed unprefixed pubkey");
         address _expected = accountFromPubkey(_pubkey);
         address _actual = ecrecover(_digest, _v, _r, _s);
         return _actual == _expected;
@@ -85,9 +89,8 @@ library CheckBitcoinSigs {
         uint8 _v,
         bytes32 _r,
         bytes32 _s
-    ) internal pure returns (bool) {
-        require(_pubkey.length == 64, "Requires uncompressed unprefixed pubkey");
-
+    ) internal view returns (bool) {
+        require(_pubkey.length == 64, "CheckBitcoinSigs/checkBitcoinSig -- Requires uncompressed unprefixed pubkey");
         bool _isExpectedSigner = keccak256(p2wpkhFromPubkey(_pubkey)) == keccak256(_p2wpkhOutputScript);  // is it the expected signer?
         if (!_isExpectedSigner) {return false;}
 
@@ -133,7 +136,8 @@ library CheckBitcoinSigs {
         bytes8 _inputValue,      // 8-byte LE
         bytes8 _outputValue,     // 8-byte LE
         bytes memory _outputScript    // lenght-prefixed output script
-    ) internal pure returns (bytes32) {
+    ) internal view returns (bytes32) {
+
         // Fixes elements to easily make a 1-in 1-out sighash digest
         // Does not support timelocks
         bytes memory _scriptCode = abi.encodePacked(
@@ -142,10 +146,10 @@ library CheckBitcoinSigs {
             hex"88ac");  // equal, checksig
         bytes32 _hashOutputs = abi.encodePacked(
             _outputValue,  // 8-byte LE
-            _outputScript).hash256();
+            _outputScript).ref(0).hash256();
         bytes memory _sighashPreimage = abi.encodePacked(
             hex"01000000",  // version
-            _outpoint.hash256(),  // hashPrevouts
+            _outpoint.ref(0).hash256(),  // hashPrevouts
             hex"8cb9012517c817fead650287d61bdd9c68803b6bf9c64133dcab3e65b5a50cb9",  // hashSequence(00000000)
             _outpoint,  // outpoint
             _scriptCode,  // p2wpkh script code
@@ -155,7 +159,7 @@ library CheckBitcoinSigs {
             hex"00000000",  // nLockTime
             hex"01000000"  // SIGHASH_ALL
         );
-        return _sighashPreimage.hash256();
+        return _sighashPreimage.ref(0).hash256();
     }
 
     /// @notice                 calculates the signature hash of a Bitcoin transaction with the provided details
@@ -172,7 +176,7 @@ library CheckBitcoinSigs {
         bytes8 _inputValue,  // 8-byte LE
         bytes8 _outputValue,  // 8-byte LE
         bytes20 _outputPKH  // 20-byte hash160
-    ) internal pure returns (bytes32) {
+    ) internal view returns (bytes32) {
         return wpkhSpendSighash(
             _outpoint,
             _inputPKH,
@@ -198,7 +202,7 @@ library CheckBitcoinSigs {
         bytes8 _inputValue,  // 8-byte LE
         bytes8 _outputValue,  // 8-byte LE
         bytes20 _outputPKH  // 20-byte hash160
-    ) internal pure returns (bytes32) {
+    ) internal view returns (bytes32) {
         return wpkhToWpkhSighash(_outpoint, _inputPKH, _inputValue, _outputValue, _outputPKH);
     }
 

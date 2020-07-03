@@ -1,22 +1,28 @@
 pragma solidity ^0.5.10;
 
-/** @title ValidateSPV*/
+/** @title ViewSPV */
 /** @author Summa (https://summa.one) */
 
-import {ValidateSPV} from "../ValidateSPV.sol";
+import {TypedMemView} from "../TypedMemView.sol";
+import {ViewBTC} from "../ViewBTC.sol";
+import {ViewSPV} from "../ViewSPV.sol";
 
+contract ViewSPVTest {
+    using TypedMemView for bytes;
+    using TypedMemView for bytes29;
+    using ViewBTC for bytes29;
+    using ViewSPV for bytes29;
 
-contract ValidateSPVTest {
     function getErrBadLength() public pure returns (uint256) {
-        return ValidateSPV.getErrBadLength();
+        return ViewSPV.getErrBadLength();
     }
 
     function getErrInvalidChain() public pure returns (uint256) {
-        return ValidateSPV.getErrInvalidChain();
+        return ViewSPV.getErrInvalidChain();
     }
 
     function getErrLowWork() public pure returns (uint256) {
-        return ValidateSPV.getErrLowWork();
+        return ViewSPV.getErrLowWork();
     }
 
     /// @notice                 Valides a tx inclusion in the block
@@ -30,8 +36,9 @@ contract ValidateSPVTest {
         bytes32 _merkleRoot,
         bytes memory _proof,
         uint _index
-    ) public pure returns (bool) {
-        return ValidateSPV.prove(_txid, _merkleRoot, _proof, _index);
+    ) public view returns (bool) {
+        bytes29 _proof_ref = _proof.ref(0).tryAsMerkleArray();
+        return ViewSPV.prove(_txid, _merkleRoot, _proof_ref, _index);
     }
 
     /// @notice             Hashes transaction to get txid
@@ -42,36 +49,38 @@ contract ValidateSPVTest {
     /// @ param _locktime   4-byte tx locktime
     /// @return             32-byte transaction id, little endian
     function calculateTxId(
-        bytes memory _version,
+        bytes4 _version,
         bytes memory _vin,
         bytes memory _vout,
-        bytes memory _locktime
-    ) public pure returns (bytes32) {
-        return ValidateSPV.calculateTxId(_version, _vin, _vout, _locktime);
-    }
-
-    /// @notice             Checks validity of header chain
-    /// @notice             Compares the hash of each header to the prevHash in the next header
-    /// @param _headers     Raw byte array of header chain
-    /// @return             The total accumulated difficulty of the header chain
-    function validateHeaderChain(bytes memory _headers) public view returns (uint256 _reqDiff) {
-        return ValidateSPV.validateHeaderChain(_headers);
-    }
-
-    /// @notice             Checks validity of header chain
-    /// @notice             Compares the hash of each header to the prevHash in the next header
-    /// @param _headers     Raw byte array of header chain
-    /// @return             The total accumulated difficulty of the header chain
-    function validateHeaderChainTx(bytes memory _headers) public view returns (uint256 _reqDiff) {
-        return ValidateSPV.validateHeaderChain(_headers);
+        bytes4 _locktime
+    ) public view returns (bytes32) {
+        bytes29 _ins = _vin.ref(0).tryAsVin().assertValid();
+        bytes29 _outs = _vout.ref(0).tryAsVout().assertValid();
+        return ViewSPV.calculateTxId(_version, _ins, _outs, _locktime);
     }
 
     /// @notice             Checks validity of header work
-    /// @param _digest      Header digest
+    /// @param _header      Header view
     /// @param _target      The target threshold
     /// @return             true if header work is valid, false otherwise
-    function validateHeaderWork(bytes32 _digest, uint256 _target) public pure returns (bool) {
-        return ValidateSPV.validateHeaderWork(_digest, _target);
+    function checkWork(bytes memory _header, uint256 _target) public view returns (bool) {
+        return _header.ref(0).tryAsHeader().assertValid().checkWork(_target);
+    }
+
+    /// @notice             Checks validity of header chain
+    /// @notice             Compares the hash of each header to the prevHash in the next header
+    /// @param _headers     Raw byte array of header chain
+    /// @return             The total accumulated difficulty of the header chain
+    function checkChain(bytes memory _headers) public view returns (uint256 _reqDiff) {
+        return _headers.ref(0).tryAsHeaderArray().assertValid().checkChain();
+    }
+
+    /// @notice             Checks validity of header chain
+    /// @notice             Compares the hash of each header to the prevHash in the next header
+    /// @param _headers     Raw byte array of header chain
+    /// @return             The total accumulated difficulty of the header chain
+    function checkChainTx(bytes memory _headers) public view returns (uint256 _reqDiff) {
+        return _headers.ref(0).tryAsHeaderArray().assertValid().checkChain();
     }
 
     /// @notice                     Checks validity of header chain
@@ -79,7 +88,7 @@ contract ValidateSPVTest {
     /// @param _header              The raw bytes header
     /// @param _prevHeaderDigest    The previous header's digest
     /// @return                     true if header chain is valid, false otherwise
-    function validateHeaderPrevHash(bytes memory _header, bytes32 _prevHeaderDigest) public pure returns (bool) {
-        return ValidateSPV.validateHeaderPrevHash(_header, _prevHeaderDigest);
+    function checkParent(bytes memory _header, bytes32 _prevHeaderDigest) public pure returns (bool) {
+        return _header.ref(0).tryAsHeader().assertValid().checkParent(_prevHeaderDigest);
     }
 }

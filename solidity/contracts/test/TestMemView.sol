@@ -3,9 +3,9 @@ pragma solidity ^0.5.10;
 import {TypedMemView} from "../TypedMemView.sol";
 
 contract TestMemView {
-    using TypedMemView for bytes32;
+    using TypedMemView for bytes29;
 
-    event DEBUG(bytes32 indexed a, bytes32 indexed b);
+    event DEBUG(bytes29 indexed a, bytes29 indexed b);
 
     function sameBody() public pure {
         /// 38 bytes
@@ -13,11 +13,15 @@ contract TestMemView {
         bytes memory one = hex"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
         bytes memory two = hex"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
-        bytes32 v1 = TypedMemView.ref(one, 1);
-        bytes32 v2 = TypedMemView.ref(two, 2);
-
+        bytes29 v1 = TypedMemView.ref(one, 1);
+        bytes29 v2 = TypedMemView.ref(two, 2);
+        require(v1.isValid(), "1 ought to be valid");
+        require(v2.isValid(), "2 ought to be valid");
+        require(v1.len() == 38, "1 ought to be length 32");
+        require(v2.len() == 38, "2 ought to be length 32");
         require(v1.typeOf() == 1, "1 ought to be type 1");
         require(v2.typeOf() == 2, "2 ought to be type 2");
+        require(v1.castTo(2).equal(v2), "1 cast to 2 ought to equal 2");
 
         require(v1.words() == 2, "1 ought to have words 2");
         require(v1.footprint() == 64, "1 ought to have foortprint 64");
@@ -34,7 +38,7 @@ contract TestMemView {
         require(v1.len() == v2.len(), "1 & 2 ought be the same len");
 
         /// A second TypedMemView.ref to two, with a different type
-        bytes32 v3 = TypedMemView.ref(two, 1);
+        bytes29 v3 = TypedMemView.ref(two, 1);
 
         require(v3.typeOf() == 1, "3 ought to be type 1");
         require(keccak256(two) == v3.keccak(), "3 hash mismatch");
@@ -59,8 +63,8 @@ contract TestMemView {
         bytes memory one = hex"abcdffff1111ffffffffffffffffffff";
         bytes memory two = hex"ffffabcdffff1111ffffffffffffffff";
 
-        bytes32 v1 = TypedMemView.ref(one, 0);
-        bytes32 v2 = TypedMemView.ref(two, 0);
+        bytes29 v1 = TypedMemView.ref(one, 0);
+        bytes29 v2 = TypedMemView.ref(two, 0);
 
         require(
             v1.slice(0, 2, 0).equal(v2.slice(2, 2, 0)),
@@ -98,22 +102,22 @@ contract TestMemView {
         );
     }
 
-    function slicing() public {
+    function slicing() public view {
         // 76 bytes - 3 words
 
         // solium-disable-next-line max-len
         bytes memory one = hex"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b";
 
-        bytes32 v1 = TypedMemView.ref(one, 1);
+        bytes29 v1 = TypedMemView.ref(one, 1);
         require(
             v1.slice(1, 13, 0).keccak() == keccak256(hex"0102030405060708090a0b0c0d"),
             "slice(1, 13) -- keccak mismatch"
         );
 
-        bytes32 v2 = v1.slice(76, 0, 255);
+        bytes29 v2 = v1.slice(76, 0, 255);
         require(v2.keccak() == keccak256(hex""), "v2 slice not null");
 
-        bytes32 v3 = v1.slice(1, 25, 0).slice(13, 12, 0);
+        bytes29 v3 = v1.slice(1, 25, 0).slice(13, 12, 0);
         require(
             v3.keccak() == keccak256(hex"0e0f10111213141516171819"),
             "multiple slice hash mismatch"
@@ -127,6 +131,7 @@ contract TestMemView {
             keccak256(v3.clone()) == v3.keccak(),
             "clone slice hash mismatch"
         );
+
         require(
             sha256(v3.clone()) == v3.sha2(),
             "clone slice sha2 mismatch"
@@ -171,7 +176,7 @@ contract TestMemView {
         require(v1.slice(0, 77, 1).isNull(), "Non-null on slice overrun");
 
         bytes memory six = hex"80ff";
-        bytes32 v6 = TypedMemView.ref(six, 2);
+        bytes29 v6 = TypedMemView.ref(six, 2);
 
         require(
             v6.indexInt(0, 2) == -32513,
@@ -181,7 +186,7 @@ contract TestMemView {
 
     function typeError() public pure {
         bytes memory one = hex"00";
-        bytes32 v1 = TypedMemView.ref(one, 33);
+        bytes29 v1 = TypedMemView.ref(one, 33);
         require(v1.isType(33), "isType should pass");
         v1.assertType(44);
     }
