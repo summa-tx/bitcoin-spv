@@ -257,6 +257,19 @@ library ViewBTC {
         return TypedMemView.nullView();
     }
 
+    /// @notice     (loosely) verifies an spk and converts to a typed memory
+    /// @dev        will return null in error cases. Will not check for disabled opcodes.
+    /// @param _spk the spk
+    /// @return     the typed spk (or null if error)
+    function tryAsSPK(bytes29 _spk) internal pure typeAssert(_spk, BTCTypes.Unknown) returns (bytes29) {
+        uint64 _len = indexCompactInt(_spk, 0);
+        if (_spk.len() == compactIntLength(_len) + _len) {
+            return _spk.castTo(uint40(BTCTypes.ScriptPubkey));
+        } else {
+            return TypedMemView.nullView();
+        }
+    }
+
     /// @notice     verifies the vin and converts to a typed memory
     /// @dev        will return null in error cases
     /// @param _vin the vin
@@ -265,23 +278,20 @@ library ViewBTC {
         uint64 _nIns = indexCompactInt(_vin, 0);
         uint256 _viewLen = _vin.len();
         if (_nIns == 0) {
-            return TypedMemView.build(0xffeeffee, 0x4939343943, 0x1892340918);
-            /* return TypedMemView.nullView(); */
+            return TypedMemView.nullView();
         }
 
         uint256 _offset = uint256(compactIntLength(_nIns));
         for (uint256 i = 0; i < _nIns; i++) {
             if (_offset >= _viewLen) {
                 // We've reached the end, but are still trying to read more
-                return TypedMemView.build(0xffddffdd, 0x4939343943, 0x1892340918);
-                /* return TypedMemView.nullView(); */
+                return TypedMemView.nullView();
             }
             bytes29 _remaining = _vin.postfix(_viewLen - _offset, uint40(BTCTypes.IntermediateTxIns));
             _offset += inputLength(_remaining);
         }
         if (_offset != _viewLen) {
-            return TypedMemView.build(0xffccffcc, 0x4939343943, 0x1892340918);
-            /* return TypedMemView.nullView(); */
+            return TypedMemView.nullView();
         }
         return _vin.castTo(uint40(BTCTypes.Vin));
     }
