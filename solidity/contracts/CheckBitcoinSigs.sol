@@ -33,8 +33,8 @@ library CheckBitcoinSigs {
         else if (_pubkey.length == 64) {
             // This is less memory efficient than it ought to be
             // But we immediately deallocate it, so it's usually no issue
-            uint8 prefix = uint8(_pubkey[_pubkey.length - 1]) % 2 == 1 ? 3 : 2;
-            bytes memory _x = _pubkey.ref(0).prefix(32, 0).clone();
+            uint8 prefix = uint8(_pubkey[_pubkey.length - 1]) % 2 + 2;
+            bytes memory _x = _pubkeyView.prefix(32, 0).clone();
             bytes memory _compressed = abi.encodePacked(prefix, _x);
             _digest = _compressed.ref(0).hash160();
             // Deallocate memory
