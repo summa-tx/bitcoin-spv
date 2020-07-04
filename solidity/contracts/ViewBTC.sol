@@ -262,6 +262,9 @@ library ViewBTC {
     /// @param _spk the spk
     /// @return     the typed spk (or null if error)
     function tryAsSPK(bytes29 _spk) internal pure typeAssert(_spk, BTCTypes.Unknown) returns (bytes29) {
+        if (_spk.len() == 0) {
+            return TypedMemView.nullView();
+        }
         uint64 _len = indexCompactInt(_spk, 0);
         if (_spk.len() == compactIntLength(_len) + _len) {
             return _spk.castTo(uint40(BTCTypes.ScriptPubkey));
@@ -275,6 +278,9 @@ library ViewBTC {
     /// @param _vin the vin
     /// @return     the typed vin (or null if error)
     function tryAsVin(bytes29 _vin) internal pure typeAssert(_vin, BTCTypes.Unknown) returns (bytes29) {
+        if (_vin.len() == 0) {
+            return TypedMemView.nullView();
+        }
         uint64 _nIns = indexCompactInt(_vin, 0);
         uint256 _viewLen = _vin.len();
         if (_nIns == 0) {
@@ -301,6 +307,9 @@ library ViewBTC {
     /// @param _vout    the vout
     /// @return         the typed vout (or null if error)
     function tryAsVout(bytes29 _vout) internal pure typeAssert(_vout, BTCTypes.Unknown) returns (bytes29) {
+        if (_vout.len() == 0) {
+            return TypedMemView.nullView();
+        }
         uint64 _nOuts = indexCompactInt(_vout, 0);
         uint256 _viewLen = _vout.len();
         if (_nOuts == 0) {
@@ -333,6 +342,12 @@ library ViewBTC {
         return _header.castTo(uint40(BTCTypes.Header));
     }
 
+
+    /// @notice         Index a header array.
+    /// @dev            Errors on overruns
+    /// @param _arr     The header array
+    /// @param index    The 0-indexed location of the header to get
+    /// @return         the typed header at `index`
     function indexHeaderArray(bytes29 _arr, uint256 index) internal pure typeAssert(_arr, BTCTypes.HeaderArray) returns (bytes29) {
         uint256 _start = index.mul(80);
         return _arr.slice(_start, 80, uint40(BTCTypes.Header));
