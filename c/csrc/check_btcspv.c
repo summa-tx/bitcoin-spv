@@ -215,7 +215,7 @@ START_TEST(test_determine_var_int_data_length) {
   TEST_LOOP_START("determineVarIntDataLength")
 
   uint8_t input = token_as_long(input_tok);
-  uint8_t actual = btcspv_determine_var_int_data_length(input);
+  uint8_t actual = btcspv_determine_compact_int_data_length(input);
 
   uint8_t expected = token_as_long(output_tok);
 

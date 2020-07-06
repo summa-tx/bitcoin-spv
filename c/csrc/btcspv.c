@@ -42,7 +42,7 @@ void btcspv_buf_rev(uint8_t *to, const uint8_t *from, uint32_t len) {
   }
 }
 
-uint8_t btcspv_determine_var_int_data_length(uint8_t tag) {
+uint8_t btcspv_determine_compact_int_data_length(uint8_t tag) {
   switch (tag) {
     case 0xfd:
       return 2;
@@ -72,7 +72,7 @@ bool btcspv_parse_compact_int(uint64_t *result, const uint8_t *loc,
   if (len == 0) {
     return false;
   }
-  uint64_t data_length = btcspv_determine_var_int_data_length(loc[0]);
+  uint64_t data_length = btcspv_determine_compact_int_data_length(loc[0]);
   if (data_length == 0) {
     *result = loc[0];
     return true;

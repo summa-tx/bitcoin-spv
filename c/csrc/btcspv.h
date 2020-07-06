@@ -147,7 +147,7 @@ void btcspv_hash256(uint8_t *result, const_view_t *preimage);
 /// length
 /// @param flag     The first byte of a VarInt
 /// @return         The number of non-flag bytes in the VarInt
-uint8_t btcspv_determine_var_int_data_length(uint8_t tag);
+uint8_t btcspv_determine_compact_int_data_length(uint8_t tag);
 
 /// @brief           Determines the serialized length of a compact int in bytes
 /// @note            Always returns 1, 3, 5 or 9
