@@ -606,11 +606,9 @@ pub fn verify_hash256_merkle(txid: Hash256Digest, merkle_root: Hash256Digest, in
         _ => {}
     }
 
-    let num_steps = proof_len / 32;
-
     let mut current = txid;
 
-    for i in 0..num_steps {
+    for i in 0..proof_len {
         let next = intermediate_nodes.index(i);
 
         if idx % 2 == 1 {
@@ -1130,7 +1128,7 @@ mod tests {
                     vec![]
                 };
 
-                // println!("{:?} {:?} {:?} {:?}", root, txid, proof, proof.len());
+                println!("{:?} {:?} {:?} {:?}", root, txid, proof, proof.len());
 
                 assert_eq!(verify_hash256_merkle(txid, root, &MerkleArray::new(&proof).unwrap(), index), expected);
             }
