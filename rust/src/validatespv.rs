@@ -72,9 +72,7 @@ pub fn validate_header_prev_hash(header: RawHeader, prev_hash: Hash256Digest) ->
 /// # Errors
 ///
 /// * Errors if header chain is the wrong length, chain is invalid or insufficient work
-pub fn validate_header_chain(headers: &[u8]) -> Result<BigUint, SPVError> {
-    let headers: HeaderArray = HeaderArray::new(headers)?;
-
+pub fn validate_header_chain(headers: &HeaderArray) -> Result<BigUint, SPVError> {
     let mut digest: Hash256Digest = Default::default();
     let mut total_difficulty = BigUint::from(0 as u8);
 
@@ -207,7 +205,7 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let output = case.output.as_u64().unwrap();
                 let expected = BigUint::from(output);
-                assert_eq!(validate_header_chain(&input).unwrap(), expected);
+                assert_eq!(validate_header_chain(&HeaderArray::new(&input).unwrap()).unwrap(), expected);
             }
         })
     }
@@ -220,9 +218,11 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected =
                     test_utils::match_string_to_err(case.error_message.as_str().unwrap());
-                match validate_header_chain(&input) {
-                    Ok(_) => assert!(false, "expected an error"),
-                    Err(v) => assert_eq!(v, expected),
+                if let Ok(headers) = HeaderArray::new(&input) {
+                    match validate_header_chain(&headers) {
+                        Ok(_) => assert!(false, "expected an error"),
+                        Err(v) => assert_eq!(v, expected),
+                    }
                 }
             }
         })
