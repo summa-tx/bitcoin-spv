@@ -56,15 +56,38 @@ pub enum SPVError {
 }
 
 /// The standard address payload types
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub enum PayloadType<'a> {
     /// A PKH
     PKH(&'a [u8]),
+    /// A SH
+    SH(&'a [u8]),
     /// A WPKH
     WPKH(&'a [u8]),
     /// A WSH
     WSH(&'a [u8]),
-    /// A SH
-    SH(&'a [u8]),
+}
+
+impl PartialEq<[u8]> for PayloadType<'_> {
+    fn eq(&self, other: &[u8]) -> bool {
+        match self {
+            PayloadType::PKH(slice) => *slice == other,
+            PayloadType::SH(slice) => *slice == other,
+            PayloadType::WPKH(slice) => *slice == other,
+            PayloadType::WSH(slice) => *slice == other,
+        }
+    }
+}
+
+impl PartialEq<&[u8]> for PayloadType<'_> {
+    fn eq(&self, other: &&[u8]) -> bool {
+        match self {
+            PayloadType::PKH(slice) => slice == other,
+            PayloadType::SH(slice) => slice == other,
+            PayloadType::WPKH(slice) => slice == other,
+            PayloadType::WSH(slice) => slice == other,
+        }
+    }
 }
 
 /// A raw bitcoin header.
@@ -159,6 +182,12 @@ impl AsRef<u64> for CompactInt {
 }
 
 impl CompactInt {
+    /// Parse a compact int from a byte slice
+    pub fn parse<T: AsRef<[u8]> + ?Sized>(t: &T) -> Result<CompactInt, SPVError> {
+        crate::btcspv::parse_compact_int(t)
+    }
+
+
     /// Return the underlying u64
     pub fn number(&self) -> u64 {
         self.0

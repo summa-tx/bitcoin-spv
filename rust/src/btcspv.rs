@@ -100,7 +100,7 @@ pub fn extract_input_at_index<'a>(vin: &'a Vin<'a>, index: usize) -> Result<TxIn
         return Err(SPVError::ReadOverrun);
     }
 
-    Ok(vin[offset..offset + length].into())
+    Ok(TxIn(&vin[offset..offset + length]))
 }
 
 /// Determines whether an input is legacy.
@@ -138,7 +138,7 @@ pub fn extract_script_sig_len<'a>(tx_in: &TxIn<'a>) -> Result<CompactInt, SPVErr
 ///
 /// * `tx_in` - The input as a u8 array
 pub fn determine_input_length(tx_in: &[u8]) -> Result<usize, SPVError> {
-    let script_sig_len = extract_script_sig_len(&tx_in.into())?;
+    let script_sig_len = extract_script_sig_len(&TxIn(tx_in))?;
     Ok(41 + script_sig_len.serialized_length() + script_sig_len.as_usize())
 }
 
@@ -179,7 +179,7 @@ pub fn extract_sequence_legacy<'a>(tx_in: &TxIn<'a>) -> Result<u32, SPVError> {
 pub fn extract_script_sig<'a>(tx_in: &'a TxIn<'a>) -> Result<ScriptSig<'a>, SPVError> {
     let script_sig_len = extract_script_sig_len(tx_in)?;
     let length = 1 + script_sig_len.serialized_length() + script_sig_len.as_usize();
-    Ok(tx_in[36..36 + length].into())
+    Ok(ScriptSig(&tx_in[36..36 + length]))
 }
 
 //
@@ -218,7 +218,7 @@ pub fn extract_sequence_witness<'a>(tx_in: &TxIn<'a>) -> u32 {
 ///
 /// * `tx_in` - The input
 pub fn extract_outpoint<'a>(tx_in: &'a TxIn<'a>) -> Outpoint<'a> {
-    tx_in[0..36].into()
+    Outpoint(&tx_in[0..36])
 }
 
 /// Extracts the outpoint tx id from an input,
@@ -251,9 +251,9 @@ pub fn extract_tx_index_le(outpoint: &Outpoint) -> [u8; 4] {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_tx_index<'a>(tx_in: &TxIn<'a>) -> u32 {
+pub fn extract_tx_index(outpoint: &Outpoint) -> u32 {
     let mut arr: [u8; 4] = [0u8; 4];
-    let b = extract_tx_index_le(&extract_outpoint(tx_in));
+    let b = extract_tx_index_le(outpoint);
     arr.copy_from_slice(&b[..]);
     u32::from_le_bytes(arr)
 }
@@ -314,7 +314,7 @@ pub fn extract_output_at_index<'a>(vout: &'a Vout<'a>, index: usize) -> Result<T
         return Err(SPVError::ReadOverrun);
     }
 
-    Ok(vout[offset..offset + length].into())
+    Ok(TxOut(&vout[offset..offset + length]))
 }
 
 /// Extracts the value bytes from the output in a tx.
@@ -355,7 +355,7 @@ pub fn extract_op_return_data<'a>(tx_out: &'a TxOut<'a>) -> Result<OpReturnPaylo
         if data_len + 8 + 3> tx_out.len() {
             return Err(SPVError::ReadOverrun);
         }
-        Ok(tx_out[11..11 + data_len].into())
+        Ok(OpReturnPayload(&tx_out[11..11 + data_len]))
     } else {
         Err(SPVError::MalformattedOpReturnOutput)
     }
@@ -681,9 +681,8 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = case.output.as_array().unwrap();
-                let expected_len = expected[0].as_u64().unwrap() as usize;
                 let expected_num = expected[1].as_u64().unwrap() as usize;
-                assert_eq!(parse_compact_int(&input).unwrap(), (expected_len, expected_num));
+                assert_eq!(parse_compact_int(&input).unwrap(), expected_num);
             }
         })
     }
@@ -696,7 +695,7 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 match parse_compact_int(&input) {
                     Ok(_) => assert!(false, "expected an error"),
-                    Err(e) => assert_eq!(e, SPVError::BadVarInt),
+                    Err(e) => assert_eq!(e, SPVError::BadCompactInt),
                 }
             }
         })
@@ -754,10 +753,9 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
 
                 let outputs = case.output.as_array().unwrap();
-                let a = outputs[0].as_u64().unwrap() as usize;
-                let b = outputs[1].as_u64().unwrap() as usize;
+                let expected_num = outputs[1].as_u64().unwrap() as usize;
 
-                assert_eq!(extract_script_sig_len(&input).unwrap(), (a, b));
+                assert_eq!(extract_script_sig_len(&TxIn(&input)).unwrap(), expected_num);
             }
         })
     }
@@ -769,7 +767,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_sequence_le_legacy(&input).unwrap(), expected);
+                assert_eq!(&extract_sequence_le_legacy(&TxIn(&input)).unwrap(), expected);
             }
         })
     }
@@ -781,7 +779,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = case.output.as_u64().unwrap() as u32;
-                assert_eq!(extract_sequence_legacy(&input).unwrap(), expected);
+                assert_eq!(extract_sequence_legacy(&TxIn(&input)).unwrap(), expected);
             }
         })
     }
@@ -807,7 +805,7 @@ mod tests {
                 let vin = force_deserialize_hex(inputs.get("vin").unwrap().as_str().unwrap());
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as usize;
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_input_at_index(&vin[..], index).unwrap(), expected);
+                assert_eq!(extract_input_at_index(&Vin(&vin), index).unwrap(), expected);
             }
         })
     }
@@ -822,7 +820,7 @@ mod tests {
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as usize;
                 let expected =
                     test_utils::match_string_to_err(case.error_message.as_str().unwrap());
-                match extract_input_at_index(&vin[..], index) {
+                match extract_input_at_index(&Vin(&vin), index) {
                     Ok(_) => assert!(false, "expected an error"),
                     Err(e) => assert_eq!(e, expected),
                 }
@@ -837,7 +835,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = case.output.as_bool().unwrap();
-                assert_eq!(is_legacy_input(&input), expected);
+                assert_eq!(is_legacy_input(&TxIn(&input)), expected);
             }
         })
     }
@@ -849,7 +847,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_script_sig(&input).unwrap(), expected);
+                assert_eq!(extract_script_sig(&TxIn(&input)).unwrap(), expected);
             }
         })
     }
@@ -861,7 +859,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_sequence_le_witness(&input), expected);
+                assert_eq!(extract_sequence_le_witness(&TxIn(&input)), expected);
             }
         })
     }
@@ -873,7 +871,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = case.output.as_u64().unwrap() as u32;
-                assert_eq!(extract_sequence_witness(&input), expected);
+                assert_eq!(extract_sequence_witness(&TxIn(&input)), expected);
             }
         })
     }
@@ -885,7 +883,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_outpoint(&input), &expected[..]);
+                assert_eq!(extract_outpoint(&TxIn(&input)), &expected[..]);
             }
         })
     }
@@ -897,7 +895,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_input_tx_id_le(&input), expected);
+                assert_eq!(extract_input_tx_id_le(&extract_outpoint(&TxIn(&input))), expected);
             }
         })
     }
@@ -909,7 +907,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_tx_index_le(&input), expected);
+                assert_eq!(extract_tx_index_le(&extract_outpoint(&TxIn(&input))), expected);
             }
         })
     }
@@ -921,7 +919,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = case.output.as_u64().unwrap() as u32;
-                assert_eq!(extract_tx_index(&input), expected);
+                assert_eq!(extract_tx_index(&extract_outpoint(&TxIn(&input))), expected);
             }
         })
     }
@@ -947,7 +945,7 @@ mod tests {
                 let vout = force_deserialize_hex(inputs.get("vout").unwrap().as_str().unwrap());
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as usize;
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_output_at_index(&vout, index).unwrap(), expected);
+                assert_eq!(extract_output_at_index(&Vout(&vout), index).unwrap(), expected);
             }
         })
     }
@@ -962,7 +960,7 @@ mod tests {
                 let index = outputs.get("index").unwrap().as_u64().unwrap() as usize;
                 let expected =
                     test_utils::match_string_to_err(case.error_message.as_str().unwrap());
-                match extract_output_at_index(&vout[..], index) {
+                match extract_output_at_index(&Vout(&vout), index) {
                     Ok(_) => assert!(false, "expected an error"),
                     Err(e) => assert_eq!(e, expected),
                 }
@@ -979,7 +977,7 @@ mod tests {
                 let mut expected: [u8; 8] = Default::default();
                 let val = force_deserialize_hex(case.output.as_str().unwrap());
                 expected.copy_from_slice(&val);
-                assert_eq!(extract_value_le(&input[..]), expected);
+                assert_eq!(extract_value_le(&TxOut(&input)), expected);
             }
         })
     }
@@ -991,7 +989,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = case.output.as_u64().unwrap();
-                assert_eq!(extract_value(&input[..]), expected);
+                assert_eq!(extract_value(&TxOut(&input)), expected);
             }
         })
     }
@@ -1003,7 +1001,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_op_return_data(&input).unwrap(), expected);
+                assert_eq!(extract_op_return_data(&TxOut(&input)).unwrap(), expected);
             }
         })
     }
@@ -1016,7 +1014,7 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected =
                     test_utils::match_string_to_err(case.error_message.as_str().unwrap());
-                match extract_op_return_data(&input) {
+                match extract_op_return_data(&TxOut(&input)) {
                     Ok(_) => assert!(false, "expected an error"),
                     Err(e) => assert_eq!(e, expected),
                 }
@@ -1031,7 +1029,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_hash(&input).unwrap(), expected);
+                assert_eq!(extract_hash(&TxOut(&input)).unwrap(), expected);
             }
         })
     }
@@ -1044,7 +1042,7 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected =
                     test_utils::match_string_to_err(case.error_message.as_str().unwrap());
-                match extract_hash(&input) {
+                match extract_hash(&TxOut(&input)) {
                     Ok(_) => assert!(false, "expected an error"),
                     Err(e) => assert_eq!(e, expected),
                 }
@@ -1133,7 +1131,7 @@ mod tests {
 
                 // println!("{:?} {:?} {:?} {:?}", root, txid, proof, proof.len());
 
-                assert_eq!(verify_hash256_merkle(txid, root, &proof, index), expected);
+                assert_eq!(verify_hash256_merkle(txid, root, &MerkleArray::new(&proof).unwrap(), index), expected);
             }
         })
     }

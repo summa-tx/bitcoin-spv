@@ -7,7 +7,7 @@ macro_rules! impl_view_type {
     ) => {
         $(#[$outer])*
         #[derive(Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
-        pub struct $name<'a>(&'a [u8]);
+        pub struct $name<'a>(pub(crate) &'a [u8]);
 
         impl $name<'_> {
             /// The length of the underlying slice
@@ -23,12 +23,6 @@ macro_rules! impl_view_type {
             /// The last item in the underlying slice, if any
             pub fn last(&self) -> Option<&u8> {
                 self.0.last()
-            }
-        }
-
-        impl<'a> From<&'a [u8]> for $name<'a> {
-            fn from(slice: &'a [u8]) -> Self {
-                Self(slice)
             }
         }
 
@@ -49,6 +43,20 @@ macro_rules! impl_view_type {
         impl PartialEq<[u8]> for $name<'_> {
             fn eq(&self, other: &[u8]) -> bool {
                 self.0 == other
+            }
+        }
+
+        impl PartialEq<&[u8]> for $name<'_> {
+            fn eq(&self, other: &&[u8]) -> bool {
+                &self.0 == other
+            }
+        }
+
+        // For convenience while testing
+        #[cfg(test)]
+        impl<'a> From<&'a [u8]> for $name<'a> {
+            fn from(slice: &'a [u8]) -> Self {
+                Self(slice)
             }
         }
     }

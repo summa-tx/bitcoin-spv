@@ -122,7 +122,7 @@ mod tests {
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as u64;
 
                 let expected = case.output.as_bool().unwrap();
-                assert_eq!(prove(txid, merkle_root, &proof, index), expected);
+                assert_eq!(prove(txid, merkle_root, &MerkleArray::new(&proof).unwrap(), index), expected);
             }
         })
     }
