@@ -187,7 +187,6 @@ impl CompactInt {
         crate::btcspv::parse_compact_int(t)
     }
 
-
     /// Return the underlying u64
     pub fn number(&self) -> u64 {
         self.0
@@ -248,7 +247,7 @@ impl_view_type!(
 
 impl<'a> Vin<'a> {
     /// Instantiate a new `Vin` from a slice, if the slice is a valid `Vin`
-    pub fn new(slice: &'a[u8]) -> Result<Vin<'a>, SPVError> {
+    pub fn new(slice: &'a [u8]) -> Result<Vin<'a>, SPVError> {
         if crate::btcspv::validate_vin(slice) {
             Ok(Self(slice))
         } else {
@@ -280,7 +279,7 @@ impl_view_type!(
 
 impl<'a> Vout<'a> {
     /// Instantiate a new `Vout` from a slice, if the slice is a valid `Vout`
-    pub fn new(slice: &'a[u8]) -> Result<Vout<'a>, SPVError> {
+    pub fn new(slice: &'a [u8]) -> Result<Vout<'a>, SPVError> {
         if crate::btcspv::validate_vout(slice) {
             Ok(Self(slice))
         } else {

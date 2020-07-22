@@ -42,14 +42,13 @@ pub mod std_types;
 #[cfg(feature = "std")]
 pub mod utils;
 
-
 #[cfg(test)]
 #[doc(hidden)]
 #[cfg_attr(tarpaulin, skip)]
 pub mod test_utils {
 
-    extern crate std;
     extern crate hex;
+    extern crate std;
 
     use num_bigint::BigUint;
     use serde::Deserialize;
@@ -58,8 +57,8 @@ pub mod test_utils {
     use crate::types::{RawHeader, SPVError};
 
     use std::{
-        fs::File,
         format,
+        fs::File,
         io::Read,
         panic,
         string::String,

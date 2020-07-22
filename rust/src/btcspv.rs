@@ -295,7 +295,10 @@ pub fn determine_output_length(tx_out: &[u8]) -> Result<usize, SPVError> {
 /// # Errors
 ///
 /// * Errors if CompactInt represents a number larger than 253.  Large CompactInts are not supported.
-pub fn extract_output_at_index<'a>(vout: &'a Vout<'a>, index: usize) -> Result<TxOut<'a>, SPVError> {
+pub fn extract_output_at_index<'a>(
+    vout: &'a Vout<'a>,
+    index: usize,
+) -> Result<TxOut<'a>, SPVError> {
     let n_outs = parse_compact_int(vout)?;
     if index >= n_outs.as_usize() {
         return Err(SPVError::ReadOverrun);
@@ -353,7 +356,7 @@ pub fn extract_value(tx_out: &TxOut) -> u64 {
 pub fn extract_op_return_data<'a>(tx_out: &'a TxOut<'a>) -> Result<OpReturnPayload<'a>, SPVError> {
     if tx_out[9] == 0x6a {
         let data_len = tx_out[10] as usize;
-        if data_len + 8 + 3> tx_out.len() {
+        if data_len + 8 + 3 > tx_out.len() {
             return Err(SPVError::ReadOverrun);
         }
         Ok(OpReturnPayload(&tx_out[11..11 + data_len]))
@@ -376,7 +379,7 @@ pub fn extract_hash<'a>(tx_out: &'a TxOut<'a>) -> Result<PayloadType, SPVError> 
     let tag = &tx_out[8..11];
 
     if (tag[0]) as usize + 9 != tx_out.len() {
-      return Err(SPVError::OutputLengthMismatch);
+        return Err(SPVError::OutputLengthMismatch);
     }
 
     /* Witness */
@@ -387,13 +390,11 @@ pub fn extract_hash<'a>(tx_out: &'a TxOut<'a>) -> Result<PayloadType, SPVError> 
             return Err(SPVError::MalformattedWitnessOutput);
         }
 
-
-
         if payload_len + 2 == script_len {
             match payload_len {
                 0x20 => return Ok(PayloadType::WSH(&tx_out[11..11 + payload_len as usize])),
                 0x14 => return Ok(PayloadType::WPKH(&tx_out[11..11 + payload_len as usize])),
-                _ => {},
+                _ => {}
             }
         }
         return Err(SPVError::MalformattedWitnessOutput);
@@ -596,7 +597,12 @@ pub fn hash256_merkle_step(a: &[u8], b: &[u8]) -> Hash256Digest {
 ///
 /// * `proof` - The proof. Tightly packed LE sha256 hashes.  The last hash is the root
 /// * `index` - The index of the leaf
-pub fn verify_hash256_merkle(txid: Hash256Digest, merkle_root: Hash256Digest, intermediate_nodes: &MerkleArray, index: u64) -> bool {
+pub fn verify_hash256_merkle(
+    txid: Hash256Digest,
+    merkle_root: Hash256Digest,
+    intermediate_nodes: &MerkleArray,
+    index: u64,
+) -> bool {
     let mut idx = index;
     let proof_len = intermediate_nodes.len();
 
@@ -649,17 +655,17 @@ pub fn retarget_algorithm(
 #[cfg(test)]
 #[cfg_attr(tarpaulin, skip)]
 mod tests {
-    extern crate std;
     extern crate hex;
+    extern crate std;
 
     use std::{
         println,
-        vec,      // The macro
+        vec, // The macro
     };
 
-    use num::bigint::BigUint;
     use super::*;
     use crate::test_utils::{self, force_deserialize_hex};
+    use num::bigint::BigUint;
 
     #[test]
     fn it_determines_compact_int_data_length() {
@@ -766,7 +772,10 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(&extract_sequence_le_legacy(&TxIn(&input)).unwrap(), expected);
+                assert_eq!(
+                    &extract_sequence_le_legacy(&TxIn(&input)).unwrap(),
+                    expected
+                );
             }
         })
     }
@@ -894,7 +903,10 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_input_tx_id_le(&extract_outpoint(&TxIn(&input))), expected);
+                assert_eq!(
+                    extract_input_tx_id_le(&extract_outpoint(&TxIn(&input))),
+                    expected
+                );
             }
         })
     }
@@ -906,7 +918,10 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_tx_index_le(&extract_outpoint(&TxIn(&input))), expected);
+                assert_eq!(
+                    extract_tx_index_le(&extract_outpoint(&TxIn(&input))),
+                    expected
+                );
             }
         })
     }
@@ -944,7 +959,10 @@ mod tests {
                 let vout = force_deserialize_hex(inputs.get("vout").unwrap().as_str().unwrap());
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as usize;
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_output_at_index(&Vout(&vout), index).unwrap(), expected);
+                assert_eq!(
+                    extract_output_at_index(&Vout(&vout), index).unwrap(),
+                    expected
+                );
             }
         })
     }
@@ -1106,7 +1124,8 @@ mod tests {
             let test_cases = test_utils::get_test_cases("verifyHash256Merkle", &fixtures);
             for case in test_cases {
                 let inputs = case.input.as_object().unwrap();
-                let extended_proof = force_deserialize_hex(inputs.get("proof").unwrap().as_str().unwrap());
+                let extended_proof =
+                    force_deserialize_hex(inputs.get("proof").unwrap().as_str().unwrap());
                 let proof_len = extended_proof.len();
                 if proof_len < 32 {
                     continue;
@@ -1130,7 +1149,10 @@ mod tests {
 
                 println!("{:?} {:?} {:?} {:?}", root, txid, proof, proof.len());
 
-                assert_eq!(verify_hash256_merkle(txid, root, &MerkleArray::new(&proof).unwrap(), index), expected);
+                assert_eq!(
+                    verify_hash256_merkle(txid, root, &MerkleArray::new(&proof).unwrap(), index),
+                    expected
+                );
             }
         })
     }

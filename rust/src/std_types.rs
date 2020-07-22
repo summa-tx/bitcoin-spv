@@ -1,15 +1,12 @@
-extern crate std;
 extern crate serde_json;
+extern crate std;
 
-use std::{
-    fmt,
-    vec::Vec
-};
+use std::{fmt, vec::Vec};
 
 use serde::{Deserialize, Serialize};
 
-use crate::types::*;
 use crate::btcspv;
+use crate::types::*;
 use crate::utils;
 use crate::validatespv;
 
@@ -168,7 +165,7 @@ impl SPVProof {
             &ver,
             &Vin::new(&self.vin)?,
             &Vout::new(&self.vout)?,
-            &lock
+            &lock,
         );
         if tx_id[..] != self.tx_id[..] {
             return Err(SPVError::WrongTxID);
@@ -236,11 +233,11 @@ impl fmt::Display for SPVProof {
 
 mod internal_ser {
     use super::*;
+    use serde::{Deserialize, Deserializer, Serializer};
     use std::{
         format,
-        string::{ToString, String}
+        string::{String, ToString},
     };
-    use serde::{Deserialize, Deserializer, Serializer};
 
     use crate::utils;
 
@@ -252,8 +249,7 @@ mod internal_ser {
             D: Deserializer<'de>,
         {
             let s: &str = Deserialize::deserialize(deserializer)?;
-            utils::deserialize_hex(s)
-                .map_err(|e| serde::de::Error::custom(e.to_string()))
+            utils::deserialize_hex(s).map_err(|e| serde::de::Error::custom(e.to_string()))
         }
 
         pub fn serialize<S>(d: &[u8], serializer: S) -> Result<S::Ok, S::Error>
@@ -342,7 +338,7 @@ mod tests {
         fs::File,
         io::Read,
         panic,
-        string::{ToString, String}
+        string::{String, ToString},
     };
 
     use super::*;

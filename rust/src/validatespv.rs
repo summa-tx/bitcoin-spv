@@ -31,7 +31,12 @@ pub fn prove(
 /// * `vin` - Raw bytes length-prefixed input vector
 /// * `vout` - Raw bytes length-prefixed output vector
 /// * `locktime` - 4-byte tx locktime
-pub fn calculate_txid(version: &[u8; 4], vin: &Vin, vout: &Vout, locktime: &[u8; 4]) -> Hash256Digest {
+pub fn calculate_txid(
+    version: &[u8; 4],
+    vin: &Vin,
+    vout: &Vout,
+    locktime: &[u8; 4],
+) -> Hash256Digest {
     btcspv::hash256(&[version, vin.as_ref(), vout.as_ref(), locktime])
 }
 
@@ -76,7 +81,7 @@ pub fn validate_header_chain(headers: &HeaderArray) -> Result<BigUint, SPVError>
     let mut digest: Hash256Digest = Default::default();
     let mut total_difficulty = BigUint::from(0 as u8);
 
-    for i in 0..headers.len(){
+    for i in 0..headers.len() {
         let header = headers.index(i);
 
         if i != 0 && !validate_header_prev_hash(header, digest) {
@@ -120,7 +125,10 @@ mod tests {
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as u64;
 
                 let expected = case.output.as_bool().unwrap();
-                assert_eq!(prove(txid, merkle_root, &MerkleArray::new(&proof).unwrap(), index), expected);
+                assert_eq!(
+                    prove(txid, merkle_root, &MerkleArray::new(&proof).unwrap(), index),
+                    expected
+                );
             }
         })
     }
@@ -145,7 +153,15 @@ mod tests {
                 let mut lock = [0u8; 4];
                 lock.copy_from_slice(&locktime);
 
-                assert_eq!(calculate_txid(&ver, &Vin::new(&vin).unwrap(), &Vout::new(&vout).unwrap(), &lock), expected);
+                assert_eq!(
+                    calculate_txid(
+                        &ver,
+                        &Vin::new(&vin).unwrap(),
+                        &Vout::new(&vout).unwrap(),
+                        &lock
+                    ),
+                    expected
+                );
             }
         })
     }
@@ -205,7 +221,10 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let output = case.output.as_u64().unwrap();
                 let expected = BigUint::from(output);
-                assert_eq!(validate_header_chain(&HeaderArray::new(&input).unwrap()).unwrap(), expected);
+                assert_eq!(
+                    validate_header_chain(&HeaderArray::new(&input).unwrap()).unwrap(),
+                    expected
+                );
             }
         })
     }

@@ -1,5 +1,3 @@
-
-
 macro_rules! impl_view_type {
     (
         $(#[$outer:meta])*
@@ -70,7 +68,6 @@ macro_rules! compact_int_conv {
             }
         }
 
-
         impl Into<$target> for CompactInt {
             fn into(self) -> $target {
                 self.0 as $target
@@ -82,5 +79,5 @@ macro_rules! compact_int_conv {
                 self.0 == *other as u64
             }
         }
-    }
+    };
 }
