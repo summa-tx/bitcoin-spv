@@ -94,6 +94,7 @@ impl PartialEq<&[u8]> for PayloadType<'_> {
 pub type RawHeader = [u8; 80];
 
 /// A slice of `Hash256Digest`s for use in a merkle array
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HeaderArray<'a>(&'a [u8]);
 
 impl<'a> HeaderArray<'a> {
@@ -130,6 +131,7 @@ impl HeaderArray<'_> {
 pub type Hash256Digest = [u8; 32];
 
 /// A slice of `Hash256Digest`s for use in a merkle array
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MerkleArray<'a>(&'a [u8]);
 
 impl<'a> MerkleArray<'a> {
