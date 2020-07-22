@@ -25,7 +25,7 @@ const uint64_t BTCSPV_ERR_LOW_WORK;
 ///
 /// @return true if a valid proof, otherwise false.
 bool evalspv_prove(const uint256 txid, const uint256 root,
-                   const_view_t *intermediate_nodes, uint32_t index);
+                   const_merkle_array_t *intermediate_nodes, uint32_t index);
 
 /// @brief              Hashes transaction to get txid
 /// @note               Supports Legacy and Witness
@@ -36,7 +36,7 @@ bool evalspv_prove(const uint256 txid, const uint256 root,
 /// @warning  overwrites `txid` with the transaction ID
 /// @warning  caller must ensure `txid` is allocated and can hold 32 bytes
 void evalspv_calculate_txid(uint256 txid, const_view_t *version,
-                            const_view_t *vin, const_view_t *vout,
+                            const_vin_t *vin, const_vout_t *vout,
                             const_view_t *locktime);
 
 /// @brief             Checks validity of header work
@@ -52,7 +52,7 @@ bool evalspv_validate_header_work(const uint256 header_digest,
 /// @param _header              The raw bytes header
 /// @param _prevHeaderDigest    The previous header's digest
 /// @return                     true if the connection is valid, false otherwise
-bool evalspv_validate_header_prev_hash(const_view_t *header,
+bool evalspv_validate_header_prev_hash(const_header_t *header,
                                        const uint256 prev_hash);
 
 /// @brief              Checks validity of header chain
@@ -60,7 +60,8 @@ bool evalspv_validate_header_prev_hash(const_view_t *header,
 /// @param _headers     Raw byte array of header chain
 /// @return             The total accumulated difficulty of the header chain,
 ///                     or an error code
-/// @warning            Caller must check response to ensure it is not an error code
-uint64_t evalspv_validate_header_chain(const_view_t *headers);
+/// @warning            Caller must check response to ensure it is not an error
+/// code
+uint64_t evalspv_validate_header_chain(const_header_array_t *headers);
 
 #endif /* SUMMA_CKB_EVALSPV_H_ */
