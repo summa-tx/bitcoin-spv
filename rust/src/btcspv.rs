@@ -87,7 +87,7 @@ pub fn extract_input_at_index<'a>(vin: &'a Vin<'a>, index: usize) -> Result<TxIn
     }
 
     let mut length = 0;
-    let mut offset = 1 + n_ins.serialized_length();
+    let mut offset = n_ins.serialized_length();
 
     for i in 0..=index {
         length = determine_input_length(&vin[offset..])?;
@@ -139,7 +139,8 @@ pub fn extract_script_sig_len<'a>(tx_in: &TxIn<'a>) -> Result<CompactInt, SPVErr
 /// * `tx_in` - The input as a u8 array
 pub fn determine_input_length(tx_in: &[u8]) -> Result<usize, SPVError> {
     let script_sig_len = extract_script_sig_len(&TxIn(tx_in))?;
-    Ok(41 + script_sig_len.serialized_length() + script_sig_len.as_usize())
+    // 40 = 36 (outpoint) + 4 (sequence)
+    Ok(40 + script_sig_len.serialized_length() + script_sig_len.as_usize())
 }
 
 /// Extracts the LE sequence bytes from an input.
@@ -150,7 +151,7 @@ pub fn determine_input_length(tx_in: &[u8]) -> Result<usize, SPVError> {
 /// * `tx_in` - The LEGACY input
 pub fn extract_sequence_le_legacy<'a>(tx_in: &TxIn<'a>) -> Result<[u8; 4], SPVError> {
     let script_sig_len = extract_script_sig_len(tx_in)?;
-    let offset: usize = 36 + 1 + script_sig_len.serialized_length() + script_sig_len.as_usize();
+    let offset: usize = 36 + script_sig_len.serialized_length() + script_sig_len.as_usize();
 
     let mut sequence = [0u8; 4];
     sequence.copy_from_slice(&tx_in[offset..offset + 4]);
@@ -178,7 +179,7 @@ pub fn extract_sequence_legacy<'a>(tx_in: &TxIn<'a>) -> Result<u32, SPVError> {
 /// * `tx_in` - The LEGACY input
 pub fn extract_script_sig<'a>(tx_in: &'a TxIn<'a>) -> Result<ScriptSig<'a>, SPVError> {
     let script_sig_len = extract_script_sig_len(tx_in)?;
-    let length = 1 + script_sig_len.serialized_length() + script_sig_len.as_usize();
+    let length = script_sig_len.serialized_length() + script_sig_len.as_usize();
     Ok(ScriptSig(&tx_in[36..36 + length]))
 }
 
@@ -278,7 +279,7 @@ pub fn determine_output_length(tx_out: &[u8]) -> Result<usize, SPVError> {
     }
     let script_pubkey_len = parse_compact_int(&tx_out[8..])?;
 
-    Ok(8 + 1 + script_pubkey_len.serialized_length() + script_pubkey_len.as_usize())
+    Ok(8 + script_pubkey_len.serialized_length() + script_pubkey_len.as_usize())
 }
 
 /// Extracts the output at a given index in the TxIns vector.
@@ -301,7 +302,7 @@ pub fn extract_output_at_index<'a>(vout: &'a Vout<'a>, index: usize) -> Result<T
     }
 
     let mut length = 0;
-    let mut offset = 1 + n_outs.serialized_length();
+    let mut offset = n_outs.serialized_length();
 
     for i in 0..=index {
         length = determine_output_length(&vout[offset..])?;
@@ -436,7 +437,7 @@ pub fn validate_vin(vin: &[u8]) -> bool {
 
     let vin_length = vin.len();
 
-    let mut offset = 1 + n_ins.serialized_length();
+    let mut offset = n_ins.serialized_length();
     if n_ins == 0usize {
         return false;
     }
@@ -468,7 +469,7 @@ pub fn validate_vout(vout: &[u8]) -> bool {
 
     let vout_length = vout.len();
 
-    let mut offset = 1 + n_outs.serialized_length();
+    let mut offset = n_outs.serialized_length();
     if n_outs == 0usize {
         return false;
     }
