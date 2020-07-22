@@ -343,6 +343,17 @@ pub fn extract_value(tx_out: &TxOut) -> u64 {
     u64::from_le_bytes(extract_value_le(tx_out))
 }
 
+
+/// Extracts the ScriptPubkey from a TxOut
+///
+/// # Arguments
+///
+/// * `tx_out` - The output
+pub fn extract_script_pubkey<'a>(tx_out: &'a TxOut<'a>) -> ScriptPubkey<'a> {
+    ScriptPubkey(&tx_out[8..])
+}
+
+
 /// Extracts the data from an op return output.
 /// Errors if no data or not an op return.
 ///

@@ -166,7 +166,7 @@ impl MerkleArray<'_> {
 pub type Hash160Digest = [u8; 20];
 
 /// A Bitcoin-formatted `CompactInt`
-#[derive(Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub struct CompactInt(u64);
 
 compact_int_conv!(u8);
@@ -228,18 +228,46 @@ impl_view_type!(
     /// A ScriptSig
     ScriptSig
 );
+
 impl_view_type!(
     /// A Outpoint
     Outpoint
 );
+
+impl Outpoint<'_> {
+    /// Extract the LE txid from the outpoint
+    pub fn txid_le(&self) -> Hash256Digest {
+        crate::btcspv::extract_input_tx_id_le(self)
+    }
+
+    /// Extract the outpoint's index in the prevout tx's vout
+    pub fn vout_index(&self) -> u32 {
+        crate::btcspv::extract_tx_index(self)
+    }
+}
+
 impl_view_type!(
     /// A TxIn
     TxIn
 );
-impl_view_type!(
-    /// A IntermediateTxIns
-    IntermediateTxIns
-);
+
+impl TxIn<'_> {
+    /// Extract the outpoint from the TxIn
+    pub fn outpoint(&self) -> Outpoint {
+        crate::btcspv::extract_outpoint(self)
+    }
+
+    /// Extract the sequence number from the TxIn
+    pub fn sequence(&self) -> u32 {
+        crate::btcspv::extract_sequence_legacy(self).expect("Not malformed")
+    }
+
+    /// Extract the script sig from the TxIn
+    pub fn script_sig(&self) -> ScriptSig {
+        crate::btcspv::extract_script_sig(self).expect("Not malformed")
+    }
+}
+
 impl_view_type!(
     /// A Vin
     Vin
@@ -254,24 +282,40 @@ impl<'a> Vin<'a> {
             Err(SPVError::InvalidVin)
         }
     }
+
+    /// Retrieve the txin at the specified index of the vin
+    pub fn index(&self, index: usize) -> Result<TxIn, SPVError> {
+        crate::btcspv::extract_input_at_index(self, index)
+    }
 }
 
 impl_view_type!(
-    /// A ScriptPubkey
+    /// A ScriptPubkey, with its compact int length prefix
     ScriptPubkey
 );
+
 impl_view_type!(
     /// A OpReturnPayload
     OpReturnPayload
 );
+
 impl_view_type!(
     /// A TxOut
     TxOut
 );
-impl_view_type!(
-    /// A IntermediateTxOuts
-    IntermediateTxOuts
-);
+
+impl TxOut<'_> {
+    /// Extract the value of the txout, as a u64
+    pub fn value(&self) -> u64 {
+        crate::btcspv::extract_value(self)
+    }
+
+    /// Extract the script pubkey from the TxOut
+    pub fn script_pubkey(&self) -> ScriptPubkey {
+        crate::btcspv::extract_script_pubkey(self)
+    }
+}
+
 impl_view_type!(
     /// A Vout
     Vout
@@ -285,5 +329,10 @@ impl<'a> Vout<'a> {
         } else {
             Err(SPVError::InvalidVout)
         }
+    }
+
+    /// Retrieve the txout at the specified index of the vout
+    pub fn index(&self, index: usize) -> Result<TxOut, SPVError> {
+        crate::btcspv::extract_output_at_index(self, index)
     }
 }
