@@ -1,6 +1,6 @@
 use num::bigint::BigUint;
 
-use crate::{btcspv, types::{Hash256Digest, RawHeader, SPVError}};
+use crate::{btcspv, types::*};
 
 /// Evaluates a Bitcoin merkle inclusion proof.
 /// Note that `index` is not a reliable indicator of location within a block.
@@ -14,7 +14,7 @@ use crate::{btcspv, types::{Hash256Digest, RawHeader, SPVError}};
 pub fn prove(
     txid: Hash256Digest,
     merkle_root: Hash256Digest,
-    intermediate_nodes: &[u8],
+    intermediate_nodes: &MerkleArray,
     index: u64,
 ) -> bool {
     if txid == merkle_root && index == 0 && intermediate_nodes.is_empty() {
@@ -31,8 +31,8 @@ pub fn prove(
 /// * `vin` - Raw bytes length-prefixed input vector
 /// * `vout` - Raw bytes length-prefixed output vector
 /// * `locktime` - 4-byte tx locktime
-pub fn calculate_txid(version: &[u8], vin: &[u8], vout: &[u8], locktime: &[u8]) -> Hash256Digest {
-    btcspv::hash256(&[version, vin, vout, locktime])
+pub fn calculate_txid(version: &[u8; 4], vin: &Vin, vout: &Vout, locktime: &[u8; 4]) -> Hash256Digest {
+    btcspv::hash256(&[version, vin.as_ref(), vout.as_ref(), locktime])
 }
 
 /// Checks validity of header work.
@@ -73,17 +73,13 @@ pub fn validate_header_prev_hash(header: RawHeader, prev_hash: Hash256Digest) ->
 ///
 /// * Errors if header chain is the wrong length, chain is invalid or insufficient work
 pub fn validate_header_chain(headers: &[u8]) -> Result<BigUint, SPVError> {
-    if headers.len() % 80 != 0 {
-        return Err(SPVError::WrongLengthHeader);
-    }
+    let headers: HeaderArray = HeaderArray::new(headers)?;
 
     let mut digest: Hash256Digest = Default::default();
     let mut total_difficulty = BigUint::from(0 as u8);
 
-    for i in 0..headers.len() / 80 {
-        let start = i * 80;
-        let mut header: RawHeader = [0; 80];
-        header.copy_from_slice(&headers[start..start + 80]);
+    for i in 0..headers.len(){
+        let header = headers.index(i);
 
         if i != 0 && !validate_header_prev_hash(header, digest) {
             return Err(SPVError::InvalidChain);
@@ -103,7 +99,7 @@ pub fn validate_header_chain(headers: &[u8]) -> Result<BigUint, SPVError> {
 #[cfg_attr(tarpaulin, skip)]
 mod tests {
     use crate::test_utils::{self, force_deserialize_hex};
-    
+
     use super::*;
 
     #[test]
@@ -146,7 +142,12 @@ mod tests {
                 let mut expected: Hash256Digest = Default::default();
                 expected.copy_from_slice(&force_deserialize_hex(case.output.as_str().unwrap()));
 
-                assert_eq!(calculate_txid(&version, &vin, &vout, &locktime), expected);
+                let mut ver = [0u8; 4];
+                ver.copy_from_slice(&version);
+                let mut lock = [0u8; 4];
+                lock.copy_from_slice(&locktime);
+
+                assert_eq!(calculate_txid(&ver, &Vin::new(&vin).unwrap(), &Vout::new(&vout).unwrap(), &lock), expected);
             }
         })
     }

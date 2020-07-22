@@ -15,6 +15,10 @@
 //! complex security assumptions. Please seek external review for your design
 //! before building with these libraries.*
 
+#[doc(hidden)]
+#[macro_use]
+pub mod macros;
+
 /// `btcspv` provides basic Bitcoin transaction and header parsing, as well as
 /// utility functions like merkle verification and difficulty adjustment
 /// calculation.

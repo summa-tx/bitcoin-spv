@@ -159,8 +159,17 @@ impl SPVProof {
             return Err(SPVError::InvalidVout);
         }
 
-        let tx_id =
-            validatespv::calculate_txid(&self.version, &self.vin, &self.vout, &self.locktime);
+        let mut ver = [0u8; 4];
+        ver.copy_from_slice(&self.version);
+        let mut lock = [0u8; 4];
+        lock.copy_from_slice(&self.locktime);
+
+        let tx_id = validatespv::calculate_txid(
+            &ver,
+            &Vin::new(&self.vin)?,
+            &Vout::new(&self.vout)?,
+            &lock
+        );
         if tx_id[..] != self.tx_id[..] {
             return Err(SPVError::WrongTxID);
         }
@@ -170,7 +179,7 @@ impl SPVProof {
         if !validatespv::prove(
             tx_id,
             self.confirming_header.merkle_root,
-            &self.intermediate_nodes,
+            &MerkleArray::new(&self.intermediate_nodes)?,
             self.index as u64,
         ) {
             return Err(SPVError::BadMerkleProof);

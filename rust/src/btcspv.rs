@@ -3,48 +3,33 @@ use num::pow::Pow;
 use ripemd160::{Digest, Ripemd160};
 use sha2::Sha256;
 
-use crate::types::{Hash160Digest, Hash256Digest, RawHeader, SPVError};
+use crate::types::*;
 
-/// Determines the length of a VarInt in bytes.
-/// A VarInt of > 1 byte is prefixed with a flag indicating its length.
+/// Parse a CompactInt into its data length and the number it represents
+/// Useful for Parsing Vins and Vouts. Returns `BadCompactInt` if insufficient bytes.
 ///
 /// # Arguments
 ///
-/// * `flag` - The first byte of a var_int
-pub fn determine_var_int_data_length(flag: u8) -> u8 {
-    let length: u8 = match flag {
-        0xfd => 2,
-        0xfe => 4,
-        0xff => 8,
-        _ => 0,
-    };
-    length
-}
-
-/// Parse a VarInt into its data length and the number it represents
-/// Useful for Parsing Vins and Vouts. Returns `BadVarInt` if insufficient bytes.
-///
-/// # Arguments
-///
-/// * `b` - A byte-string starting with a VarInt
+/// * `b` - A byte-string starting with a CompactInt
 ///
 /// # Returns
 ///
 /// * (length, number) - the length of the data in bytes, and the number it represents
-pub fn parse_var_int(b: &[u8]) -> Result<(usize, usize), SPVError> {
-    let length = determine_var_int_data_length(b[0]) as usize;
+pub fn parse_compact_int<T: AsRef<[u8]> + ?Sized>(t: &T) -> Result<CompactInt, SPVError> {
+    let b = t.as_ref();
+    let length = CompactInt::data_length(b[0]) as usize;
 
     if length == 0 {
-        return Ok((0, b[0] as usize));
+        return Ok(b[0].into());
     }
     if b.len() < 1 + length {
-        return Err(SPVError::BadVarInt);
+        return Err(SPVError::BadCompactInt);
     }
 
     let mut num_bytes = [0u8; 8];
     num_bytes[..length].copy_from_slice(&b[1..=length]);
 
-    Ok((length, u64::from_le_bytes(num_bytes) as usize))
+    Ok(u64::from_le_bytes(num_bytes).into())
 }
 
 /// Implements bitcoin's hash160 (rmd160(sha2())).
@@ -95,14 +80,14 @@ pub fn hash256(preimages: &[&[u8]]) -> Hash256Digest {
 ///
 /// * `vin` - The vin as a tightly-packed u8 array
 /// * `index` - The 0-indexed location of the input to extract
-pub fn extract_input_at_index(vin: &[u8], index: usize) -> Result<&[u8], SPVError> {
-    let (data_len, n_ins) = parse_var_int(vin)?;
-    if index >= n_ins {
+pub fn extract_input_at_index<'a>(vin: &'a Vin<'a>, index: usize) -> Result<TxIn<'a>, SPVError> {
+    let n_ins = parse_compact_int(vin)?;
+    if index >= n_ins.number() as usize {
         return Err(SPVError::ReadOverrun);
     }
 
     let mut length = 0;
-    let mut offset = 1 + data_len;
+    let mut offset = 1 + n_ins.serialized_length();
 
     for i in 0..=index {
         length = determine_input_length(&vin[offset..])?;
@@ -111,11 +96,11 @@ pub fn extract_input_at_index(vin: &[u8], index: usize) -> Result<&[u8], SPVErro
         }
     }
 
-    if offset + length as usize > vin.len() {
+    if offset + length > vin.len() {
         return Err(SPVError::ReadOverrun);
     }
 
-    Ok(&vin[offset..offset + length as usize])
+    Ok(vin[offset..offset + length].into())
 }
 
 /// Determines whether an input is legacy.
@@ -129,7 +114,7 @@ pub fn extract_input_at_index(vin: &[u8], index: usize) -> Result<&[u8], SPVErro
 /// # Panics
 ///
 /// If the tx_in is malformatted, i.e. <= 36 bytes long
-pub fn is_legacy_input(tx_in: &[u8]) -> bool {
+pub fn is_legacy_input<'a>(tx_in: &TxIn<'a>) -> bool {
     tx_in[36] != 0
 }
 
@@ -139,11 +124,11 @@ pub fn is_legacy_input(tx_in: &[u8]) -> bool {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_script_sig_len(tx_in: &[u8]) -> Result<(usize, usize), SPVError> {
+pub fn extract_script_sig_len<'a>(tx_in: &TxIn<'a>) -> Result<CompactInt, SPVError> {
     if tx_in.len() < 37 {
         return Err(SPVError::ReadOverrun);
     }
-    parse_var_int(&tx_in[36..])
+    parse_compact_int(&tx_in[36..])
 }
 
 /// Determines the length of an input from its scriptsig:
@@ -153,8 +138,8 @@ pub fn extract_script_sig_len(tx_in: &[u8]) -> Result<(usize, usize), SPVError> 
 ///
 /// * `tx_in` - The input as a u8 array
 pub fn determine_input_length(tx_in: &[u8]) -> Result<usize, SPVError> {
-    let (data_len, script_sig_len) = extract_script_sig_len(tx_in)?;
-    Ok(41 + data_len + script_sig_len)
+    let script_sig_len = extract_script_sig_len(&tx_in.into())?;
+    Ok(41 + script_sig_len.serialized_length() + script_sig_len.as_usize())
 }
 
 /// Extracts the LE sequence bytes from an input.
@@ -163,10 +148,13 @@ pub fn determine_input_length(tx_in: &[u8]) -> Result<usize, SPVError> {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_sequence_le_legacy(tx_in: &[u8]) -> Result<&[u8], SPVError> {
-    let (data_len, script_sig_len) = extract_script_sig_len(tx_in)?;
-    let offset: usize = 36 + 1 + data_len as usize + script_sig_len as usize;
-    Ok(&tx_in[offset..offset + 4])
+pub fn extract_sequence_le_legacy<'a>(tx_in: &TxIn<'a>) -> Result<[u8; 4], SPVError> {
+    let script_sig_len = extract_script_sig_len(tx_in)?;
+    let offset: usize = 36 + 1 + script_sig_len.serialized_length() + script_sig_len.as_usize();
+
+    let mut sequence = [0u8; 4];
+    sequence.copy_from_slice(&tx_in[offset..offset + 4]);
+    Ok(sequence)
 }
 
 /// Extracts the sequence from the input.
@@ -175,23 +163,23 @@ pub fn extract_sequence_le_legacy(tx_in: &[u8]) -> Result<&[u8], SPVError> {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_sequence_legacy(tx_in: &[u8]) -> Result<u32, SPVError> {
+pub fn extract_sequence_legacy<'a>(tx_in: &TxIn<'a>) -> Result<u32, SPVError> {
     let mut arr: [u8; 4] = [0u8; 4];
     let b = extract_sequence_le_legacy(tx_in)?;
     arr.copy_from_slice(&b[..]);
     Ok(u32::from_le_bytes(arr))
 }
 
-/// Extracts the VarInt-prepended scriptSig from the input in a tx.
+/// Extracts the CompactInt-prepended scriptSig from the input in a tx.
 /// Will return `vec![0]` if passed a witness input.
 ///
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_script_sig(tx_in: &[u8]) -> Result<&[u8], SPVError> {
-    let (data_len, script_sig_len) = extract_script_sig_len(tx_in)?;
-    let length = 1 + data_len + script_sig_len;
-    Ok(&tx_in[36..36 + length as usize])
+pub fn extract_script_sig<'a>(tx_in: &'a TxIn<'a>) -> Result<ScriptSig<'a>, SPVError> {
+    let script_sig_len = extract_script_sig_len(tx_in)?;
+    let length = 1 + script_sig_len.serialized_length() + script_sig_len.as_usize();
+    Ok(tx_in[36..36 + length].into())
 }
 
 //
@@ -204,8 +192,10 @@ pub fn extract_script_sig(tx_in: &[u8]) -> Result<&[u8], SPVError> {
 /// # Arguments
 ///
 /// * `tx_in` - The WITNESS input
-pub fn extract_sequence_le_witness(tx_in: &[u8]) -> &[u8] {
-    &tx_in[37..41]
+pub fn extract_sequence_le_witness<'a>(tx_in: &TxIn<'a>) -> [u8; 4] {
+    let mut sequence = [0u8; 4];
+    sequence.copy_from_slice(&tx_in[37..41]);
+    sequence
 }
 
 /// Extracts the sequence from the input in a tx.
@@ -214,7 +204,7 @@ pub fn extract_sequence_le_witness(tx_in: &[u8]) -> &[u8] {
 /// # Arguments
 ///
 /// * `tx_in` - The WITNESS input
-pub fn extract_sequence_witness(tx_in: &[u8]) -> u32 {
+pub fn extract_sequence_witness<'a>(tx_in: &TxIn<'a>) -> u32 {
     let mut arr: [u8; 4] = [0u8; 4];
     let b = extract_sequence_le_witness(tx_in);
     arr.copy_from_slice(&b[..]);
@@ -227,8 +217,8 @@ pub fn extract_sequence_witness(tx_in: &[u8]) -> u32 {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_outpoint(tx_in: &[u8]) -> &[u8] {
-    &tx_in[0..36]
+pub fn extract_outpoint<'a>(tx_in: &'a TxIn<'a>) -> Outpoint<'a> {
+    tx_in[0..36].into()
 }
 
 /// Extracts the outpoint tx id from an input,
@@ -236,9 +226,23 @@ pub fn extract_outpoint(tx_in: &[u8]) -> &[u8] {
 ///
 /// # Arguments
 ///
-/// * `tx_in` - The input
-pub fn extract_input_tx_id_le(tx_in: &[u8]) -> &[u8] {
-    &tx_in[0..32]
+/// * `outpoint` - The outpoint extracted from the input
+pub fn extract_input_tx_id_le(outpoint: &Outpoint) -> Hash256Digest {
+    let mut txid = [0u8; 32];
+    txid.copy_from_slice(&outpoint[0..32]);
+    txid
+}
+
+/// Extracts the LE tx input index from the input in a tx,
+/// 4 byte tx index.
+///
+/// # Arguments
+///
+/// * `outpoint` - The outpoint extracted from the input
+pub fn extract_tx_index_le(outpoint: &Outpoint) -> [u8; 4] {
+    let mut idx = [0u8; 4];
+    idx.copy_from_slice(&outpoint[32..36]);
+    idx
 }
 
 /// Extracts the LE tx input index from the input in a tx,
@@ -247,19 +251,9 @@ pub fn extract_input_tx_id_le(tx_in: &[u8]) -> &[u8] {
 /// # Arguments
 ///
 /// * `tx_in` - The input
-pub fn extract_tx_index_le(tx_in: &[u8]) -> &[u8] {
-    &tx_in[32..36]
-}
-
-/// Extracts the LE tx input index from the input in a tx,
-/// 4 byte tx index.
-///
-/// # Arguments
-///
-/// * `tx_in` - The input
-pub fn extract_tx_index(tx_in: &[u8]) -> u32 {
+pub fn extract_tx_index<'a>(tx_in: &TxIn<'a>) -> u32 {
     let mut arr: [u8; 4] = [0u8; 4];
-    let b = extract_tx_index_le(tx_in);
+    let b = extract_tx_index_le(&extract_outpoint(tx_in));
     arr.copy_from_slice(&b[..]);
     u32::from_le_bytes(arr)
 }
@@ -277,14 +271,14 @@ pub fn extract_tx_index(tx_in: &[u8]) -> u32 {
 ///
 /// # Errors
 ///
-/// * Errors if VarInt represents a number larger than 253; large VarInts are not supported.
+/// * Errors if CompactInt represents a number larger than 253; large CompactInts are not supported.
 pub fn determine_output_length(tx_out: &[u8]) -> Result<usize, SPVError> {
     if tx_out.len() < 9 {
         return Err(SPVError::MalformattedOutput);
     }
-    let (data_len, script_pubkey_len) = parse_var_int(&tx_out[8..])?;
+    let script_pubkey_len = parse_compact_int(&tx_out[8..])?;
 
-    Ok(8 + 1 + data_len + script_pubkey_len)
+    Ok(8 + 1 + script_pubkey_len.serialized_length() + script_pubkey_len.as_usize())
 }
 
 /// Extracts the output at a given index in the TxIns vector.
@@ -299,15 +293,15 @@ pub fn determine_output_length(tx_out: &[u8]) -> Result<usize, SPVError> {
 ///
 /// # Errors
 ///
-/// * Errors if VarInt represents a number larger than 253.  Large VarInts are not supported.
-pub fn extract_output_at_index(vout: &[u8], index: usize) -> Result<&[u8], SPVError> {
-    let (data_len, n_outs) = parse_var_int(vout)?;
-    if index >= n_outs {
+/// * Errors if CompactInt represents a number larger than 253.  Large CompactInts are not supported.
+pub fn extract_output_at_index<'a>(vout: &'a Vout<'a>, index: usize) -> Result<TxOut<'a>, SPVError> {
+    let n_outs = parse_compact_int(vout)?;
+    if index >= n_outs.as_usize() {
         return Err(SPVError::ReadOverrun);
     }
 
     let mut length = 0;
-    let mut offset = 1 + data_len;
+    let mut offset = 1 + n_outs.serialized_length();
 
     for i in 0..=index {
         length = determine_output_length(&vout[offset..])?;
@@ -320,7 +314,7 @@ pub fn extract_output_at_index(vout: &[u8], index: usize) -> Result<&[u8], SPVEr
         return Err(SPVError::ReadOverrun);
     }
 
-    Ok(&vout[offset..offset + length])
+    Ok(vout[offset..offset + length].into())
 }
 
 /// Extracts the value bytes from the output in a tx.
@@ -329,7 +323,7 @@ pub fn extract_output_at_index(vout: &[u8], index: usize) -> Result<&[u8], SPVEr
 /// # Arguments
 ///
 /// * `tx_out` - The output
-pub fn extract_value_le(tx_out: &[u8]) -> [u8; 8] {
+pub fn extract_value_le(tx_out: &TxOut) -> [u8; 8] {
     let mut arr: [u8; 8] = Default::default();
     arr.copy_from_slice(&tx_out[..8]);
     arr
@@ -341,7 +335,7 @@ pub fn extract_value_le(tx_out: &[u8]) -> [u8; 8] {
 /// # Arguments
 ///
 /// * `tx_out` - The output
-pub fn extract_value(tx_out: &[u8]) -> u64 {
+pub fn extract_value(tx_out: &TxOut) -> u64 {
     u64::from_le_bytes(extract_value_le(tx_out))
 }
 
@@ -355,13 +349,13 @@ pub fn extract_value(tx_out: &[u8]) -> u64 {
 /// # Errors
 ///
 /// * Errors if the op return output is malformatted
-pub fn extract_op_return_data(tx_out: &[u8]) -> Result<&[u8], SPVError> {
+pub fn extract_op_return_data<'a>(tx_out: &'a TxOut<'a>) -> Result<OpReturnPayload<'a>, SPVError> {
     if tx_out[9] == 0x6a {
-        let data_len = tx_out[10] as u64;
-        if (data_len + 8 + 3) as usize > tx_out.len() {
+        let data_len = tx_out[10] as usize;
+        if data_len + 8 + 3> tx_out.len() {
             return Err(SPVError::ReadOverrun);
         }
-        Ok(&tx_out[11..11 + data_len as usize])
+        Ok(tx_out[11..11 + data_len].into())
     } else {
         Err(SPVError::MalformattedOpReturnOutput)
     }
@@ -377,7 +371,7 @@ pub fn extract_op_return_data(tx_out: &[u8]) -> Result<&[u8], SPVError> {
 /// # Errors
 ///
 /// * Errors if the WITNESS, P2PKH or P2SH outputs are malformatted
-pub fn extract_hash(tx_out: &[u8]) -> Result<&[u8], SPVError> {
+pub fn extract_hash<'a>(tx_out: &'a TxOut<'a>) -> Result<PayloadType, SPVError> {
     let tag = &tx_out[8..11];
 
     if (tag[0]) as usize + 9 != tx_out.len() {
@@ -392,11 +386,16 @@ pub fn extract_hash(tx_out: &[u8]) -> Result<&[u8], SPVError> {
             return Err(SPVError::MalformattedWitnessOutput);
         }
 
-        if payload_len + 2 == script_len && (payload_len == 0x20 || payload_len == 0x14) {
-            return Ok(&tx_out[11..11 + payload_len as usize]);
-        } else {
-            return Err(SPVError::MalformattedWitnessOutput);
+
+
+        if payload_len + 2 == script_len {
+            match payload_len {
+                0x20 => return Ok(PayloadType::WSH(&tx_out[11..11 + payload_len as usize])),
+                0x14 => return Ok(PayloadType::WPKH(&tx_out[11..11 + payload_len as usize])),
+                _ => {},
+            }
         }
+        return Err(SPVError::MalformattedWitnessOutput);
     }
 
     /* P2PKH */
@@ -405,7 +404,7 @@ pub fn extract_hash(tx_out: &[u8]) -> Result<&[u8], SPVError> {
         if tx_out[11] != 0x14 || last_two != [0x88, 0xac] {
             return Err(SPVError::MalformattedP2PKHOutput);
         }
-        return Ok(&tx_out[12..32]);
+        return Ok(PayloadType::PKH(&tx_out[12..32]));
     }
 
     /* P2SH */
@@ -413,7 +412,7 @@ pub fn extract_hash(tx_out: &[u8]) -> Result<&[u8], SPVError> {
         if tx_out.last().cloned() != Some(0x87) {
             return Err(SPVError::MalformattedP2SHOutput);
         }
-        return Ok(&tx_out[11..31]);
+        return Ok(PayloadType::SH(&tx_out[11..31]));
     }
 
     Err(SPVError::MalformattedOutput)
@@ -430,19 +429,19 @@ pub fn extract_hash(tx_out: &[u8]) -> Result<&[u8], SPVError> {
 ///
 /// * `vin` - Raw bytes length-prefixed input vector
 pub fn validate_vin(vin: &[u8]) -> bool {
-    let (data_len, n_ins) = match parse_var_int(vin) {
+    let n_ins = match parse_compact_int(vin) {
         Ok(v) => v,
         Err(_) => return false,
     };
 
     let vin_length = vin.len();
 
-    let mut offset = 1 + data_len;
-    if n_ins == 0 {
+    let mut offset = 1 + n_ins.serialized_length();
+    if n_ins == 0usize {
         return false;
     }
 
-    for _ in 0..n_ins {
+    for _ in 0..n_ins.as_usize() {
         if offset >= vin_length {
             return false;
         }
@@ -462,19 +461,19 @@ pub fn validate_vin(vin: &[u8]) -> bool {
 ///
 /// * `vout` - Raw bytes length-prefixed output vector
 pub fn validate_vout(vout: &[u8]) -> bool {
-    let (data_len, n_outs) = match parse_var_int(vout) {
+    let n_outs = match parse_compact_int(vout) {
         Ok(v) => v,
         Err(_) => return false,
     };
 
     let vout_length = vout.len();
 
-    let mut offset = 1 + data_len;
-    if n_outs == 0 {
+    let mut offset = 1 + n_outs.serialized_length();
+    if n_outs == 0usize {
         return false;
     }
 
-    for _ in 0..n_outs {
+    for _ in 0..n_outs.as_usize() {
         if offset >= vout_length {
             return false;
         }
@@ -596,32 +595,22 @@ pub fn hash256_merkle_step(a: &[u8], b: &[u8]) -> Hash256Digest {
 ///
 /// * `proof` - The proof. Tightly packed LE sha256 hashes.  The last hash is the root
 /// * `index` - The index of the leaf
-pub fn verify_hash256_merkle(txid: Hash256Digest, merkle_root: Hash256Digest, intermediate_nodes: &[u8], index: u64) -> bool {
+pub fn verify_hash256_merkle(txid: Hash256Digest, merkle_root: Hash256Digest, intermediate_nodes: &MerkleArray, index: u64) -> bool {
     let mut idx = index;
     let proof_len = intermediate_nodes.len();
 
-    if proof_len % 32 != 0 {
-        return false;
-    }
-
-    if proof_len == 32 {
-        return true;
-    }
-
-    if proof_len == 0 {
-        if txid == merkle_root {
-            return true;
-        }
-        return false;  // no intermediate nodes
+    match proof_len {
+        0 => return txid == merkle_root,
+        1 => return true,
+        _ => {}
     }
 
     let num_steps = proof_len / 32;
 
     let mut current = txid;
-    let mut next = Hash256Digest::default();
 
     for i in 0..num_steps {
-        next.copy_from_slice(&intermediate_nodes[i * 32..i * 32 + 32]);
+        let next = intermediate_nodes.index(i);
 
         if idx % 2 == 1 {
             current = hash256_merkle_step(&next, &current);
@@ -674,19 +663,19 @@ mod tests {
     use crate::test_utils::{self, force_deserialize_hex};
 
     #[test]
-    fn it_determines_var_int_data_length() {
+    fn it_determines_compact_int_data_length() {
         test_utils::run_test(|fixtures| {
             let test_cases = test_utils::get_test_cases("determineVarIntDataLength", &fixtures);
             for case in test_cases {
                 let input = case.input.as_u64().unwrap() as u8;
                 let expected = case.output.as_u64().unwrap() as u8;
-                assert_eq!(determine_var_int_data_length(input), expected);
+                assert_eq!(CompactInt::data_length(input), expected);
             }
         })
     }
 
     #[test]
-    fn it_parses_var_ints() {
+    fn it_parses_compact_ints() {
         test_utils::run_test(|fixtures| {
             let test_cases = test_utils::get_test_cases("parseVarInt", &fixtures);
             for case in test_cases {
@@ -694,18 +683,18 @@ mod tests {
                 let expected = case.output.as_array().unwrap();
                 let expected_len = expected[0].as_u64().unwrap() as usize;
                 let expected_num = expected[1].as_u64().unwrap() as usize;
-                assert_eq!(parse_var_int(&input).unwrap(), (expected_len, expected_num));
+                assert_eq!(parse_compact_int(&input).unwrap(), (expected_len, expected_num));
             }
         })
     }
 
     #[test]
-    fn it_parses_var_int_errors() {
+    fn it_parses_compact_int_errors() {
         test_utils::run_test(|fixtures| {
             let test_cases = test_utils::get_test_cases("parseVarIntError", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                match parse_var_int(&input) {
+                match parse_compact_int(&input) {
                     Ok(_) => assert!(false, "expected an error"),
                     Err(e) => assert_eq!(e, SPVError::BadVarInt),
                 }
