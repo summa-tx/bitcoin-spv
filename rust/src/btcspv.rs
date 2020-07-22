@@ -343,7 +343,6 @@ pub fn extract_value(tx_out: &TxOut) -> u64 {
     u64::from_le_bytes(extract_value_le(tx_out))
 }
 
-
 /// Extracts the ScriptPubkey from a TxOut
 ///
 /// # Arguments
@@ -352,7 +351,6 @@ pub fn extract_value(tx_out: &TxOut) -> u64 {
 pub fn extract_script_pubkey<'a>(tx_out: &'a TxOut<'a>) -> ScriptPubkey<'a> {
     ScriptPubkey(&tx_out[8..])
 }
-
 
 /// Extracts the data from an op return output.
 /// Errors if no data or not an op return.
@@ -364,13 +362,15 @@ pub fn extract_script_pubkey<'a>(tx_out: &'a TxOut<'a>) -> ScriptPubkey<'a> {
 /// # Errors
 ///
 /// * Errors if the op return output is malformatted
-pub fn extract_op_return_data<'a>(tx_out: &'a TxOut<'a>) -> Result<OpReturnPayload<'a>, SPVError> {
-    if tx_out[9] == 0x6a {
-        let data_len = tx_out[10] as usize;
-        if data_len + 8 + 3 > tx_out.len() {
+pub fn extract_op_return_data<'a>(
+    spk: &'a ScriptPubkey<'a>,
+) -> Result<OpReturnPayload<'a>, SPVError> {
+    if spk[1] == 0x6a {
+        let data_len = spk[2] as usize;
+        if data_len + 3 > spk.len() {
             return Err(SPVError::ReadOverrun);
         }
-        Ok(OpReturnPayload(&tx_out[11..11 + data_len]))
+        Ok(OpReturnPayload(&spk[3..3 + data_len]))
     } else {
         Err(SPVError::MalformattedOpReturnOutput)
     }
@@ -386,25 +386,25 @@ pub fn extract_op_return_data<'a>(tx_out: &'a TxOut<'a>) -> Result<OpReturnPaylo
 /// # Errors
 ///
 /// * Errors if the WITNESS, P2PKH or P2SH outputs are malformatted
-pub fn extract_hash<'a>(tx_out: &'a TxOut<'a>) -> Result<PayloadType, SPVError> {
-    let tag = &tx_out[8..11];
+pub fn extract_hash<'a>(spk: &'a ScriptPubkey<'a>) -> Result<PayloadType, SPVError> {
+    let tag = &spk[..3];
 
-    if (tag[0]) as usize + 9 != tx_out.len() {
+    if (tag[0]) as usize + 1 != spk.len() {
         return Err(SPVError::OutputLengthMismatch);
     }
 
     /* Witness */
-    if tx_out[9] == 0 {
-        let script_len = tx_out[8];
-        let payload_len = tx_out[10];
+    if spk[1] == 0 {
+        let script_len = spk[0];
+        let payload_len = spk[2];
         if script_len < 2 {
             return Err(SPVError::MalformattedWitnessOutput);
         }
 
         if payload_len + 2 == script_len {
             match payload_len {
-                0x20 => return Ok(PayloadType::WSH(&tx_out[11..11 + payload_len as usize])),
-                0x14 => return Ok(PayloadType::WPKH(&tx_out[11..11 + payload_len as usize])),
+                0x20 => return Ok(PayloadType::WSH(&spk[3..3 + payload_len as usize])),
+                0x14 => return Ok(PayloadType::WPKH(&spk[3..3 + payload_len as usize])),
                 _ => {}
             }
         }
@@ -413,19 +413,19 @@ pub fn extract_hash<'a>(tx_out: &'a TxOut<'a>) -> Result<PayloadType, SPVError> 
 
     /* P2PKH */
     if tag == [0x19, 0x76, 0xa9] {
-        let last_two: &[u8] = &tx_out[tx_out.len() - 2..];
-        if tx_out[11] != 0x14 || last_two != [0x88, 0xac] {
+        let last_two: &[u8] = &spk[spk.len() - 2..];
+        if spk[3] != 0x14 || last_two != [0x88, 0xac] {
             return Err(SPVError::MalformattedP2PKHOutput);
         }
-        return Ok(PayloadType::PKH(&tx_out[12..32]));
+        return Ok(PayloadType::PKH(&spk[4..24]));
     }
 
     /* P2SH */
     if tag == [0x17, 0xa9, 0x14] {
-        if tx_out.last().cloned() != Some(0x87) {
+        if spk.last().cloned() != Some(0x87) {
             return Err(SPVError::MalformattedP2SHOutput);
         }
-        return Ok(PayloadType::SH(&tx_out[11..31]));
+        return Ok(PayloadType::SH(&spk[3..23]));
     }
 
     Err(SPVError::MalformattedOutput)
@@ -1029,7 +1029,10 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_op_return_data(&TxOut(&input)).unwrap(), expected);
+                assert_eq!(
+                    extract_op_return_data(&extract_script_pubkey(&TxOut(&input))).unwrap(),
+                    expected
+                );
             }
         })
     }
@@ -1042,7 +1045,7 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected =
                     test_utils::match_string_to_err(case.error_message.as_str().unwrap());
-                match extract_op_return_data(&TxOut(&input)) {
+                match extract_op_return_data(&extract_script_pubkey(&TxOut(&input))) {
                     Ok(_) => assert!(false, "expected an error"),
                     Err(e) => assert_eq!(e, expected),
                 }
@@ -1057,7 +1060,10 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_hash(&TxOut(&input)).unwrap(), expected);
+                assert_eq!(
+                    extract_hash(&extract_script_pubkey(&TxOut(&input))).unwrap(),
+                    expected
+                );
             }
         })
     }
@@ -1070,7 +1076,7 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected =
                     test_utils::match_string_to_err(case.error_message.as_str().unwrap());
-                match extract_hash(&TxOut(&input)) {
+                match extract_hash(&extract_script_pubkey(&TxOut(&input))) {
                     Ok(_) => assert!(false, "expected an error"),
                     Err(e) => assert_eq!(e, expected),
                 }

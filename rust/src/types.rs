@@ -294,6 +294,18 @@ impl_view_type!(
     ScriptPubkey
 );
 
+impl ScriptPubkey<'_> {
+    /// Extract the op return payload, if any
+    pub fn op_return(&self) -> Result<OpReturnPayload, SPVError> {
+        crate::btcspv::extract_op_return_data(self)
+    }
+
+    /// Extract the hash payload from standard scripts
+    pub fn payload(&self) -> Result<PayloadType, SPVError> {
+        crate::btcspv::extract_hash(self)
+    }
+}
+
 impl_view_type!(
     /// A OpReturnPayload
     OpReturnPayload
