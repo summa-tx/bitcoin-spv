@@ -136,8 +136,8 @@ pub mod test_utils {
     }
 
     pub fn to_test_header(head: &serde_json::map::Map<String, serde_json::Value>) -> TestHeader {
-        let mut raw: RawHeader = [0; 80];
-        raw.copy_from_slice(&force_deserialize_hex(
+        let mut raw = RawHeader::default();
+        raw.as_mut().copy_from_slice(&force_deserialize_hex(
             head.get("hex").unwrap().as_str().unwrap(),
         ));
 

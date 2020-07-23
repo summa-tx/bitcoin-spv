@@ -89,7 +89,7 @@ pub fn validate_header_chain(headers: &HeaderArray) -> Result<BigUint, SPVError>
         }
 
         let target = btcspv::extract_target(header);
-        digest.copy_from_slice(&btcspv::hash256(&[&header]));
+        digest.copy_from_slice(&btcspv::hash256(&[header.as_ref()]));
         if !validate_header_work(digest, &target) {
             return Err(SPVError::InsufficientWork);
         }
@@ -202,8 +202,8 @@ mod tests {
                     inputs.get("prevHash").unwrap().as_str().unwrap(),
                 ));
 
-                let mut header: RawHeader = [0; 80];
-                header.copy_from_slice(&force_deserialize_hex(
+                let mut header = RawHeader::default();
+                header.as_mut().copy_from_slice(&force_deserialize_hex(
                     inputs.get("header").unwrap().as_str().unwrap(),
                 ));
 

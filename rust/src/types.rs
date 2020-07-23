@@ -91,7 +91,40 @@ impl PartialEq<&[u8]> for PayloadType<'_> {
 }
 
 /// A raw bitcoin header.
-pub type RawHeader = [u8; 80];
+#[derive(Copy, Clone)]
+pub struct RawHeader([u8; 80]);
+
+impl Default for RawHeader {
+    fn default() -> Self {
+        Self([0u8; 80])
+    }
+}
+
+impl From<[u8; 80]> for RawHeader {
+    fn from(buf: [u8; 80]) -> Self {
+        Self(buf)
+    }
+}
+
+impl AsRef<[u8; 80]> for RawHeader {
+    fn as_ref(&self) -> &[u8; 80] {
+        &self.0
+    }
+}
+
+impl AsMut<[u8; 80]> for RawHeader {
+    fn as_mut(&mut self) -> &mut [u8; 80] {
+        &mut self.0
+    }
+}
+
+impl<I: core::slice::SliceIndex<[u8]>> core::ops::Index<I> for RawHeader {
+    type Output = I::Output;
+
+    fn index(&self, index: I) -> &Self::Output {
+        self.as_ref().index(index)
+    }
+}
 
 /// A slice of `Hash256Digest`s for use in a merkle array
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -121,8 +154,8 @@ impl HeaderArray<'_> {
 
     /// Index into the merkle array
     pub fn index(&self, index: usize) -> RawHeader {
-        let mut header = [0u8; 80];
-        header.copy_from_slice(&self.0[index * 80..(index + 1) * 80]);
+        let mut header = RawHeader::default();
+        header.as_mut().copy_from_slice(&self.0[index * 80..(index + 1) * 80]);
         header
     }
 }

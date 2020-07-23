@@ -1,9 +1,14 @@
 extern crate serde_json;
 extern crate std;
 
-use std::{fmt, vec::Vec};
+use std::{
+    fmt,
+    format,
+    string::{String, ToString},
+    vec::Vec,
+};
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::btcspv;
 use crate::types::*;
@@ -12,6 +17,41 @@ use crate::validatespv;
 
 #[doc(hidden)]
 pub type RawBytes = Vec<u8>;
+
+
+impl<'de> Deserialize<'de> for RawHeader {
+    fn deserialize<D>(deserializer: D) -> Result<RawHeader, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s: &str = Deserialize::deserialize(deserializer)?;
+        let mut header = RawHeader::default();
+
+        let result = utils::deserialize_hex(s);
+
+        let deser: Vec<u8>;
+        match result {
+            Ok(v) => deser = v,
+            Err(e) => return Err(serde::de::Error::custom(e.to_string())),
+        }
+        if deser.len() != 80 {
+            let err_string: std::string::String = format!("Expected 80 bytes, got {:?} bytes", deser.len());
+            return Err(serde::de::Error::custom(err_string));
+        }
+        header.as_mut().copy_from_slice(&deser);
+        Ok(header)
+    }
+}
+
+impl Serialize for RawHeader {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s: &str = &utils::serialize_hex(self.as_ref());
+        serializer.serialize_str(s)
+    }
+}
 
 /// BitcoinHeader is a parsed Bitcoin header with height information appended.
 /// Values are LE
@@ -234,10 +274,6 @@ impl fmt::Display for SPVProof {
 mod internal_ser {
     use super::*;
     use serde::{Deserialize, Deserializer, Serializer};
-    use std::{
-        format,
-        string::{String, ToString},
-    };
 
     use crate::utils;
 
@@ -302,7 +338,7 @@ mod internal_ser {
             D: Deserializer<'de>,
         {
             let s: &str = Deserialize::deserialize(deserializer)?;
-            let mut header: RawHeader = [0; 80];
+            let mut header = RawHeader::default();
 
             let result = utils::deserialize_hex(s);
 
@@ -315,7 +351,7 @@ mod internal_ser {
                 let err_string: String = format!("Expected 80 bytes, got {:?} bytes", deser.len());
                 return Err(serde::de::Error::custom(err_string));
             }
-            header.copy_from_slice(&deser);
+            header.as_mut().copy_from_slice(&deser);
             Ok(header)
         }
 

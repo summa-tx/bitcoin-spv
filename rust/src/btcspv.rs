@@ -1115,8 +1115,8 @@ mod tests {
         test_utils::run_test(|fixtures| {
             let test_cases = test_utils::get_test_cases("extractTarget", &fixtures);
             for case in test_cases {
-                let mut input: RawHeader = [0; 80];
-                input.copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
+                let mut input = RawHeader::default();
+                input.as_mut().copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
                 let expected_bytes = force_deserialize_hex(case.output.as_str().unwrap());
                 let expected = BigUint::from_bytes_be(&expected_bytes);
                 assert_eq!(extract_target(input), expected);
@@ -1129,8 +1129,8 @@ mod tests {
         test_utils::run_test(|fixtures| {
             let test_cases = test_utils::get_test_cases("extractTimestamp", &fixtures);
             for case in test_cases {
-                let mut input: RawHeader = [0; 80];
-                input.copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
+                let mut input = RawHeader::default();
+                input.as_mut().copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
                 let expected = case.output.as_u64().unwrap() as u32;
                 assert_eq!(extract_timestamp(input), expected);
             }
