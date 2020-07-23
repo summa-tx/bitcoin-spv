@@ -53,7 +53,7 @@ pub fn validate_header_work(digest: Hash256Digest, target: &BigUint) -> bool {
         return false;
     }
 
-    BigUint::from_bytes_le(&digest[..]) < *target
+    BigUint::from_bytes_le(digest.as_ref()) < *target
 }
 
 /// Checks validity of header chain.
@@ -78,8 +78,9 @@ pub fn validate_header_prev_hash(header: RawHeader, prev_hash: Hash256Digest) ->
 ///
 /// * Errors if header chain is the wrong length, chain is invalid or insufficient work
 pub fn validate_header_chain(headers: &HeaderArray) -> Result<BigUint, SPVError> {
-    let mut digest: Hash256Digest = Default::default();
     let mut total_difficulty = BigUint::from(0 as u8);
+    // declared outside the loop for proper check ordering
+    let mut digest = Hash256Digest::default();
 
     for i in 0..headers.len() {
         let header = headers.index(i);
@@ -89,7 +90,7 @@ pub fn validate_header_chain(headers: &HeaderArray) -> Result<BigUint, SPVError>
         }
 
         let target = btcspv::extract_target(header);
-        digest.copy_from_slice(&btcspv::hash256(&[header.as_ref()]));
+        digest = btcspv::hash256(&[header.as_ref()]);
         if !validate_header_work(digest, &target) {
             return Err(SPVError::InsufficientWork);
         }
@@ -114,12 +115,12 @@ mod tests {
 
                 let mut txid: Hash256Digest = Default::default();
                 let id = force_deserialize_hex(inputs.get("txIdLE").unwrap().as_str().unwrap());
-                txid.copy_from_slice(&id);
+                txid.as_mut().copy_from_slice(&id);
 
                 let mut merkle_root: Hash256Digest = Default::default();
                 let root =
                     force_deserialize_hex(inputs.get("merkleRootLE").unwrap().as_str().unwrap());
-                merkle_root.copy_from_slice(&root);
+                merkle_root.as_mut().copy_from_slice(&root);
 
                 let proof = force_deserialize_hex(inputs.get("proof").unwrap().as_str().unwrap());
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as u64;
@@ -146,7 +147,7 @@ mod tests {
                 let locktime =
                     force_deserialize_hex(inputs.get("locktime").unwrap().as_str().unwrap());
                 let mut expected: Hash256Digest = Default::default();
-                expected.copy_from_slice(&force_deserialize_hex(case.output.as_str().unwrap()));
+                expected.as_mut().copy_from_slice(&force_deserialize_hex(case.output.as_str().unwrap()));
 
                 let mut ver = [0u8; 4];
                 ver.copy_from_slice(&version);
@@ -174,7 +175,7 @@ mod tests {
                 let inputs = case.input.as_object().unwrap();
 
                 let mut digest: Hash256Digest = Default::default();
-                digest.copy_from_slice(&force_deserialize_hex(
+                digest.as_mut().copy_from_slice(&force_deserialize_hex(
                     inputs.get("digest").unwrap().as_str().unwrap(),
                 ));
 
@@ -198,7 +199,7 @@ mod tests {
                 let inputs = case.input.as_object().unwrap();
 
                 let mut prev_hash: Hash256Digest = Default::default();
-                prev_hash.copy_from_slice(&force_deserialize_hex(
+                prev_hash.as_mut().copy_from_slice(&force_deserialize_hex(
                     inputs.get("prevHash").unwrap().as_str().unwrap(),
                 ));
 

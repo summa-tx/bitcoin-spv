@@ -161,7 +161,48 @@ impl HeaderArray<'_> {
 }
 
 /// A bitoin double-sha256 digest
-pub type Hash256Digest = [u8; 32];
+#[derive(Copy, Clone, PartialEq, Eq, Debug, Default)]
+pub struct Hash256Digest([u8; 32]);
+
+impl From<[u8; 32]> for Hash256Digest {
+    fn from(buf: [u8; 32]) -> Self {
+        Self(buf)
+    }
+}
+
+impl AsRef<[u8; 32]> for Hash256Digest {
+    fn as_ref(&self) -> &[u8; 32] {
+        &self.0
+    }
+}
+
+impl AsMut<[u8; 32]> for Hash256Digest {
+    fn as_mut(&mut self) -> &mut [u8; 32] {
+        &mut self.0
+    }
+}
+
+/// A bitcoin rmd160-of-sha256 digest
+#[derive(Copy, Clone, PartialEq, Eq, Debug, Default)]
+pub struct Hash160Digest([u8; 20]);
+
+impl From<[u8; 20]> for Hash160Digest {
+    fn from(buf: [u8; 20]) -> Self {
+        Self(buf)
+    }
+}
+
+impl AsRef<[u8; 20]> for Hash160Digest {
+    fn as_ref(&self) -> &[u8; 20] {
+        &self.0
+    }
+}
+
+impl AsMut<[u8; 20]> for Hash160Digest {
+    fn as_mut(&mut self) -> &mut [u8; 20] {
+        &mut self.0
+    }
+}
 
 /// A slice of `Hash256Digest`s for use in a merkle array
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -191,14 +232,11 @@ impl MerkleArray<'_> {
 
     /// Index into the merkle array
     pub fn index(&self, index: usize) -> Hash256Digest {
-        let mut digest = [0u8; 32];
-        digest.copy_from_slice(&self.0[index * 32..(index + 1) * 32]);
+        let mut digest = Hash256Digest::default();
+        digest.as_mut().copy_from_slice(&self.0[index * 32..(index + 1) * 32]);
         digest
     }
 }
-
-/// A bitcoin rmd160-of-sha256 digest
-pub type Hash160Digest = [u8; 20];
 
 /// A Bitcoin-formatted `CompactInt`
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]

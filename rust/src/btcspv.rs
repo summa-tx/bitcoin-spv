@@ -46,7 +46,8 @@ pub fn hash160(preimage: &[u8]) -> Hash160Digest {
     let mut rmd = Ripemd160::new();
     rmd.input(digest);
 
-    rmd.result().into()
+    let buf: [u8;20] = rmd.result().into();
+    buf.into()
 }
 
 /// Implements bitcoin's hash256 (double sha2).
@@ -64,7 +65,8 @@ pub fn hash256(preimages: &[&[u8]]) -> Hash256Digest {
 
     let mut second_sha = Sha256::new();
     second_sha.input(digest);
-    second_sha.result().into()
+    let buf: [u8; 32] = second_sha.result().into();
+    buf.into()
 }
 
 //
@@ -229,8 +231,8 @@ pub fn extract_outpoint<'a>(tx_in: &'a TxIn<'a>) -> Outpoint<'a> {
 ///
 /// * `outpoint` - The outpoint extracted from the input
 pub fn extract_input_tx_id_le(outpoint: &Outpoint) -> Hash256Digest {
-    let mut txid = [0u8; 32];
-    txid.copy_from_slice(&outpoint[0..32]);
+    let mut txid = Hash256Digest::default();
+    txid.as_mut().copy_from_slice(&outpoint[0..32]);
     txid
 }
 
@@ -511,8 +513,8 @@ pub fn validate_vout(vout: &[u8]) -> bool {
 ///
 /// * `header` - An 80-byte Bitcoin header
 pub fn extract_merkle_root_le(header: RawHeader) -> Hash256Digest {
-    let mut root: [u8; 32] = Default::default();
-    root.copy_from_slice(&header[36..68]);
+    let mut root = Hash256Digest::default();
+    root.as_mut().copy_from_slice(&header[36..68]);
     root
 }
 
@@ -555,8 +557,8 @@ pub fn calculate_difficulty(target: &BigUint) -> BigUint {
 ///
 /// * `header` - An 80-byte Bitcoin header
 pub fn extract_prev_block_hash_le(header: RawHeader) -> Hash256Digest {
-    let mut root: [u8; 32] = Default::default();
-    root.copy_from_slice(&header[4..36]);
+    let mut root = Hash256Digest::default();
+    root.as_mut().copy_from_slice(&header[4..36]);
     root
 }
 
@@ -631,9 +633,9 @@ pub fn verify_hash256_merkle(
         let next = intermediate_nodes.index(i);
 
         if idx % 2 == 1 {
-            current = hash256_merkle_step(&next, &current);
+            current = hash256_merkle_step(next.as_ref(), current.as_ref());
         } else {
-            current = hash256_merkle_step(&current, &next);
+            current = hash256_merkle_step(current.as_ref(), next.as_ref());
         }
         idx >>= 1;
     }
@@ -725,9 +727,9 @@ mod tests {
             let test_cases = test_utils::get_test_cases("hash160", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let mut expected: [u8; 20] = Default::default();
+                let mut expected = Hash160Digest::default();
                 let output = force_deserialize_hex(case.output.as_str().unwrap());
-                expected.copy_from_slice(&output);
+                expected.as_mut().copy_from_slice(&output);
                 assert_eq!(hash160(&input), expected);
             }
         })
@@ -739,9 +741,9 @@ mod tests {
             let test_cases = test_utils::get_test_cases("hash256", &fixtures);
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
-                let mut expected: [u8; 32] = Default::default();
+                let mut expected = Hash256Digest::default();
                 let output = force_deserialize_hex(case.output.as_str().unwrap());
-                expected.copy_from_slice(&output);
+                expected.as_mut().copy_from_slice(&output);
                 assert_eq!(hash256(&[&input]), expected);
             }
         })
@@ -755,9 +757,9 @@ mod tests {
                 let inputs = case.input.as_array().unwrap();
                 let a = force_deserialize_hex(inputs[0].as_str().unwrap());
                 let b = force_deserialize_hex(inputs[1].as_str().unwrap());
-                let mut expected: [u8; 32] = Default::default();
+                let mut expected = Hash256Digest::default();
                 let output = force_deserialize_hex(case.output.as_str().unwrap());
-                expected.copy_from_slice(&output);
+                expected.as_mut().copy_from_slice(&output);
                 assert_eq!(hash256_merkle_step(&a, &b), expected);
             }
         })
@@ -917,7 +919,7 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(
-                    extract_input_tx_id_le(&extract_outpoint(&TxIn(&input))),
+                    extract_input_tx_id_le(&extract_outpoint(&TxIn(&input))).as_ref(),
                     expected
                 );
             }
@@ -1157,8 +1159,8 @@ mod tests {
                 let mut root = Hash256Digest::default();
                 let mut txid = Hash256Digest::default();
                 println!("{:?}", extended_proof);
-                root.copy_from_slice(&extended_proof[proof_len - 32..]);
-                txid.copy_from_slice(&extended_proof[..32]);
+                root.as_mut().copy_from_slice(&extended_proof[proof_len - 32..]);
+                txid.as_mut().copy_from_slice(&extended_proof[..32]);
 
                 let proof = if proof_len > 64 {
                     extended_proof[32..proof_len - 32].to_vec()

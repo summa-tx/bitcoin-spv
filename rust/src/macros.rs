@@ -81,3 +81,45 @@ macro_rules! compact_int_conv {
         }
     };
 }
+
+
+macro_rules! impl_hex_serde {
+    ($name:ty, $num:expr) => {
+        #[cfg(feature = "std")]
+        impl<'de> serde::Deserialize<'de> for $name {
+            fn deserialize<D>(deserializer: D) -> Result<$name, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                let s: &str = serde::Deserialize::deserialize(deserializer)?;
+                let mut header = <$name>::default();
+
+                let result = utils::deserialize_hex(s);
+
+                let deser: Vec<u8>;
+                match result {
+                    Ok(v) => deser = v,
+                    Err(e) => return Err(serde::de::Error::custom(e.to_string())),
+                }
+                if deser.len() != $num {
+                    let err_string: std::string::String = std::format!("Expected {} bytes, got {:?} bytes", stringify!($num), deser.len());
+                    return Err(serde::de::Error::custom(err_string));
+                }
+                header.as_mut().copy_from_slice(&deser);
+                Ok(header)
+            }
+        }
+
+        #[cfg(feature = "std")]
+        impl serde::Serialize for $name {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
+                let s: &str = &utils::serialize_hex(self.as_ref());
+                serializer.serialize_str(s)
+            }
+        }
+
+    }
+}

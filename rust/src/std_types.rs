@@ -3,73 +3,39 @@ extern crate std;
 
 use std::{
     fmt,
-    format,
-    string::{String, ToString},
+    string::ToString,
     vec::Vec,
 };
 
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 
-use crate::btcspv;
-use crate::types::*;
-use crate::utils;
-use crate::validatespv;
+use crate::{
+    btcspv,
+    types::*,
+    utils,
+    validatespv,
+};
+
+impl_hex_serde!(RawHeader, 80);
+impl_hex_serde!(Hash256Digest, 32);
+impl_hex_serde!(Hash160Digest, 20);
 
 #[doc(hidden)]
 pub type RawBytes = Vec<u8>;
-
-
-impl<'de> Deserialize<'de> for RawHeader {
-    fn deserialize<D>(deserializer: D) -> Result<RawHeader, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s: &str = Deserialize::deserialize(deserializer)?;
-        let mut header = RawHeader::default();
-
-        let result = utils::deserialize_hex(s);
-
-        let deser: Vec<u8>;
-        match result {
-            Ok(v) => deser = v,
-            Err(e) => return Err(serde::de::Error::custom(e.to_string())),
-        }
-        if deser.len() != 80 {
-            let err_string: std::string::String = format!("Expected 80 bytes, got {:?} bytes", deser.len());
-            return Err(serde::de::Error::custom(err_string));
-        }
-        header.as_mut().copy_from_slice(&deser);
-        Ok(header)
-    }
-}
-
-impl Serialize for RawHeader {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let s: &str = &utils::serialize_hex(self.as_ref());
-        serializer.serialize_str(s)
-    }
-}
 
 /// BitcoinHeader is a parsed Bitcoin header with height information appended.
 /// Values are LE
 #[derive(Clone, Deserialize, Serialize)]
 pub struct BitcoinHeader {
     /// The double-sha2 digest encoded BE.
-    #[serde(with = "internal_ser::digest_ser")]
     pub hash: Hash256Digest,
     /// The 80-byte raw header.
-    #[serde(with = "internal_ser::raw_ser")]
     pub raw: RawHeader,
     /// The height of the header
     pub height: u32,
     /// The double-sha2 digest of the parent encoded BE.
-    #[serde(with = "internal_ser::digest_ser")]
     pub prevhash: Hash256Digest,
     /// The double-sha2 merkle tree root of the block transactions encoded BE.
-    #[serde(with = "internal_ser::digest_ser")]
     pub merkle_root: Hash256Digest,
 }
 
@@ -85,13 +51,13 @@ impl BitcoinHeader {
     /// * Errors if any of the Bitcoin header elements are invalid.
     pub fn validate(&self) -> Result<(), SPVError> {
         let raw_as_slice = &self.raw[..];
-        if self.hash[..] != btcspv::hash256(&[raw_as_slice]) {
+        if self.hash != btcspv::hash256(&[raw_as_slice]) {
             return Err(SPVError::WrongDigest);
         }
-        if self.merkle_root[..] != btcspv::extract_merkle_root_le(self.raw) {
+        if self.merkle_root != btcspv::extract_merkle_root_le(self.raw) {
             return Err(SPVError::WrongMerkleRoot);
         }
-        if self.prevhash[..] != btcspv::extract_prev_block_hash_le(self.raw) {
+        if self.prevhash != btcspv::extract_prev_block_hash_le(self.raw) {
             return Err(SPVError::WrongPrevHash);
         }
         Ok(())
@@ -166,7 +132,6 @@ pub struct SPVProof {
     #[serde(with = "internal_ser::vec_ser")]
     pub locktime: RawBytes,
     /// The tx id
-    #[serde(with = "internal_ser::digest_ser")]
     pub tx_id: Hash256Digest,
     /// The transaction index
     pub index: u32,
@@ -207,7 +172,7 @@ impl SPVProof {
             &Vout::new(&self.vout)?,
             &lock,
         );
-        if tx_id[..] != self.tx_id[..] {
+        if tx_id != self.tx_id {
             return Err(SPVError::WrongTxID);
         }
 
@@ -236,7 +201,7 @@ impl fmt::Debug for SPVProof {
         write!(
             f,
             "\nSPVProof (\n\ttx_id:\t{}\n\tindex:\t{}\n\th:\t",
-            utils::serialize_hex(&self.tx_id[..]),
+            utils::serialize_hex(self.tx_id.as_ref()),
             self.index
         )?;
         self.confirming_header.fmt(f)?;
@@ -259,7 +224,7 @@ impl fmt::Display for SPVProof {
         write!(
             f,
             "\nSPVProof (\n\ttx_id:\t{}\n\tindex:\t{}\n\th:\t",
-            utils::serialize_hex(&self.tx_id[..]),
+            utils::serialize_hex(self.tx_id.as_ref()),
             self.index
         )?;
         self.confirming_header.fmt(f)?;
@@ -289,73 +254,6 @@ mod internal_ser {
         }
 
         pub fn serialize<S>(d: &[u8], serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-        {
-            let s: &str = &utils::serialize_hex(&d[..]);
-            serializer.serialize_str(s)
-        }
-    }
-
-    pub mod digest_ser {
-        use super::*;
-
-        pub fn deserialize<'de, D>(deserializer: D) -> Result<Hash256Digest, D::Error>
-        where
-            D: Deserializer<'de>,
-        {
-            let s: &str = Deserialize::deserialize(deserializer)?;
-            let mut digest: Hash256Digest = Default::default();
-            let result = utils::deserialize_hex(s);
-
-            let deser: Vec<u8>;
-            match result {
-                Ok(v) => deser = v,
-                Err(e) => return Err(serde::de::Error::custom(e.to_string())),
-            }
-            if deser.len() != 32 {
-                let err_string: String = format!("Expected 32 bytes, got {:?} bytes", deser.len());
-                return Err(serde::de::Error::custom(err_string));
-            }
-            digest.copy_from_slice(&deser);
-            Ok(digest)
-        }
-
-        pub fn serialize<S>(d: &Hash256Digest, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-        {
-            let s: &str = &utils::serialize_hex(&d[..]);
-            serializer.serialize_str(s)
-        }
-    }
-
-    pub mod raw_ser {
-        use super::*;
-
-        pub fn deserialize<'de, D>(deserializer: D) -> Result<RawHeader, D::Error>
-        where
-            D: Deserializer<'de>,
-        {
-            let s: &str = Deserialize::deserialize(deserializer)?;
-            let mut header = RawHeader::default();
-
-            let result = utils::deserialize_hex(s);
-
-            let deser: Vec<u8>;
-            match result {
-                Ok(v) => deser = v,
-                Err(e) => return Err(serde::de::Error::custom(e.to_string())),
-            }
-            if deser.len() != 80 {
-                let err_string: String = format!("Expected 80 bytes, got {:?} bytes", deser.len());
-                return Err(serde::de::Error::custom(err_string));
-            }
-            header.as_mut().copy_from_slice(&deser);
-            Ok(header)
-        }
-
-        pub fn serialize<S>(d: &RawHeader, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
         {
