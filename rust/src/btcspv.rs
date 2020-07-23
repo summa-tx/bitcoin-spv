@@ -10,24 +10,24 @@ use crate::types::*;
 ///
 /// # Arguments
 ///
-/// * `b` - A byte-string starting with a CompactInt
+/// * `buf` - A byte-string starting with a CompactInt
 ///
 /// # Returns
 ///
 /// * (length, number) - the length of the data in bytes, and the number it represents
-pub fn parse_compact_int<T: AsRef<[u8]> + ?Sized>(t: &T) -> Result<CompactInt, SPVError> {
-    let b = t.as_ref();
-    let length = CompactInt::data_length(b[0]) as usize;
+pub fn parse_compact_int<T: AsRef<[u8]> + ?Sized>(buf: &T) -> Result<CompactInt, SPVError> {
+    let buf = buf.as_ref();
+    let length = CompactInt::data_length(buf[0]) as usize;
 
     if length == 0 {
-        return Ok(b[0].into());
+        return Ok(buf[0].into());
     }
-    if b.len() < 1 + length {
+    if buf.len() < 1 + length {
         return Err(SPVError::BadCompactInt);
     }
 
     let mut num_bytes = [0u8; 8];
-    num_bytes[..length].copy_from_slice(&b[1..=length]);
+    num_bytes[..length].copy_from_slice(&buf[1..=length]);
 
     Ok(u64::from_le_bytes(num_bytes).into())
 }
@@ -251,7 +251,7 @@ pub fn extract_tx_index_le(outpoint: &Outpoint) -> [u8; 4] {
 ///
 /// # Arguments
 ///
-/// * `tx_in` - The input
+/// * `outpoint` - The outpoint extracted from the input
 pub fn extract_tx_index(outpoint: &Outpoint) -> u32 {
     let mut arr: [u8; 4] = [0u8; 4];
     let b = extract_tx_index_le(outpoint);
@@ -357,11 +357,11 @@ pub fn extract_script_pubkey<'a>(tx_out: &'a TxOut<'a>) -> ScriptPubkey<'a> {
 ///
 /// # Arguments
 ///
-/// * `tx_out` - The output
+/// * `spk` - The script pubkey extracted from the output
 ///
 /// # Errors
 ///
-/// * Errors if the op return output is malformatted
+/// * Errors if the spk is not a properly formatted op return
 pub fn extract_op_return_data<'a>(
     spk: &'a ScriptPubkey<'a>,
 ) -> Result<OpReturnPayload<'a>, SPVError> {
@@ -381,11 +381,12 @@ pub fn extract_op_return_data<'a>(
 ///
 /// # Arguments
 ///
-/// * `tx_out` - The output
+/// * `spk` - The script pubkey extracted from the output
 ///
 /// # Errors
 ///
-/// * Errors if the WITNESS, P2PKH or P2SH outputs are malformatted
+/// * Errors if spk is not a validly formatted standard hash-commitment output type
+/// (i.e. PKH, SH, WPKH, or WSH).
 pub fn extract_hash<'a>(spk: &'a ScriptPubkey<'a>) -> Result<PayloadType, SPVError> {
     let tag = &spk[..3];
 
@@ -402,10 +403,11 @@ pub fn extract_hash<'a>(spk: &'a ScriptPubkey<'a>) -> Result<PayloadType, SPVErr
         }
 
         if payload_len + 2 == script_len {
+            let payload = &spk[3..3 + payload_len as usize];
             match payload_len {
-                0x20 => return Ok(PayloadType::WSH(&spk[3..3 + payload_len as usize])),
-                0x14 => return Ok(PayloadType::WPKH(&spk[3..3 + payload_len as usize])),
-                _ => {}
+                0x20 => return Ok(PayloadType::WSH(payload)),
+                0x14 => return Ok(PayloadType::WPKH(payload)),
+                _ => {}  // fall through to error
             }
         }
         return Err(SPVError::MalformattedWitnessOutput);
