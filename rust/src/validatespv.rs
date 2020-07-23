@@ -61,10 +61,10 @@ pub fn validate_header_work(digest: Hash256Digest, target: &BigUint) -> bool {
 /// # Arguments
 ///
 /// * `header` - The raw bytes header
-/// * `prev_hash` - The previous header's digest
-pub fn validate_header_prev_hash(header: RawHeader, prev_hash: Hash256Digest) -> bool {
-    let actual = btcspv::extract_prev_block_hash_le(header);
-    actual == prev_hash
+/// * `expected` - The expected previous header's digest
+pub fn validate_header_prev_hash(header: RawHeader, expected: Hash256Digest) -> bool {
+    let actual = header.parent();
+    actual == expected
 }
 
 /// Checks validity of header chain.
@@ -89,7 +89,7 @@ pub fn validate_header_chain(headers: &HeaderArray) -> Result<BigUint, SPVError>
             return Err(SPVError::InvalidChain);
         }
 
-        let target = btcspv::extract_target(header);
+        let target = header.target();
         digest = btcspv::hash256(&[header.as_ref()]);
         if !validate_header_work(digest, &target) {
             return Err(SPVError::InsufficientWork);

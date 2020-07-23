@@ -50,14 +50,13 @@ impl BitcoinHeader {
     ///
     /// * Errors if any of the Bitcoin header elements are invalid.
     pub fn validate(&self) -> Result<(), SPVError> {
-        let raw_as_slice = &self.raw[..];
-        if self.hash != btcspv::hash256(&[raw_as_slice]) {
+        if self.hash != self.raw.digest() {
             return Err(SPVError::WrongDigest);
         }
-        if self.merkle_root != btcspv::extract_merkle_root_le(self.raw) {
+        if self.merkle_root != self.raw.tx_root() {
             return Err(SPVError::WrongMerkleRoot);
         }
-        if self.prevhash != btcspv::extract_prev_block_hash_le(self.raw) {
+        if self.prevhash != self.raw.parent() {
             return Err(SPVError::WrongPrevHash);
         }
         Ok(())
@@ -72,7 +71,7 @@ impl PartialEq for BitcoinHeader {
     /// * `self` - The Bitcoin header
     /// * ` other` - The second Bitcoin header
     fn eq(&self, other: &Self) -> bool {
-        self.raw[..] == other.raw[..]
+        self.raw == other.raw
             && self.hash == other.hash
             && self.height == other.height
             && self.prevhash == other.prevhash
@@ -94,7 +93,7 @@ impl fmt::Debug for BitcoinHeader {
             f,
             "Header (height {:?}:\t{})",
             self.height,
-            utils::serialize_hex(&self.raw[..])
+            utils::serialize_hex(self.raw.as_ref())
         )
     }
 }
@@ -111,7 +110,7 @@ impl fmt::Display for BitcoinHeader {
             f,
             "Header (height {:?}:\t{})",
             self.height,
-            utils::serialize_hex(&self.raw[..])
+            utils::serialize_hex(self.raw.as_ref())
         )
     }
 }
@@ -208,7 +207,7 @@ impl fmt::Debug for SPVProof {
         write!(
             f,
             "\n\tproof:\t{})\n",
-            utils::serialize_hex(&self.intermediate_nodes[..])
+            utils::serialize_hex(self.intermediate_nodes.as_ref())
         )
     }
 }
@@ -231,7 +230,7 @@ impl fmt::Display for SPVProof {
         write!(
             f,
             "\n\tproof:\t{})\n",
-            utils::serialize_hex(&self.intermediate_nodes[..])
+            utils::serialize_hex(self.intermediate_nodes.as_ref())
         )
     }
 }

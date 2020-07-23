@@ -151,7 +151,7 @@ pub fn determine_input_length(tx_in: &[u8]) -> Result<usize, SPVError> {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_sequence_le_legacy<'a>(tx_in: &TxIn<'a>) -> Result<[u8; 4], SPVError> {
+pub fn extract_sequence_le<'a>(tx_in: &TxIn<'a>) -> Result<[u8; 4], SPVError> {
     let script_sig_len = extract_script_sig_len(tx_in)?;
     let offset: usize = 36 + script_sig_len.serialized_length() + script_sig_len.as_usize();
 
@@ -166,9 +166,9 @@ pub fn extract_sequence_le_legacy<'a>(tx_in: &TxIn<'a>) -> Result<[u8; 4], SPVEr
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_sequence_legacy<'a>(tx_in: &TxIn<'a>) -> Result<u32, SPVError> {
+pub fn extract_sequence<'a>(tx_in: &TxIn<'a>) -> Result<u32, SPVError> {
     let mut arr: [u8; 4] = [0u8; 4];
-    let b = extract_sequence_le_legacy(tx_in)?;
+    let b = extract_sequence_le(tx_in)?;
     arr.copy_from_slice(&b[..]);
     Ok(u32::from_le_bytes(arr))
 }
@@ -183,35 +183,6 @@ pub fn extract_script_sig<'a>(tx_in: &'a TxIn<'a>) -> Result<ScriptSig<'a>, SPVE
     let script_sig_len = extract_script_sig_len(tx_in)?;
     let length = script_sig_len.serialized_length() + script_sig_len.as_usize();
     Ok(ScriptSig(&tx_in[36..36 + length]))
-}
-
-//
-// Witness Output
-//
-
-/// Extracts the LE sequence bytes from an input.
-/// Sequence is used for relative time locks.
-///
-/// # Arguments
-///
-/// * `tx_in` - The WITNESS input
-pub fn extract_sequence_le_witness<'a>(tx_in: &TxIn<'a>) -> [u8; 4] {
-    let mut sequence = [0u8; 4];
-    sequence.copy_from_slice(&tx_in[37..41]);
-    sequence
-}
-
-/// Extracts the sequence from the input in a tx.
-/// Sequence is a 4-byte little-endian number.
-///
-/// # Arguments
-///
-/// * `tx_in` - The WITNESS input
-pub fn extract_sequence_witness<'a>(tx_in: &TxIn<'a>) -> u32 {
-    let mut arr: [u8; 4] = [0u8; 4];
-    let b = extract_sequence_le_witness(tx_in);
-    arr.copy_from_slice(&b[..]);
-    u32::from_le_bytes(arr)
 }
 
 /// Extracts the outpoint from the input in a tx,
@@ -788,7 +759,7 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
                 assert_eq!(
-                    &extract_sequence_le_legacy(&TxIn(&input)).unwrap(),
+                    &extract_sequence_le(&TxIn(&input)).unwrap(),
                     expected
                 );
             }
@@ -802,7 +773,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = case.output.as_u64().unwrap() as u32;
-                assert_eq!(extract_sequence_legacy(&TxIn(&input)).unwrap(), expected);
+                assert_eq!(extract_sequence(&TxIn(&input)).unwrap(), expected);
             }
         })
     }
@@ -882,7 +853,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(extract_sequence_le_witness(&TxIn(&input)), expected);
+                assert_eq!(extract_sequence_le(&TxIn(&input)).unwrap(), expected);
             }
         })
     }
@@ -894,7 +865,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected = case.output.as_u64().unwrap() as u32;
-                assert_eq!(extract_sequence_witness(&TxIn(&input)), expected);
+                assert_eq!(extract_sequence(&TxIn(&input)).unwrap(), expected);
             }
         })
     }

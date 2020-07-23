@@ -1,3 +1,5 @@
+use num::bigint::BigUint;
+
 /// enum for bitcoin-spv errors
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum SPVError {
@@ -93,6 +95,46 @@ impl PartialEq<&[u8]> for PayloadType<'_> {
 /// A raw bitcoin header.
 #[derive(Copy, Clone)]
 pub struct RawHeader([u8; 80]);
+
+impl PartialEq for RawHeader {
+    fn eq(&self, other: &Self) -> bool {
+        self.0[..] == other.0[..]
+    }
+}
+
+impl Eq for RawHeader {}
+
+impl RawHeader {
+    /// Calculate the LE header digest
+    pub fn digest(&self) -> Hash256Digest {
+        crate::btcspv::hash256(&[self.as_ref()])
+    }
+
+    /// Extract the LE tx merkle root from the header
+    pub fn tx_root(&self) -> Hash256Digest {
+        crate::btcspv::extract_merkle_root_le(*self)
+    }
+
+    /// Extract the target from the header
+    pub fn target(&self) -> BigUint {
+        crate::btcspv::extract_target(*self)
+    }
+
+    /// Extract the difficulty from the header
+    pub fn difficulty(&self) -> BigUint {
+        crate::btcspv::extract_difficulty(*self)
+    }
+
+    /// Extract the timestamp from the header
+    pub fn timestamp(&self) -> u32 {
+        crate::btcspv::extract_timestamp(*self)
+    }
+
+    /// Extract the LE parent digest from the header
+    pub fn parent(&self) -> Hash256Digest {
+        crate::btcspv::extract_prev_block_hash_le(*self)
+    }
+}
 
 impl Default for RawHeader {
     fn default() -> Self {
@@ -332,7 +374,7 @@ impl TxIn<'_> {
 
     /// Extract the sequence number from the TxIn
     pub fn sequence(&self) -> u32 {
-        crate::btcspv::extract_sequence_legacy(self).expect("Not malformed")
+        crate::btcspv::extract_sequence(self).expect("Not malformed")
     }
 
     /// Extract the script sig from the TxIn
