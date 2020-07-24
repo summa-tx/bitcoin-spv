@@ -77,19 +77,29 @@ pub fn validate_header_prev_hash(header: RawHeader, expected: Hash256Digest) -> 
 /// # Errors
 ///
 /// * Errors if header chain is the wrong length, chain is invalid or insufficient work
-pub fn validate_header_chain(headers: &HeaderArray) -> Result<BigUint, SPVError> {
+pub fn validate_header_chain(
+    headers: &HeaderArray,
+    constant_difficulty: bool,
+) -> Result<BigUint, SPVError> {
     let mut total_difficulty = BigUint::from(0 as u8);
     // declared outside the loop for proper check ordering
     let mut digest = Hash256Digest::default();
+    let mut target = BigUint::default();
 
     for i in 0..headers.len() {
         let header = headers.index(i);
+
+        if i == 0 {
+            target = header.target();
+        }
+        if constant_difficulty && header.target() != target {
+            return Err(SPVError::UnexpectedDifficultyChange);
+        }
 
         if i != 0 && !validate_header_prev_hash(header, digest) {
             return Err(SPVError::InvalidChain);
         }
 
-        let target = header.target();
         digest = btcspv::hash256(&[header.as_ref()]);
         if !validate_header_work(digest, &target) {
             return Err(SPVError::InsufficientWork);
@@ -147,7 +157,9 @@ mod tests {
                 let locktime =
                     force_deserialize_hex(inputs.get("locktime").unwrap().as_str().unwrap());
                 let mut expected: Hash256Digest = Default::default();
-                expected.as_mut().copy_from_slice(&force_deserialize_hex(case.output.as_str().unwrap()));
+                expected
+                    .as_mut()
+                    .copy_from_slice(&force_deserialize_hex(case.output.as_str().unwrap()));
 
                 let mut ver = [0u8; 4];
                 ver.copy_from_slice(&version);
@@ -223,7 +235,7 @@ mod tests {
                 let output = case.output.as_u64().unwrap();
                 let expected = BigUint::from(output);
                 assert_eq!(
-                    validate_header_chain(&HeaderArray::new(&input).unwrap()).unwrap(),
+                    validate_header_chain(&HeaderArray::new(&input).unwrap(), false).unwrap(),
                     expected
                 );
             }
@@ -239,7 +251,7 @@ mod tests {
                 let expected =
                     test_utils::match_string_to_err(case.error_message.as_str().unwrap());
                 if let Ok(headers) = HeaderArray::new(&input) {
-                    match validate_header_chain(&headers) {
+                    match validate_header_chain(&headers, false) {
                         Ok(_) => assert!(false, "expected an error"),
                         Err(v) => assert_eq!(v, expected),
                     }

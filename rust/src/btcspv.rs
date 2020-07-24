@@ -46,7 +46,7 @@ pub fn hash160(preimage: &[u8]) -> Hash160Digest {
     let mut rmd = Ripemd160::new();
     rmd.input(digest);
 
-    let buf: [u8;20] = rmd.result().into();
+    let buf: [u8; 20] = rmd.result().into();
     buf.into()
 }
 
@@ -380,7 +380,7 @@ pub fn extract_hash<'a>(spk: &'a ScriptPubkey<'a>) -> Result<PayloadType, SPVErr
             match payload_len {
                 0x20 => return Ok(PayloadType::WSH(payload)),
                 0x14 => return Ok(PayloadType::WPKH(payload)),
-                _ => {}  // fall through to error
+                _ => {} // fall through to error
             }
         }
         return Err(SPVError::MalformattedWitnessOutput);
@@ -758,10 +758,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected: &[u8] = &force_deserialize_hex(case.output.as_str().unwrap());
-                assert_eq!(
-                    &extract_sequence_le(&TxIn(&input)).unwrap(),
-                    expected
-                );
+                assert_eq!(&extract_sequence_le(&TxIn(&input)).unwrap(), expected);
             }
         })
     }
@@ -1089,7 +1086,9 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractTarget", &fixtures);
             for case in test_cases {
                 let mut input = RawHeader::default();
-                input.as_mut().copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
+                input
+                    .as_mut()
+                    .copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
                 let expected_bytes = force_deserialize_hex(case.output.as_str().unwrap());
                 let expected = BigUint::from_bytes_be(&expected_bytes);
                 assert_eq!(extract_target(input), expected);
@@ -1103,7 +1102,9 @@ mod tests {
             let test_cases = test_utils::get_test_cases("extractTimestamp", &fixtures);
             for case in test_cases {
                 let mut input = RawHeader::default();
-                input.as_mut().copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
+                input
+                    .as_mut()
+                    .copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
                 let expected = case.output.as_u64().unwrap() as u32;
                 assert_eq!(extract_timestamp(input), expected);
             }
@@ -1130,7 +1131,8 @@ mod tests {
                 let mut root = Hash256Digest::default();
                 let mut txid = Hash256Digest::default();
                 println!("{:?}", extended_proof);
-                root.as_mut().copy_from_slice(&extended_proof[proof_len - 32..]);
+                root.as_mut()
+                    .copy_from_slice(&extended_proof[proof_len - 32..]);
                 txid.as_mut().copy_from_slice(&extended_proof[..32]);
 
                 let proof = if proof_len > 64 {

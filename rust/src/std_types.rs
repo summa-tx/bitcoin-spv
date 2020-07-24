@@ -1,20 +1,11 @@
 extern crate serde_json;
 extern crate std;
 
-use std::{
-    fmt,
-    string::ToString,
-    vec::Vec,
-};
+use std::{fmt, string::ToString, vec::Vec};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    btcspv,
-    types::*,
-    utils,
-    validatespv,
-};
+use crate::{btcspv, types::*, utils, validatespv};
 
 impl_hex_serde!(RawHeader, 80);
 impl_hex_serde!(Hash256Digest, 32);

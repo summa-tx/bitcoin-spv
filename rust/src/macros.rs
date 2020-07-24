@@ -82,7 +82,6 @@ macro_rules! compact_int_conv {
     };
 }
 
-
 macro_rules! impl_hex_serde {
     ($name:ty, $num:expr) => {
         #[cfg(feature = "std")]
@@ -102,7 +101,11 @@ macro_rules! impl_hex_serde {
                     Err(e) => return Err(serde::de::Error::custom(e.to_string())),
                 }
                 if deser.len() != $num {
-                    let err_string: std::string::String = std::format!("Expected {} bytes, got {:?} bytes", stringify!($num), deser.len());
+                    let err_string: std::string::String = std::format!(
+                        "Expected {} bytes, got {:?} bytes",
+                        stringify!($num),
+                        deser.len()
+                    );
                     return Err(serde::de::Error::custom(err_string));
                 }
                 header.as_mut().copy_from_slice(&deser);
@@ -120,6 +123,5 @@ macro_rules! impl_hex_serde {
                 serializer.serialize_str(s)
             }
         }
-
-    }
+    };
 }

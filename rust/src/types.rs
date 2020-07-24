@@ -19,6 +19,8 @@ pub enum SPVError {
     MalformattedOutput,
     /// Header not exactly 80 bytes.
     WrongLengthHeader,
+    /// Header chain changed difficulties unexpectedly
+    UnexpectedDifficultyChange,
     /// Header does not meet its own difficulty target.
     InsufficientWork,
     /// Header in chain does not correctly reference parent header.
@@ -26,21 +28,12 @@ pub enum SPVError {
     /// When validating a `BitcoinHeader`, the `hash` field is not the digest
     /// of the raw header.
     WrongDigest,
-    /// When validating a `BitcoinHeader`, the `hash` and `hash_le` fields
-    /// do not match.
-    NonMatchingDigests,
     /// When validating a `BitcoinHeader`, the `merkle_root` field does not
     /// match the root found in the raw header.
     WrongMerkleRoot,
-    /// When validating a `BitcoinHeader`, the `merkle_root` and
-    /// `merkle_root_le` fields do not match.
-    NonMatchingMerkleRoots,
     /// When validating a `BitcoinHeader`, the `prevhash` field does not
     /// match the parent hash found in the raw header.
     WrongPrevHash,
-    /// When validating a `BitcoinHeader`, the `prevhash` and
-    /// `prevhash_le` fields do not match.
-    NonMatchingPrevhashes,
     /// A `vin` (transaction input vector) is malformatted.
     InvalidVin,
     /// A `vout` (transaction output vector) is malformatted.
@@ -105,6 +98,17 @@ impl PartialEq for RawHeader {
 impl Eq for RawHeader {}
 
 impl RawHeader {
+    /// Try to instantiate a new RawHeader from some bytes. Errors if the bytearray is not 80
+    /// bytes or more.
+    pub fn new<T: AsRef<[u8]>>(buf: &T) -> Result<Self, SPVError> {
+        if buf.as_ref().len() < 80 {
+            return Err(SPVError::WrongLengthHeader);
+        }
+        let mut header = Self::default();
+        header.as_mut().copy_from_slice(&buf.as_ref()[..80]);
+        Ok(header)
+    }
+
     /// Calculate the LE header digest
     pub fn digest(&self) -> Hash256Digest {
         crate::btcspv::hash256(&[self.as_ref()])
@@ -194,11 +198,52 @@ impl HeaderArray<'_> {
         self.0.is_empty()
     }
 
-    /// Index into the merkle array
+    /// Index into the merkle array. This does not protect you from overruns, which may result in
+    /// panics.
     pub fn index(&self, index: usize) -> RawHeader {
         let mut header = RawHeader::default();
-        header.as_mut().copy_from_slice(&self.0[index * 80..(index + 1) * 80]);
         header
+            .as_mut()
+            .copy_from_slice(&self.0[index * 80..(index + 1) * 80]);
+        header
+    }
+
+    /// Validate the header array. Return either the accumulated difficulty, or an error
+    pub fn valid_difficulty(&self, constant_difficulty: bool) -> Result<BigUint, SPVError> {
+        crate::validatespv::validate_header_chain(self, constant_difficulty)
+    }
+
+    /// Return a new iterator for the header array.
+    pub fn iter(&self) -> HeaderArrayIter {
+        HeaderArrayIter::new(&self)
+    }
+}
+
+/// Iterator for a HeaderArray
+pub struct HeaderArrayIter<'a> {
+    next_index: usize,
+    headers: &'a HeaderArray<'a>,
+}
+
+impl<'a> HeaderArrayIter<'a> {
+    fn new(headers: &'a HeaderArray<'a>) -> Self {
+        Self {
+            next_index: 0,
+            headers,
+        }
+    }
+}
+
+impl<'a> Iterator for HeaderArrayIter<'a> {
+    type Item = RawHeader;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.next_index == self.headers.len() {
+            return None;
+        }
+        let header = self.headers.index(self.next_index);
+        self.next_index += 1;
+        Some(header)
     }
 }
 
@@ -275,7 +320,9 @@ impl MerkleArray<'_> {
     /// Index into the merkle array
     pub fn index(&self, index: usize) -> Hash256Digest {
         let mut digest = Hash256Digest::default();
-        digest.as_mut().copy_from_slice(&self.0[index * 32..(index + 1) * 32]);
+        digest
+            .as_mut()
+            .copy_from_slice(&self.0[index * 32..(index + 1) * 32]);
         digest
     }
 }
