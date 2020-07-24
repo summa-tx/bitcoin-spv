@@ -126,16 +126,16 @@ impl fmt::Display for BitcoinHeader {
 #[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct SPVProof {
     /// The 4-byte LE-encoded version number. Currently always 1 or 2.
-    #[serde(with = "internal_ser::vec_ser")]
+    #[serde(with = "vec_ser")]
     pub version: RawBytes,
     /// The transaction input vector, length-prefixed.
-    #[serde(with = "internal_ser::vec_ser")]
+    #[serde(with = "vec_ser")]
     pub vin: RawBytes,
     /// The transaction output vector, length-prefixed.
-    #[serde(with = "internal_ser::vec_ser")]
+    #[serde(with = "vec_ser")]
     pub vout: RawBytes,
     /// The transaction input vector, length-prefixed.
-    #[serde(with = "internal_ser::vec_ser")]
+    #[serde(with = "vec_ser")]
     pub locktime: RawBytes,
     /// The tx id
     pub tx_id: Hash256Digest,
@@ -144,7 +144,7 @@ pub struct SPVProof {
     /// The confirming Bitcoin header
     pub confirming_header: BitcoinHeader,
     /// The intermediate nodes (digests between leaf and root)
-    #[serde(with = "internal_ser::vec_ser")]
+    #[serde(with = "vec_ser")]
     pub intermediate_nodes: RawBytes,
 }
 
@@ -241,33 +241,29 @@ impl fmt::Display for SPVProof {
         )
     }
 }
-
-mod internal_ser {
+mod vec_ser {
     use super::*;
     use serde::{Deserialize, Deserializer, Serializer};
 
     use crate::utils;
 
-    pub mod vec_ser {
-        use super::*;
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s: &str = Deserialize::deserialize(deserializer)?;
+        utils::deserialize_hex(s).map_err(|e| serde::de::Error::custom(e.to_string()))
+    }
 
-        pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
-        where
-            D: Deserializer<'de>,
-        {
-            let s: &str = Deserialize::deserialize(deserializer)?;
-            utils::deserialize_hex(s).map_err(|e| serde::de::Error::custom(e.to_string()))
-        }
-
-        pub fn serialize<S>(d: &[u8], serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-        {
-            let s: &str = &utils::serialize_hex(&d[..]);
-            serializer.serialize_str(s)
-        }
+    pub fn serialize<S>(d: &[u8], serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s: &str = &utils::serialize_hex(&d[..]);
+        serializer.serialize_str(s)
     }
 }
+
 
 #[cfg(test)]
 #[cfg_attr(tarpaulin, skip)]
