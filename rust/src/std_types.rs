@@ -82,9 +82,25 @@ impl fmt::Debug for BitcoinHeader {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Header (height {:?}:\t{})",
+            "Header (height {:?}:\t{:?})",
             self.height,
-            utils::serialize_hex(self.raw.as_ref())
+            self.raw
+        )
+    }
+}
+
+#[cfg_attr(tarpaulin, skip)]
+impl fmt::Debug for RawHeader {
+    /// Formats the bitcoin header for readability
+    ///
+    /// # Arguments
+    ///
+    /// * `self` - The Bitcoin header
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Header: {}",
+            utils::serialize_hex(self.as_ref())
         )
     }
 }
