@@ -11,7 +11,11 @@
 */
 
 const BcoinClient = require('./BcoinClient');
+const Block = require('./vendor/block');
+const TX = require('./vendor/tx');
 
 module.exports = {
-  BcoinClient
+  BcoinClient,
+  Block,
+  TX
 };
