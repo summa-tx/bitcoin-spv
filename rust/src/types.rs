@@ -173,8 +173,23 @@ impl<I: core::slice::SliceIndex<[u8]>> core::ops::Index<I> for RawHeader {
 }
 
 /// A slice of `Hash256Digest`s for use in a merkle array
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct HeaderArray<'a>(&'a [u8]);
+
+#[cfg_attr(tarpaulin, skip)]
+impl core::fmt::Debug for HeaderArray<'_> {
+    /// Formats the RawHeader for readability
+    ///
+    /// # Arguments
+    ///
+    /// * `self` - The Bitcoin header
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(
+            f,
+            "HeaderArray: {:x?}", self.0
+        )
+    }
+}
 
 impl<'a> HeaderArray<'a> {
     /// Return a new merkle array from a slice
@@ -248,8 +263,24 @@ impl<'a> Iterator for HeaderArrayIter<'a> {
 }
 
 /// A bitoin double-sha256 digest
-#[derive(Copy, Clone, PartialEq, Eq, Debug, Default)]
+#[derive(Copy, Clone, PartialEq, Eq, Default)]
 pub struct Hash256Digest([u8; 32]);
+
+#[cfg_attr(tarpaulin, skip)]
+impl core::fmt::Debug for Hash256Digest {
+    /// Formats the RawHeader for readability
+    ///
+    /// # Arguments
+    ///
+    /// * `self` - The Bitcoin header
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(
+            f,
+            "Hash256Digest: {:x?}", self.0
+        )
+    }
+}
+
 
 impl From<[u8; 32]> for Hash256Digest {
     fn from(buf: [u8; 32]) -> Self {

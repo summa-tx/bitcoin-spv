@@ -134,7 +134,7 @@ pub struct SPVProof {
     /// The transaction output vector, length-prefixed.
     #[serde(with = "vec_ser")]
     pub vout: RawBytes,
-    /// The transaction input vector, length-prefixed.
+    /// The 4-byte LE-encoded locktime number.
     #[serde(with = "vec_ser")]
     pub locktime: RawBytes,
     /// The tx id
