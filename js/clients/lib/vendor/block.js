@@ -12,7 +12,7 @@ const bio = require('./bufio');
 const hash256 = require('./hash256');
 const merkle = require('./merkle');
 const AbstractBlock = require('./abstractblock');
-// TODO:
+const Headers = require('./headers');
 const TX = require('./tx');
 const util = require('./util');
 const {encoding} = bio;
@@ -233,37 +233,6 @@ class Block extends AbstractBlock {
   }
 
   /**
-   * Inspect the block and return a more
-   * user-friendly representation of the data.
-   * @param {CoinView} view
-   * @param {Number} height
-   * @returns {Object}
-   */
-
-  format(view, height) {
-    const commitmentHash = this.getCommitmentHash();
-    return {
-      hash: this.rhash(),
-      height: height != null ? height : -1,
-      size: this.getSize(),
-      virtualSize: this.getVirtualSize(),
-      date: util.date(this.time),
-      version: this.version.toString(16),
-      prevBlock: util.revHex(this.prevBlock),
-      merkleRoot: util.revHex(this.merkleRoot),
-      commitmentHash: commitmentHash
-        ? util.revHex(commitmentHash)
-        : null,
-      time: this.time,
-      bits: this.bits,
-      nonce: this.nonce,
-      txs: this.txs.map((tx, i) => {
-        return tx.format(view, null, i);
-      })
-    };
-  }
-
-  /**
    * Convert the block to an object suitable
    * for JSON serialization.
    * @returns {Object}
@@ -460,6 +429,53 @@ class Block extends AbstractBlock {
     this.writeWitness(bw);
     raw.data = bw.render();
     return raw;
+  }
+
+  /**
+   * Convert the block to a headers object.
+   * @returns {Headers}
+   */
+
+  toHeaders() {
+    return Headers.fromBlock(this);
+  }
+
+  /**
+   * Get real block size without witness.
+   * @returns {RawBlock}
+   */
+
+  getNormalSizes() {
+    let size = 0;
+
+    size += 80;
+    size += encoding.sizeVarint(this.txs.length);
+
+    for (const tx of this.txs)
+      size += tx.getBaseSize();
+
+    return new RawBlock(size, 0);
+  }
+
+  /**
+   * Get real block size with witness.
+   * @returns {RawBlock}
+   */
+
+  getWitnessSizes() {
+    let size = 0;
+    let witness = 0;
+
+    size += 80;
+    size += encoding.sizeVarint(this.txs.length);
+
+    for (const tx of this.txs) {
+      const raw = tx.getSizes();
+      size += raw.size;
+      witness += raw.witness;
+    }
+
+    return new RawBlock(size, witness);
   }
 
   /**
