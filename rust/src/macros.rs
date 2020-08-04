@@ -82,6 +82,7 @@ macro_rules! compact_int_conv {
     };
 }
 
+#[cfg(feature = "std")]
 macro_rules! impl_hex_serde {
     ($name:ty, $num:expr) => {
         #[cfg(feature = "std")]
