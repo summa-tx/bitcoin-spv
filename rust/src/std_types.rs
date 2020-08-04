@@ -1,17 +1,15 @@
-extern crate std;
 extern crate serde_json;
+extern crate std;
 
-use std::{
-    fmt,
-    vec::Vec
-};
+use std::{fmt, string::ToString, vec::Vec};
 
 use serde::{Deserialize, Serialize};
 
-use crate::types::*;
-use crate::btcspv;
-use crate::utils;
-use crate::validatespv;
+use crate::{btcspv, types::*, utils, validatespv};
+
+impl_hex_serde!(RawHeader, 80);
+impl_hex_serde!(Hash256Digest, 32);
+impl_hex_serde!(Hash160Digest, 20);
 
 #[doc(hidden)]
 pub type RawBytes = Vec<u8>;
@@ -21,18 +19,14 @@ pub type RawBytes = Vec<u8>;
 #[derive(Clone, Deserialize, Serialize)]
 pub struct BitcoinHeader {
     /// The double-sha2 digest encoded BE.
-    #[serde(with = "internal_ser::digest_ser")]
     pub hash: Hash256Digest,
     /// The 80-byte raw header.
-    #[serde(with = "internal_ser::raw_ser")]
     pub raw: RawHeader,
     /// The height of the header
     pub height: u32,
     /// The double-sha2 digest of the parent encoded BE.
-    #[serde(with = "internal_ser::digest_ser")]
     pub prevhash: Hash256Digest,
     /// The double-sha2 merkle tree root of the block transactions encoded BE.
-    #[serde(with = "internal_ser::digest_ser")]
     pub merkle_root: Hash256Digest,
 }
 
@@ -47,14 +41,13 @@ impl BitcoinHeader {
     ///
     /// * Errors if any of the Bitcoin header elements are invalid.
     pub fn validate(&self) -> Result<(), SPVError> {
-        let raw_as_slice = &self.raw[..];
-        if self.hash[..] != btcspv::hash256(&[raw_as_slice]) {
+        if self.hash != self.raw.digest() {
             return Err(SPVError::WrongDigest);
         }
-        if self.merkle_root[..] != btcspv::extract_merkle_root_le(self.raw) {
+        if self.merkle_root != self.raw.tx_root() {
             return Err(SPVError::WrongMerkleRoot);
         }
-        if self.prevhash[..] != btcspv::extract_prev_block_hash_le(self.raw) {
+        if self.prevhash != self.raw.parent() {
             return Err(SPVError::WrongPrevHash);
         }
         Ok(())
@@ -69,7 +62,7 @@ impl PartialEq for BitcoinHeader {
     /// * `self` - The Bitcoin header
     /// * ` other` - The second Bitcoin header
     fn eq(&self, other: &Self) -> bool {
-        self.raw[..] == other.raw[..]
+        self.raw == other.raw
             && self.hash == other.hash
             && self.height == other.height
             && self.prevhash == other.prevhash
@@ -89,9 +82,25 @@ impl fmt::Debug for BitcoinHeader {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Header (height {:?}:\t{})",
+            "Header (height {:?}:\t{:?})",
             self.height,
-            utils::serialize_hex(&self.raw[..])
+            self.raw
+        )
+    }
+}
+
+#[cfg_attr(tarpaulin, skip)]
+impl fmt::Debug for RawHeader {
+    /// Formats the bitcoin header for readability
+    ///
+    /// # Arguments
+    ///
+    /// * `self` - The Bitcoin header
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Header: {}",
+            utils::serialize_hex(self.as_ref())
         )
     }
 }
@@ -108,7 +117,7 @@ impl fmt::Display for BitcoinHeader {
             f,
             "Header (height {:?}:\t{})",
             self.height,
-            utils::serialize_hex(&self.raw[..])
+            utils::serialize_hex(self.raw.as_ref())
         )
     }
 }
@@ -117,26 +126,25 @@ impl fmt::Display for BitcoinHeader {
 #[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct SPVProof {
     /// The 4-byte LE-encoded version number. Currently always 1 or 2.
-    #[serde(with = "internal_ser::vec_ser")]
+    #[serde(with = "vec_ser")]
     pub version: RawBytes,
     /// The transaction input vector, length-prefixed.
-    #[serde(with = "internal_ser::vec_ser")]
+    #[serde(with = "vec_ser")]
     pub vin: RawBytes,
     /// The transaction output vector, length-prefixed.
-    #[serde(with = "internal_ser::vec_ser")]
+    #[serde(with = "vec_ser")]
     pub vout: RawBytes,
-    /// The transaction input vector, length-prefixed.
-    #[serde(with = "internal_ser::vec_ser")]
+    /// The 4-byte LE-encoded locktime number.
+    #[serde(with = "vec_ser")]
     pub locktime: RawBytes,
     /// The tx id
-    #[serde(with = "internal_ser::digest_ser")]
     pub tx_id: Hash256Digest,
     /// The transaction index
     pub index: u32,
     /// The confirming Bitcoin header
     pub confirming_header: BitcoinHeader,
     /// The intermediate nodes (digests between leaf and root)
-    #[serde(with = "internal_ser::vec_ser")]
+    #[serde(with = "vec_ser")]
     pub intermediate_nodes: RawBytes,
 }
 
@@ -159,9 +167,18 @@ impl SPVProof {
             return Err(SPVError::InvalidVout);
         }
 
-        let tx_id =
-            validatespv::calculate_txid(&self.version, &self.vin, &self.vout, &self.locktime);
-        if tx_id[..] != self.tx_id[..] {
+        let mut ver = [0u8; 4];
+        ver.copy_from_slice(&self.version);
+        let mut lock = [0u8; 4];
+        lock.copy_from_slice(&self.locktime);
+
+        let tx_id = validatespv::calculate_txid(
+            &ver,
+            &Vin::new(&self.vin)?,
+            &Vout::new(&self.vout)?,
+            &lock,
+        );
+        if tx_id != self.tx_id {
             return Err(SPVError::WrongTxID);
         }
 
@@ -170,7 +187,7 @@ impl SPVProof {
         if !validatespv::prove(
             tx_id,
             self.confirming_header.merkle_root,
-            &self.intermediate_nodes,
+            &MerkleArray::new(&self.intermediate_nodes)?,
             self.index as u64,
         ) {
             return Err(SPVError::BadMerkleProof);
@@ -190,14 +207,14 @@ impl fmt::Debug for SPVProof {
         write!(
             f,
             "\nSPVProof (\n\ttx_id:\t{}\n\tindex:\t{}\n\th:\t",
-            utils::serialize_hex(&self.tx_id[..]),
+            utils::serialize_hex(self.tx_id.as_ref()),
             self.index
         )?;
         self.confirming_header.fmt(f)?;
         write!(
             f,
             "\n\tproof:\t{})\n",
-            utils::serialize_hex(&self.intermediate_nodes[..])
+            utils::serialize_hex(self.intermediate_nodes.as_ref())
         )
     }
 }
@@ -213,116 +230,40 @@ impl fmt::Display for SPVProof {
         write!(
             f,
             "\nSPVProof (\n\ttx_id:\t{}\n\tindex:\t{}\n\th:\t",
-            utils::serialize_hex(&self.tx_id[..]),
+            utils::serialize_hex(self.tx_id.as_ref()),
             self.index
         )?;
         self.confirming_header.fmt(f)?;
         write!(
             f,
             "\n\tproof:\t{})\n",
-            utils::serialize_hex(&self.intermediate_nodes[..])
+            utils::serialize_hex(self.intermediate_nodes.as_ref())
         )
     }
 }
-
-mod internal_ser {
+mod vec_ser {
     use super::*;
-    use std::{
-        format,
-        string::{ToString, String}
-    };
     use serde::{Deserialize, Deserializer, Serializer};
 
     use crate::utils;
 
-    pub mod vec_ser {
-        use super::*;
-
-        pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
-        where
-            D: Deserializer<'de>,
-        {
-            let s: &str = Deserialize::deserialize(deserializer)?;
-            utils::deserialize_hex(s)
-                .map_err(|e| serde::de::Error::custom(e.to_string()))
-        }
-
-        pub fn serialize<S>(d: &[u8], serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-        {
-            let s: &str = &utils::serialize_hex(&d[..]);
-            serializer.serialize_str(s)
-        }
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s: &str = Deserialize::deserialize(deserializer)?;
+        utils::deserialize_hex(s).map_err(|e| serde::de::Error::custom(e.to_string()))
     }
 
-    pub mod digest_ser {
-        use super::*;
-
-        pub fn deserialize<'de, D>(deserializer: D) -> Result<Hash256Digest, D::Error>
-        where
-            D: Deserializer<'de>,
-        {
-            let s: &str = Deserialize::deserialize(deserializer)?;
-            let mut digest: Hash256Digest = Default::default();
-            let result = utils::deserialize_hex(s);
-
-            let deser: Vec<u8>;
-            match result {
-                Ok(v) => deser = v,
-                Err(e) => return Err(serde::de::Error::custom(e.to_string())),
-            }
-            if deser.len() != 32 {
-                let err_string: String = format!("Expected 32 bytes, got {:?} bytes", deser.len());
-                return Err(serde::de::Error::custom(err_string));
-            }
-            digest.copy_from_slice(&deser);
-            Ok(digest)
-        }
-
-        pub fn serialize<S>(d: &Hash256Digest, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-        {
-            let s: &str = &utils::serialize_hex(&d[..]);
-            serializer.serialize_str(s)
-        }
-    }
-
-    pub mod raw_ser {
-        use super::*;
-
-        pub fn deserialize<'de, D>(deserializer: D) -> Result<RawHeader, D::Error>
-        where
-            D: Deserializer<'de>,
-        {
-            let s: &str = Deserialize::deserialize(deserializer)?;
-            let mut header: RawHeader = [0; 80];
-
-            let result = utils::deserialize_hex(s);
-
-            let deser: Vec<u8>;
-            match result {
-                Ok(v) => deser = v,
-                Err(e) => return Err(serde::de::Error::custom(e.to_string())),
-            }
-            if deser.len() != 80 {
-                let err_string: String = format!("Expected 80 bytes, got {:?} bytes", deser.len());
-                return Err(serde::de::Error::custom(err_string));
-            }
-            header.copy_from_slice(&deser);
-            Ok(header)
-        }
-
-        pub fn serialize<S>(d: &RawHeader, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-        {
-            let s: &str = &utils::serialize_hex(&d[..]);
-            serializer.serialize_str(s)
-        }
+    pub fn serialize<S>(d: &[u8], serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s: &str = &utils::serialize_hex(&d[..]);
+        serializer.serialize_str(s)
     }
 }
+
 
 #[cfg(test)]
 #[cfg_attr(tarpaulin, skip)]
@@ -333,7 +274,7 @@ mod tests {
         fs::File,
         io::Read,
         panic,
-        string::{ToString, String}
+        string::{String, ToString},
     };
 
     use super::*;

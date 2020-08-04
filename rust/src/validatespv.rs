@@ -1,6 +1,6 @@
 use num::bigint::BigUint;
 
-use crate::{btcspv, types::{Hash256Digest, RawHeader, SPVError}};
+use crate::{btcspv, types::*};
 
 /// Evaluates a Bitcoin merkle inclusion proof.
 /// Note that `index` is not a reliable indicator of location within a block.
@@ -14,7 +14,7 @@ use crate::{btcspv, types::{Hash256Digest, RawHeader, SPVError}};
 pub fn prove(
     txid: Hash256Digest,
     merkle_root: Hash256Digest,
-    intermediate_nodes: &[u8],
+    intermediate_nodes: &MerkleArray,
     index: u64,
 ) -> bool {
     if txid == merkle_root && index == 0 && intermediate_nodes.is_empty() {
@@ -31,8 +31,13 @@ pub fn prove(
 /// * `vin` - Raw bytes length-prefixed input vector
 /// * `vout` - Raw bytes length-prefixed output vector
 /// * `locktime` - 4-byte tx locktime
-pub fn calculate_txid(version: &[u8], vin: &[u8], vout: &[u8], locktime: &[u8]) -> Hash256Digest {
-    btcspv::hash256(&[version, vin, vout, locktime])
+pub fn calculate_txid(
+    version: &[u8; 4],
+    vin: &Vin,
+    vout: &Vout,
+    locktime: &[u8; 4],
+) -> Hash256Digest {
+    btcspv::hash256(&[version, vin.as_ref(), vout.as_ref(), locktime])
 }
 
 /// Checks validity of header work.
@@ -48,7 +53,7 @@ pub fn validate_header_work(digest: Hash256Digest, target: &BigUint) -> bool {
         return false;
     }
 
-    BigUint::from_bytes_le(&digest[..]) < *target
+    BigUint::from_bytes_le(digest.as_ref()) < *target
 }
 
 /// Checks validity of header chain.
@@ -56,10 +61,10 @@ pub fn validate_header_work(digest: Hash256Digest, target: &BigUint) -> bool {
 /// # Arguments
 ///
 /// * `header` - The raw bytes header
-/// * `prev_hash` - The previous header's digest
-pub fn validate_header_prev_hash(header: RawHeader, prev_hash: Hash256Digest) -> bool {
-    let actual = btcspv::extract_prev_block_hash_le(header);
-    actual == prev_hash
+/// * `expected` - The expected previous header's digest
+pub fn validate_header_prev_hash(header: RawHeader, expected: Hash256Digest) -> bool {
+    let actual = header.parent();
+    actual == expected
 }
 
 /// Checks validity of header chain.
@@ -72,25 +77,30 @@ pub fn validate_header_prev_hash(header: RawHeader, prev_hash: Hash256Digest) ->
 /// # Errors
 ///
 /// * Errors if header chain is the wrong length, chain is invalid or insufficient work
-pub fn validate_header_chain(headers: &[u8]) -> Result<BigUint, SPVError> {
-    if headers.len() % 80 != 0 {
-        return Err(SPVError::WrongLengthHeader);
-    }
-
-    let mut digest: Hash256Digest = Default::default();
+pub fn validate_header_chain(
+    headers: &HeaderArray,
+    constant_difficulty: bool,
+) -> Result<BigUint, SPVError> {
     let mut total_difficulty = BigUint::from(0 as u8);
+    // declared outside the loop for proper check ordering
+    let mut digest = Hash256Digest::default();
+    let mut target = BigUint::default();
 
-    for i in 0..headers.len() / 80 {
-        let start = i * 80;
-        let mut header: RawHeader = [0; 80];
-        header.copy_from_slice(&headers[start..start + 80]);
+    for i in 0..headers.len() {
+        let header = headers.index(i);
+
+        if i == 0 {
+            target = header.target();
+        }
+        if constant_difficulty && header.target() != target {
+            return Err(SPVError::UnexpectedDifficultyChange);
+        }
 
         if i != 0 && !validate_header_prev_hash(header, digest) {
             return Err(SPVError::InvalidChain);
         }
 
-        let target = btcspv::extract_target(header);
-        digest.copy_from_slice(&btcspv::hash256(&[&header]));
+        digest = btcspv::hash256(&[header.as_ref()]);
         if !validate_header_work(digest, &target) {
             return Err(SPVError::InsufficientWork);
         }
@@ -103,7 +113,7 @@ pub fn validate_header_chain(headers: &[u8]) -> Result<BigUint, SPVError> {
 #[cfg_attr(tarpaulin, skip)]
 mod tests {
     use crate::test_utils::{self, force_deserialize_hex};
-    
+
     use super::*;
 
     #[test]
@@ -115,18 +125,21 @@ mod tests {
 
                 let mut txid: Hash256Digest = Default::default();
                 let id = force_deserialize_hex(inputs.get("txIdLE").unwrap().as_str().unwrap());
-                txid.copy_from_slice(&id);
+                txid.as_mut().copy_from_slice(&id);
 
                 let mut merkle_root: Hash256Digest = Default::default();
                 let root =
                     force_deserialize_hex(inputs.get("merkleRootLE").unwrap().as_str().unwrap());
-                merkle_root.copy_from_slice(&root);
+                merkle_root.as_mut().copy_from_slice(&root);
 
                 let proof = force_deserialize_hex(inputs.get("proof").unwrap().as_str().unwrap());
                 let index = inputs.get("index").unwrap().as_u64().unwrap() as u64;
 
                 let expected = case.output.as_bool().unwrap();
-                assert_eq!(prove(txid, merkle_root, &proof, index), expected);
+                assert_eq!(
+                    prove(txid, merkle_root, &MerkleArray::new(&proof).unwrap(), index),
+                    expected
+                );
             }
         })
     }
@@ -144,9 +157,24 @@ mod tests {
                 let locktime =
                     force_deserialize_hex(inputs.get("locktime").unwrap().as_str().unwrap());
                 let mut expected: Hash256Digest = Default::default();
-                expected.copy_from_slice(&force_deserialize_hex(case.output.as_str().unwrap()));
+                expected
+                    .as_mut()
+                    .copy_from_slice(&force_deserialize_hex(case.output.as_str().unwrap()));
 
-                assert_eq!(calculate_txid(&version, &vin, &vout, &locktime), expected);
+                let mut ver = [0u8; 4];
+                ver.copy_from_slice(&version);
+                let mut lock = [0u8; 4];
+                lock.copy_from_slice(&locktime);
+
+                assert_eq!(
+                    calculate_txid(
+                        &ver,
+                        &Vin::new(&vin).unwrap(),
+                        &Vout::new(&vout).unwrap(),
+                        &lock
+                    ),
+                    expected
+                );
             }
         })
     }
@@ -159,7 +187,7 @@ mod tests {
                 let inputs = case.input.as_object().unwrap();
 
                 let mut digest: Hash256Digest = Default::default();
-                digest.copy_from_slice(&force_deserialize_hex(
+                digest.as_mut().copy_from_slice(&force_deserialize_hex(
                     inputs.get("digest").unwrap().as_str().unwrap(),
                 ));
 
@@ -183,12 +211,12 @@ mod tests {
                 let inputs = case.input.as_object().unwrap();
 
                 let mut prev_hash: Hash256Digest = Default::default();
-                prev_hash.copy_from_slice(&force_deserialize_hex(
+                prev_hash.as_mut().copy_from_slice(&force_deserialize_hex(
                     inputs.get("prevHash").unwrap().as_str().unwrap(),
                 ));
 
-                let mut header: RawHeader = [0; 80];
-                header.copy_from_slice(&force_deserialize_hex(
+                let mut header = RawHeader::default();
+                header.as_mut().copy_from_slice(&force_deserialize_hex(
                     inputs.get("header").unwrap().as_str().unwrap(),
                 ));
 
@@ -206,7 +234,10 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let output = case.output.as_u64().unwrap();
                 let expected = BigUint::from(output);
-                assert_eq!(validate_header_chain(&input).unwrap(), expected);
+                assert_eq!(
+                    validate_header_chain(&HeaderArray::new(&input).unwrap(), false).unwrap(),
+                    expected
+                );
             }
         })
     }
@@ -219,9 +250,11 @@ mod tests {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let expected =
                     test_utils::match_string_to_err(case.error_message.as_str().unwrap());
-                match validate_header_chain(&input) {
-                    Ok(_) => assert!(false, "expected an error"),
-                    Err(v) => assert_eq!(v, expected),
+                if let Ok(headers) = HeaderArray::new(&input) {
+                    match validate_header_chain(&headers, false) {
+                        Ok(_) => assert!(false, "expected an error"),
+                        Err(v) => assert_eq!(v, expected),
+                    }
                 }
             }
         })

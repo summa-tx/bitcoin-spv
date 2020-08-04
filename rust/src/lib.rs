@@ -15,6 +15,10 @@
 //! complex security assumptions. Please seek external review for your design
 //! before building with these libraries.*
 
+#[doc(hidden)]
+#[macro_use]
+pub mod macros;
+
 /// `btcspv` provides basic Bitcoin transaction and header parsing, as well as
 /// utility functions like merkle verification and difficulty adjustment
 /// calculation.
@@ -38,14 +42,13 @@ pub mod std_types;
 #[cfg(feature = "std")]
 pub mod utils;
 
-
 #[cfg(test)]
 #[doc(hidden)]
 #[cfg_attr(tarpaulin, skip)]
 pub mod test_utils {
 
-    extern crate std;
     extern crate hex;
+    extern crate std;
 
     use num_bigint::BigUint;
     use serde::Deserialize;
@@ -54,8 +57,8 @@ pub mod test_utils {
     use crate::types::{RawHeader, SPVError};
 
     use std::{
-        fs::File,
         format,
+        fs::File,
         io::Read,
         panic,
         string::String,
@@ -133,8 +136,8 @@ pub mod test_utils {
     }
 
     pub fn to_test_header(head: &serde_json::map::Map<String, serde_json::Value>) -> TestHeader {
-        let mut raw: RawHeader = [0; 80];
-        raw.copy_from_slice(&force_deserialize_hex(
+        let mut raw = RawHeader::default();
+        raw.as_mut().copy_from_slice(&force_deserialize_hex(
             head.get("hex").unwrap().as_str().unwrap(),
         ));
 
@@ -205,9 +208,9 @@ pub mod test_utils {
             "Vin read overrun" => SPVError::ReadOverrun,
             "Read overrun when parsing vout" => SPVError::ReadOverrun,
             "Read overrun when parsing vin" => SPVError::ReadOverrun,
-            "Bad VarInt in scriptPubkey" => SPVError::BadVarInt,
-            "Bad VarInt in scriptSig" => SPVError::BadVarInt,
-            "Read overrun during VarInt parsing" => SPVError::BadVarInt,
+            "Bad VarInt in scriptPubkey" => SPVError::BadCompactInt,
+            "Bad VarInt in scriptSig" => SPVError::BadCompactInt,
+            "Read overrun during VarInt parsing" => SPVError::BadCompactInt,
             "Malformatted data. Must be an op return" => SPVError::MalformattedOpReturnOutput,
             "Maliciously formatted p2sh output" => SPVError::MalformattedP2SHOutput,
             "Maliciously formatted p2pkh output" => SPVError::MalformattedP2PKHOutput,
