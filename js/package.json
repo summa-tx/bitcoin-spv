@@ -27,7 +27,7 @@
     "Dominique Liau <dominique@summa.one>",
     "James Prestwich <james@summa.one>"
   ],
-  "license": "LGPLv3",
+  "license": "(LGPLv3 OR MIT OR Apache-2.0)",
   "homepage": "https://github.com/summa-tx/bitcoin-spv/tree/master/js#readme",
   "devDependencies": {
     "@babel/cli": "^7.6.0",
