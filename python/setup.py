@@ -18,5 +18,6 @@ setup(
     python_requires='>=3.6',
     classifiers=[
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)'
-    ]
+    ],
+    license='MIT OR Apache-2.0'
 )

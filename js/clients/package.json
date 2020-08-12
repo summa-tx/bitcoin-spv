@@ -24,7 +24,7 @@
     "Mark Tynes <mark.tynes@gmail.com>",
     "Barbara Liau <barbara@summa.one>"
   ],
-  "license": "LGPLv3",
+  "license": "(MIT OR Apache-2.0)",
   "homepage": "https://github.com/summa-tx/bitcoin-spv/js/clients/",
   "devDependencies": {
     "chai": "^4.2.0",

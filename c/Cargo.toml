@@ -3,7 +3,7 @@ name = "bitcoin-spv-ckb"
 version = "0.1.0"
 authors = ["James Prestwich <james@prestwi.ch>", "Summa <team@summa.one>"]
 edition = "2018"
-license = "LGPL-3.0-or-later OR MIT OR Apache-2.0"
+license = "MIT OR Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

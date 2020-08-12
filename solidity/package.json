@@ -10,7 +10,7 @@
     "lint:fix": "solium --fix -d contracts/ && eslint --fix ./test"
   },
   "author": "",
-  "license": "(LGPLv3 OR MIT OR Apache-2.0)",
+  "license": "(MIT OR Apache-2.0)",
   "devDependencies": {
     "bn.js": "^5.0.0",
     "eslint": "^5.16.0",
