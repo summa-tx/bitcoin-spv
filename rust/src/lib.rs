@@ -50,7 +50,7 @@ pub mod test_utils {
     extern crate hex;
     extern crate std;
 
-    use num_bigint::BigUint;
+    use primitive_types::U256;
     use serde::Deserialize;
 
     use crate::btcspv;
@@ -131,8 +131,8 @@ pub mod test_utils {
     pub struct TestHeader {
         pub raw: RawHeader,
         pub timestamp: u32,
-        pub target: BigUint,
-        pub difficulty: BigUint,
+        pub target: U256,
+        pub difficulty: U256,
     }
 
     pub fn to_test_header(head: &serde_json::map::Map<String, serde_json::Value>) -> TestHeader {

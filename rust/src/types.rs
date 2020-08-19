@@ -1,4 +1,4 @@
-use num::bigint::BigUint;
+use primitive_types::U256;
 
 /// enum for bitcoin-spv errors
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -120,12 +120,12 @@ impl RawHeader {
     }
 
     /// Extract the target from the header
-    pub fn target(&self) -> BigUint {
+    pub fn target(&self) -> U256 {
         crate::btcspv::extract_target(*self)
     }
 
     /// Extract the difficulty from the header
-    pub fn difficulty(&self) -> BigUint {
+    pub fn difficulty(&self) -> U256 {
         crate::btcspv::extract_difficulty(*self)
     }
 
@@ -224,7 +224,7 @@ impl HeaderArray<'_> {
     }
 
     /// Validate the header array. Return either the accumulated difficulty, or an error
-    pub fn valid_difficulty(&self, constant_difficulty: bool) -> Result<BigUint, SPVError> {
+    pub fn valid_difficulty(&self, constant_difficulty: bool) -> Result<U256, SPVError> {
         crate::validatespv::validate_header_chain(self, constant_difficulty)
     }
 
