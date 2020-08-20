@@ -68,4 +68,4 @@ matrix:
       script:
         - cargo nono check --no-default-features
         - cargo test
-        - cargo test --no-default-features
+        - cargo test --lib --no-default-features
