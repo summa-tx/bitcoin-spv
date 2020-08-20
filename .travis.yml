@@ -64,7 +64,7 @@ matrix:
             - /home/travis/.cargo
       before_script:
         - cd rust
-        - cargo install nono
+        - cargo install cargo-nono
       script:
         - cargo nono check --no-default-features
         - cargo test
