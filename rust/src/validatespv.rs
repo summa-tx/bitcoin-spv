@@ -1,4 +1,4 @@
-use num::bigint::BigUint;
+use primitive_types::U256;
 
 use crate::{btcspv, types::*};
 
@@ -46,14 +46,14 @@ pub fn calculate_txid(
 ///
 /// * `digest` - The digest
 /// * `target` - The target threshold
-pub fn validate_header_work(digest: Hash256Digest, target: &BigUint) -> bool {
+pub fn validate_header_work(digest: Hash256Digest, target: &U256) -> bool {
     let empty: Hash256Digest = Default::default();
 
     if digest == empty {
         return false;
     }
 
-    BigUint::from_bytes_le(digest.as_ref()) < *target
+    U256::from_little_endian(digest.as_ref()) < *target
 }
 
 /// Checks validity of header chain.
@@ -80,11 +80,11 @@ pub fn validate_header_prev_hash(header: RawHeader, expected: Hash256Digest) -> 
 pub fn validate_header_chain(
     headers: &HeaderArray,
     constant_difficulty: bool,
-) -> Result<BigUint, SPVError> {
-    let mut total_difficulty = BigUint::from(0 as u8);
+) -> Result<U256, SPVError> {
+    let mut total_difficulty = U256::from(0 as u8);
     // declared outside the loop for proper check ordering
     let mut digest = Hash256Digest::default();
-    let mut target = BigUint::default();
+    let mut target = U256::default();
 
     for i in 0..headers.len() {
         let header = headers.index(i);
@@ -193,8 +193,8 @@ mod tests {
 
                 let t = inputs.get("target").unwrap();
                 let target = match t.is_u64() {
-                    true => BigUint::from(t.as_u64().unwrap()),
-                    false => BigUint::from_bytes_be(&force_deserialize_hex(t.as_str().unwrap())),
+                    true => U256::from(t.as_u64().unwrap()),
+                    false => U256::from_big_endian(&force_deserialize_hex(t.as_str().unwrap())),
                 };
 
                 let expected = case.output.as_bool().unwrap();
@@ -233,7 +233,7 @@ mod tests {
             for case in test_cases {
                 let input = force_deserialize_hex(case.input.as_str().unwrap());
                 let output = case.output.as_u64().unwrap();
-                let expected = BigUint::from(output);
+                let expected = U256::from(output);
                 assert_eq!(
                     validate_header_chain(&HeaderArray::new(&input).unwrap(), false).unwrap(),
                     expected

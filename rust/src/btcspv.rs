@@ -1,5 +1,4 @@
-use num::bigint::BigUint;
-use num::pow::Pow;
+use primitive_types::U256;
 use ripemd160::{Digest, Ripemd160};
 use sha2::Sha256;
 
@@ -497,12 +496,12 @@ pub fn extract_merkle_root_le(header: RawHeader) -> Hash256Digest {
 /// # Arguments
 ///
 /// * `header` - An 80-byte Bitcoin header
-pub fn extract_target(header: RawHeader) -> BigUint {
-    let mantissa = BigUint::from_bytes_le(&header[72..75]);
+pub fn extract_target(header: RawHeader) -> U256 {
+    let mantissa = U256::from_little_endian(&header[72..75]);
     // We use saturating here to avoid panicking.
     // This is safe because it saturates at `0`, which gives an unreachable target of `1`
     let exponent = header[75].saturating_sub(3);
-    let offset = BigUint::from(256 as u64).pow(exponent);
+    let offset = U256::from(256 as u64).pow(exponent.into());
 
     mantissa * offset
 }
@@ -513,11 +512,11 @@ pub fn extract_target(header: RawHeader) -> BigUint {
 /// # Arguments
 ///
 /// * `target` - The current target
-pub fn calculate_difficulty(target: &BigUint) -> BigUint {
+pub fn calculate_difficulty(target: &U256) -> U256 {
     let mut arr: [u8; 28] = Default::default();
     arr[0] = 0xff;
     arr[1] = 0xff;
-    let diff_one_target = BigUint::from_bytes_be(&arr);
+    let diff_one_target = U256::from_big_endian(&arr);
     diff_one_target / target
 }
 
@@ -561,7 +560,7 @@ pub fn extract_timestamp(header: RawHeader) -> u32 {
 /// # Arguments
 ///
 /// * `header` - The header
-pub fn extract_difficulty(header: RawHeader) -> BigUint {
+pub fn extract_difficulty(header: RawHeader) -> U256 {
     calculate_difficulty(&extract_target(header))
 }
 
@@ -623,10 +622,10 @@ pub fn verify_hash256_merkle(
 /// * `first_timestamp` - The timestamp of the first block in the difficulty period
 /// * `second_timestamp` - The timestamp of the last block in the difficulty period
 pub fn retarget_algorithm(
-    previous_target: &BigUint,
+    previous_target: &U256,
     first_timestamp: u32,
     second_timestamp: u32,
-) -> BigUint {
+) -> U256 {
     let retarget_period = 1_209_600;
     let lower_bound = retarget_period / 4;
     let upper_bound = retarget_period * 4;
@@ -651,7 +650,7 @@ mod tests {
 
     use super::*;
     use crate::test_utils::{self, force_deserialize_hex};
-    use num::bigint::BigUint;
+    use primitive_types::U256;
 
     #[test]
     fn it_determines_compact_int_data_length() {
@@ -1090,7 +1089,7 @@ mod tests {
                     .as_mut()
                     .copy_from_slice(&force_deserialize_hex(case.input.as_str().unwrap()));
                 let expected_bytes = force_deserialize_hex(case.output.as_str().unwrap());
-                let expected = BigUint::from_bytes_be(&expected_bytes);
+                let expected = U256::from_big_endian(&expected_bytes);
                 assert_eq!(extract_target(input), expected);
             }
         })
@@ -1163,7 +1162,7 @@ mod tests {
 
                 let expected = &headers[2].target;
                 let actual = retarget_algorithm(previous_target, first_timestamp, second_timestamp);
-                assert_eq!(actual & expected, *expected);
+                assert_eq!(actual & *expected, *expected);
 
                 let fake_long = first_timestamp + 5 * 2016 * 10 * 60;
                 let long_res = retarget_algorithm(previous_target, first_timestamp, fake_long);
