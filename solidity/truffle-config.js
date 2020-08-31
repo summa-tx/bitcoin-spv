@@ -7,6 +7,7 @@
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
 
 module.exports = {
+  plugins: ["solidity-coverage"],
   networks: {
     // // Uncomment this to use a local ganache instance
     // // Useful for running the debugger on specific transactions
