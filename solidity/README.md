@@ -15,24 +15,54 @@ inspect, and authenticate Bitcoin transactions.
 
 -------
 
-### IMPORTANT WARNING
+## IMPORTANT WARNING
 
 It is extremely easy to write insecure code using these libraries. We do not
 recommend a specific security model. Any SPV verification involves complex
 security assumptions. Please seek external review for your design before
 building with these libraries.
 
-### Breaking changes from 1.x:
+## Using `ViewBTC` and `ViewSPV`
 
-- Merkle proof indexes are 0-indexed (like they should have been all along)
-- Merkle proofs for `ValidateSPV#prove` no longer require the leaf or root hash
+The high level libraries use an underlying typed memory view library for 
+efficient handling of the Solidity `bytes memory` type without copying memory.
+The library co-opts the `bytes29` type and uses it as a pointer to a 
+contiguous region of memory. Operations on this memory are defined on the 
+`bytes29` type via a `using ____ for bytes29` statement.
 
-### Solidity Compiler
+The memory view semantics and interface are defined in `TypedMemView.sol`.
+For BTC-specific applications, it is usually sufficient to import `ViewBTC`
+without importing the underlying `TypedMemView` library.
 
-Starting from version `1.1.0`, required solidity compiler (`solc`) version is
-at least `0.5.10`.
+BTC types are defined in `ViewBTC.sol` and checked at run time. Solidity does
+not currently allow compile time type-checking for user-defined stack types.
+Each Bitcoin function defines an explicit runtime type-check via modifier.
+Type-check failures result in contract reversion.
 
-### How are proofs formatted?
+Initial conversion from `bytes memory` to a typed memory view should be done
+using the `tryAs_____` functions defined in `ViewBTC`.
+
+```solidity
+
+conrtract
+using TypedMemView for bytes;
+using TypedMemView for bytes29;
+
+using ViewBTC for bytes29;
+using ViewSPV for bytes29;
+
+function acceptAVin(bytes memory _vin) {
+    bytes29 vin = _vin
+        .ref()           // Produce a view (reference to) the byte array
+        .tryAsVin()      // Attempt to validate the user input as a Vin
+        .assertValid();  // Assert the result is not an error
+
+    // additional logic relying on the vin
+    // ...
+}
+```
+
+## How are proofs formatted?
 
 An SPV interaction has two players: a prover and a verifier. The prover submits
 an SPV proof, and the verifier checks it.
@@ -66,79 +96,14 @@ for these:
 While the prover is off-chain, and makes Ethereum transactions, the verifier is
 implemented as a solidity contract that validates proofs contained in those
 transactions. The verifier must set one parameter on-chain: the required total
-work, expressed as accumulated difficulty. The verifier sums difficulty across the header chain by measuring the work in its component headers.
-In addition, the verifier may set any number of other acceptance constraints
-on the proof. E.g. the contract may check that the `vout` contains an
-output paying at least 30,000 satoshi to a particular `scriptPubkey`.
-
-### Why is there a library and a Delegate?
-
-1.0.0 was accessible only by the EVM's `DELEGATECALL`. For v2.0.0 we give you
-the option to use `DELEGATECALL` or to compile the library methods into your
-contract.
-
-Compiling them in will save several hundred gas per invocation. That's
-significant for higher-level functions like `prove` in `ValidateSPV`. But it
-does add additional deployment cost to your contracts.
-
-If you're using the Delegate, make sure to add a linking step to your
-deployment scripts. :)
-
-**Usage Example:**
-```Solidity
-import {BTCUtils} from "./contracts/BTCUtils.sol";
-import {BTCUtilsDelegate} from "./contracts/BTCUtilsDelegate.sol";
-
-
-contract CompilesIn {
-    using BTCUtils for bytes;
-
-    function multiHash(bytes memory _b) {
-        return keccak256(_b.hash256());  // Compiled In
-    }
-
-}
-
-contract DelegateCalls {
-    using BTCUtilsDelegate for bytes;
-
-    function multiHash(bytes memory _b) {
-        return keccak256(_b.hash256());  // DELEGATECALL
-    }
-}
-
-contract MixedAccess {
-
-    function multiHash(bytes memory _b) {
-        return keccak256(BTCUtils.hash256(_b));  // Compiled In
-    }
-
-    function multiHashWithDelegate(bytes memory _b) {
-        return keccak256(BTCUtilsDelegate.hash256(_b)); // DELEGATECALL
-    }
-
-}
-
-```
-
-### Deployed Instances (for DELEGATECALLs)
-
-| Contract    | Version |  Solc     |  Main                                        |  Ropsten
-|-------------|---------|-----------|----------------------------------------------|-------------------------------------------
-| ValidateSPV |  1.0.0  |  v0.4.25  |  0xaa75a0d48fca26ec2102ab68047e98a80a63df1d  |  0x112ef10aef3bde1cd8fd062d805ae8173ec36d66
-| BTCUtils    |	 1.0.0  |  v0.4.25  |  0xD0d4EA34e4a5c27cA40e78838a4Ed5C1bB033BbC  |  0x7a79d4112d79af980e741e0b10c47ffa543cc93a
-| BytesLib    |	 1.0.0  |  v0.4.25  |  0x302A17fcE39E877966817b7cc5479D8BfCe05295  |  0xcc69fec9ba70d6b4e386bfdb70b94349aff15f53
-| ValidateSPV |  1.1.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
-| BTCUtils    |	 1.1.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
-| BytesLib    |	 1.1.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
-| ValidateSPV |  2.0.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
-| BTCUtils    |	 2.0.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
-| BytesLib    |	 2.0.0  |  v0.5.10  |  NOT YET DEPLOYED                            |  NOT YET DEPLOYED
-
+work, expressed as accumulated difficulty. The verifier sums difficulty across 
+the header chain by measuring the work in its component headers. In addition, 
+the verifier may set any number of other acceptance constraints on the proof. 
+E.g. the contract may check that the `vout` contains an output paying at 
+least 30,000 satoshi to a particular `scriptPubkey`.
 
 ### Development Setup
-By default, you must run an instance of `ganache-cli` (or some other ganache
-VM) when running tests.
+
 ```sh
 $ npm run compile # truffle compile
 $ npm run test # truffle test
