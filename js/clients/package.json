@@ -1,6 +1,6 @@
 {
   "name": "@summa-tx/bitcoin-spv-js-clients",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "description": "Clients for fetching bitcoin SPV proofs in Javascript",
   "main": "lib/index.js",
   "engines": {
@@ -11,8 +11,7 @@
     "lint": "eslint ./test ./lib",
     "lint:fix": "eslint --fix ./test ./lib",
     "test": "mocha test -r esm",
-    "test:coverage": "jest --coverage",
-    "prepublishOnly": "npm run build"
+    "test:coverage": "jest --coverage"
   },
   "keywords": [
     "bitcoin",
@@ -25,7 +24,7 @@
     "Mark Tynes <mark.tynes@gmail.com>",
     "Barbara Liau <barbara@summa.one>"
   ],
-  "license": "LGPLv3",
+  "license": "(MIT OR Apache-2.0)",
   "homepage": "https://github.com/summa-tx/bitcoin-spv/js/clients/",
   "devDependencies": {
     "chai": "^4.2.0",
@@ -37,6 +36,7 @@
     "mocha": "6.2.0"
   },
   "dependencies": {
+    "@summa-tx/bitcoin-spv-js": "^4.0.2",
     "bsert": "0.0.10"
   }
 }

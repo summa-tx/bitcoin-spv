@@ -23,7 +23,7 @@
   "contributors": [
     "Mark Tyneway <mark.tyneway@gmail.com>"
   ],
-  "license": "LGPLv3",
+  "license": "(MIT OR Apache-2.0)",
   "dependencies": {
     "@summa-tx/bitcoin-spv-js-clients": "file:../js/clients"
   },
