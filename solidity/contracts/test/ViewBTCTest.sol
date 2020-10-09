@@ -3,8 +3,7 @@ pragma solidity ^0.5.10;
 /** @title BitcoinSPV */
 /** @author Summa (https://summa.one) */
 
-import {TypedMemView} from "../TypedMemView.sol";
-import {ViewBTC} from "../ViewBTC.sol";
+import {TypedMemView} from "@summa-tx/memview.sol/contracts/TypedMemView.sol";import {ViewBTC} from "../ViewBTC.sol";
 
 contract ViewBTCTest {
 

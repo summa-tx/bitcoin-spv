@@ -3,7 +3,7 @@ pragma solidity ^0.5.10;
 /** @title CheckBitcoinSigs */
 /** @author Summa (https://summa.one) */
 
-import {TypedMemView} from "./TypedMemView.sol";
+import {TypedMemView} from "@summa-tx/memview.sol/contracts/TypedMemView.sol";
 
 library CheckBitcoinSigs {
 

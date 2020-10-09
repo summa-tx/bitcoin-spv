@@ -21,5 +21,8 @@
     "solidity-docgen": "^0.3.0-beta.4",
     "solium": "^1.2.4",
     "truffle": "^5.0.32"
+  },
+  "dependencies": {
+    "@summa-tx/memview.sol": "^1.0.0"
   }
 }
