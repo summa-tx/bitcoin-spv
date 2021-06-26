@@ -81,7 +81,7 @@ pub fn validate_header_chain(
     headers: &HeaderArray,
     constant_difficulty: bool,
 ) -> Result<U256, SPVError> {
-    let mut total_difficulty = U256::from(0 as u8);
+    let mut total_difficulty = U256::from(0u8);
     // declared outside the loop for proper check ordering
     let mut digest = Hash256Digest::default();
     let mut target = U256::default();

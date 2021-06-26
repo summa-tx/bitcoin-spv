@@ -115,7 +115,7 @@ pub fn extract_input_at_index<'a>(vin: &'a Vin<'a>, index: usize) -> Result<TxIn
 /// # Panics
 ///
 /// If the tx_in is malformatted, i.e. <= 36 bytes long
-pub fn is_legacy_input<'a>(tx_in: &TxIn<'a>) -> bool {
+pub fn is_legacy_input(tx_in: &TxIn) -> bool {
     tx_in[36] != 0
 }
 
@@ -125,7 +125,7 @@ pub fn is_legacy_input<'a>(tx_in: &TxIn<'a>) -> bool {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_script_sig_len<'a>(tx_in: &TxIn<'a>) -> Result<CompactInt, SPVError> {
+pub fn extract_script_sig_len(tx_in: &TxIn) -> Result<CompactInt, SPVError> {
     if tx_in.len() < 37 {
         return Err(SPVError::ReadOverrun);
     }
@@ -150,7 +150,7 @@ pub fn determine_input_length(tx_in: &[u8]) -> Result<usize, SPVError> {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_sequence_le<'a>(tx_in: &TxIn<'a>) -> Result<[u8; 4], SPVError> {
+pub fn extract_sequence_le(tx_in: &TxIn) -> Result<[u8; 4], SPVError> {
     let script_sig_len = extract_script_sig_len(tx_in)?;
     let offset: usize = 36 + script_sig_len.serialized_length() + script_sig_len.as_usize();
 
@@ -165,7 +165,7 @@ pub fn extract_sequence_le<'a>(tx_in: &TxIn<'a>) -> Result<[u8; 4], SPVError> {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_sequence<'a>(tx_in: &TxIn<'a>) -> Result<u32, SPVError> {
+pub fn extract_sequence(tx_in: &TxIn) -> Result<u32, SPVError> {
     let mut arr: [u8; 4] = [0u8; 4];
     let b = extract_sequence_le(tx_in)?;
     arr.copy_from_slice(&b[..]);
@@ -178,7 +178,7 @@ pub fn extract_sequence<'a>(tx_in: &TxIn<'a>) -> Result<u32, SPVError> {
 /// # Arguments
 ///
 /// * `tx_in` - The LEGACY input
-pub fn extract_script_sig<'a>(tx_in: &'a TxIn<'a>) -> Result<ScriptSig<'a>, SPVError> {
+pub fn extract_script_sig<'a>(tx_in: &'a TxIn) -> Result<ScriptSig<'a>, SPVError> {
     let script_sig_len = extract_script_sig_len(tx_in)?;
     let length = script_sig_len.serialized_length() + script_sig_len.as_usize();
     Ok(ScriptSig(&tx_in[36..36 + length]))
@@ -501,7 +501,7 @@ pub fn extract_target(header: RawHeader) -> U256 {
     // We use saturating here to avoid panicking.
     // This is safe because it saturates at `0`, which gives an unreachable target of `1`
     let exponent = header[75].saturating_sub(3);
-    let offset = U256::from(256 as u64).pow(exponent.into());
+    let offset = U256::from(256u64).pow(exponent.into());
 
     mantissa * offset
 }

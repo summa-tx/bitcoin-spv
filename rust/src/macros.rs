@@ -68,12 +68,6 @@ macro_rules! compact_int_conv {
             }
         }
 
-        impl Into<$target> for CompactInt {
-            fn into(self) -> $target {
-                self.0 as $target
-            }
-        }
-
         impl PartialEq<$target> for CompactInt {
             fn eq(&self, other: &$target) -> bool {
                 self.0 == *other as u64

@@ -80,12 +80,7 @@ impl fmt::Debug for BitcoinHeader {
     ///
     /// * `self` - The Bitcoin header
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "Header (height {:?}:\t{:?})",
-            self.height,
-            self.raw
-        )
+        write!(f, "Header (height {:?}:\t{:?})", self.height, self.raw)
     }
 }
 
@@ -97,11 +92,7 @@ impl fmt::Debug for RawHeader {
     ///
     /// * `self` - The Bitcoin header
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "Header: {}",
-            utils::serialize_hex(self.as_ref())
-        )
+        write!(f, "Header: {}", utils::serialize_hex(self.as_ref()))
     }
 }
 
@@ -259,11 +250,10 @@ mod vec_ser {
     where
         S: Serializer,
     {
-        let s: &str = &utils::serialize_hex(&d[..]);
+        let s: &str = &utils::serialize_hex(d);
         serializer.serialize_str(s)
     }
 }
-
 
 #[cfg(test)]
 #[cfg_attr(tarpaulin, skip)]

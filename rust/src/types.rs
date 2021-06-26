@@ -51,6 +51,7 @@ pub enum SPVError {
 }
 
 /// The standard address payload types
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub enum PayloadType<'a> {
     /// A PKH
@@ -184,10 +185,7 @@ impl core::fmt::Debug for HeaderArray<'_> {
     ///
     /// * `self` - The Bitcoin header
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(
-            f,
-            "HeaderArray: {:x?}", self.0
-        )
+        write!(f, "HeaderArray: {:x?}", self.0)
     }
 }
 
@@ -269,13 +267,9 @@ pub struct Hash256Digest([u8; 32]);
 #[cfg_attr(tarpaulin, skip)]
 impl core::fmt::Debug for Hash256Digest {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(
-            f,
-            "Hash256Digest: {:x?}", self.0
-        )
+        write!(f, "Hash256Digest: {:x?}", self.0)
     }
 }
-
 
 impl From<[u8; 32]> for Hash256Digest {
     fn from(buf: [u8; 32]) -> Self {
@@ -307,10 +301,7 @@ impl core::fmt::Debug for Hash160Digest {
     ///
     /// * `self` - The Bitcoin header
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(
-            f,
-            "Hash160Digest: {:x?}", self.0
-        )
+        write!(f, "Hash160Digest: {:x?}", self.0)
     }
 }
 
