@@ -33,7 +33,7 @@
     "eslint-plugin-import": "2.18.2",
     "esm": "3.2.25",
     "jest": "^24.8.0",
-    "mocha": "6.2.0"
+    "mocha": "10.2.0"
   },
   "dependencies": {
     "@summa-tx/bitcoin-spv-js": "^4.0.2",
